@@ -15,11 +15,15 @@ else:
     device = "cpu"
     
 sc = SCSam2(device)
-sc.LoadImage("../../Data/Sample1", 16)
-sc.AddPoint(0, [840, 1356], 1)
+#sc.LoadImage("../../Data/Sample1", 16)
+#sc.AddPoint(0, [840, 1356], 1)
+#sc.RunSegmentation()
+
+sc.LoadImage("../../Data/VideoSample/Param", 32)
+sc.AddPoint(0, [2711, 1038], 1)
 sc.RunSegmentation()
 
-for i in range(16):
+for i in range(32):
     plt.imshow(sc.images[i])
     show_mask(sc.masks[i], plt.gca())
     show_points(np.array(sc.input_points[i]), np.array(sc.input_labels[i]), plt.gca())

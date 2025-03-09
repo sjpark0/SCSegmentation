@@ -17,10 +17,10 @@ else:
 sc = SCSam2Video(device)
 sc.LoadVideo("../../Data/VideoSample1", 32)
 sc.AddPoint(0, [2711, 1038], 1, 0, 1)
-sc.AddPoint(0, [2678, 1630], 1, 0, 1)
+#sc.AddPoint(0, [2678, 1630], 1, 0, 1)
 
-sc.AddPoint(0, [1390, 1046], 1, 0, 2)
-sc.AddPoint(0, [1538, 1944], 1, 0, 2)
+#sc.AddPoint(0, [1390, 1046], 1, 0, 2)
+#sc.AddPoint(0, [1538, 1944], 1, 0, 2)
 
 sc.RunSegmentation(0)
 for m in range(32):

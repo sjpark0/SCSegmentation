@@ -1,7 +1,7 @@
 import numpy as np
 import colmap_read_model as read_model
 import os
-
+import matplotlib.pyplot as plt
 def load_colmap_data(realdir):
     
     camerasfile = os.path.join(realdir, 'sparse/0/cameras.bin')
@@ -112,7 +112,8 @@ def computeSimilarity(img1, img2, boundingBox1, offsetX, offsetY):
         mean = np.sum((img1[boundingBox2[1] - int(offsetY):boundingBox2[3] - int(offsetY), boundingBox2[0] - int(offsetX):boundingBox2[2] - int(offsetX),:] - img2[boundingBox2[1]:boundingBox2[3],boundingBox2[0]:boundingBox2[2],:])**2) / num
     else:
         mean = -1
-    return mean
+    
+    return boundingBox1, boundingBox2, mean
 
 def ComputeDepth(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf_depth, perms):
     zstep = ((1.0 / close_depth) - (1.0 / inf_depth))
@@ -128,15 +129,24 @@ def ComputeDepth(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf_
                 continue
             offsetX, offsetY = computeOffsetByZValue(img[perms[i]].shape[1], img[perms[i]].shape[0], c2w[perms[refCamID],:,:], w2c[perms[i],:,:], focals[perms[refCamID]], focals[perms[i]], zValueCurrent, (boundingBox[0] + boundingBox[2]) / 2, (boundingBox[1] + boundingBox[3]) / 2)
             #print(zValueCurrent, offsetX, offsetY)
-            similarity = computeSimilarity(img[perms[refCamID]], img[perms[i]], boundingBox, offsetX, offsetY)
-            #print(zValueCurrent, similarity)
+            bd1, bd2, similarity = computeSimilarity(img[perms[refCamID]], img[perms[i]], boundingBox, offsetX, offsetY)
+            
             if similarity >= 0:
                 mean += similarity
                 numAvailableCam+= 1
         if numAvailableCam > 0:
+            #print(optMean, mean, numAvailableCam, zValueCurrent)
             if optMean > mean / numAvailableCam:
                 optMean = mean / numAvailableCam
                 optZ = zValueCurrent
+    #print(optZ, optMean)
+    for i in range(len(img)):
+        offsetX, offsetY = computeOffsetByZValue(img[perms[i]].shape[1], img[perms[i]].shape[0], c2w[perms[refCamID],:,:], w2c[perms[i],:,:], focals[perms[refCamID]], focals[perms[i]], optZ, (boundingBox[0] + boundingBox[2]) / 2, (boundingBox[1] + boundingBox[3]) / 2)
+        bd1, bd2, similarity = computeSimilarity(img[perms[refCamID]], img[perms[i]], boundingBox, offsetX, offsetY)
+        if similarity >= 0:
+            print(i, bd2, similarity)
+            plt.imshow(img[perms[i]][bd2[1]:bd2[3],bd2[0]:bd2[2],:])
+            plt.show()        
     return optZ
 
 def computeOffset(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf_depth, perms):

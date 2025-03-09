@@ -1,5 +1,5 @@
 import torch
-from build_sam import build_sam2_video_predictor
+from build_sam import build_sam2_video_predictor, build_sam2_video_predictor_spatial
 from SCSam2VideoPredictor import SAM2VideoPredictorCustom
 from pose import *
 
@@ -37,16 +37,12 @@ class SCSam2Video:
             self.images.append(None)    
 
     def AddPoint(self, refCamID, point, label, frame_idx, obj_id):
-        #self.prompts[obj_id] = point, label
         if self.input_points.get(obj_id) is None:
             self.input_points[obj_id] = [[] for i in range(self.numImage)]
             
         if self.input_labels.get(obj_id) is None:
             self.input_labels[obj_id] = [[] for i in range(self.numImage)]
-            
-        #self.prompts[obj_id][0].append(point)
-        #self.prompts[obj_id][1].append(label)
-    
+                
         _, out_obj_ids, masks = self.predictor.add_new_points_or_box(
             inference_state=self.inference_state[refCamID],
             frame_idx=frame_idx,
@@ -58,11 +54,12 @@ class SCSam2Video:
 
         h, w = masks[-1].shape[-2:]
         mask_image = masks[-1].reshape(h, w, 1)
+        
         coords = np.where((mask_image > 0.0).cpu().numpy())
-        boundingBox = int(np.min(coords[1])), int(np.max(coords[1])), int(np.min(coords[0])), int(np.max(coords[0]))
+        boundingBox = int(np.min(coords[1])), int(np.min(coords[0])), int(np.max(coords[1])), int(np.max(coords[0]))
         for i in range(self.numImage):
             self.images[i] = self.inference_state[i]["cpu_images"][frame_idx]
-
+            
         optZ, offsetX, offsetY = computeOffset(self.images, boundingBox, self.c2w, self.w2c, self.focals, 0, self.close_depth, self.inf_depth, self.perms)
         for i in range(self.numImage):
             self.input_points[obj_id][i].append([point[0] + offsetX[i], point[1] + offsetY[i]])

@@ -25,7 +25,7 @@ model_cfg = "./configs/sam2.1/sam2.1_hiera_l.yaml"
 
 predictor = build_sam2_video_predictor(model_cfg, sam_checkpoint, device=device)
 
-video_dir = "../../Data/VideoSample/0"
+video_dir = "../../Data/VideoSample/Param/images"
 
 frame_names = [
     p for p in os.listdir(video_dir)
@@ -93,7 +93,7 @@ for out_frame_idx, out_obj_ids, out_mask_logits in predictor.propagate_in_video(
         for i, out_obj_id in enumerate(out_obj_ids)
     }
 
-vis_frame_stride = 10
+vis_frame_stride = 1
 plt.close("all")
 for out_frame_idx in range(0, len(frame_names), vis_frame_stride):
     plt.figure(figsize=(6, 4))

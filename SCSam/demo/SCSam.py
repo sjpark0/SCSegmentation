@@ -48,7 +48,8 @@ class SCSam:
         h, w = masks.shape[-2:]
         mask_image = masks.reshape(h, w, 1)
         coords = np.where(mask_image > 0.0)
-        boundingBox = int(np.min(coords[1])), int(np.max(coords[1])), int(np.min(coords[0])), int(np.max(coords[0]))
+        #boundingBox = int(np.min(coords[1])), int(np.max(coords[1])), int(np.min(coords[0])), int(np.max(coords[0]))
+        boundingBox = int(np.min(coords[1])), int(np.min(coords[0])), int(np.max(coords[1])), int(np.max(coords[0]))
         optZ, offsetX, offsetY = computeOffset(self.images, boundingBox, self.c2w, self.w2c, self.focals, 0, self.close_depth, self.inf_depth, self.perms)
         for i in range(self.numImage):
             self.input_points[i].append([point[0] + offsetX[i], point[1] + offsetY[i]])

@@ -30,8 +30,8 @@ class SCSam2:
 
 
         for i in range(numImage):
-            filename = self.folder + "/images/{:03d}.png".format(i)
-            #filename = self.folder + "/images/{:d}.jpg".format(i)
+            #filename = self.folder + "/images/{:03d}.png".format(i)
+            filename = self.folder + "/images/{:d}.jpg".format(i)
             image = cv2.imread(filename)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             self.images.append(image)
@@ -47,9 +47,10 @@ class SCSam2:
         h, w = masks.shape[-2:]
         mask_image = masks.reshape(h, w, 1)
         coords = np.where(mask_image > 0.0)
-        boundingBox = int(np.min(coords[1])), int(np.max(coords[1])), int(np.min(coords[0])), int(np.max(coords[0]))
+        #boundingBox = int(np.min(coords[1])), int(np.max(coords[1])), int(np.min(coords[0])), int(np.max(coords[0]))
+        boundingBox = int(np.min(coords[1])), int(np.min(coords[0])), int(np.max(coords[1])), int(np.max(coords[0]))        
         optZ, offsetX, offsetY = computeOffset(self.images, boundingBox, self.c2w, self.w2c, self.focals, 0, self.close_depth, self.inf_depth, self.perms)
-        print(optZ, offsetX, offsetY)
+        
         for i in range(self.numImage):
             self.input_points[i].append([point[0] + offsetX[i], point[1] + offsetY[i]])
             self.input_labels[i].append(label)
