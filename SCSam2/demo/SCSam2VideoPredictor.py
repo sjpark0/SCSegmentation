@@ -6,6 +6,7 @@
 
 import warnings
 from collections import OrderedDict
+from threading import Thread
 
 import torch
 import torch.nn.functional as F
@@ -15,9 +16,91 @@ from PIL import Image
 import os
 import numpy as np
 
-from sam2.modeling.sam2_base import NO_OBJ_SCORE, SAM2Base
-from sam2.utils.misc import concat_points, fill_holes_in_mask_scores, load_video_frames
 from sam2.sam2_video_predictor import SAM2VideoPredictor
+
+
+def _load_img_as_tensor(img_path, image_size):
+    img_pil = Image.open(img_path)
+    img_np = np.array(img_pil.convert("RGB").resize((image_size, image_size)))
+    if img_np.dtype == np.uint8:  # np.uint8 is expected for JPEG images
+        img_np = img_np / 255.0
+    else:
+        raise RuntimeError(f"Unknown image dtype: {img_np.dtype} on {img_path}")
+    img = torch.from_numpy(img_np).permute(2, 0, 1)
+    video_width, video_height = img_pil.size  # the original video size
+    return img, video_height, video_width, np.array(img_pil)
+
+class AsyncVideoFrameLoader:
+    """
+    A list of video frames to be load asynchronously without blocking session start.
+    """
+
+    def __init__(
+        self,
+        img_paths,
+        image_size,
+        offload_video_to_cpu,
+        img_mean,
+        img_std,
+        compute_device,
+    ):
+        self.img_paths = img_paths
+        self.image_size = image_size
+        self.offload_video_to_cpu = offload_video_to_cpu
+        self.img_mean = img_mean
+        self.img_std = img_std
+        # items in `self.images` will be loaded asynchronously
+        self.images = [None] * len(img_paths)
+        self.cpu_images = [None] * len(img_paths)
+        
+        # catch and raise any exceptions in the async loading thread
+        self.exception = None
+        # video_height and video_width be filled when loading the first image
+        self.video_height = None
+        self.video_width = None
+        self.compute_device = compute_device
+
+        # load the first frame to fill video_height and video_width and also
+        # to cache it (since it's most likely where the user will click)
+        self.__getitem__(0)
+
+        # load the rest of frames asynchronously without blocking the session start
+        def _load_frames():
+            try:
+                for n in tqdm(range(len(self.images)), desc="frame loading (JPEG)"):
+                    self.__getitem__(n)
+            except Exception as e:
+                self.exception = e
+
+        self.thread = Thread(target=_load_frames, daemon=True)
+        self.thread.start()
+
+    def __getitem__(self, index):
+        if self.exception is not None:
+            raise RuntimeError("Failure in frame loading thread") from self.exception
+
+        img = self.images[index]
+        cpu_image = self.cpu_images[index]
+        if img is not None:
+            return img, cpu_image
+
+        img, video_height, video_width, cpu_image = _load_img_as_tensor(
+            self.img_paths[index], self.image_size
+        )
+        self.video_height = video_height
+        self.video_width = video_width
+        # normalize by mean and std
+        img -= self.img_mean
+        img /= self.img_std
+        if not self.offload_video_to_cpu:
+            img = img.to(self.compute_device, non_blocking=True)
+        self.images[index] = img
+        self.cpu_images[index] = cpu_image
+        return img, cpu_image
+
+    def __len__(self):
+        return len(self.images)
+
 
 class SAM2VideoPredictorCustom(SAM2VideoPredictor):
     """The predictor class to handle user interactions and manage inference states."""
@@ -25,6 +108,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
     def __init__(self, *args, **kwargs):
         print("SAM2VideoPredictorCustom")
         super().__init__(*args, **kwargs)
+
 
     def load_video_frames_from_jpg_images(
         self,
@@ -70,13 +154,21 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None]
         img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None]
 
-        
-        images = torch.zeros(num_frames, 3, image_size, image_size, dtype=torch.float32)
-        images_cpu = []
-        for n, img_path in enumerate(tqdm(img_paths, desc="frame loading (JPEG)")):
-            images[n], video_height, video_width, cpu_img = self._load_img_as_tensor(img_path, image_size)
-            images_cpu.append(cpu_img)
+        if async_loading_frames:
+            lazy_images = AsyncVideoFrameLoader(
+                img_paths,
+                image_size,
+                offload_video_to_cpu,
+                img_mean,
+                img_std,
+                compute_device,
+            )
+            return lazy_images.images, lazy_images.video_height, lazy_images.video_width, lazy_images.cpu_images
 
+        images = torch.zeros(num_frames, 3, image_size, image_size, dtype=torch.float32)
+        cpu_images = [None] * num_frames
+        for n, img_path in enumerate(tqdm(img_paths, desc="frame loading (JPEG)")):
+            images[n], video_height, video_width, cpu_images[n] = _load_img_as_tensor(img_path, image_size)
         if not offload_video_to_cpu:
             images = images.to(compute_device)
             img_mean = img_mean.to(compute_device)
@@ -84,19 +176,9 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         # normalize by mean and std
         images -= img_mean
         images /= img_std
-        return images, video_height, video_width, images_cpu
+        return images, video_height, video_width, cpu_images
 
-    def _load_img_as_tensor(self, img_path, image_size):
-        img_pil = Image.open(img_path)
-        img_np = np.array(img_pil.convert("RGB").resize((image_size, image_size)))
-        if img_np.dtype == np.uint8:  # np.uint8 is expected for JPEG images
-            img_np = img_np / 255.0
-        else:
-            raise RuntimeError(f"Unknown image dtype: {img_np.dtype} on {img_path}")
-        img = torch.from_numpy(img_np).permute(2, 0, 1)
-        video_width, video_height = img_pil.size  # the original video size
-        return img, video_height, video_width, np.array(img_pil)
-
+    
 
     @torch.inference_mode()
     def init_state(

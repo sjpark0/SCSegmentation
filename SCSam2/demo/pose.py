@@ -128,7 +128,7 @@ def ComputeDepth(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf_
                 continue
             offsetX, offsetY = computeOffsetByZValue(img[perms[i]].shape[1], img[perms[i]].shape[0], c2w[perms[refCamID],:,:], w2c[perms[i],:,:], focals[perms[refCamID]], focals[perms[i]], zValueCurrent, (boundingBox[0] + boundingBox[2]) / 2, (boundingBox[1] + boundingBox[3]) / 2)
             #print(zValueCurrent, offsetX, offsetY)
-            similarity = computeSimilarity(img[refCamID], img[i], boundingBox, offsetX, offsetY)
+            similarity = computeSimilarity(img[perms[refCamID]], img[perms[i]], boundingBox, offsetX, offsetY)
             #print(zValueCurrent, similarity)
             if similarity >= 0:
                 mean += similarity

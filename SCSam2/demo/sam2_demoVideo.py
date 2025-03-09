@@ -15,14 +15,20 @@ else:
     device = "cpu"
 
 sc = SCSam2Video(device)
-sc.LoadVideo("../../Data/VideoSample", 32)
-sc.AddPoint(0, [2711, 1038], 1, 0)
-sc.AddPoint(0, [2678, 1630], 1, 0)
-sc.RunSegmentation(0)
+sc.LoadVideo("../../Data/VideoSample1", 32)
+sc.AddPoint(0, [2711, 1038], 1, 0, 1)
+sc.AddPoint(0, [2678, 1630], 1, 0, 1)
 
-plt.imshow(sc.images[0])
-show_mask(sc.masks[0], plt.gca())
-show_points(np.array(sc.input_points[0]), np.array(sc.input_labels[0]), plt.gca())
-plt.axis('on')
-plt.show()
+sc.AddPoint(0, [1390, 1046], 1, 0, 2)
+sc.AddPoint(0, [1538, 1944], 1, 0, 2)
+
+sc.RunSegmentation(0)
+for m in range(32):
+    plt.imshow(sc.images[m])
+    for i, out_obj_id in enumerate(sc.obj_ids):
+        show_points(np.array(sc.input_points[out_obj_id][m]), np.array(sc.input_labels[out_obj_id][m]), plt.gca())
+        show_mask(sc.masks[out_obj_id][m], plt.gca())
+
+    plt.axis('on')
+    plt.show()
 
