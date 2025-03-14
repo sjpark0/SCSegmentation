@@ -2,6 +2,8 @@ import numpy as np
 import colmap_read_model as read_model
 import os
 import matplotlib.pyplot as plt
+from misc import *
+
 def load_colmap_data(realdir):
     
     camerasfile = os.path.join(realdir, 'sparse/0/cameras.bin')
@@ -159,3 +161,32 @@ def computeOffset(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf
         offsetY.append(off_y)
     
     return optZ, offsetX, offsetY
+
+def computeOffset1(img, boundingBox, c2w, w2c, focals, refCamID, close_depth, inf_depth, perms):
+    offsetX = [0 for i in range(len(img))]
+    offsetY = [0 for i in range(len(img))]
+    zstep = ((1.0 / close_depth) - (1.0 / inf_depth))
+    
+    plt.imshow(img[refCamID])
+    show_points(np.array([[(boundingBox[0] + boundingBox[2]) / 2, (boundingBox[1] + boundingBox[3]) / 2]]), np.array([1]), plt.gca())
+    plt.show()
+    for i in range(len(img)):
+        if i == refCamID:
+            continue
+        
+        plt.imshow(img[i])
+        opt_sim = 100000000.0
+        for z in np.linspace(0, 2.0, 101):
+            zValueCurrent = 1.0 / (zstep * z + 1.0 / inf_depth)
+            offX, offY = computeOffsetByZValue(img[i].shape[1], img[i].shape[0], c2w[perms[refCamID],:,:], w2c[perms[i],:,:], focals[perms[refCamID]], focals[perms[i]], zValueCurrent, (boundingBox[0] + boundingBox[2]) / 2, (boundingBox[1] + boundingBox[3]) / 2)
+            
+            bd1, bd2, similarity = computeSimilarity(img[refCamID], img[i], boundingBox, offX, offY)
+            show_points(np.array([[(bd2[0] + bd2[2]) / 2, (bd2[1] + bd2[3]) / 2]]), np.array([1]), plt.gca())
+    
+            if similarity >= 0:
+                if opt_sim > similarity:
+                    opt_sim = similarity
+                    offsetX[i] = offX
+                    offsetY[i] = offY
+        plt.show()
+    return 0, offsetX, offsetY

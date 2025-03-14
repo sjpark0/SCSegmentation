@@ -36,7 +36,23 @@ def show_mask(mask, ax, obj_id=None, random_color=False):
     h, w = mask.shape[-2:]
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
-       
+
+def show_mask_cv(image, mask, obj_id=None, random_color=False):
+    if random_color:
+    #    color = np.concatenate([np.random.random(3), np.array([0.6])], axis=0)
+        color = np.concatenate([np.random.random(3)], axis=0) * 255
+    else:
+        cmap = plt.get_cmap("tab10")
+        cmap_idx = 0 if obj_id is None else obj_id
+    #    color = np.array([*cmap(cmap_idx)[:3], 0.6])
+        color = np.array([*cmap(cmap_idx)[:3]]) * 255
+    
+    h, w = mask.shape[-2:]
+    mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
+    mask_image = mask_image.astype(np.uint8)
+    mask = mask.reshape(h, w, 1) * 0.6
+    return cv2.convertScaleAbs(mask_image * mask + image * (1 - mask))
+
 def show_points(coords, labels, ax, marker_size=375):
     pos_points = coords[labels==1]
     neg_points = coords[labels==0]
