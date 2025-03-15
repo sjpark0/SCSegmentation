@@ -16,19 +16,17 @@ else:
     device = "cpu"
 
 sc = SCSam2Video(device)
-perms = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 8, 9, 10, 11, 12, 13, 14, 15]
+perms = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         
-sc.LoadVideo_Folder("../../Data/VideoSample", perms)
-#sc.LoadVideo_File("../../Data/VideoSample_1", perms)
+#sc.LoadVideo_Folder("../../Data/VideoSample", perms)
+sc.LoadVideo_File("../../Data/VideoSample_2", perms)
 #sc.LoadVideo_Folder("D:\\CROOM\\T06_flag_ganggang\\JPG", perms)
 #sc.LoadVideo_File("D:\\CROOM\\T06_flag_ganggang", perms)
 
-
-sc.AddPoint(0, [2711, 1038], 1, 1)
-sc.AddPoint(0, [2678, 1630], 1, 1)
-sc.AddPoint(0, [1390, 1046], 1, 2)
-sc.AddPoint(0, [1538, 1944], 1, 2)
-
+sc.AddPoint(0, [840, 1356], 1, 1)
+sc.AddPoint(0, [784, 1620], 1, 1)
+sc.AddPoint(0, [3514, 999], 1, 2)
+sc.AddPoint(0, [3390, 1603], 1, 2)
 
 
 sc.InitializeSegmentation()

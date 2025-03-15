@@ -2,7 +2,6 @@ import torch
 from misc import *
 from pose import *
 from SCSam2Video import SCSam2Video
-#from SCSam2VideoNew import SCSam2VideoNew
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,25 +13,19 @@ elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
     device = "mps"
 else:
     device = "cpu"
-
+numImage = 16
 sc = SCSam2Video(device)
-perms = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 8, 9, 10, 11, 12, 13, 14, 15]
-        
-sc.LoadVideo_Folder("../../Data/VideoSample", perms)
-#sc.LoadVideo_File("../../Data/VideoSample_1", perms)
-#sc.LoadVideo_Folder("D:\\CROOM\\T06_flag_ganggang\\JPG", perms)
-#sc.LoadVideo_File("D:\\CROOM\\T06_flag_ganggang", perms)
+#sc.LoadVideo_File("../../Data/VideoSample_2", numImage)
+sc.LoadVideo_Folder("../../Data/VideoSample_3", numImage)
+sc.AddPoint(0, [840, 1356], 1, 0, 1)
+sc.AddPoint(0, [784, 1620], 1, 0, 1)
 
-
-sc.AddPoint(0, [2711, 1038], 1, 1)
-sc.AddPoint(0, [2678, 1630], 1, 1)
-sc.AddPoint(0, [1390, 1046], 1, 2)
-sc.AddPoint(0, [1538, 1944], 1, 2)
-
-
+sc.AddPoint(0, [3514, 999], 1, 0, 2)
+sc.AddPoint(0, [3390, 1603], 1, 0, 2)
 
 sc.InitializeSegmentation()
-sc.RunNaiveTracking(0)
+
+#sc.RunSegmentation(0)
 index = 10
 
 cv2.namedWindow('image', cv2.WINDOW_NORMAL)

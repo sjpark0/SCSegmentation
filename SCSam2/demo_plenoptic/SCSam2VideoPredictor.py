@@ -251,6 +251,7 @@ class AsyncVideoFrameLoaderFile:
         self.img_paths = video_path
         self.cap = cv2.VideoCapture(video_path)
         self.frame_idx = -1
+        
         self.image_size = image_size
         self.offload_video_to_cpu = offload_video_to_cpu
         self.img_mean = img_mean
