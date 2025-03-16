@@ -8,7 +8,8 @@ import os
 import subprocess
 import json
 import cv2
-
+import time
+import threading
 
 class VideoDecoder:
     def __init__(self, codec=nvc.cudaVideoCodec.H264, gpuid=0, usedevicememory=True):
@@ -70,7 +71,7 @@ class VideoDecoder:
             r = y_plane + 1.402 * v_plane
             g = y_plane - 0.344136 * u_plane - 0.714136 * v_plane
             b = y_plane + 1.772 * u_plane
-            rgb_frame = torch.stack((r, g, b), dim=2).clamp(0, 255).byte()
+            rgb_frame = torch.stack((b, g, r), dim=2).clamp(0, 255).byte()
             return rgb_frame
         except Exception as e:
             logging.error(f'Error converting NV12 to RGB: {e}', exc_info=True)
@@ -189,21 +190,90 @@ def encode_test():
     
     process(input_folder, video_encoder, output_file)
 
+def decoding_thread(video_decoder, dataready, rgb_tensors, finished, decoder_idx):
+    while not finished[decoder_idx]:
+        if not dataready[decoder_idx]:
+            rgb_tensors[decoder_idx] = next(video_decoder)
+            dataready[decoder_idx] = True
+            if rgb_tensors[decoder_idx] is None:
+                break
+        else:
+            time.sleep(0.001)
+
 def decode_test():
-    input_file = "../../Data/VideoSample_HEVC/0.hevc"
-    output_folder = "../../Data/VideoSample_HEVC/0"
-    os.makedirs(output_folder, exist_ok=True)
-    video_decoder = VideoDecoder(codec=nvc.cudaVideoCodec.HEVC)
-    video_decoder.initialize(input_file)
-    width, height = get_video_info(input_file)
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    for frame_idx, rgb_tensor in enumerate(video_decoder):
-        img = rgb_tensor.cpu().numpy()
-        filename = output_folder + "/{:d}.jpg".format(frame_idx)
-        cv2.imwrite(filename, img)
-        cv2.imshow('image', img)    
-        cv2.resizeWindow('image', 960, 540)
-        cv2.waitKey(100)
+    input_files = [None] * 11
+    video_decoders = [None] * 11
+    dataready = [False] * 11
+    finished = [False] * 11
+    threads = [None] * 11
+    rgb_tensors = [None] * 11
+
+    for i in range(11):
+        input_files[i] = "../../Data/VideoSample_HEVC/Image_0.HEVC"
+        video_decoders[i] = VideoDecoder(codec=nvc.cudaVideoCodec.HEVC)
+        video_decoders[i].initialize(input_files[i])
+        threads[i] = threading.Thread(target=decoding_thread, args=(video_decoders[i], dataready, rgb_tensors, finished, i))
+
+    for i in range(11):
+        threads[i].start()
+    
+    frame_idx = 0
+    start = time.time()
+    width = 7680
+    height = 4320
+    #cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    
+    all_dataready = False    
+    while frame_idx < 1000:
+        while not all_dataready:
+            all_dataready = True
+            for i in range(11):
+                all_dataready = all_dataready and dataready[i]
+            time.sleep(0.001)
+
+        img = torch.stack(rgb_tensors, dim=0)
+        avg_img = torch.mean(img, dim=0, dtype=torch.float16).cpu().numpy()
+        
+        #cv2.imshow('image', avg_img)    
+        #cv2.resizeWindow('image', 960, 540)
+        #cv2.waitKey(1)
+        
+        elapsed = time.time() - start
+        print(f'Frame {frame_idx} decoded in {elapsed:.2f} seconds')
+        frame_idx += 1
+        for i in range(11):
+            dataready[i] = False
+        #time.sleep(0.001)
+    
+
+    for i in range(11):
+        finished[i] = True
+        threads[i].join()
+
     cv2.destroyAllWindows()
+    #output_folder = "../../Data/VideoSample_HEVC/Image_0"
+    #os.makedirs(output_folder, exist_ok=True)
+    
+    #width = 7680
+    #height = 4320
+    #cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    #start = time.time()
+    #for i in range(1000):
+    #    for j in range(11):
+    #        rgb_tensors[j] = next(video_decoders[j])
+        
+    #    elapsed = time.time() - start
+    #    print(f'Frame {i} decoded in {elapsed:.2f} seconds')
+        
+    #for frame_idx, rgb_tensor in enumerate(video_decoder):
+    #    elapsed = time.time() - start
+    #    print(f'Frame {frame_idx} decoded in {elapsed:.2f} seconds')
+        #img = rgb_tensor.cpu().numpy()
+        #filename = output_folder + "/{:d}.jpg".format(frame_idx)
+        #cv2.imwrite(filename, img)
+        #cv2.imshow('image', img)    
+        #cv2.resizeWindow('image', 960, 540)
+    #    cv2.waitKey(1)
+    #cv2.destroyAllWindows()
 #encode_test()
 decode_test()
