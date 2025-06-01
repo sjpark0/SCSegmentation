@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 Data
 models
+sam2
