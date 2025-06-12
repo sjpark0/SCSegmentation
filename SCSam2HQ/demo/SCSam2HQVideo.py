@@ -1,6 +1,5 @@
 import torch
-from build_sam import build_sam2_video_predictor, build_sam2_video_predictor_spatial
-from SCSam2VideoPredictor import SAM2VideoPredictorCustom
+from build_sam import build_sam2_hq_video_predictor, build_sam2_hq_video_predictor_spatial
 
 import cv2
 import matplotlib.pyplot as plt
@@ -9,13 +8,13 @@ import time
 from misc import *
 import os
 
-class SCSam2Video:
+class SCSam2HQVideo:
     def __init__(self, device):
-        sam_checkpoint = "../models/sam2.1_hiera_large.pt"
-        model_cfg = "./configs/sam2.1/sam2.1_hiera_l.yaml"
+        sam_checkpoint = "../models/sam2.1_hq_hiera_large.pt"
+        model_cfg = "./configs/sam2.1/sam2.1_hq_hiera_l.yaml"
                 
-        self.predictor = build_sam2_video_predictor(model_cfg, sam_checkpoint, device=device)
-        self.predictor_spatial = build_sam2_video_predictor_spatial(model_cfg, sam_checkpoint, device=device)
+        self.predictor = build_sam2_hq_video_predictor(model_cfg, sam_checkpoint, device=device)
+        self.predictor_spatial = build_sam2_hq_video_predictor_spatial(model_cfg, sam_checkpoint, device=device)
         self.masks = {}
         self.masks_spatial = {}
         self.obj_ids = None

@@ -1,0 +1,10 @@
+
+#pytorch설치
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+pip install opencv-python scikit-image
+
+#추가모듈설치
+git clone https://github.com/ClementPinard/Pytorch-Correlation-extension.git
+cd Pytorch-Correlation-extension
+python setup.py install
