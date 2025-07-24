@@ -482,10 +482,16 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             
             # spatial추가
             s_pos_and_prevs = []
-            for s_pos in range(-self.num_maskmem // 2, self.num_maskmem // 2):
+            #for s_pos in range(-self.num_maskmem // 2, self.num_maskmem // 2): #수정
+            for s_pos in range(-self.num_maskmem // 2, 0):
                 prev_spatial_idx = spatial_idx + s_pos
                 if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
                     out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx - 1, None)
+                    s_pos_and_prevs.append((s_pos, out))
+            for s_pos in range(1, self.num_maskmem // 2):
+                prev_spatial_idx = spatial_idx + s_pos
+                if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)
                     s_pos_and_prevs.append((s_pos, out))
 
             for t_pos, prev in t_pos_and_prevs:
