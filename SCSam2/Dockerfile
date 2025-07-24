@@ -20,9 +20,13 @@ RUN ninja
 RUN ninja install
 #RUN cd /
 RUN python -m pip install --upgrade pip
-RUN pip install git+https://github.com/facebookresearch/sam2.git
+#RUN pip install git+https://github.com/facebookresearch/sam2.git
 RUN pip install numpy==1.26.4
 RUN pip install opencv-python pyyaml plyfile tqdm termcolor kornia imgaug lpips tensorboardX ipdb scikit-image imageio imageio[ffmpeg] imageio[pyav] mmcv==1.6.0 argparse pytorch_msssim open3d
+
+COPY ./sam2 /opt/sam2
+WORKDIR /opt/sam2
+RUN pip install -e .
 
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
 

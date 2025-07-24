@@ -16,6 +16,7 @@ from PIL import Image
 import os
 import numpy as np
 import cv2
+from torch.nn.init import trunc_normal_
 
 from sam2.sam2_video_predictor import SAM2VideoPredictor
 from sam2.utils.misc import concat_points, fill_holes_in_mask_scores
@@ -307,7 +308,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
     def __init__(self, *args, **kwargs):
         print("SAM2VideoPredictorCustom")
         super().__init__(*args, **kwargs)
-
+        
     def _get_image_feature(self, inference_state, frame_idx, batch_size):
         """Compute the image features on a given frame."""
         # Look up in the cache first
@@ -404,15 +405,16 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         self._get_image_feature(inference_state, frame_idx=0, batch_size=1)
         return inference_state
 
-    # sjpark 수정 및 추가, 기존것으로 하려면, 아래 전체를 주석처리하면됨
-    def _prepare_memory_conditioned_features(
+    # sjpark 수정 및 추가, 기존것으로 하려면, 아래 전체를 주석처리하면됨    
+    def _prepare_memory_conditioned_features_multiple(
         self,
         frame_idx,
+        spatial_idx,
         is_init_cond_frame,
         current_vision_feats,
         current_vision_pos_embeds,
         feat_sizes,
-        output_dict,
+        output_dicts,
         num_frames,
         track_in_reverse=False,  # tracking in reverse time order (for demo usage)
     ):
@@ -435,9 +437,9 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             to_cat_memory, to_cat_memory_pos_embed = [], []
             # Add conditioning frames's output first (all cond frames have t_pos=0 for
             # when getting temporal positional embedding below)
-            assert len(output_dict["cond_frame_outputs"]) > 0
+            assert len(output_dicts[spatial_idx]["cond_frame_outputs"]) > 0
             # Select a maximum number of temporally closest cond frames for cross attention
-            cond_outputs = output_dict["cond_frame_outputs"]
+            cond_outputs = output_dicts[spatial_idx]["cond_frame_outputs"]
             selected_cond_outputs, unselected_cond_outputs = select_closest_cond_frames(
                 frame_idx, cond_outputs, self.max_cond_frames_in_attn
             )
@@ -471,12 +473,20 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
                         prev_frame_idx = -(-(frame_idx + 2) // stride) * stride
                         # then seek further among every r-th frames
                         prev_frame_idx = prev_frame_idx + (t_rel - 2) * stride
-                out = output_dict["non_cond_frame_outputs"].get(prev_frame_idx, None)
+                out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(prev_frame_idx, None)
                 if out is None:
                     # If an unselected conditioning frame is among the last (self.num_maskmem - 1)
                     # frames, we still attend to it as if it's a non-conditioning frame.
                     out = unselected_cond_outputs.get(prev_frame_idx, None)
                 t_pos_and_prevs.append((t_pos, out))
+            
+            # spatial추가
+            s_pos_and_prevs = []
+            for s_pos in range(-self.num_maskmem // 2, self.num_maskmem // 2):
+                prev_spatial_idx = spatial_idx + s_pos
+                if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx - 1, None)
+                    s_pos_and_prevs.append((s_pos, out))
 
             for t_pos, prev in t_pos_and_prevs:
                 if prev is None:
@@ -491,6 +501,22 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
                 # Temporal positional encoding
                 maskmem_enc = (
                     maskmem_enc + self.maskmem_tpos_enc[self.num_maskmem - t_pos - 1]
+                )
+                to_cat_memory_pos_embed.append(maskmem_enc)
+            # spatial추가
+            for s_pos, prev in s_pos_and_prevs:
+                if prev is None:
+                    continue  # skip padding frames
+                # "maskmem_features" might have been offloaded to CPU in demo use cases,
+                # so we load it back to GPU (it's a no-op if it's already on GPU).
+                feats = prev["maskmem_features"].to(device, non_blocking=True)
+                to_cat_memory.append(feats.flatten(2).permute(2, 0, 1))
+                # Spatial positional encoding (it might have been offloaded to CPU in eval)
+                maskmem_enc = prev["maskmem_pos_enc"][-1].to(device)
+                maskmem_enc = maskmem_enc.flatten(2).permute(2, 0, 1)
+                # Temporal positional encoding                
+                maskmem_enc = (
+                    maskmem_enc + self.maskmem_tpos_enc[self.num_maskmem - abs(s_pos) - 1]
                 )
                 to_cat_memory_pos_embed.append(maskmem_enc)
 
@@ -524,7 +550,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
                     t = frame_idx + t_diff if track_in_reverse else frame_idx - t_diff
                     if t < 0 or (num_frames is not None and t >= num_frames):
                         break
-                    out = output_dict["non_cond_frame_outputs"].get(
+                    out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(
                         t, unselected_cond_outputs.get(t, None)
                     )
                     if out is not None:
@@ -586,16 +612,17 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         pix_feat_with_mem = pix_feat_with_mem.permute(1, 2, 0).view(B, C, H, W)
         return pix_feat_with_mem
 
-    def _track_step(
+    def _track_step_multiple(
         self,
         frame_idx,
+        spatial_idx,
         is_init_cond_frame,
         current_vision_feats,
         current_vision_pos_embeds,
         feat_sizes,
         point_inputs,
         mask_inputs,
-        output_dict,
+        output_dicts,
         num_frames,
         track_in_reverse,
         prev_sam_mask_logits,
@@ -619,13 +646,14 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             )
         else:
             # fused the visual feature with previous memory features in the memory bank
-            pix_feat = self._prepare_memory_conditioned_features(
+            pix_feat = self._prepare_memory_conditioned_features_multiple(
                 frame_idx=frame_idx,
+                spatial_idx=spatial_idx,
                 is_init_cond_frame=is_init_cond_frame,
                 current_vision_feats=current_vision_feats[-1:],
                 current_vision_pos_embeds=current_vision_pos_embeds[-1:],
                 feat_sizes=feat_sizes[-1:],
-                output_dict=output_dict,
+                output_dicts=output_dicts,
                 num_frames=num_frames,
                 track_in_reverse=track_in_reverse,
             )
@@ -647,16 +675,17 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
 
         return current_out, sam_outputs, high_res_features, pix_feat
     
-    def track_step(
+    def track_step_multiple(
         self,
         frame_idx,
+        spatial_idx,
         is_init_cond_frame,
         current_vision_feats,
         current_vision_pos_embeds,
         feat_sizes,
         point_inputs,
         mask_inputs,
-        output_dict,
+        output_dicts,
         num_frames,
         track_in_reverse=False,  # tracking in reverse time order (for demo usage)
         # Whether to run the memory encoder on the predicted masks. Sometimes we might want
@@ -668,15 +697,16 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         # The previously predicted SAM mask logits (which can be fed together with new clicks in demo).
         prev_sam_mask_logits=None,
     ):
-        current_out, sam_outputs, _, _ = self._track_step(
+        current_out, sam_outputs, _, _ = self._track_step_multiple(
             frame_idx,
+            spatial_idx,
             is_init_cond_frame,
             current_vision_feats,
             current_vision_pos_embeds,
             feat_sizes,
             point_inputs,
             mask_inputs,
-            output_dict,
+            output_dicts,
             num_frames,
             track_in_reverse,
             prev_sam_mask_logits,
@@ -714,10 +744,11 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
 
         return current_out
     
-    def _run_single_frame_inference(
+    def _run_single_frame_inference_multiple(
         self,
-        inference_state,
-        output_dict,
+        inference_states,
+        output_dicts,
+        spatial_idx,
         frame_idx,
         batch_size,
         is_init_cond_frame,
@@ -735,27 +766,28 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             current_vision_feats,
             current_vision_pos_embeds,
             feat_sizes,
-        ) = self._get_image_feature(inference_state, frame_idx, batch_size)
+        ) = self._get_image_feature(inference_states[spatial_idx], frame_idx, batch_size)
 
         # point and mask should not appear as input simultaneously on the same frame
         assert point_inputs is None or mask_inputs is None
-        current_out = self.track_step(
+        current_out = self.track_step_multiple(
             frame_idx=frame_idx,
+            spatial_idx=spatial_idx,
             is_init_cond_frame=is_init_cond_frame,
             current_vision_feats=current_vision_feats,
             current_vision_pos_embeds=current_vision_pos_embeds,
             feat_sizes=feat_sizes,
             point_inputs=point_inputs,
             mask_inputs=mask_inputs,
-            output_dict=output_dict,
-            num_frames=inference_state["num_frames"],
+            output_dicts=output_dicts,
+            num_frames=inference_states[spatial_idx]["num_frames"],
             track_in_reverse=reverse,
             run_mem_encoder=run_mem_encoder,
             prev_sam_mask_logits=prev_sam_mask_logits,
         )
 
         # optionally offload the output to CPU memory to save GPU space
-        storage_device = inference_state["storage_device"]
+        storage_device = inference_states[spatial_idx]["storage_device"]
         maskmem_features = current_out["maskmem_features"]
         if maskmem_features is not None:
             maskmem_features = maskmem_features.to(torch.bfloat16)
@@ -768,7 +800,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             )
         pred_masks = pred_masks_gpu.to(storage_device, non_blocking=True)
         # "maskmem_pos_enc" is the same across frames, so we only need to store one copy of it
-        maskmem_pos_enc = self._get_maskmem_pos_enc(inference_state, current_out)
+        maskmem_pos_enc = self._get_maskmem_pos_enc(inference_states[spatial_idx], current_out)
         # object pointer is a small tensor, so we always keep it on GPU memory for fast access
         obj_ptr = current_out["obj_ptr"]
         object_score_logits = current_out["object_score_logits"]
@@ -851,24 +883,25 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
     @torch.inference_mode()
     def propagate_in_video(
         self,
-        inference_state,
+        spatial_idx,
+        inference_states,
         start_frame_idx=None,
         max_frame_num_to_track=None,
         reverse=False,
     ):
         """Propagate the input points across frames to track in the entire video."""
-        self.propagate_in_video_preflight(inference_state)
+        self.propagate_in_video_preflight(inference_states[spatial_idx])
 
-        obj_ids = inference_state["obj_ids"]
-        num_frames = inference_state["num_frames"]
-        batch_size = self._get_obj_num(inference_state)
+        obj_ids = inference_states[spatial_idx]["obj_ids"]
+        num_frames = inference_states[spatial_idx]["num_frames"]
+        batch_size = self._get_obj_num(inference_states[spatial_idx])
 
         # set start index, end index, and processing order
         if start_frame_idx is None:
             # default: start from the earliest frame with input points
             start_frame_idx = min(
                 t
-                for obj_output_dict in inference_state["output_dict_per_obj"].values()
+                for obj_output_dict in inference_states[spatial_idx]["output_dict_per_obj"].values()
                 for t in obj_output_dict["cond_frame_outputs"]
             )
         if max_frame_num_to_track is None:
@@ -889,26 +922,29 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
         for frame_idx in tqdm(processing_order, desc="propagate in video"):
             pred_masks_per_obj = [None] * batch_size
             for obj_idx in range(batch_size):
-                obj_output_dict = inference_state["output_dict_per_obj"][obj_idx]
+                obj_output_dicts = []
+                for ifs in inference_states:
+                    obj_output_dicts.append(ifs["output_dict_per_obj"][obj_idx])
                 # We skip those frames already in consolidated outputs (these are frames
                 # that received input clicks or mask). Note that we cannot directly run
                 # batched forward on them via `_run_single_frame_inference` because the
                 # number of clicks on each object might be different.
-                if frame_idx in obj_output_dict["cond_frame_outputs"]:
+                if frame_idx in obj_output_dicts[spatial_idx]["cond_frame_outputs"]:
                     storage_key = "cond_frame_outputs"
-                    current_out = obj_output_dict[storage_key][frame_idx]
-                    device = inference_state["device"]
+                    current_out = obj_output_dicts[spatial_idx][storage_key][frame_idx]
+                    device = inference_states[spatial_idx]["device"]
                     pred_masks = current_out["pred_masks"].to(device, non_blocking=True)
                     if self.clear_non_cond_mem_around_input:
                         # clear non-conditioning memory of the surrounding frames
                         self._clear_obj_non_cond_mem_around_input(
-                            inference_state, frame_idx, obj_idx
+                            inference_states[spatial_idx], frame_idx, obj_idx
                         )
                 else:
                     storage_key = "non_cond_frame_outputs"
-                    current_out, pred_masks = self._run_single_frame_inference(
-                        inference_state=inference_state,
-                        output_dict=obj_output_dict,
+                    current_out, pred_masks = self._run_single_frame_inference_multiple(
+                        inference_states=inference_states,
+                        output_dicts=obj_output_dicts,
+                        spatial_idx=spatial_idx,
                         frame_idx=frame_idx,
                         batch_size=1,  # run on the slice of a single object
                         is_init_cond_frame=False,
@@ -917,9 +953,9 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
                         reverse=reverse,
                         run_mem_encoder=True,
                     )
-                    obj_output_dict[storage_key][frame_idx] = current_out
+                    obj_output_dicts[spatial_idx][storage_key][frame_idx] = current_out
 
-                inference_state["frames_tracked_per_obj"][obj_idx][frame_idx] = {
+                inference_states[spatial_idx]["frames_tracked_per_obj"][obj_idx][frame_idx] = {
                     "reverse": reverse
                 }
                 pred_masks_per_obj[obj_idx] = pred_masks
@@ -931,7 +967,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             else:
                 all_pred_masks = pred_masks_per_obj[0]
             _, video_res_masks = self._get_orig_video_res_output(
-                inference_state, all_pred_masks
+                inference_states[spatial_idx], all_pred_masks
             )
             yield frame_idx, obj_ids, video_res_masks
     
