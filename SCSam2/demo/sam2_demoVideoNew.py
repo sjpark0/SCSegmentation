@@ -59,4 +59,4 @@ for idx in range(50):
             for i, out_obj_id in enumerate(out_obj_ids):
                 out_mask = (out_mask_logits[i] > 0.0).cpu().numpy()
                 res_image = show_mask_cv(res_image, out_mask, obj_id=out_obj_id)
-            cv2.imwrite("../../Data/Result1/" + str(frame_idx) + ".png", res_image)
+            cv2.imwrite("../../Data/Result2/" + str(frame_idx) + ".png", res_image)
