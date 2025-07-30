@@ -78,14 +78,25 @@ class SCSam2VideoNew:
         )
         
         self.obj_ids = out_obj_ids
-     
 
+    def AddMask(self, camID, frame_idx, mask, obj_id):
+        self.predictor.add_new_mask(
+                inference_state=self.inference_state[camID],
+                frame_idx=frame_idx,
+                obj_id=obj_id,
+                mask=mask // 255,
+            )
+        
     def InitializeSegmentation(self):
         for imageID, out_obj_ids, out_mask_logits in self.predictor_spatial.propagate_in_video(self.inference_state_spatial):
             self.masks_spatial[imageID] = {
                 out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
                 for i, out_obj_id in enumerate(out_obj_ids)
             }
+    def RunTracking(self):
+        self.tracking_result = [None] * self.numImage
+        for m in range(self.numImage):
+            self.tracking_result[m] = self.predictor.propagate_in_video(spatial_idx=m, inference_states=self.inference_state)
         
     def RunNaiveTracking(self, frame_idx):
         for m in range(self.numImage):            
@@ -96,10 +107,17 @@ class SCSam2VideoNew:
                     obj_id=obj_id,
                     mask=self.masks_spatial[m][obj_id][0,...],
                 )
+        self.RunTracking()
         
-        self.tracking_result = [None] * self.numImage
+        
+    def RunTrackingMaskInput(self, frame_idx, masks):
         for m in range(self.numImage):
-            self.tracking_result[m] = self.predictor.propagate_in_video(spatial_idx=m, inference_states=self.inference_state)
+            for j in masks[m]:
+                _, out_obj_ids, _ = self.predictor.add_new_mask(
+                    inference_state=self.inference_state[m],
+                    frame_idx=frame_idx,
+                    obj_id=j,
+                    mask=masks[m][j] // 255,
+                )
         
-        
-        
+        self.RunTracking()
