@@ -58,11 +58,14 @@ sc.RunTracking()
 index = 10
 '''
 for i in range(len(perms1)):
-    for j in range(num_objs):
-        filename = "../../Data/Mask1/{:02d}".format(perms1[i]) + "_p" + str(j+1) + ".png"
-        #print(filename)
-        img = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), dsize=(3840, 2160))
-        sc.AddMask(i, 0, img, j+1)
+    filename = "../../Data/Mask_YOLO/mask_{:03d}.png".format(perms[i]) 
+    img = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), dsize=(3840, 2160))
+    sc.AddMask(i, 0, img, 1)
+
+#    for j in range(num_objs):
+#        filename = "../../Data/Mask1/{:02d}".format(perms1[i]) + "_p" + str(j+1) + ".png"
+#        img = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), dsize=(3840, 2160))
+#        sc.AddMask(i, 0, img, j+1)
 sc.RunTracking()    
 
 for idx in range(50):
