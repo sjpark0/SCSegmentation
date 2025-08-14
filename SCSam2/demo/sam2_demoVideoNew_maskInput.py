@@ -58,7 +58,7 @@ sc.RunTracking()
 index = 10
 '''
 for i in range(len(perms1)):
-    filename = "../../Data/Mask_YOLO/mask_{:03d}.png".format(perms[i]) 
+    filename = "../../Data/Mask_SAM/mask_{:03d}.png".format(perms[i]) 
     img = cv2.resize(cv2.imread(filename, cv2.IMREAD_GRAYSCALE), dsize=(3840, 2160))
     sc.AddMask(i, 0, img, 1)
 
