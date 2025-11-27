@@ -172,3 +172,10 @@ cython_debug/
 Data
 models
 sam2
+datasets
+demo_output
+logs
+results
+result
+pretrain_models
+

@@ -18,16 +18,16 @@ WORKDIR /opt/colmap/build
 RUN cmake .. -GNinja
 RUN ninja
 RUN ninja install
-WORKDIR /opt
-RUN git clone https://github.com/SysCV/sam-hq.git
-WORKDIR /opt/sam-hq/sam-hq2
-RUN pip install -e .
 #RUN cd /
 RUN python -m pip install --upgrade pip
 RUN pip install numpy==1.26.4
 RUN pip install opencv-python pyyaml plyfile tqdm termcolor kornia imgaug lpips tensorboardX ipdb scikit-image imageio imageio[ffmpeg] imageio[pyav] mmcv==1.6.0 argparse pytorch_msssim open3d
 
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
+WORKDIR /opt
+RUN git clone https://github.com/ClementPinard/Pytorch-Correlation-extension.git
+WORKDIR /opt/Pytorch-Correlation-extension
+RUN python setup.py install
 
 
 RUN echo 'ln /dev/null /dev/raw1394' >> ~/.bashrc
