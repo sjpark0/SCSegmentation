@@ -40,13 +40,13 @@ if __name__ == "__main__":
             
     sc.LoadVideo_Folder_MVSeg(folder + "/Video/", perms, start_frame, prefix, prefix1)
 
-    for i in range(len(perms)):
-        for j in range(num_objs):
-            filename = folder + "/Mask/{:02d}_p{:d}.png".format(perms[i], j+1)
-            img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
-            sc.AddMask(i, 0, img, obj_list[j])
+    for j in range(num_objs):
+        filename = folder + "/Mask/{:02d}_p{:d}.png".format(perms[0], j+1)
+        img = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
+        sc.AddMaskSingle(0, img, obj_list[j])
 
-    sc.RunTracking() 
+    sc.InitializeSegmentation(refCamID=0)
+    sc.RunNaiveTracking(start_frame)
 
     for cam in cam_list:
         id = perms.index(cam)
@@ -54,10 +54,10 @@ if __name__ == "__main__":
             if frame_idx >= start_frame + num_frame:
                 break
             
-            os.makedirs(folder + "/SegMask_SA3D/" + prefix + f"{cam:0{prefix1}d}/{frame_idx:d}", exist_ok = True)
+            os.makedirs(folder + "/SegMask_SAM2/" + prefix + f"{cam:0{prefix1}d}/{frame_idx:d}", exist_ok = True)
             res_mask = np.zeros(img.shape)
             _, cpu_image = sc.inference_state[id]["images"][frame_idx]
             for i, out_obj_id in enumerate(out_obj_ids):
                 out_mask = (out_mask_logits[i] > 0.0).cpu().numpy()
                 res_mask = out_mask[0,...] * 255
-                cv2.imwrite(folder + "/SegMask_SA3D/" + prefix + f"{cam:0{prefix1}d}/{frame_idx:d}/{out_obj_id:d}.png", res_mask)
+                cv2.imwrite(folder + "/SegMask_SAM2/" + prefix + f"{cam:0{prefix1}d}/{frame_idx:d}/{out_obj_id:d}.png", res_mask)

@@ -30,6 +30,7 @@ class SAM2VideoPredictorSpatial(SAM2VideoPredictor):
         self,
         original_states,
         perms,
+        start_frame = 0,
         offload_video_to_cpu=False,
         offload_state_to_cpu=False,
     ):
@@ -39,7 +40,7 @@ class SAM2VideoPredictorSpatial(SAM2VideoPredictor):
         images = torch.zeros(numImage, 3, self.image_size, self.image_size, dtype=torch.float32)
         cpu_images = [None] * numImage
         for i in range(numImage):
-            images[i], cpu_images[i] = original_states[i]["images"][0]
+            images[i], cpu_images[i] = original_states[i]["images"][start_frame]
 
         #images, video_height, video_width, cpu_images = 
         inference_state = {}

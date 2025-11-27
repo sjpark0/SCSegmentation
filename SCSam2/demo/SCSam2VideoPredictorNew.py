@@ -482,23 +482,32 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
             
             # spatial추가
             s_pos_and_prevs = []
-            for s_pos in range(-self.num_maskmem // 2, self.num_maskmem // 2): #수정
+            
+            '''
+            for s_pos in range(-4, 0):
                 prev_spatial_idx = spatial_idx + s_pos
-                if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
-                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx - 1, None)
+                if spatial_idx != prev_spatial_idx:                
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx - 1, None)                    
                     s_pos_and_prevs.append((s_pos, out))
             '''
-            for s_pos in range(-self.num_maskmem // 2, 1):
+            '''
+            for s_pos in range(-4, 0):
                 prev_spatial_idx = spatial_idx + s_pos
-                if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
-                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx - 1, None)
-                    s_pos_and_prevs.append((s_pos, out))
-            for s_pos in range(1, self.num_maskmem // 2):
-                prev_spatial_idx = spatial_idx + s_pos
-                if prev_spatial_idx >= 0 and prev_spatial_idx < len(output_dicts):
-                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)
+                if spatial_idx != prev_spatial_idx:                
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)                    
                     s_pos_and_prevs.append((s_pos, out))
             '''
+            
+            for s_pos in range(-4, 0):
+                prev_spatial_idx = spatial_idx + s_pos
+                if spatial_idx != prev_spatial_idx:                
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)                    
+                    if out is None:
+                        selected_cond_outputs, unselected_cond_outputs1 = select_closest_cond_frames(frame_idx, output_dicts[prev_spatial_idx]["cond_frame_outputs"], self.max_cond_frames_in_attn)            
+                        out = unselected_cond_outputs1.get(frame_idx, None)
+                    s_pos_and_prevs.append((s_pos, out))
+                    
+
             for t_pos, prev in t_pos_and_prevs:
                 if prev is None:
                     continue  # skip padding frames
@@ -527,7 +536,7 @@ class SAM2VideoPredictorCustom(SAM2VideoPredictor):
                 maskmem_enc = maskmem_enc.flatten(2).permute(2, 0, 1)
                 # Temporal positional encoding                
                 maskmem_enc = (
-                    maskmem_enc + self.maskmem_tpos_enc[self.num_maskmem - abs(s_pos) - 1]
+                    maskmem_enc + self.maskmem_tpos_enc[abs(s_pos) - 1]
                 )
                 to_cat_memory_pos_embed.append(maskmem_enc)
 

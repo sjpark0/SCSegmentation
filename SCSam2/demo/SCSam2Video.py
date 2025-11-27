@@ -8,7 +8,7 @@ import numpy as np
 import time
 from misc import *
 import os
-
+from itertools import chain
 class SCSam2Video:
     def __init__(self, device):
         sam_checkpoint = "../models/sam2.1_hiera_large.pt"
@@ -38,6 +38,18 @@ class SCSam2Video:
         self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms)
         self.predictor_spatial.reset_state(self.inference_state_spatial)
         
+    def LoadVideo_Folder_MVSeg(self, folder, perms, start_frame, prefix, prefix1 = 0):
+        self.folder = folder
+        self.numImage = len(perms)        
+        for i in range(self.numImage):
+            foldername = self.folder + prefix + f"{perms[i]:0{prefix1}d}"
+            state = self.predictor.init_state(video_path = foldername, offload_video_to_cpu = True, offload_state_to_cpu = True, async_loading_frames=True)
+            self.predictor.reset_state(state)
+            self.inference_state.append(state)
+            self.images.append(None)    
+
+        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms, start_frame=start_frame)
+        self.predictor_spatial.reset_state(self.inference_state_spatial)
 
     def LoadVideo_File(self, folder, perms):        
         frame_names = [
@@ -78,7 +90,16 @@ class SCSam2Video:
         )
         
         self.obj_ids = out_obj_ids
-     
+
+    def AddMaskSingle(self, refCamID, mask, obj_id):
+        _, out_obj_ids, masks = self.predictor_spatial.add_new_mask(
+                inference_state=self.inference_state_spatial,
+                frame_idx=refCamID,
+                obj_id=obj_id,
+                mask=mask // 255,
+            ) 
+        self.obj_ids = out_obj_ids
+
     def AddMask(self, camID, frame_idx, mask, obj_id):
         self.predictor.add_new_mask(
                 inference_state=self.inference_state[camID],
@@ -86,20 +107,19 @@ class SCSam2Video:
                 obj_id=obj_id,
                 mask=mask // 255,
             )
-        
-    def InitializeSegmentation(self):
-        for imageID, out_obj_ids, out_mask_logits in self.predictor_spatial.propagate_in_video(self.inference_state_spatial):
+    def InitializeSegmentation(self, refCamID = 0, reverse = False):
+        for imageID, out_obj_ids, out_mask_logits in self.predictor_spatial.propagate_in_video(self.inference_state_spatial, start_frame_idx = refCamID, reverse = reverse):
             self.masks_spatial[imageID] = {
                 out_obj_id: (out_mask_logits[i] > 0.0).cpu().numpy()
                 for i, out_obj_id in enumerate(out_obj_ids)
-            }
+            }     
     
     def RunTracking(self):
         self.tracking_result = [None] * self.numImage
         for m in range(self.numImage):
             self.tracking_result[m] = self.predictor.propagate_in_video(self.inference_state[m])
     
-    def RunNaiveTracking(self, frame_idx):
+    def RunNaiveTracking(self, frame_idx, reverse = False):
         for m in range(self.numImage):            
            for i, obj_id in enumerate(self.obj_ids):
                 _, out_obj_ids, masks = self.predictor.add_new_mask(
@@ -110,8 +130,13 @@ class SCSam2Video:
                 )
         
         self.tracking_result = [None] * self.numImage
-        for m in range(self.numImage):
-            self.tracking_result[m] = self.predictor.propagate_in_video(self.inference_state[m])
+        
+        if reverse:
+            for m in range(self.numImage):
+                self.tracking_result[m] = chain(self.predictor.propagate_in_video(self.inference_state[m], start_frame_idx = frame_idx, reverse = True), self.predictor.propagate_in_video(self.inference_state[m], start_frame_idx = frame_idx))
+        else:
+            for m in range(self.numImage):
+                self.tracking_result[m] = self.predictor.propagate_in_video(self.inference_state[m], start_frame_idx = frame_idx)
         
         
         

@@ -56,6 +56,7 @@ def load_video_frames(
         is_bytes = isinstance(video_path, bytes)
         is_str = isinstance(video_path, str)
         is_mp4_path = is_str and os.path.splitext(video_path)[-1] in [".mp4", ".MP4", ".mov", ".MOV"]
+        
         if is_bytes or is_mp4_path:
             return load_video_frames_from_video_file(
                 video_path=video_path,
