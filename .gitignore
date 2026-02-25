@@ -178,4 +178,5 @@ logs
 results
 result
 pretrain_models
-
+hf_cache
+*.bat
