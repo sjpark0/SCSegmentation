@@ -94,7 +94,7 @@ plt.axis('on')
 plt.show()
 
 
-from sam3 import build_sam3_image_model
+from build_scsam3 import build_sam3_image_model
 from sam3.model.sam3_image_processor import Sam3Processor
 
 bpe_path = f"{sam3_root}/sam3/assets/bpe_simple_vocab_16e6.txt.gz"

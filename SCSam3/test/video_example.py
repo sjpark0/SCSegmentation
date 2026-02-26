@@ -20,9 +20,9 @@ plt.rcParams["figure.titlesize"] = 12
 
 sam3_root = os.path.join(os.path.dirname(sam3.__file__), "..")
 
-from build_sam3 import build_sam3_video_model
+from build_scsam3 import build_scsam3_video_model
 
-sam3_model = build_sam3_video_model()
+sam3_model = build_scsam3_video_model()
 predictor = sam3_model.tracker
 predictor.backbone = sam3_model.detector.backbone
 

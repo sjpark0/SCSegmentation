@@ -36,8 +36,8 @@ from sam3.model.position_encoding import PositionEmbeddingSine
 from sam3.model.sam1_task_predictor import SAM3InteractiveImagePredictor
 from sam3.model.sam3_image import Sam3Image, Sam3ImageOnVideoMultiGPU
 from sam3.model.sam3_tracking_predictor import Sam3TrackerPredictor
-from sam3.model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
-from sam3.model.sam3_video_predictor import Sam3VideoPredictorMultiGPU
+from scsam3_video_inference import SCSam3VideoInferenceWithInstanceInteractivity
+from scsam3_video_predictor import SCSam3VideoPredictorMultiGPU
 from sam3.model.text_encoder_ve import VETextEncoder
 from sam3.model.tokenizer_ve import SimpleTokenizer
 from sam3.model.vitdet import ViT
@@ -650,7 +650,7 @@ def download_ckpt_from_hf():
     return checkpoint_path
 
 
-def build_sam3_video_model(
+def build_scsam3_video_model(
     checkpoint_path: Optional[str] = None,
     load_from_HF=True,
     bpe_path: Optional[str] = None,
@@ -660,7 +660,7 @@ def build_sam3_video_model(
     apply_temporal_disambiguation: bool = True,
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
-) -> Sam3VideoInferenceWithInstanceInteractivity:
+) -> SCSam3VideoInferenceWithInstanceInteractivity:
     """
     Build SAM3 dense tracking model.
 
@@ -717,7 +717,7 @@ def build_sam3_video_model(
 
     # Build the main SAM3 video model
     if apply_temporal_disambiguation:
-        model = Sam3VideoInferenceWithInstanceInteractivity(
+        model = SCSam3VideoInferenceWithInstanceInteractivity(
             detector=detector,
             tracker=tracker,
             score_threshold_detection=0.5,
@@ -744,7 +744,7 @@ def build_sam3_video_model(
         )
     else:
         # a version without any heuristics for ablation studies
-        model = Sam3VideoInferenceWithInstanceInteractivity(
+        model = SCSam3VideoInferenceWithInstanceInteractivity(
             detector=detector,
             tracker=tracker,
             score_threshold_detection=0.5,
@@ -791,7 +791,7 @@ def build_sam3_video_model(
     return model
 
 
-def build_sam3_video_predictor(*model_args, gpus_to_use=None, **model_kwargs):
-    return Sam3VideoPredictorMultiGPU(
+def build_scsam3_video_predictor(*model_args, gpus_to_use=None, **model_kwargs):
+    return SCSam3VideoPredictorMultiGPU(
         *model_args, gpus_to_use=gpus_to_use, **model_kwargs
     )
