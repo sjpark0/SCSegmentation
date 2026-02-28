@@ -1,7 +1,7 @@
 import torch
-from build_scsam3 import build_scsam3_video_model
-#import build_sam2_video_predictor, build_sam2_video_predictor_spatial
-from SCSam3VideoPredictor import SCSam3VideoInferenceWithInstanceInteractivity
+from build_scsam3 import build_scsam3_video_model, build_scsam3_video_model_spatial
+from SCSam3VideoInference import SCSam3VideoInferenceWithInstanceInteractivity
+from SCSam3VideoInferenceSpatial import SCSam3VideoInferenceWithInstanceInteractivitySpatial
 
 import cv2
 import matplotlib.pyplot as plt
@@ -12,8 +12,8 @@ import os
 from itertools import chain
 class SCSam3Video:
     def __init__(self, device):
-        self.predictor = build_scsam3_video_model()
-        self.predictor_spatial = build_scsam3_video_model_spatial()
+        self.predictor = build_scsam3_video_model(device=device)
+        self.predictor_spatial = build_scsam3_video_model_spatial(device=device)
         self.masks = {}
         self.masks_spatial = {}
         self.obj_ids = None
@@ -79,7 +79,7 @@ class SCSam3Video:
         self.input_points[obj_id].append(point)
         self.input_labels[obj_id].append(label)
 
-        _, out_obj_ids, masks = self.predictor_spatial.add_new_points_or_box(
+        _, out_obj_ids, masks = self.predictor_spatial.add_new_points(
             inference_state=self.inference_state_spatial,
             frame_idx=refCamID,
             obj_id=obj_id,
