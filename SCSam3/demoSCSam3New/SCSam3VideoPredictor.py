@@ -21,7 +21,7 @@ from sam3.logger import get_logger
 logger = get_logger(__name__)
 
 
-class SCSam3VideoPredictorSpatial:
+class SCSam3VideoPredictor:
     # a global dictionary that holds all inference states for this model (key is session_id)
     _ALL_INFERENCE_STATES = {}
 
@@ -39,10 +39,10 @@ class SCSam3VideoPredictorSpatial:
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
-        from build_scsam3 import build_scsam3_video_model_spatial
+        from build_scsam3 import build_scsam3_video_model
 
         self.model = (
-            build_scsam3_video_model_spatial(
+            build_scsam3_video_model(
                 checkpoint_path=checkpoint_path,
                 bpe_path=bpe_path,
                 has_presence_token=has_presence_token,
@@ -61,7 +61,7 @@ class SCSam3VideoPredictorSpatial:
         request_type = request["type"]
         if request_type == "start_session":
             return self.start_session(
-                original_states=request["original_state"],
+                resource_path=request["resource_path"],
                 session_id=request.get("session_id", None),
             )
         elif request_type == "add_prompt":
@@ -102,7 +102,7 @@ class SCSam3VideoPredictorSpatial:
         else:
             raise RuntimeError(f"invalid request type: {request_type}")
 
-    def start_session(self, original_states, session_id=None):
+    def start_session(self, resource_path, session_id=None):
         """
         Start a new inference session on an image or a video. Here `resource_path`
         can be either a path to an image file (for image inference) or an MP4 file
@@ -114,7 +114,9 @@ class SCSam3VideoPredictorSpatial:
         """
         # get an initial inference_state from the model
         inference_state = self.model.init_state(
-            original_states=original_states,
+            resource_path=resource_path,
+            async_loading_frames=self.async_loading_frames,
+            video_loader_type=self.video_loader_type,
         )
         if not session_id:
             session_id = str(uuid.uuid4())
@@ -288,7 +290,7 @@ class SCSam3VideoPredictorSpatial:
         self._ALL_INFERENCE_STATES.clear()
 
 
-class SCSam3VideoPredictorMultiGPUSpatial(SCSam3VideoPredictorSpatial):
+class SCSam3VideoPredictorMultiGPU(SCSam3VideoPredictor):
     def __init__(self, *model_args, gpus_to_use=None, **model_kwargs):
         if gpus_to_use is None:
             # if not specified, use only the current GPU by default
@@ -385,7 +387,7 @@ class SCSam3VideoPredictorMultiGPUSpatial(SCSam3VideoPredictorSpatial):
             os.environ["IS_MAIN_PROCESS"] = "0"  # mark this as a worker process
             os.environ["RANK"] = f"{rank}"
             worker_process = mp_ctx.Process(
-                target=SCSam3VideoPredictorMultiGPUSpatial._worker_process_command_loop,
+                target=Sam3VideoPredictorMultiGPU._worker_process_command_loop,
                 args=(
                     rank,
                     world_size,
@@ -464,7 +466,7 @@ class SCSam3VideoPredictorMultiGPUSpatial(SCSam3VideoPredictorSpatial):
         assert int(os.environ["RANK"]) == rank
         assert int(os.environ["WORLD_SIZE"]) == world_size
         # load the model in this worker process
-        predictor = SCSam3VideoPredictorMultiGPUSpatial(
+        predictor = Sam3VideoPredictorMultiGPU(
             *model_args, gpus_to_use=gpus_to_use, **model_kwargs
         )
         logger.info(f"started worker {rank=} with {world_size=}")

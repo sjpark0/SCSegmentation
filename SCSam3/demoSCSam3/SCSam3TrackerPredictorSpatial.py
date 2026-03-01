@@ -57,7 +57,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
     def init_state(
         self,
         original_states,
-        perms,       
         start_frame = 0, 
         
         video_height=None,
@@ -70,7 +69,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         async_loading_frames=False,
     ):
         """Initialize a inference state."""        
-        numImage = len(perms)
+        numImage = len(original_states)
         images = torch.zeros(numImage, 3, self.image_size, self.image_size, dtype=torch.float32)
         cpu_images = [None] * numImage
         for i in range(numImage):

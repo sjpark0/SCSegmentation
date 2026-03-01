@@ -8,293 +8,11 @@ from collections import OrderedDict
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores
+from sam3.model.utils.sam2_utils import load_video_frames
 from tqdm.auto import tqdm
-import cv2
-import os
-import numpy as np
-
-def _load_img_as_tensor(image, image_size):
-    img_np = cv2.resize(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), (image_size, image_size))
-    if img_np.dtype == np.uint8:  # np.uint8 is expected for JPEG images
-        img_np = img_np / 255.0
-    
-    img = torch.from_numpy(img_np).permute(2, 0, 1)
-    video_height, video_width, _ = image.shape  # the original video size
-    return img, video_height, video_width, np.array(image)
-
-def _load_img_as_tensor_file(image, image_size):
-    img_np = cv2.resize(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), (image_size, image_size))
-    if img_np.dtype == np.uint8:  # np.uint8 is expected for JPEG images
-        img_np = img_np / 255.0
-    
-    img = torch.from_numpy(img_np).permute(2, 0, 1)
-    video_height, video_width, _ = image.shape  # the original video size
-    return img, video_height, video_width, np.array(image)
 
 
-def load_video_frames(
-        video_path,
-        image_size,
-        offload_video_to_cpu,
-        img_mean=(0.485, 0.456, 0.406),
-        img_std=(0.229, 0.224, 0.225),
-        async_loading_frames=False,
-        compute_device=torch.device("cuda"),
-    ):
-        """
-        Load the video frames from video_path. The frames are resized to image_size as in
-        the model and are loaded to GPU if offload_video_to_cpu=False. This is used by the demo.
-        """
-        is_bytes = isinstance(video_path, bytes)
-        is_str = isinstance(video_path, str)
-        is_mp4_path = is_str and os.path.splitext(video_path)[-1] in [".mp4", ".MP4", ".mov", ".MOV"]
-        
-        if is_bytes or is_mp4_path:
-            return load_video_frames_from_video_file(
-                video_path=video_path,
-                image_size=image_size,
-                offload_video_to_cpu=offload_video_to_cpu,
-                img_mean=img_mean,
-                img_std=img_std,
-                compute_device=compute_device,
-            )
-        elif is_str and os.path.isdir(video_path):
-            return load_video_frames_from_jpg_images(
-                video_path=video_path,
-                image_size=image_size,
-                offload_video_to_cpu=offload_video_to_cpu,
-                img_mean=img_mean,
-                img_std=img_std,
-                async_loading_frames=async_loading_frames,
-                compute_device=compute_device,
-            )
-        else:
-            raise NotImplementedError(
-                "Only MP4 video and JPEG folder are supported at this moment"
-            )
-
-
-def load_video_frames_from_video_file(
-    video_path,
-    image_size,
-    offload_video_to_cpu,
-    img_mean=(0.485, 0.456, 0.406),
-    img_std=(0.229, 0.224, 0.225),
-    compute_device=torch.device("cuda"),
-):
-    """Load the video frames from a video file."""
-    img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None]
-    img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None]
-
-    lazy_images = AsyncVideoFrameLoaderFile(
-                video_path,
-                image_size,
-                offload_video_to_cpu,
-                img_mean,
-                img_std,
-                compute_device,
-    )
-    return lazy_images, lazy_images.video_height, lazy_images.video_width
-  
-def load_video_frames_from_jpg_images(
-        video_path,
-        image_size,
-        offload_video_to_cpu,
-        img_mean=(0.485, 0.456, 0.406),
-        img_std=(0.229, 0.224, 0.225),
-        async_loading_frames=False,
-        compute_device=torch.device("cuda"),
-    ):
-        """
-        Load the video frames from a directory of JPEG files ("<frame_index>.jpg" format).
-
-        The frames are resized to image_size x image_size and are loaded to GPU if
-        `offload_video_to_cpu` is `False` and to CPU if `offload_video_to_cpu` is `True`.
-
-        You can load a frame asynchronously by setting `async_loading_frames` to `True`.
-        """
-        if isinstance(video_path, str) and os.path.isdir(video_path):
-            jpg_folder = video_path
-        else:
-            raise NotImplementedError(
-                "Only JPEG frames are supported at this moment. For video files, you may use "
-                "ffmpeg (https://ffmpeg.org/) to extract frames into a folder of JPEG files, such as \n"
-                "```\n"
-                "ffmpeg -i <your_video>.mp4 -q:v 2 -start_number 0 <output_dir>/'%05d.jpg'\n"
-                "```\n"
-                "where `-q:v` generates high-quality JPEG frames and `-start_number 0` asks "
-                "ffmpeg to start the JPEG file from 00000.jpg."
-            )
-
-        frame_names = [
-            p
-            for p in os.listdir(jpg_folder)
-            if os.path.splitext(p)[-1] in [".jpg", ".jpeg", ".JPG", ".JPEG"]
-        ]
-        frame_names.sort(key=lambda p: int(os.path.splitext(p)[0]))
-        num_frames = len(frame_names)
-        if num_frames == 0:
-            raise RuntimeError(f"no images found in {jpg_folder}")
-        img_paths = [os.path.join(jpg_folder, frame_name) for frame_name in frame_names]
-        img_mean = torch.tensor(img_mean, dtype=torch.float32)[:, None, None]
-        img_std = torch.tensor(img_std, dtype=torch.float32)[:, None, None]
-
-        if async_loading_frames:
-            lazy_images = AsyncVideoFrameLoader(
-                img_paths,
-                image_size,
-                offload_video_to_cpu,
-                img_mean,
-                img_std,
-                compute_device,
-            )
-            return lazy_images, lazy_images.video_height, lazy_images.video_width#, lazy_images.cpu_images
-
-        images = torch.zeros(num_frames, 3, image_size, image_size, dtype=torch.float32)
-        cpu_images = [None] * num_frames
-        res_img = [None] * num_frames
-
-        for n, img_path in enumerate(tqdm(img_paths, desc="frame loading (JPEG)")):
-            images[n], video_height, video_width, cpu_images[n] = _load_img_as_tensor(cv2.imread(img_path), image_size)
-            res_img[n] = images[n], cpu_images[n]
-
-        if not offload_video_to_cpu:
-            images = images.to(compute_device)
-            img_mean = img_mean.to(compute_device)
-            img_std = img_std.to(compute_device)
-        # normalize by mean and std
-        images -= img_mean
-        images /= img_std
-        return res_img, video_height, video_width
-
-class AsyncVideoFrameLoader:
-    """
-    A list of video frames to be load asynchronously without blocking session start.
-    """
-
-    def __init__(
-        self,
-        img_paths,
-        image_size,
-        offload_video_to_cpu,
-        img_mean,
-        img_std,
-        compute_device,
-    ):
-        self.img_paths = img_paths
-        self.image_size = image_size
-        self.offload_video_to_cpu = offload_video_to_cpu
-        self.img_mean = img_mean
-        self.img_std = img_std
-        self.frame_idx = -1        
-        # items in `self.images` will be loaded asynchronously
-        self.image = None
-        self.cpu_image = None
-        
-        # catch and raise any exceptions in the async loading thread
-        self.exception = None
-        # video_height and video_width be filled when loading the first image
-        self.video_height = None
-        self.video_width = None
-        self.compute_device = compute_device
-
-        # load the first frame to fill video_height and video_width and also
-        # to cache it (since it's most likely where the user will click)
-        self.__getitem__(0)        
-        
-    def __getitem__(self, index):
-        if self.exception is not None:
-            raise RuntimeError("Failure in frame loading thread") from self.exception
-
-        if self.frame_idx == index:
-            return self.image, self.cpu_image
-        
-        self.frame_idx = index
-        img, video_height, video_width, cpu_image = _load_img_as_tensor(
-            cv2.imread(self.img_paths[index]), self.image_size
-        )
-        self.video_height = video_height
-        self.video_width = video_width
-        # normalize by mean and std
-        img -= self.img_mean
-        img /= self.img_std
-        if not self.offload_video_to_cpu:
-            img = img.to(self.compute_device, non_blocking=True)
-        self.image = img
-        self.cpu_image = cpu_image
-        return img, cpu_image
-
-    def __len__(self):
-        return len(self.img_paths)
-    
-
-class AsyncVideoFrameLoaderFile:
-    """
-    A list of video frames to be load asynchronously without blocking session start.
-    """
-
-    def __init__(
-        self,
-        video_path,
-        image_size,
-        offload_video_to_cpu,
-        img_mean,
-        img_std,
-        compute_device,
-    ):
-        self.img_paths = video_path
-        self.cap = cv2.VideoCapture(video_path)
-        self.frame_idx = -1
-        self.image_size = image_size
-        self.offload_video_to_cpu = offload_video_to_cpu
-        self.img_mean = img_mean
-        self.img_std = img_std
-        # items in `self.images` will be loaded asynchronously
-        self.num_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.image = None
-        self.cpu_image = None
-
-        # catch and raise any exceptions in the async loading thread
-        self.exception = None
-        # video_height and video_width be filled when loading the first image
-        self.video_height = None
-        self.video_width = None
-        self.compute_device = compute_device
-
-        # load the first frame to fill video_height and video_width and also
-        # to cache it (since it's most likely where the user will click)
-        self.__getitem__(0)
-        
-    def __getitem__(self, index):
-        if self.exception is not None:
-            raise RuntimeError("Failure in frame loading thread") from self.exception
-
-        if self.frame_idx == index:
-            return self.image, self.cpu_image
-        
-        self.frame_idx = index
-        ret, capture_img = self.cap.read()
-        img, video_height, video_width, cpu_image = _load_img_as_tensor_file(
-            capture_img, self.image_size
-        )
-        self.video_height = video_height
-        self.video_width = video_width
-        # normalize by mean and std
-        img -= self.img_mean
-        img /= self.img_std
-        if not self.offload_video_to_cpu:
-            img = img.to(self.compute_device, non_blocking=True)
-        
-        self.image = img
-        self.cpu_image = cpu_image
-
-        return img, cpu_image
-
-    def __len__(self):
-        return self.num_frames
-
-
-class SCSam3TrackerPredictor(Sam3TrackerBase):
+class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
     """
     The demo class that extends the `Sam3TrackerBase` to handle user interactions
     and manage inference states, with support for multi-object tracking.
@@ -338,6 +56,9 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
     @torch.inference_mode()
     def init_state(
         self,
+        original_states,
+        start_frame = 0, 
+        
         video_height=None,
         video_width=None,
         num_frames=None,
@@ -347,8 +68,16 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         offload_state_to_cpu=False,
         async_loading_frames=False,
     ):
-        """Initialize a inference state."""
+        """Initialize a inference state."""        
+        numImage = len(original_states)
+        images = torch.zeros(numImage, 3, self.image_size, self.image_size, dtype=torch.float32)
+        for i in range(numImage):
+            images[i] = original_states[i]["images"][start_frame]
+
         inference_state = {}
+        inference_state["images"] = images
+        inference_state["num_frames"] = len(images)
+        
         # whether to offload the video frames to CPU memory
         # turning on this option saves the GPU memory with only a very small overhead
         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
@@ -358,28 +87,16 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         # and from 24 to 21 when tracking two objects)
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
+        
+        inference_state["video_height"] = video_height
+        inference_state["video_width"] = video_width
+        
         if offload_state_to_cpu:
             inference_state["storage_device"] = torch.device("cpu")
         else:
             inference_state["storage_device"] = torch.device("cuda")
 
-        if video_path is not None:
-            images, video_height, video_width = load_video_frames(
-                video_path=video_path,
-                image_size=self.image_size,
-                offload_video_to_cpu=offload_video_to_cpu,
-                async_loading_frames=async_loading_frames,
-                compute_device=inference_state["storage_device"],
-            )
-            inference_state["images"] = images
-            inference_state["num_frames"] = len(images)
-            inference_state["video_height"] = video_height
-            inference_state["video_width"] = video_width
-        else:
-            # the original video height and width, used for resizing final output scores
-            inference_state["video_height"] = video_height
-            inference_state["video_width"] = video_width
-            inference_state["num_frames"] = num_frames
+        
         # inputs on each frame
         inference_state["point_inputs_per_obj"] = {}
         inference_state["mask_inputs_per_obj"] = {}
@@ -416,7 +133,6 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         inference_state["frames_already_tracked"] = {}
         self.clear_all_points_in_video(inference_state)
         return inference_state
-
     @torch.inference_mode()
     def reset_state(self, inference_state):
         """Remove all input points or mask in all frames throughout the video."""
@@ -429,7 +145,7 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         inference_state["mask_inputs_per_obj"].clear()
         inference_state["output_dict_per_obj"].clear()
         inference_state["temp_output_dict_per_obj"].clear()
-
+        
     def _reset_tracking_results(self, inference_state):
         """Reset all tracking inputs and results across the videos."""
         for v in inference_state["point_inputs_per_obj"].values():
@@ -500,7 +216,7 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         normalize_coords=True,
         box=None,
     ):
-        """Add new points to a frame."""
+        """Add new points to a frame."""        
         obj_idx = self._obj_id_to_idx(inference_state, obj_id)
         point_inputs_per_frame = inference_state["point_inputs_per_obj"][obj_idx]
         mask_inputs_per_frame = inference_state["mask_inputs_per_obj"][obj_idx]
@@ -1108,6 +824,7 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         run_mem_encoder=True,
         propagate_preflight=False,
     ):
+        
         """Propagate the input points across frames to track in the entire video."""
         if propagate_preflight:
             self.propagate_in_video_preflight(inference_state)
@@ -1332,10 +1049,7 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
                 )
             else:
                 # Cache miss -- we will run inference on a single image
-                #image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
-
-                img, _ = inference_state["images"][frame_idx]
-                image = img.cuda().float().unsqueeze(0)
+                image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
                 backbone_out = self.forward_image(image)
                 # Cache the most recent frame's feature (for repeated interactions with
                 # a frame; we can use an LRU cache for more frames in the future).

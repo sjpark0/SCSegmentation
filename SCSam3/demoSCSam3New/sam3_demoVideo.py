@@ -1,7 +1,7 @@
 import torch
 from misc import *
 from pose import *
-from SCSam3Video1 import SCSam3Video1
+from SCSam3Video import SCSam3Video
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +14,7 @@ elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
 else:
     device = "cpu"
 
-sc = SCSam3Video1(device)
+sc = SCSam3Video(device)
 #perms = [0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 8, 9, 10, 11, 12, 13, 14, 15]
 perms = [0, 1]
          

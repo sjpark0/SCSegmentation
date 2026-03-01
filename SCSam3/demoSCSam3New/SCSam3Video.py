@@ -12,7 +12,7 @@ import time
 from misc import *
 import os
 from itertools import chain
-class SCSam3Video1:
+class SCSam3Video:
     def __init__(self, device):
         gpus_to_use = range(torch.cuda.device_count())
         self.predictor = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)

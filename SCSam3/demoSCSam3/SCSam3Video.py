@@ -75,7 +75,7 @@ class SCSam3Video:
             self.inference_state.append(state)
             self.images.append(None)    
 
-        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms)
+        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True)
         self.predictor_spatial.reset_state(self.inference_state_spatial)
         
 
