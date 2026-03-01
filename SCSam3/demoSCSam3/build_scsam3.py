@@ -35,11 +35,15 @@ from sam3.model.necks import Sam3DualViTDetNeck
 from sam3.model.position_encoding import PositionEmbeddingSine
 from sam3.model.sam1_task_predictor import SAM3InteractiveImagePredictor
 from sam3.model.sam3_image import Sam3Image, Sam3ImageOnVideoMultiGPU
-from sam3.model.sam3_tracking_predictor import Sam3TrackerPredictor
+
+from SCSam3TrackerPredictor import SCSam3TrackerPredictor
+from SCSam3TrackerPredictorSpatial import SCSam3TrackerPredictorSpatial
+
 from SCSam3VideoInference import SCSam3VideoInferenceWithInstanceInteractivity
 from SCSam3VideoInferenceSpatial import SCSam3VideoInferenceWithInstanceInteractivitySpatial
 
 from SCSam3VideoPredictor import SCSam3VideoPredictorMultiGPU
+from SCSam3VideoPredictorSpatial import SCSam3VideoPredictorMultiGPUSpatial
 
 from sam3.model.text_encoder_ve import VETextEncoder
 from sam3.model.tokenizer_ve import SimpleTokenizer
@@ -436,7 +440,7 @@ def _create_tracker_transformer():
 
 def build_tracker(
     apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None
-) -> Sam3TrackerPredictor:
+) -> SCSam3TrackerPredictor:
     """
     Build the SAM3 Tracker module for video tracking.
 
@@ -452,7 +456,7 @@ def build_tracker(
         vision_backbone = _create_vision_backbone(compile_mode=compile_mode)
         backbone = SAM3VLBackbone(scalp=1, visual=vision_backbone, text=None)
     # Create the Tracker module
-    model = Sam3TrackerPredictor(
+    model = SCSam3TrackerPredictor(
         image_size=1008,
         num_maskmem=7,
         backbone=backbone,
@@ -488,6 +492,59 @@ def build_tracker(
 
     return model
 
+def build_tracker_spatial(
+    apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None
+) -> SCSam3TrackerPredictorSpatial:
+    """
+    Build the SAM3 Tracker module for video tracking.
+
+    Returns:
+        Sam3TrackerPredictor: Wrapped SAM3 Tracker module
+    """
+
+    # Create model components
+    maskmem_backbone = _create_tracker_maskmem_backbone()
+    transformer = _create_tracker_transformer()
+    backbone = None
+    if with_backbone:
+        vision_backbone = _create_vision_backbone(compile_mode=compile_mode)
+        backbone = SAM3VLBackbone(scalp=1, visual=vision_backbone, text=None)
+    # Create the Tracker module
+    model = SCSam3TrackerPredictorSpatial(
+        image_size=1008,
+        num_maskmem=7,
+        backbone=backbone,
+        backbone_stride=14,
+        transformer=transformer,
+        maskmem_backbone=maskmem_backbone,
+        # SAM parameters
+        multimask_output_in_sam=True,
+        # Evaluation
+        forward_backbone_per_frame_for_eval=True,
+        trim_past_non_cond_mem_for_eval=False,
+        # Multimask
+        multimask_output_for_tracking=True,
+        multimask_min_pt_num=0,
+        multimask_max_pt_num=1,
+        # Additional settings
+        always_start_from_first_ann_frame=False,
+        # Mask overlap
+        non_overlap_masks_for_mem_enc=False,
+        non_overlap_masks_for_output=False,
+        max_cond_frames_in_attn=4,
+        offload_output_to_cpu_for_eval=False,
+        # SAM decoder settings
+        sam_mask_decoder_extra_args={
+            "dynamic_multimask_via_stability": True,
+            "dynamic_multimask_stability_delta": 0.05,
+            "dynamic_multimask_stability_thresh": 0.98,
+        },
+        clear_non_cond_mem_around_input=True,
+        fill_hole_area=0,
+        use_memory_selection=apply_temporal_disambiguation,
+    )
+
+    return model
 
 def _create_text_encoder(bpe_path: str) -> VETextEncoder:
     """Create SAM3 text encoder."""
@@ -820,7 +877,7 @@ def build_scsam3_video_model_spatial(
         )
 
     # Build Tracker module
-    tracker = build_tracker(apply_temporal_disambiguation=apply_temporal_disambiguation)
+    tracker = build_tracker_spatial(apply_temporal_disambiguation=apply_temporal_disambiguation)
 
     # Build Detector components
     visual_neck = _create_vision_backbone()
@@ -935,5 +992,9 @@ def build_scsam3_video_model_spatial(
 
 def build_scsam3_video_predictor(*model_args, gpus_to_use=None, **model_kwargs):
     return SCSam3VideoPredictorMultiGPU(
+        *model_args, gpus_to_use=gpus_to_use, **model_kwargs
+    )
+def build_scsam3_video_predictor_spatial(*model_args, gpus_to_use=None, **model_kwargs):
+    return SCSam3VideoPredictorMultiGPUSpatial(
         *model_args, gpus_to_use=gpus_to_use, **model_kwargs
     )

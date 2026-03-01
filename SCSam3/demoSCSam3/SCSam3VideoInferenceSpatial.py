@@ -32,7 +32,942 @@ import os
 
 logger = get_logger(__name__)
 
-class SCSam3VideoInferenceWithInstanceInteractivitySpatial(Sam3VideoInferenceWithInstanceInteractivity):
+class SCSam3VideoInferenceSpatial(Sam3VideoBase):
+    TEXT_ID_FOR_TEXT = 0
+    TEXT_ID_FOR_VISUAL = 1
+
+    def __init__(
+        self,
+        image_size=1008,
+        image_mean=(0.5, 0.5, 0.5),
+        image_std=(0.5, 0.5, 0.5),
+        compile_model=False,
+        **kwargs,
+    ):
+        """
+        hotstart_delay: int, the delay (in #frames) before the model starts to yield output, 0 to disable hotstart delay.
+        hotstart_unmatch_thresh: int, remove the object if it has this many unmatched frames within its hotstart_delay period.
+            If `hotstart_delay` is set to 0, this parameter is ignored.
+        hotstart_dup_thresh: int, remove the object if it has overlapped with another object this many frames within its hotstart_delay period.
+        """
+        super().__init__(**kwargs)
+        self.image_size = image_size
+        self.image_mean = image_mean
+        self.image_std = image_std
+        self.compile_model = compile_model
+
+    @torch.inference_mode()
+    def init_state(
+        self,
+        original_states,
+        perms,
+    ):
+        """Initialize an inference state from `resource_path` (an image or a video)."""
+        numImage = len(original_states)
+        images = torch.zeros(numImage, 3, self.image_size, self.image_size, dtype=torch.float32)
+        cpu_images = [None] * numImage
+        for i in range(numImage):
+            images[i] = original_states[i]["images"][0]
+            cpu_images[i] = original_states[i]["cpu_images"][0]
+        
+        inference_state = {}
+        inference_state["original_states"] = original_states
+        inference_state["perms"] = perms
+        inference_state["images"] = images
+        inference_state["cpu_images"] = cpu_images
+        inference_state["image_size"] = self.image_size
+        inference_state["num_frames"] = len(images)
+        # the original video height and width, used for resizing final output scores
+        inference_state["orig_height"] = original_states[i]["orig_height"]
+        inference_state["orig_width"] = original_states[i]["orig_width"]
+        # values that don't change across frames (so we only need to hold one copy of them)
+        inference_state["constants"] = {}
+        # inputs on each frame
+        self._construct_initial_input_batch(inference_state, images)
+        # initialize extra states
+        inference_state["tracker_inference_states"] = []
+        inference_state["tracker_metadata"] = {}
+        inference_state["feature_cache"] = {}
+        inference_state["cached_frame_outputs"] = {}
+        inference_state["action_history"] = []  # for logging user actions
+        inference_state["is_image_only"] = False
+        return inference_state
+
+    @torch.inference_mode()
+    def reset_state(self, inference_state):
+        """Revert `inference_state` to what it was right after initialization."""
+        inference_state["input_batch"].find_text_batch[0] = "<text placeholder>"
+        inference_state["text_prompt"] = None
+        for t in range(inference_state["num_frames"]):
+            inference_state["input_batch"].find_inputs[t].text_ids[...] = 0
+            # constructing an output list in inference state (we start with an empty list)
+            inference_state["previous_stages_out"][t] = None
+            inference_state["per_frame_raw_point_input"][t] = None
+            inference_state["per_frame_raw_box_input"][t] = None
+            inference_state["per_frame_visual_prompt"][t] = None
+            inference_state["per_frame_geometric_prompt"][t] = None
+            inference_state["per_frame_cur_step"][t] = 0
+
+        inference_state["visual_prompt_embed"] = None
+        inference_state["visual_prompt_mask"] = None
+        inference_state["tracker_inference_states"].clear()
+        inference_state["tracker_metadata"].clear()
+        inference_state["feature_cache"].clear()
+        inference_state["cached_frame_outputs"].clear()
+        inference_state["action_history"].clear()  # for logging user actions
+
+    def _construct_initial_input_batch(self, inference_state, images):
+        """Construct an initial `BatchedDatapoint` instance as input."""
+        # 1) img_batch
+        num_frames = len(images)
+        device = self.device
+
+        # 2) find_text_batch
+        # "<text placeholder>" will be replaced by the actual text prompt when adding prompts
+        find_text_batch = ["<text placeholder>", "visual"]
+
+        # 3) find_inputs
+        input_box_embedding_dim = 258  # historical default
+        input_points_embedding_dim = 257  # historical default
+        stages = [
+            FindStage(
+                img_ids=[stage_id],
+                text_ids=[0],
+                input_boxes=[torch.zeros(input_box_embedding_dim)],
+                input_boxes_mask=[torch.empty(0, dtype=torch.bool)],
+                input_boxes_label=[torch.empty(0, dtype=torch.long)],
+                input_points=[torch.empty(0, input_points_embedding_dim)],
+                input_points_mask=[torch.empty(0)],
+                object_ids=[],
+            )
+            for stage_id in range(num_frames)
+        ]
+        for i in range(len(stages)):
+            stages[i] = convert_my_tensors(stages[i])
+
+        # construct the final `BatchedDatapoint` and cast to GPU
+        input_batch = BatchedDatapoint(
+            img_batch=images,
+            find_text_batch=find_text_batch,
+            find_inputs=stages,
+            find_targets=[None] * num_frames,
+            find_metadatas=[None] * num_frames,
+        )
+        input_batch = copy_data_to_device(input_batch, device, non_blocking=True)
+        inference_state["input_batch"] = input_batch
+
+        # construct the placeholder interactive prompts and tracking queries
+        bs = 1
+        inference_state["constants"]["empty_geometric_prompt"] = Prompt(
+            box_embeddings=torch.zeros(0, bs, 4, device=device),
+            box_mask=torch.zeros(bs, 0, device=device, dtype=torch.bool),
+            box_labels=torch.zeros(0, bs, device=device, dtype=torch.long),
+            point_embeddings=torch.zeros(0, bs, 2, device=device),
+            point_mask=torch.zeros(bs, 0, device=device, dtype=torch.bool),
+            point_labels=torch.zeros(0, bs, device=device, dtype=torch.long),
+        )
+
+        # constructing an output list in inference state (we start with an empty list)
+        inference_state["previous_stages_out"] = [None] * num_frames
+        inference_state["text_prompt"] = None
+        inference_state["per_frame_raw_point_input"] = [None] * num_frames
+        inference_state["per_frame_raw_box_input"] = [None] * num_frames
+        inference_state["per_frame_visual_prompt"] = [None] * num_frames
+        inference_state["per_frame_geometric_prompt"] = [None] * num_frames
+        inference_state["per_frame_cur_step"] = [0] * num_frames
+
+        # placeholders for cached outputs
+        # (note: currently, a single visual prompt embedding is shared for all frames)
+        inference_state["visual_prompt_embed"] = None
+        inference_state["visual_prompt_mask"] = None
+
+    def _get_visual_prompt(self, inference_state, frame_idx, boxes_cxcywh, box_labels):
+        """
+        Handle the case of visual prompt. Currently, in the inference API we do not
+        explicitly distinguish between initial box as visual prompt vs subsequent boxes
+        or boxes after inference for refinement.
+        """
+        # If the frame hasn't had any inference results before (prompting or propagation),
+        # we treat the first added box prompt as a visual prompt; otherwise, we treat
+        # the first box just as a refinement prompt.
+        is_new_visual_prompt = (
+            inference_state["per_frame_visual_prompt"][frame_idx] is None
+            and inference_state["previous_stages_out"][frame_idx] is None
+        )
+        if is_new_visual_prompt:
+            if boxes_cxcywh.size(0) != 1:
+                raise RuntimeError(
+                    "visual prompts (box as an initial prompt) should only have one box, "
+                    f"but got {boxes_cxcywh.shape=}"
+                )
+            if not box_labels.item():
+                logging.warning("A negative box is added as a visual prompt.")
+            # take the first box prompt as a visual prompt
+            device = self.device
+            new_visual_prompt = Prompt(
+                box_embeddings=boxes_cxcywh[None, 0:1, :].to(device),  # (seq, bs, 4)
+                box_mask=None,
+                box_labels=box_labels[None, 0:1].to(device),  # (seq, bs)
+                point_embeddings=None,
+                point_mask=None,
+                point_labels=None,
+            )
+            inference_state["per_frame_visual_prompt"][frame_idx] = new_visual_prompt
+        else:
+            new_visual_prompt = None
+
+        # `boxes_cxcywh` and `box_labels` contains all the raw box inputs added so far
+        # strip any visual prompt from the input boxes (for geometric prompt encoding)
+        if inference_state["per_frame_visual_prompt"][frame_idx] is not None:
+            boxes_cxcywh = boxes_cxcywh[1:]
+            box_labels = box_labels[1:]
+
+        return boxes_cxcywh, box_labels, new_visual_prompt
+
+    def _get_processing_order(
+        self, inference_state, start_frame_idx, max_frame_num_to_track, reverse
+    ):
+        num_frames = inference_state["num_frames"]
+        previous_stages_out = inference_state["previous_stages_out"]
+        if all(out is None for out in previous_stages_out) and start_frame_idx is None:
+            raise RuntimeError(
+                "No prompts are received on any frames. Please add prompt on at least one frame before propagation."
+            )
+        # set start index, end index, and processing order
+        if start_frame_idx is None:
+            # default: start from the earliest frame with input points
+            start_frame_idx = min(
+                t for t, out in enumerate(previous_stages_out) if out is not None
+            )
+        if max_frame_num_to_track is None:
+            # default: track all the frames in the video
+            max_frame_num_to_track = num_frames
+        if reverse:
+            end_frame_idx = start_frame_idx - max_frame_num_to_track
+            end_frame_idx = max(end_frame_idx, 0)
+            processing_order = range(start_frame_idx - 1, end_frame_idx - 1, -1)
+        else:
+            end_frame_idx = start_frame_idx + max_frame_num_to_track
+            end_frame_idx = min(end_frame_idx, num_frames - 1)
+            processing_order = range(start_frame_idx, end_frame_idx + 1)
+        return processing_order, end_frame_idx
+
+    @torch.inference_mode()
+    def propagate_in_video(
+        self,
+        inference_state,
+        start_frame_idx=None,
+        max_frame_num_to_track=None,
+        reverse=False,
+    ):
+        """
+        Propagate the prompts to get grounding results for the entire video. This method
+        is a generator and yields inference outputs for all frames in the range specified
+        by `start_frame_idx`, `max_frame_num_to_track`, and `reverse`.
+        """
+        # compile the model (it's a no-op if the model is already compiled)
+        # note that it's intentionally added to `self.propagate_in_video`, so that the first
+        # `self.add_prompt` call will be done in eager mode to fill in the decoder buffers
+        # such as positional encoding cache)
+        self._compile_model()
+
+        processing_order, end_frame_idx = self._get_processing_order(
+            inference_state,
+            start_frame_idx,
+            max_frame_num_to_track,
+            reverse=reverse,
+        )
+
+        # Store max_frame_num_to_track in feature_cache for downstream methods
+        inference_state["feature_cache"]["tracking_bounds"] = {
+            "max_frame_num_to_track": max_frame_num_to_track,
+            "propagate_in_video_start_frame_idx": start_frame_idx,
+        }
+
+        hotstart_buffer = []
+        hotstart_removed_obj_ids = set()
+        # when deciding whether to output a masklet on `yield_frame_idx`, we check whether the object is confirmed
+        # in a future frame (`unconfirmed_frame_delay` frames after the current frame). For example, if we require
+        # an object to be detected in 3 consecutive frames to be confirmed, then we look 2 frames in the future --
+        # e.g., we output an object on frame 4 only if it becomes confirmed on frame 6.
+        unconfirmed_status_delay = self.masklet_confirmation_consecutive_det_thresh - 1
+        unconfirmed_obj_ids_per_frame = {}  # frame_idx -> hidden_obj_ids
+        for frame_idx in tqdm(
+            processing_order, desc="propagate_in_video", disable=self.rank > 0
+        ):
+            out = self._run_single_frame_inference(inference_state, frame_idx, reverse)
+
+            if self.hotstart_delay > 0:
+                # accumulate the outputs for the first `hotstart_delay` frames
+                hotstart_buffer.append([frame_idx, out])
+                # update the object IDs removed by hotstart so that we don't output them
+                if self.rank == 0:
+                    hotstart_removed_obj_ids.update(out["removed_obj_ids"])
+                    unconfirmed_obj_ids = out.get("unconfirmed_obj_ids", None)
+                    if unconfirmed_obj_ids is not None:
+                        unconfirmed_obj_ids_per_frame[frame_idx] = unconfirmed_obj_ids
+
+                if frame_idx == end_frame_idx:
+                    # we reached the end of propagation -- yield all frames in the buffer
+                    yield_list = hotstart_buffer
+                    hotstart_buffer = []
+                elif len(hotstart_buffer) >= self.hotstart_delay:
+                    # we have enough frames -- yield and remove the first (oldest) frame from the buffer
+                    yield_list = hotstart_buffer[:1]
+                    hotstart_buffer = hotstart_buffer[1:]
+                else:
+                    # not enough frames yet -- skip yielding
+                    yield_list = []
+            else:
+                yield_list = [(frame_idx, out)]  # output the current frame
+
+            for yield_frame_idx, yield_out in yield_list:
+                # post-process the output and yield it
+                if self.rank == 0:
+                    suppressed_obj_ids = yield_out["suppressed_obj_ids"]
+                    unconfirmed_status_frame_idx = (
+                        yield_frame_idx + unconfirmed_status_delay
+                        if not reverse
+                        else yield_frame_idx - unconfirmed_status_delay
+                    )
+
+                    # Clamp the frame index to stay within video bounds
+                    num_frames = inference_state["num_frames"]
+                    unconfirmed_status_frame_idx = max(
+                        0, min(unconfirmed_status_frame_idx, num_frames - 1)
+                    )
+
+                    unconfirmed_obj_ids = unconfirmed_obj_ids_per_frame.get(
+                        unconfirmed_status_frame_idx, None
+                    )
+                    postprocessed_out = self._postprocess_output(
+                        inference_state,
+                        yield_out,
+                        hotstart_removed_obj_ids,
+                        suppressed_obj_ids,
+                        unconfirmed_obj_ids,
+                    )
+
+                    self._cache_frame_outputs(
+                        inference_state,
+                        yield_frame_idx,
+                        yield_out["obj_id_to_mask"],
+                        suppressed_obj_ids=suppressed_obj_ids,
+                        removed_obj_ids=hotstart_removed_obj_ids,
+                        unconfirmed_obj_ids=unconfirmed_obj_ids,
+                    )
+                else:
+                    postprocessed_out = None  # no output on other GPUs
+                yield yield_frame_idx, postprocessed_out
+
+    def _run_single_frame_inference(self, inference_state, frame_idx, reverse):
+        """
+        Perform inference on a single frame and get its inference results. This would
+        also update `inference_state`.
+        """
+        # prepare inputs
+        input_batch = inference_state["input_batch"]
+        tracker_states_local = inference_state["tracker_inference_states"]
+        has_text_prompt = inference_state["text_prompt"] is not None
+        has_geometric_prompt = (
+            inference_state["per_frame_geometric_prompt"][frame_idx] is not None
+        )
+        # run inference for the current frame
+        (
+            obj_id_to_mask,
+            obj_id_to_score,
+            tracker_states_local_new,
+            tracker_metadata_new,
+            frame_stats,
+            _,
+        ) = self._det_track_one_frame(
+            frame_idx=frame_idx,
+            num_frames=inference_state["num_frames"],
+            reverse=reverse,
+            input_batch=input_batch,
+            geometric_prompt=(
+                inference_state["constants"]["empty_geometric_prompt"]
+                if not has_geometric_prompt
+                else inference_state["per_frame_geometric_prompt"][frame_idx]
+            ),
+            tracker_states_local=tracker_states_local,
+            tracker_metadata_prev=inference_state["tracker_metadata"],
+            feature_cache=inference_state["feature_cache"],
+            orig_vid_height=inference_state["orig_height"],
+            orig_vid_width=inference_state["orig_width"],
+            is_image_only=inference_state["is_image_only"],
+            allow_new_detections=has_text_prompt or has_geometric_prompt,
+        )
+        # update inference state
+        inference_state["tracker_inference_states"] = tracker_states_local_new
+        inference_state["tracker_metadata"] = tracker_metadata_new
+        # use a dummy string in "previous_stages_out" to indicate this frame has outputs
+        inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+
+        if self.rank == 0:
+            self._cache_frame_outputs(inference_state, frame_idx, obj_id_to_mask)
+
+        out = {
+            "obj_id_to_mask": obj_id_to_mask,
+            "obj_id_to_score": obj_id_to_score,  # first frame detection score
+            "obj_id_to_tracker_score": tracker_metadata_new[
+                "obj_id_to_tracker_score_frame_wise"
+            ][frame_idx],
+        }
+        # removed_obj_ids is only needed on rank 0 to handle hotstart delay buffer
+        if self.rank == 0:
+            rank0_metadata = tracker_metadata_new["rank0_metadata"]
+            removed_obj_ids = rank0_metadata["removed_obj_ids"]
+            out["removed_obj_ids"] = removed_obj_ids
+            out["suppressed_obj_ids"] = rank0_metadata["suppressed_obj_ids"][frame_idx]
+            out["frame_stats"] = frame_stats
+            if self.masklet_confirmation_enable:
+                status = rank0_metadata["masklet_confirmation"]["status"]
+                is_unconfirmed = status == MaskletConfirmationStatus.UNCONFIRMED.value
+                out["unconfirmed_obj_ids"] = tracker_metadata_new["obj_ids_all_gpu"][
+                    is_unconfirmed
+                ].tolist()
+            else:
+                out["unconfirmed_obj_ids"] = []
+
+        return out
+
+    def _postprocess_output(
+        self,
+        inference_state,
+        out,
+        removed_obj_ids=None,
+        suppressed_obj_ids=None,
+        unconfirmed_obj_ids=None,
+    ):
+        obj_id_to_mask = out["obj_id_to_mask"]  # low res masks
+        curr_obj_ids = sorted(obj_id_to_mask.keys())
+        H_video, W_video = inference_state["orig_height"], inference_state["orig_width"]
+        if len(curr_obj_ids) == 0:
+            out_obj_ids = torch.zeros(0, dtype=torch.int64)
+            out_probs = torch.zeros(0, dtype=torch.float32)
+            out_binary_masks = torch.zeros(0, H_video, W_video, dtype=torch.bool)
+            out_boxes_xywh = torch.zeros(0, 4, dtype=torch.float32)
+        else:
+            out_obj_ids = torch.tensor(curr_obj_ids, dtype=torch.int64)
+            out_probs = torch.tensor(
+                [out["obj_id_to_score"][obj_id] for obj_id in curr_obj_ids]
+            )
+            out_tracker_probs = torch.tensor(
+                [
+                    (
+                        out["obj_id_to_tracker_score"][obj_id]
+                        if obj_id in out["obj_id_to_tracker_score"]
+                        else 0.0
+                    )
+                    for obj_id in curr_obj_ids
+                ]
+            )
+            out_binary_masks = torch.cat(
+                [obj_id_to_mask[obj_id] for obj_id in curr_obj_ids], dim=0
+            )
+
+            assert out_binary_masks.dtype == torch.bool
+            keep = out_binary_masks.any(dim=(1, 2)).cpu()  # remove masks with 0 areas
+            # hide outputs for those object IDs in `obj_ids_to_hide`
+            obj_ids_to_hide = []
+            if suppressed_obj_ids is not None:
+                obj_ids_to_hide.extend(suppressed_obj_ids)
+            if removed_obj_ids is not None:
+                obj_ids_to_hide.extend(removed_obj_ids)
+            if unconfirmed_obj_ids is not None:
+                obj_ids_to_hide.extend(unconfirmed_obj_ids)
+            if len(obj_ids_to_hide) > 0:
+                obj_ids_to_hide_t = torch.tensor(obj_ids_to_hide, dtype=torch.int64)
+                keep &= ~torch.isin(out_obj_ids, obj_ids_to_hide_t)
+
+            # slice those valid entries from the original outputs
+            keep_idx = torch.nonzero(keep, as_tuple=True)[0]
+            keep_idx_gpu = keep_idx.pin_memory().to(
+                device=out_binary_masks.device, non_blocking=True
+            )
+
+            out_obj_ids = torch.index_select(out_obj_ids, 0, keep_idx)
+            out_probs = torch.index_select(out_probs, 0, keep_idx)
+            out_tracker_probs = torch.index_select(out_tracker_probs, 0, keep_idx)
+            out_binary_masks = torch.index_select(out_binary_masks, 0, keep_idx_gpu)
+
+            if perflib.is_enabled:
+                out_boxes_xyxy = perf_masks_to_boxes(
+                    out_binary_masks, out_obj_ids.tolist()
+                )
+            else:
+                out_boxes_xyxy = masks_to_boxes(out_binary_masks)
+
+            out_boxes_xywh = box_xyxy_to_xywh(out_boxes_xyxy)  # convert to xywh format
+            # normalize boxes
+            out_boxes_xywh[..., 0] /= W_video
+            out_boxes_xywh[..., 1] /= H_video
+            out_boxes_xywh[..., 2] /= W_video
+            out_boxes_xywh[..., 3] /= H_video
+
+        # apply non-overlapping constraints on the existing masklets
+        if out_binary_masks.shape[0] > 1:
+            assert len(out_binary_masks) == len(out_tracker_probs)
+            out_binary_masks = (
+                self.tracker._apply_object_wise_non_overlapping_constraints(
+                    out_binary_masks.unsqueeze(1),
+                    out_tracker_probs.unsqueeze(1).to(out_binary_masks.device),
+                    background_value=0,
+                ).squeeze(1)
+            ) > 0
+
+        outputs = {
+            "out_obj_ids": out_obj_ids.cpu().numpy(),
+            "out_probs": out_probs.cpu().numpy(),
+            "out_boxes_xywh": out_boxes_xywh.cpu().numpy(),
+            "out_binary_masks": out_binary_masks.cpu().numpy(),
+            "frame_stats": out.get("frame_stats", None),
+        }
+        return outputs
+
+    def _cache_frame_outputs(
+        self,
+        inference_state,
+        frame_idx,
+        obj_id_to_mask,
+        suppressed_obj_ids=None,
+        removed_obj_ids=None,
+        unconfirmed_obj_ids=None,
+    ):
+        # Filter out suppressed, removed, and unconfirmed objects from the cache
+        filtered_obj_id_to_mask = obj_id_to_mask.copy()
+
+        objects_to_exclude = set()
+        if suppressed_obj_ids is not None:
+            objects_to_exclude.update(suppressed_obj_ids)
+        if removed_obj_ids is not None:
+            objects_to_exclude.update(removed_obj_ids)
+        if unconfirmed_obj_ids is not None:
+            objects_to_exclude.update(unconfirmed_obj_ids)
+
+        if objects_to_exclude:
+            for obj_id in objects_to_exclude:
+                if obj_id in filtered_obj_id_to_mask:
+                    del filtered_obj_id_to_mask[obj_id]
+
+        inference_state["cached_frame_outputs"][frame_idx] = filtered_obj_id_to_mask
+
+    def _build_tracker_output(
+        self, inference_state, frame_idx, refined_obj_id_to_mask=None
+    ):
+        assert (
+            "cached_frame_outputs" in inference_state
+            and frame_idx in inference_state["cached_frame_outputs"]
+        ), (
+            "No cached outputs found. Ensure normal propagation has run first to populate the cache."
+        )
+        cached_outputs = inference_state["cached_frame_outputs"][frame_idx]
+
+        obj_id_to_mask = cached_outputs.copy()
+
+        # Update with refined masks if provided
+        if refined_obj_id_to_mask is not None:
+            for obj_id, refined_mask in refined_obj_id_to_mask.items():
+                assert refined_mask is not None, (
+                    f"Refined mask data must be provided for obj_id {obj_id}"
+                )
+                obj_id_to_mask[obj_id] = refined_mask
+
+        return obj_id_to_mask
+
+    def _compile_model(self):
+        """Compile the SAM model with torch.compile for speedup."""
+        is_compiled = getattr(self, "_model_is_compiled", False)
+        if is_compiled or not self.compile_model:
+            return
+
+        import torch._dynamo
+
+        # a larger cache size to hold varying number of shapes for torch.compile
+        # see https://github.com/pytorch/pytorch/blob/v2.5.1/torch/_dynamo/config.py#L42-L49
+        torch._dynamo.config.cache_size_limit = 128
+        torch._dynamo.config.accumulated_cache_size_limit = 2048
+        torch._dynamo.config.capture_scalar_outputs = True
+        torch._dynamo.config.suppress_errors = True
+
+        # Compile module components
+        # skip compilation of `_encode_prompt` since it sometimes tiggger SymInt errors
+        # self._encode_prompt = clone_output_wrapper(
+        #     torch.compile(self._encode_prompt, fullgraph=True, mode="max-autotune")
+        # )
+
+        ## Compile SAM3 model components
+        self.detector.backbone.vision_backbone.forward = clone_output_wrapper(
+            torch.compile(
+                self.detector.backbone.vision_backbone.forward,
+                fullgraph=True,
+                mode="max-autotune",
+            )
+        )
+        self.detector.transformer.encoder.forward = clone_output_wrapper(
+            torch.compile(
+                self.detector.transformer.encoder.forward,
+                fullgraph=True,
+                mode="max-autotune",
+            )
+        )
+        self.detector.transformer.decoder.forward = clone_output_wrapper(
+            torch.compile(
+                self.detector.transformer.decoder.forward,
+                fullgraph=True,
+                mode="max-autotune",
+                dynamic=False,
+            )
+        )
+
+        self.detector.segmentation_head.forward = clone_output_wrapper(
+            torch.compile(
+                self.detector.segmentation_head.forward,
+                fullgraph=True,
+                mode="max-autotune",
+            )
+        )
+
+        ## Compile Tracker model components
+        self.tracker.maskmem_backbone.forward = compile_wrapper(
+            self.tracker.maskmem_backbone.forward,
+            mode="max-autotune-no-cudagraphs",
+            fullgraph=True,
+            dynamic=False,
+        )
+
+        self.tracker.transformer.encoder.forward = shape_logging_wrapper(
+            compile_wrapper(
+                self.tracker.transformer.encoder.forward,
+                mode="max-autotune-no-cudagraphs",
+                fullgraph=True,
+                dynamic=True,
+            ),
+            keep_kwargs=["src", "src_pos", "prompt", "prompt_pos"],
+        )
+
+        self.tracker.sam_mask_decoder.forward = compile_wrapper(
+            self.tracker.sam_mask_decoder.forward,
+            mode="max-autotune",
+            fullgraph=True,
+            dynamic=False,  # Accuracy regression on True
+        )
+
+        self._model_is_compiled = True
+
+    def _warm_up_vg_propagation(self, inference_state, start_frame_idx=0):
+        # use different tracking score thresholds for each round to simulate different number of output objects
+        num_objects_list = range(self.num_obj_for_compile + 1)
+        new_det_score_thresh_list = [0.3, 0.5, 0.7]
+        num_rounds = len(new_det_score_thresh_list)
+        orig_new_det_thresh = self.new_det_thresh
+
+        for i, thresh in enumerate(new_det_score_thresh_list):
+            self.new_det_thresh = thresh
+            for num_objects in num_objects_list:
+                logger.info(f"{i + 1}/{num_rounds} warming up model compilation")
+                self.add_prompt(
+                    inference_state, frame_idx=start_frame_idx, text_str="cat"
+                )
+                logger.info(
+                    f"{i + 1}/{num_rounds} warming up model compilation -- simulating {num_objects}/{self.num_obj_for_compile} objects"
+                )
+                inference_state = self.add_fake_objects_to_inference_state(
+                    inference_state, num_objects, frame_idx=start_frame_idx
+                )
+                inference_state["tracker_metadata"]["rank0_metadata"].update(
+                    {
+                        "masklet_confirmation": {
+                            "status": np.zeros(num_objects, dtype=np.int64),
+                            "consecutive_det_num": np.zeros(
+                                num_objects, dtype=np.int64
+                            ),
+                        }
+                    }
+                )
+                for _ in self.propagate_in_video(
+                    inference_state, start_frame_idx, reverse=False
+                ):
+                    pass
+                for _ in self.propagate_in_video(
+                    inference_state, start_frame_idx, reverse=True
+                ):
+                    pass
+                self.reset_state(inference_state)
+                logger.info(
+                    f"{i + 1}/{num_rounds} warming up model compilation -- completed round {i + 1} out of {num_rounds}"
+                )
+
+        # Warm up Tracker memory encoder with varying input shapes
+        num_iters = 3
+        feat_size = self.tracker.sam_image_embedding_size**2  # 72 * 72 = 5184
+        hidden_dim = self.tracker.hidden_dim  # 256
+        mem_dim = self.tracker.mem_dim  # 64
+        for _ in tqdm(range(num_iters)):
+            for b in range(1, self.num_obj_for_compile + 1):
+                for i in range(
+                    1,
+                    self.tracker.max_cond_frames_in_attn + self.tracker.num_maskmem,
+                ):
+                    for j in range(
+                        self.tracker.max_cond_frames_in_attn
+                        + self.tracker.max_obj_ptrs_in_encoder
+                    ):
+                        num_obj_ptr_tokens = (hidden_dim // mem_dim) * j
+                        src = torch.randn(feat_size, b, hidden_dim, device=self.device)
+                        src_pos = torch.randn(
+                            feat_size, b, hidden_dim, device=self.device
+                        )
+                        prompt = torch.randn(
+                            feat_size * i + num_obj_ptr_tokens,
+                            b,
+                            mem_dim,
+                            device=self.device,
+                        )
+                        prompt_pos = torch.randn(
+                            feat_size * i + num_obj_ptr_tokens,
+                            b,
+                            mem_dim,
+                            device=self.device,
+                        )
+
+                        self.tracker.transformer.encoder.forward(
+                            src=src,
+                            src_pos=src_pos,
+                            prompt=prompt,
+                            prompt_pos=prompt_pos,
+                            num_obj_ptr_tokens=num_obj_ptr_tokens,
+                        )
+
+        self.new_det_thresh = orig_new_det_thresh
+        return inference_state
+
+    def add_fake_objects_to_inference_state(
+        self, inference_state, num_objects, frame_idx
+    ):
+        new_det_obj_ids_local = np.arange(num_objects)
+        high_res_H, high_res_W = (
+            self.tracker.maskmem_backbone.mask_downsampler.interpol_size
+        )
+        new_det_masks = torch.ones(
+            len(new_det_obj_ids_local), high_res_H, high_res_W
+        ).to(self.device)
+
+        inference_state["tracker_inference_states"] = self._tracker_add_new_objects(
+            frame_idx=frame_idx,
+            num_frames=inference_state["num_frames"],
+            new_obj_ids=new_det_obj_ids_local,
+            new_obj_masks=new_det_masks,
+            tracker_states_local=inference_state["tracker_inference_states"],
+            orig_vid_height=inference_state["orig_height"],
+            orig_vid_width=inference_state["orig_width"],
+            feature_cache=inference_state["feature_cache"],
+        )
+
+        # Synthesize obj_id_to_mask data for cached_frame_outputs to support _build_tracker_output during warmup
+        obj_id_to_mask = {}
+        if num_objects > 0:
+            H_video = inference_state["orig_height"]
+            W_video = inference_state["orig_width"]
+
+            video_res_masks = F.interpolate(
+                new_det_masks.unsqueeze(1),  # Add channel dimension for interpolation
+                size=(H_video, W_video),
+                mode="bilinear",
+                align_corners=False,
+            )  # (num_objects, 1, H_video, W_video)
+            for i, obj_id in enumerate(new_det_obj_ids_local):
+                obj_id_to_mask[obj_id] = (video_res_masks[i] > 0.0).to(torch.bool)
+        if self.rank == 0:
+            for fidx in range(inference_state["num_frames"]):
+                self._cache_frame_outputs(inference_state, fidx, obj_id_to_mask)
+
+        inference_state["tracker_metadata"].update(
+            {
+                "obj_ids_per_gpu": [np.arange(num_objects)],
+                "obj_ids_all_gpu": np.arange(num_objects),  # Same as 1 GPU
+                "num_obj_per_gpu": [num_objects],
+                "obj_id_to_score": {i: 1.0 for i in range(num_objects)},
+                "max_obj_id": num_objects,
+                "rank0_metadata": {
+                    "masklet_confirmation": {
+                        "status": np.zeros(num_objects, dtype=np.int64),
+                        "consecutive_det_num": np.zeros(num_objects, dtype=np.int64),
+                    },
+                    "removed_obj_ids": set(),
+                    "suppressed_obj_ids": defaultdict(set),
+                },
+            }
+        )
+        return inference_state
+
+    @torch.inference_mode()
+    @torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    def warm_up_compilation(self):
+        """
+        Warm up the model by running a dummy inference to compile the model. This is
+        useful to avoid the compilation overhead in the first inference call.
+        """
+        if not self.compile_model:
+            return
+        self._warm_up_complete = False
+        if self.device.type != "cuda":
+            raise RuntimeError(
+                f"The model must be on CUDA for warm-up compilation, got {self.device=}."
+            )
+
+        # temporally set to single GPU temporarily for warm-up compilation
+        orig_rank = self.rank
+        orig_world_size = self.world_size
+        self.rank = self.detector.rank = 0
+        self.world_size = self.detector.world_size = 1
+        orig_recondition_every_nth_frame = self.recondition_every_nth_frame
+        # self.recondition_every_nth_frame = 2
+
+        # Get a random video
+        inference_state = self.init_state(resource_path="<load-dummy-video-30>")
+        start_frame_idx = 0
+
+        # Run basic propagation warm-up
+        inference_state = self._warm_up_vg_propagation(inference_state, start_frame_idx)
+
+        logger.info("Warm-up compilation completed.")
+
+        # revert to the original GPU and rank
+        self.rank = self.detector.rank = orig_rank
+        self.world_size = self.detector.world_size = orig_world_size
+        self.recondition_every_nth_frame = orig_recondition_every_nth_frame
+        self._warm_up_complete = True
+        self.tracker.transformer.encoder.forward.set_logging(True)
+
+    @torch.inference_mode()
+    def add_prompt(
+        self,
+        inference_state,
+        frame_idx,
+        text_str=None,
+        boxes_xywh=None,
+        box_labels=None,
+    ):
+        """
+        Add text, point or box prompts on a single frame. This method returns the inference
+        outputs only on the prompted frame.
+
+        Note that text prompts are NOT associated with a particular frame (i.e. they apply
+        to all frames). However, we only run inference on the frame specified in `frame_idx`.
+        """
+        logger.debug("Running add_prompt on frame %d", frame_idx)
+
+        num_frames = inference_state["num_frames"]
+        assert text_str is not None or boxes_xywh is not None, (
+            "at least one type of prompt (text, boxes) must be provided"
+        )
+        assert 0 <= frame_idx < num_frames, (
+            f"{frame_idx=} is out of range for a total of {num_frames} frames"
+        )
+
+        # since it's a semantic prompt, we start over
+        self.reset_state(inference_state)
+
+        # 1) add text prompt
+        if text_str is not None and text_str != "visual":
+            inference_state["text_prompt"] = text_str
+            inference_state["input_batch"].find_text_batch[0] = text_str
+            text_id = self.TEXT_ID_FOR_TEXT
+        else:
+            inference_state["text_prompt"] = None
+            inference_state["input_batch"].find_text_batch[0] = "<text placeholder>"
+            text_id = self.TEXT_ID_FOR_VISUAL
+        for t in range(inference_state["num_frames"]):
+            inference_state["input_batch"].find_inputs[t].text_ids[...] = text_id
+
+        # 2) handle box prompt
+        assert (boxes_xywh is not None) == (box_labels is not None)
+        if boxes_xywh is not None:
+            boxes_xywh = torch.as_tensor(boxes_xywh, dtype=torch.float32)
+            box_labels = torch.as_tensor(box_labels, dtype=torch.long)
+            # input boxes are expected to be [xmin, ymin, width, height] format
+            # in normalized coordinates of range 0~1, similar to FA
+            assert boxes_xywh.dim() == 2
+            assert boxes_xywh.size(0) > 0 and boxes_xywh.size(-1) == 4
+            assert box_labels.dim() == 1 and box_labels.size(0) == boxes_xywh.size(0)
+            boxes_cxcywh = box_xywh_to_cxcywh(boxes_xywh)
+            assert (boxes_xywh >= 0).all().item() and (boxes_xywh <= 1).all().item()
+            assert (boxes_cxcywh >= 0).all().item() and (boxes_cxcywh <= 1).all().item()
+
+            new_box_input = boxes_cxcywh, box_labels
+            inference_state["per_frame_raw_box_input"][frame_idx] = new_box_input
+
+            # handle the case of visual prompt (also added as an input box from the UI)
+            boxes_cxcywh, box_labels, geometric_prompt = self._get_visual_prompt(
+                inference_state, frame_idx, boxes_cxcywh, box_labels
+            )
+
+            inference_state["per_frame_geometric_prompt"][frame_idx] = geometric_prompt
+
+        out = self._run_single_frame_inference(
+            inference_state, frame_idx, reverse=False
+        )
+        return frame_idx, self._postprocess_output(inference_state, out)
+
+    @torch.autocast(device_type="cuda", dtype=torch.bfloat16)
+    def forward(self, input: BatchedDatapoint, is_inference: bool = False):
+        """This method is only used for benchmark eval (not used in the demo)."""
+        # set the model to single GPU for benchmark evaluation (to be compatible with trainer)
+        orig_rank = self.rank
+        orig_world_size = self.world_size
+        self.rank = self.detector.rank = 0
+        self.world_size = self.detector.world_size = 1
+
+        # get data
+        text_prompt_ids = input.find_metadatas[0].original_category_id
+        text_prompt_list = input.find_text_batch
+
+        # loop over txt prompts
+        tracking_res = defaultdict(dict)  # frame_idx --> {obj_id: mask}
+        scores_labels = defaultdict(tuple)  # obj_id --> (score, text_prompt_id)
+        inference_state = self.init_state(resource_path=input.raw_images)
+        for prompt_id, prompt in zip(text_prompt_ids, text_prompt_list):
+            self.add_prompt(inference_state, frame_idx=0, text_str=prompt)
+            start_obj_id = max(scores_labels.keys(), default=-1) + 1  # prev max + 1
+
+            # propagate the prompts
+            obj_ids_this_prompt = set()
+            for frame_idx, out in self.propagate_in_video(
+                inference_state,
+                start_frame_idx=0,
+                max_frame_num_to_track=inference_state["num_frames"],
+                reverse=False,
+            ):
+                current_frame_res = tracking_res[frame_idx]
+                for obj_id, mask in zip(out["out_obj_ids"], out["out_binary_masks"]):
+                    mask_tensor = torch.tensor(mask[None], dtype=torch.bool)
+                    current_frame_res[obj_id + start_obj_id] = mask_tensor
+                obj_ids_this_prompt.update(current_frame_res.keys())
+
+            obj_id_to_score = inference_state["tracker_metadata"]["obj_id_to_score"]
+            for obj_id, score in obj_id_to_score.items():
+                if obj_id + start_obj_id in obj_ids_this_prompt:
+                    score_tensor = torch.tensor(score, dtype=torch.float32)
+                    scores_labels[obj_id + start_obj_id] = (score_tensor, prompt_id)
+
+            self.reset_state(inference_state)
+
+        video_id = input.find_metadatas[0].original_image_id[0].cpu().item()
+        preds = self.prep_for_evaluator(input.raw_images, tracking_res, scores_labels)
+
+        # revert the model to the original GPU and rank
+        self.rank = self.detector.rank = orig_rank
+        self.world_size = self.detector.world_size = orig_world_size
+        return {video_id: preds}
+
+    def back_convert(self, targets):
+        # Needed for retraining compatibility with trainer
+        return targets
+
+
+class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceSpatial):
     def __init__(
         self,
         use_prev_mem_frame=False,
@@ -54,40 +989,15 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(Sam3VideoInferenceWit
             refinement_detector_cond_frame_removal_window
         )
 
-    @torch.inference_mode()
-    def init_state(
-        self,
-        original_states,
-        perms,       
-        start_frame = 0, 
-        offload_video_to_cpu=False,
-        async_loading_frames=False,
-        video_loader_type="cv2",
-    ):
-        """Initialize an inference state from `resource_path` (an image or a video)."""
-        numImage = len(perms)
-        images = torch.zeros(numImage, 3, self.image_size, self.image_size, dtype=torch.float32)
-        for i in range(numImage):
-            images[i] = original_states[i]["images"][start_frame]
-
-        inference_state = {}
-        inference_state["image_size"] = self.image_size
-        inference_state["num_frames"] = len(images)
-        # the original video height and width, used for resizing final output scores
-        inference_state["orig_height"] = original_states[0]["orig_height"]
-        inference_state["orig_width"] = original_states[0]["orig_width"]
-        # values that don't change across frames (so we only need to hold one copy of them)
-        inference_state["constants"] = {}
-        # inputs on each frame
-        self._construct_initial_input_batch(inference_state, images)
-        # initialize extra states
-        inference_state["tracker_inference_states"] = []
-        inference_state["tracker_metadata"] = {}
-        inference_state["feature_cache"] = {}
-        inference_state["cached_frame_outputs"] = {}
-        inference_state["action_history"] = []  # for logging user actions
-        inference_state["is_image_only"] = False
-        return inference_state
+    def _init_new_tracker_state(self, inference_state):
+        return self.tracker.init_state(
+            original_states=inference_state["original_states"],
+            perms=inference_state["perms"],
+            cached_features=inference_state["feature_cache"],
+            video_height=inference_state["orig_height"],
+            video_width=inference_state["orig_width"],
+            num_frames=inference_state["num_frames"],
+        )
 
     @torch.inference_mode()
     def propagate_in_video(

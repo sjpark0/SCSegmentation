@@ -1,5 +1,5 @@
 import torch
-from build_scsam3 import build_scsam3_video_model, build_scsam3_video_model_spatial
+from build_scsam3 import build_scsam3_video_predictor, build_scsam3_video_predictor_spatial
 from SCSam3VideoInference import SCSam3VideoInferenceWithInstanceInteractivity
 from SCSam3VideoInferenceSpatial import SCSam3VideoInferenceWithInstanceInteractivitySpatial
 from SCSam3TrackerPredictor import SCSam3TrackerPredictor
@@ -12,21 +12,17 @@ import time
 from misc import *
 import os
 from itertools import chain
-class SCSam3Video:
+class SCSam3Video1:
     def __init__(self, device):
-        self.model = build_scsam3_video_model(device=device)
-        self.model_spatial = build_scsam3_video_model_spatial(device=device)
-
-        self.predictor = self.model.tracker
-        self.predictor.backbone = self.model.detector.backbone
-
-        self.predictor_spatial = self.model_spatial.tracker
-        self.predictor_spatial.backbone = self.model_spatial.detector.backbone
-
+        gpus_to_use = range(torch.cuda.device_count())
+        self.predictor = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)
+        self.predictor_spatial = build_scsam3_video_predictor_spatial(gpus_to_use=gpus_to_use)
+        
         self.masks = {}
         self.masks_spatial = {}
         self.obj_ids = None
         self.images = []
+        self.session_id = []
         self.inference_state = []
         self.inference_state_spatial = None
         self.input_points = {}
@@ -35,15 +31,40 @@ class SCSam3Video:
     def LoadVideo_Folder(self, folder, perms):
         self.folder = folder
         self.numImage = len(perms)        
+
+        
         for i in range(self.numImage):
             foldername = self.folder + "/{:d}".format(perms[i])
-            state = self.predictor.init_state(video_path = foldername, offload_video_to_cpu = True, offload_state_to_cpu = True, async_loading_frames=True)
-            self.predictor.reset_state(state)
-            self.inference_state.append(state)
+            response = self.predictor.handle_request(
+                request=dict(
+                    type="start_session",
+                    resource_path=foldername,
+                )
+            )
+            session_id = response["session_id"]
+            _ = self.predictor.handle_request(
+                request=dict(
+                    type="reset_session",
+                    session_id=session_id,
+                )
+            )
+            self.session_id.append(session_id)
+            self.inference_state.append(self.predictor._ALL_INFERENCE_STATES[session_id]["state"])
             self.images.append(None)    
-
-        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms)
-        self.predictor_spatial.reset_state(self.inference_state_spatial)
+        
+        response = self.predictor_spatial.handle_request(
+                request=dict(
+                    type="start_session",
+                    original_state=self.inference_state,
+                )
+            )
+        self.session_id_statial = response["session_id"]
+        _ = self.predictor.handle_request(
+                request=dict(
+                    type="reset_session",
+                    session_id=session_id,
+                )
+            )
         
     def LoadVideo_Folder_MVSeg(self, folder, perms, start_frame, prefix, prefix1 = 0):
         self.folder = folder
@@ -70,35 +91,62 @@ class SCSam3Video:
         self.numImage = len(perms)        
         for i in range(self.numImage):
             filename = os.path.join(self.folder, frame_names[perms[i]])
-            state = self.predictor.init_state(video_path = filename, offload_video_to_cpu = True, offload_state_to_cpu = True, async_loading_frames=True)
-            self.predictor.reset_state(state)
-            self.inference_state.append(state)
+            response = self.predictor.handle_request(
+                request=dict(
+                    type="start_session",
+                    resource_path=filename,
+                )
+            )
+            session_id = response["session_id"]
+            _ = self.predictor.handle_request(
+                request=dict(
+                    type="reset_session",
+                    session_id=session_id,
+                )
+            )
+            self.session_id.append(session_id)
+            self.inference_state.append(self.predictor._ALL_INFERENCE_STATES[session_id]["state"])
             self.images.append(None)    
-
-        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms)
-        self.predictor_spatial.reset_state(self.inference_state_spatial)
         
+        response = self.predictor_spatial.handle_request(
+                request=dict(
+                    type="start_session",
+                    original_state=self.inference_state,
+                    perms=perms,
+                )
+            )
+        self.session_id_statial = response["session_id"]
+        _ = self.predictor.handle_request(
+                request=dict(
+                    type="reset_session",
+                    session_id=session_id,
+                )
+            )
+
 
     def AddPoint(self, refCamID, point, label, obj_id):                
         if self.input_points.get(obj_id) is None:
             self.input_points[obj_id] = []
         if self.input_labels.get(obj_id) is None:
             self.input_labels[obj_id] = []
-        shape = self.inference_state_spatial["cpu_images"][0].shape
+        shape = self.inference_state[0]["cpu_images"][0].shape
         point[0] = point[0] / shape[1]
         point[1] = point[1] / shape[0]
         self.input_points[obj_id].append(point)
         self.input_labels[obj_id].append(label)
-        
-        _, out_obj_ids, _, masks = self.predictor_spatial.add_new_points(
-            inference_state=self.inference_state_spatial,
-            frame_idx=refCamID,
-            obj_id=obj_id,
-            points=np.array(np.array(self.input_points[obj_id])),
-            labels=np.array(np.array(self.input_labels[obj_id])),
-            clear_old_points=False,
+                
+        response = self.predictor_spatial.handle_request(
+            request=dict(
+                type="add_prompt",
+                session_id=self.session_id_statial,
+                frame_index=refCamID,
+                points=np.array(np.array(self.input_points[obj_id])),
+                point_labels=np.array(np.array(self.input_labels[obj_id])),
+                obj_id=obj_id,
+            )
         )
-        self.obj_ids = out_obj_ids
+        print(response["outputs"])
+        #self.obj_ids = out_obj_ids
         
     def AddMaskSingle(self, refCamID, mask, obj_id):
         _, out_obj_ids, _, masks = self.predictor_spatial.add_new_mask(

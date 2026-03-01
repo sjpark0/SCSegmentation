@@ -60,8 +60,10 @@ _, out_obj_ids, low_res_masks, video_res_masks = predictor.add_new_points(
     inference_state=inference_state,
     frame_idx=ann_frame_idx,
     obj_id=ann_obj_id,
-    points=points_tensor,
-    labels=points_labels_tensor,
+    #points=points_tensor,
+    #labels=points_labels_tensor,
+    points=rel_points,
+    labels=labels,
     clear_old_points=False,
 )
 
@@ -81,8 +83,10 @@ _, out_obj_ids, low_res_masks, video_res_masks = predictor.add_new_points(
     inference_state=inference_state,
     frame_idx=ann_frame_idx,
     obj_id=ann_obj_id,
-    points=points_tensor,
-    labels=points_labels_tensor,
+#    points=points_tensor,
+#    labels=points_labels_tensor,
+    points=rel_points,
+    labels=labels,
     clear_old_points=False,
 )
 
