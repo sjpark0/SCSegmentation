@@ -122,6 +122,7 @@ _ = predictor.handle_request(
     )
 )
 
+'''
 prompt_text_str = "person"
 frame_idx = 0  # add a text prompt on frame 0
 response = predictor.handle_request(
@@ -160,3 +161,60 @@ for frame_idx in range(0, len(outputs_per_frame), vis_frame_stride):
         figsize=(6, 4),
     )
 
+'''
+print(video_frames_for_vis[0].shape)
+IMG_WIDTH, IMG_HEIGHT = video_frames_for_vis[0].shape[1], video_frames_for_vis[0].shape[2]
+frame_idx = 0
+obj_id = 2
+points_abs = np.array(
+    [
+        [2711, 1038],  # positive click
+    ]
+)
+# positive clicks have label 1, while negative clicks have label 0
+labels = np.array([1])
+points_tensor = torch.tensor(
+    abs_to_rel_coords(points_abs, IMG_WIDTH, IMG_HEIGHT, coord_type="point"),
+    dtype=torch.float32,
+)
+points_labels_tensor = torch.tensor(labels, dtype=torch.int32)
+
+response = predictor.handle_request(
+    request=dict(
+        type="add_prompt",
+        session_id=session_id,
+        frame_index=frame_idx,
+        points=points_tensor,
+        point_labels=points_labels_tensor,
+        obj_id=obj_id,
+    )
+)
+out = response["outputs"]
+
+plt.close("all")
+visualize_formatted_frame_output(
+    frame_idx,
+    video_frames_for_vis,
+    outputs_list=[prepare_masks_for_visualization({frame_idx: out})],
+    titles=["SAM 3 Dense Tracking outputs"],
+    figsize=(6, 4),
+    points_list=[points_abs],
+    points_labels_list=[labels],
+)
+
+# now we propagate the outputs from frame 0 to the end of the video and collect all outputs
+outputs_per_frame = propagate_in_video(predictor, session_id)
+
+# finally, we reformat the outputs for visualization and plot the outputs every 60 frames
+outputs_per_frame = prepare_masks_for_visualization(outputs_per_frame)
+
+vis_frame_stride = 60
+plt.close("all")
+for frame_idx in range(0, len(outputs_per_frame), vis_frame_stride):
+    visualize_formatted_frame_output(
+        frame_idx,
+        video_frames_for_vis,
+        outputs_list=[outputs_per_frame],
+        titles=["SAM 3 Dense Tracking outputs"],
+        figsize=(6, 4),
+    )
