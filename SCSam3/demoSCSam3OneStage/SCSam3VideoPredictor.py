@@ -39,7 +39,7 @@ class SCSam3VideoPredictor:
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
-        from test.build_scsam3 import build_scsam3_video_model
+        from build_scsam3 import build_scsam3_video_model
 
         self.model = (
             build_scsam3_video_model(
@@ -73,6 +73,7 @@ class SCSam3VideoPredictor:
                 point_labels=request.get("point_labels", None),
                 bounding_boxes=request.get("bounding_boxes", None),
                 bounding_box_labels=request.get("bounding_box_labels", None),
+                mask=request.get("mask", None),
                 obj_id=request.get("obj_id", None),
             )
         elif request_type == "remove_object":
@@ -140,6 +141,7 @@ class SCSam3VideoPredictor:
         point_labels: Optional[List[int]] = None,
         bounding_boxes: Optional[List[List[float]]] = None,
         bounding_box_labels: Optional[List[int]] = None,
+        mask: Optional[any] = None,
         obj_id: Optional[int] = None,
     ):
         """Add text, box and/or point prompt on a specific video frame."""
@@ -159,6 +161,7 @@ class SCSam3VideoPredictor:
             point_labels=point_labels,
             boxes_xywh=bounding_boxes,
             box_labels=bounding_box_labels,
+            mask = mask,
             obj_id=obj_id,
         )
         return {"frame_index": frame_idx, "outputs": outputs}
