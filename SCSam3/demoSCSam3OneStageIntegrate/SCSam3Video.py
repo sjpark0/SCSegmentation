@@ -140,6 +140,19 @@ class SCSam3Video:
         out = response["outputs"]
         self.obj_ids = out["out_obj_ids"].tolist()
     
+    def AddText(self, refCamID, text):
+        response = self.predictor.handle_request(
+            request=dict(
+                type="add_prompt",
+                session_id=self.session_id_statial,
+                frame_index=refCamID,
+                text=text,
+            )
+        )
+        
+        out = response["outputs"]
+        self.obj_ids = out["out_obj_ids"].tolist()
+    
         
     def AddMaskSingle(self, refCamID, mask, obj_id):
         _, out_obj_ids, _, masks = self.predictor.add_new_mask(

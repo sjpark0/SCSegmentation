@@ -21,11 +21,11 @@ sc.LoadVideo_File("../../Data/VideoSample_1", perms)
 #sc.LoadVideo_Folder("D:\\CROOM\\T06_flag_ganggang\\JPG", perms)
 #sc.LoadVideo_File("D:\\CROOM\\T06_flag_ganggang", perms)
 
-
-sc.AddPoint(0, [2711, 1038], 1, 1)
-sc.AddPoint(0, [2678, 1630], 1, 1)
-sc.AddPoint(0, [1390, 1046], 1, 2)
-sc.AddPoint(0, [1538, 1944], 1, 2)
+sc.AddText(0, "person")
+#sc.AddPoint(0, [2711, 1038], 1, 1)
+#sc.AddPoint(0, [2678, 1630], 1, 1)
+#sc.AddPoint(0, [1390, 1046], 1, 2)
+#sc.AddPoint(0, [1538, 1944], 1, 2)
 
 
 sc.InitializeSegmentation()
