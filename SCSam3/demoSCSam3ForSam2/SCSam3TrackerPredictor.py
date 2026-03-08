@@ -12,7 +12,6 @@ from tqdm.auto import tqdm
 import cv2
 import os
 import numpy as np
-from  io_utils2 import load_video_frames, AsyncVideoFrameCPUToGPU
 
 class SCSam3TrackerPredictor(Sam3TrackerBase):
     """
@@ -58,17 +57,18 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
     @torch.inference_mode()
     def init_state(
         self,
+        images=None,                
         video_height=None,
         video_width=None,
-        num_frames=None,
-        video_path=None,
         cached_features=None,
-        offload_video_to_cpu=False,
-        offload_state_to_cpu=False,
-        async_loading_frames=False,
+        num_frames=None,        
+        offload_video_to_cpu=True,
+        offload_state_to_cpu=True,
     ):
         """Initialize a inference state."""
         inference_state = {}
+        inference_state["images"] = images
+        inference_state["num_frames"] = num_frames
         # whether to offload the video frames to CPU memory
         # turning on this option saves the GPU memory with only a very small overhead
         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
@@ -78,25 +78,14 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         # and from 24 to 21 when tracking two objects)
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
+        inference_state["video_height"] = video_height
+        inference_state["video_width"] = video_width
+        
         if offload_state_to_cpu:
             inference_state["storage_device"] = torch.device("cpu")
         else:
             inference_state["storage_device"] = torch.device("cuda")
 
-        if video_path is not None:
-            cpu_images, video_height, video_width = load_video_frames(video_path=video_path)
-            images = AsyncVideoFrameCPUToGPU(cpu_images)
-        
-            inference_state["images"] = images
-            inference_state["cpu_images"] = cpu_images
-            inference_state["num_frames"] = len(images)
-            inference_state["video_height"] = video_height
-            inference_state["video_width"] = video_width
-        else:
-            # the original video height and width, used for resizing final output scores
-            inference_state["video_height"] = video_height
-            inference_state["video_width"] = video_width
-            inference_state["num_frames"] = num_frames
         # inputs on each frame
         inference_state["point_inputs_per_obj"] = {}
         inference_state["mask_inputs_per_obj"] = {}

@@ -1,21 +1,18 @@
 import torch
-from build_scsam3 import build_scsam3_video_model, build_scsam3_video_model_spatial
-from SCSam3VideoInference import SCSam3VideoInferenceWithInstanceInteractivity
-from SCSam3VideoInferenceSpatial import SCSam3VideoInferenceWithInstanceInteractivitySpatial
-from SCSam3TrackerPredictor import SCSam3TrackerPredictor
-from SCSam3TrackerPredictorSpatial import SCSam3TrackerPredictorSpatial
-
+from build_scsam3 import build_scsam3_video_model
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 from misc import *
+from io_utils import load_video_frames, AsyncVideoFrameCPUToGPU
+
 import os
 from itertools import chain
 class SCSam3Video:
     def __init__(self, device):
         self.model = build_scsam3_video_model(device=device)
-        self.model_spatial = build_scsam3_video_model_spatial(device=device)
+        self.model_spatial = build_scsam3_video_model(device=device)
 
         self.predictor = self.model.tracker
         self.predictor.backbone = self.model.detector.backbone
@@ -27,6 +24,7 @@ class SCSam3Video:
         self.masks_spatial = {}
         self.obj_ids = None
         self.images = []
+        self.cpu_images = []
         self.inference_state = []
         self.inference_state_spatial = None
         self.input_points = {}
@@ -70,12 +68,20 @@ class SCSam3Video:
         self.numImage = len(perms)        
         for i in range(self.numImage):
             filename = os.path.join(self.folder, frame_names[perms[i]])
-            state = self.predictor.init_state(video_path = filename, offload_video_to_cpu = True, offload_state_to_cpu = True, async_loading_frames=True)
+            cpu_image, self.video_height, self.video_width = load_video_frames(video_path=filename)
+            image = AsyncVideoFrameCPUToGPU(cpu_image, offload_video_to_cpu=True)  
+            
+            state = self.predictor.init_state(images=image, video_height=self.video_height, video_width=self.video_width, num_frames=len(image), offload_video_to_cpu = True, offload_state_to_cpu = True)
             self.predictor.reset_state(state)
             self.inference_state.append(state)
-            self.images.append(None)    
+            self.images.append(image)    
+            self.cpu_images.append(cpu_image)
 
-        self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True)
+        imgs = []
+        for i in range(self.numImage):
+            imgs.append(self.images[i][0])
+
+        self.inference_state_spatial = self.predictor_spatial.init_state(images=imgs, video_height=self.video_height, video_width=self.video_width, num_frames=self.numImage, offload_video_to_cpu = True, offload_state_to_cpu = True)
         self.predictor_spatial.reset_state(self.inference_state_spatial)
         
 
@@ -84,7 +90,7 @@ class SCSam3Video:
             self.input_points[obj_id] = []
         if self.input_labels.get(obj_id) is None:
             self.input_labels[obj_id] = []
-        shape = self.inference_state_spatial["cpu_images"][0].shape
+        shape = self.cpu_images[0][0].shape
         point[0] = point[0] / shape[1]
         point[1] = point[1] / shape[0]
         self.input_points[obj_id].append(point)
