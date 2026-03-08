@@ -820,7 +820,6 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         if propagate_preflight:
             self.propagate_in_video_preflight(inference_state)
         # NOTE: This is a copy from the parent class, except that we return object scores as well.
-        
         output_dict = inference_state["output_dict"]
         consolidated_frame_inds = inference_state["consolidated_frame_inds"]
         if obj_ids is not None:

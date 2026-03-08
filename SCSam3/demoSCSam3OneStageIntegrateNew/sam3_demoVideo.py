@@ -32,8 +32,6 @@ sc.InitializeSegmentation()
 sc.RunNaiveTracking(0)
 
 videos = []
-
-
 '''
 for m in range(len(perms)):
     #image, cpu_image = sc.inference_state[m]["images"][0]
@@ -46,14 +44,16 @@ for m in range(len(perms)):
     
     cv2.imwrite(f"output_spatial_{m}.png", res_image)
 '''
-
 for m in range(len(perms)):
     os.makedirs(f"{m}", exist_ok=True)
-    for response in sc.tracking_result[m]:
+
+for idx in range(50):
+    for spatial_idx in range(len(perms)):
+        response = next(sc.tracking_result[spatial_idx])        
         frame_idx = response["frame_index"]
         out = response["outputs"]    
-        res_image = sc.cpu_images[m][frame_idx]
+        res_image = sc.cpu_images[spatial_idx][frame_idx]
         
         for i, out_obj_id in enumerate(out["out_obj_ids"].tolist()):
             res_image = show_mask_cv(res_image, out["out_binary_masks"][i] > 0.0, obj_id=out_obj_id)
-        cv2.imwrite(f"{m}/{frame_idx}.png", res_image)
+        cv2.imwrite(f"{spatial_idx}/{frame_idx}.png", res_image)

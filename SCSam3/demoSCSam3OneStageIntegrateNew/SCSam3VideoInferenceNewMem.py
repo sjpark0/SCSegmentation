@@ -6,6 +6,7 @@
 
 import logging
 from collections import defaultdict
+from typing import Any, Dict, List, Set
 
 import numpy as np
 import torch
@@ -31,7 +32,7 @@ import os
 logger = get_logger(__name__)
 
 
-class SCSam3VideoInference(Sam3VideoBase):
+class SCSam3VideoInferenceNewMem(Sam3VideoBase):
     TEXT_ID_FOR_TEXT = 0
     TEXT_ID_FOR_VISUAL = 1
 
@@ -248,7 +249,8 @@ class SCSam3VideoInference(Sam3VideoBase):
     @torch.inference_mode()
     def propagate_in_video(
         self,
-        inference_state,
+        inference_states,
+        spatial_idx,
         start_frame_idx=None,
         max_frame_num_to_track=None,
         reverse=False,
@@ -265,14 +267,14 @@ class SCSam3VideoInference(Sam3VideoBase):
         self._compile_model()
 
         processing_order, end_frame_idx = self._get_processing_order(
-            inference_state,
+            inference_states[spatial_idx],
             start_frame_idx,
             max_frame_num_to_track,
             reverse=reverse,
         )
 
         # Store max_frame_num_to_track in feature_cache for downstream methods
-        inference_state["feature_cache"]["tracking_bounds"] = {
+        inference_states[spatial_idx]["feature_cache"]["tracking_bounds"] = {
             "max_frame_num_to_track": max_frame_num_to_track,
             "propagate_in_video_start_frame_idx": start_frame_idx,
         }
@@ -288,7 +290,7 @@ class SCSam3VideoInference(Sam3VideoBase):
         for frame_idx in tqdm(
             processing_order, desc="propagate_in_video", disable=self.rank > 0
         ):
-            out = self._run_single_frame_inference(inference_state, frame_idx, reverse)
+            out = self._run_single_frame_inference(inference_states, spatial_idx, frame_idx, reverse)
 
             if self.hotstart_delay > 0:
                 # accumulate the outputs for the first `hotstart_delay` frames
@@ -325,7 +327,7 @@ class SCSam3VideoInference(Sam3VideoBase):
                     )
 
                     # Clamp the frame index to stay within video bounds
-                    num_frames = inference_state["num_frames"]
+                    num_frames = inference_states[spatial_idx]["num_frames"]
                     unconfirmed_status_frame_idx = max(
                         0, min(unconfirmed_status_frame_idx, num_frames - 1)
                     )
@@ -334,7 +336,7 @@ class SCSam3VideoInference(Sam3VideoBase):
                         unconfirmed_status_frame_idx, None
                     )
                     postprocessed_out = self._postprocess_output(
-                        inference_state,
+                        inference_states[spatial_idx],
                         yield_out,
                         hotstart_removed_obj_ids,
                         suppressed_obj_ids,
@@ -342,7 +344,7 @@ class SCSam3VideoInference(Sam3VideoBase):
                     )
 
                     self._cache_frame_outputs(
-                        inference_state,
+                        inference_states[spatial_idx],
                         yield_frame_idx,
                         yield_out["obj_id_to_mask"],
                         suppressed_obj_ids=suppressed_obj_ids,
@@ -353,17 +355,17 @@ class SCSam3VideoInference(Sam3VideoBase):
                     postprocessed_out = None  # no output on other GPUs
                 yield yield_frame_idx, postprocessed_out
 
-    def _run_single_frame_inference(self, inference_state, frame_idx, reverse):
+    def _run_single_frame_inference(self, inference_states, spatial_idx, frame_idx, reverse):
         """
         Perform inference on a single frame and get its inference results. This would
         also update `inference_state`.
         """
         # prepare inputs
-        input_batch = inference_state["input_batch"]
-        tracker_states_local = inference_state["tracker_inference_states"]
-        has_text_prompt = inference_state["text_prompt"] is not None
+        input_batch = inference_states[spatial_idx]["input_batch"]
+        tracker_states_local = inference_states[spatial_idx]["tracker_inference_states"]
+        has_text_prompt = inference_states[spatial_idx]["text_prompt"] is not None
         has_geometric_prompt = (
-            inference_state["per_frame_geometric_prompt"][frame_idx] is not None
+            inference_states[spatial_idx]["per_frame_geometric_prompt"][frame_idx] is not None
         )
         # run inference for the current frame
         (
@@ -375,30 +377,30 @@ class SCSam3VideoInference(Sam3VideoBase):
             _,
         ) = self._det_track_one_frame(
             frame_idx=frame_idx,
-            num_frames=inference_state["num_frames"],
+            num_frames=inference_states[spatial_idx]["num_frames"],
             reverse=reverse,
             input_batch=input_batch,
             geometric_prompt=(
-                inference_state["constants"]["empty_geometric_prompt"]
+                inference_states[spatial_idx]["constants"]["empty_geometric_prompt"]
                 if not has_geometric_prompt
-                else inference_state["per_frame_geometric_prompt"][frame_idx]
+                else inference_states[spatial_idx]["per_frame_geometric_prompt"][frame_idx]
             ),
             tracker_states_local=tracker_states_local,
-            tracker_metadata_prev=inference_state["tracker_metadata"],
-            feature_cache=inference_state["feature_cache"],
-            orig_vid_height=inference_state["orig_height"],
-            orig_vid_width=inference_state["orig_width"],
-            is_image_only=inference_state["is_image_only"],
+            tracker_metadata_prev=inference_states[spatial_idx]["tracker_metadata"],
+            feature_cache=inference_states[spatial_idx]["feature_cache"],
+            orig_vid_height=inference_states[spatial_idx]["orig_height"],
+            orig_vid_width=inference_states[spatial_idx]["orig_width"],
+            is_image_only=inference_states[spatial_idx]["is_image_only"],
             allow_new_detections=has_text_prompt or has_geometric_prompt,
         )
         # update inference state
-        inference_state["tracker_inference_states"] = tracker_states_local_new
-        inference_state["tracker_metadata"] = tracker_metadata_new
+        inference_states[spatial_idx]["tracker_inference_states"] = tracker_states_local_new
+        inference_states[spatial_idx]["tracker_metadata"] = tracker_metadata_new
         # use a dummy string in "previous_stages_out" to indicate this frame has outputs
-        inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+        inference_states[spatial_idx]["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
 
         if self.rank == 0:
-            self._cache_frame_outputs(inference_state, frame_idx, obj_id_to_mask)
+            self._cache_frame_outputs(inference_states[spatial_idx], frame_idx, obj_id_to_mask)
 
         out = {
             "obj_id_to_mask": obj_id_to_mask,
@@ -970,7 +972,7 @@ class SCSam3VideoInference(Sam3VideoBase):
         return targets
 
 
-class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
+class SCSam3VideoInferenceWithInstanceInteractivityNewMem(SCSam3VideoInferenceNewMem):
     def __init__(
         self,
         use_prev_mem_frame=False,
@@ -1000,20 +1002,102 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
             num_frames=inference_state["num_frames"],
         )
 
+    def _propogate_tracker_one_frame_local_gpu_multiple(
+        self,
+        inference_states: List[Any],
+        obj_ids: List[Any],
+        spatial_idx: int,
+        frame_idx: int,
+        reverse: bool,
+        # by default, we disable memory encoding until we gather all outputs
+        run_mem_encoder: bool = False,
+    ):
+        """
+        inference_states: List of inference states, each state corresponds to a different set of objects.
+        """
+        obj_ids_local = []
+        low_res_masks_list = []
+        obj_scores_list = []
+        
+        for obj_id in obj_ids:
+            tmps = self._get_tracker_inference_states_by_obj_ids(inference_states[spatial_idx], [obj_id])
+            if len(tmps) == 0:
+                continue
+            
+            inference_state = tmps[0]
+            
+            iss = []
+            for m in range(len(inference_states)):
+                tmp = self._get_tracker_inference_states_by_obj_ids(inference_states[m], [obj_id])
+                if len(tmp) == 0:
+                    iss.append(None)
+                else:
+                    iss.append(tmp[0])
+                    
+            if len(inference_state["obj_ids"]) == 0:
+                continue  # skip propagation on empty inference states
+
+            # propagate one frame
+            num_frames_propagated = 0
+            for out in self.tracker.propagate_in_video(
+                iss,
+                spatial_idx=spatial_idx,
+                start_frame_idx=frame_idx,
+                # end_frame_idx = start_frame_idx + max_frame_num_to_track
+                # (i.e. propagating 1 frame since end_frame_idx is inclusive)
+                max_frame_num_to_track=0,
+                reverse=reverse,
+                tqdm_disable=True,
+                run_mem_encoder=run_mem_encoder,
+            ):
+                out_frame_idx, out_obj_ids, out_low_res_masks, _, out_obj_scores = out
+                num_frames_propagated += 1
+
+            # only 1 frames should be propagated
+            assert num_frames_propagated == 1 and out_frame_idx == frame_idx, (
+                f"num_frames_propagated: {num_frames_propagated}, out_frame_idx: {out_frame_idx}, frame_idx: {frame_idx}"
+            )
+            assert isinstance(out_obj_ids, list)
+            obj_ids_local.extend(out_obj_ids)
+            low_res_masks_list.append(out_low_res_masks.squeeze(1))
+            obj_scores_list.append(out_obj_scores.squeeze(1))
+
+        # concatenate the output masklets from all local inference states
+        H_mask = W_mask = self.tracker.low_res_mask_size
+        if len(low_res_masks_list) > 0:
+            low_res_masks_local = torch.cat(low_res_masks_list, dim=0)
+            obj_scores_local = torch.cat(obj_scores_list, dim=0)
+            assert low_res_masks_local.shape[1:] == (H_mask, W_mask)
+
+            # Apply hole filling to the masks
+            low_res_masks_local = fill_holes_in_mask_scores(
+                low_res_masks_local.unsqueeze(1),
+                max_area=self.fill_hole_area,
+                fill_holes=True,
+                remove_sprinkles=True,
+            )
+            low_res_masks_local = low_res_masks_local.squeeze(1)
+        else:
+            low_res_masks_local = torch.zeros(0, H_mask, W_mask, device=self.device)
+            obj_scores_local = torch.zeros(0, device=self.device)
+
+        return obj_ids_local, low_res_masks_local, obj_scores_local
+
     @torch.inference_mode()
     def propagate_in_video(
         self,
-        inference_state,
+        inference_states,
+        spatial_idx,
         start_frame_idx=None,
         max_frame_num_to_track=None,
         reverse=False,
     ):
         # step 1: check which type of propagation to run, should be the same for all GPUs.
         propagation_type, obj_ids = self.parse_action_history_for_propagation(
-            inference_state
+            inference_states[spatial_idx]
         )
         self.add_action_history(
-            inference_state,
+            inference_states[spatial_idx],
             action_type=propagation_type,
             obj_ids=obj_ids,
             frame_idx=start_frame_idx,
@@ -1023,7 +1107,8 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
         if propagation_type == "propagation_full":
             logger.debug(f"Running full VG propagation (reverse={reverse}).")
             yield from super().propagate_in_video(
-                inference_state,
+                inference_states=inference_states,
+                spatial_idx=spatial_idx,
                 start_frame_idx=start_frame_idx,
                 max_frame_num_to_track=max_frame_num_to_track,
                 reverse=reverse,
@@ -1038,19 +1123,19 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
             else f"Fetching existing VG predictions without running any propagation (reverse={reverse})."
         )
         processing_order, _ = self._get_processing_order(
-            inference_state,
+            inference_states[spatial_idx],
             start_frame_idx=start_frame_idx,
             max_frame_num_to_track=max_frame_num_to_track,
             reverse=reverse,
         )
 
-        tracker_metadata = inference_state["tracker_metadata"]
+        tracker_metadata = inference_states[spatial_idx]["tracker_metadata"]
 
         # if fetch just return from output
         if propagation_type == "propagation_fetch":
             for frame_idx in tqdm(processing_order):
                 if self.rank == 0:
-                    obj_id_to_mask = inference_state["cached_frame_outputs"].get(
+                    obj_id_to_mask = inference_states[spatial_idx]["cached_frame_outputs"].get(
                         frame_idx, {}
                     )
                     # post processing - remove suppressed obj_ids
@@ -1070,7 +1155,7 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                     yield (
                         frame_idx,
                         self._postprocess_output(
-                            inference_state, out, suppressed_obj_ids=suppressed_obj_ids
+                            inference_states[spatial_idx], out, suppressed_obj_ids=suppressed_obj_ids
                         ),
                     )
                 else:
@@ -1082,21 +1167,22 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
         if propagation_type == "propagation_partial":
             # can be empty for GPUs where objects are not in their inference states
             tracker_states_local = self._get_tracker_inference_states_by_obj_ids(
-                inference_state, obj_ids
+                inference_states[spatial_idx], obj_ids
             )
             for tracker_state in tracker_states_local:
                 self.tracker.propagate_in_video_preflight(
                     tracker_state, run_mem_encoder=True
                 )
 
-            print(len(tracker_states_local), tracker_states_local[0].keys())
         for frame_idx in tqdm(processing_order):
             # run Tracker propagation
             if propagation_type == "propagation_partial":
-                self._prepare_backbone_feats(inference_state, frame_idx, reverse)
+                self._prepare_backbone_feats(inference_states[spatial_idx], frame_idx, reverse)
                 obj_ids_local, low_res_masks_local, tracker_scores_local = (
-                    self._propogate_tracker_one_frame_local_gpu(
-                        tracker_states_local,
+                    self._propogate_tracker_one_frame_local_gpu_multiple(
+                        inference_states,
+                        obj_ids,
+                        spatial_idx=spatial_idx,
                         frame_idx=frame_idx,
                         reverse=reverse,
                         run_mem_encoder=True,
@@ -1110,7 +1196,7 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                 # Collect data for objects on this GPU
                 local_obj_data = {}
                 for obj_id in obj_ids:
-                    obj_rank = self._get_gpu_id_by_obj_id(inference_state, obj_id)
+                    obj_rank = self._get_gpu_id_by_obj_id(inference_states[spatial_idx], obj_id)
                     if self.rank == obj_rank and obj_id in obj_ids_local:
                         refined_obj_idx = obj_ids_local.index(obj_id)
                         refined_mask_low_res = low_res_masks_local[
@@ -1124,7 +1210,7 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                 # Broadcast data from each GPU that has refined objects
                 if self.world_size > 1:
                     for obj_id in obj_ids:
-                        obj_rank = self._get_gpu_id_by_obj_id(inference_state, obj_id)
+                        obj_rank = self._get_gpu_id_by_obj_id(inference_states[spatial_idx], obj_id)
                         if self.rank == obj_rank:
                             # This GPU has the object, broadcast its data
                             data_to_broadcast = local_obj_data.get(obj_id, None)
@@ -1154,10 +1240,10 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
 
                 if self.rank == 0:
                     # ======================== propagate_in_video 패치 =======================
-                    if "cached_frame_outputs" not in inference_state:
-                        inference_state["cached_frame_outputs"] = {}
-                    if frame_idx not in inference_state["cached_frame_outputs"]:
-                        inference_state["cached_frame_outputs"][frame_idx] = {}
+                    if "cached_frame_outputs" not in inference_states[spatial_idx]:
+                        inference_states[spatial_idx]["cached_frame_outputs"] = {}
+                    if frame_idx not in inference_states[spatial_idx]["cached_frame_outputs"]:
+                        inference_states[spatial_idx]["cached_frame_outputs"][frame_idx] = {}
 
                     # get predictions from Tracker inference states, it includes the original
                     # VG predictions and the refined predictions from interactivity.
@@ -1167,13 +1253,13 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                     for obj_id, (_, refined_mask_low_res) in refined_obj_data.items():
                         refined_mask_video_res = (
                             self._convert_low_res_mask_to_video_res(
-                                refined_mask_low_res, inference_state
+                                refined_mask_low_res, inference_states[spatial_idx]
                             )
                         )  # (1, H_video, W_video) bool
                         refined_obj_id_to_mask[obj_id] = refined_mask_video_res
 
                     obj_id_to_mask = self._build_tracker_output(
-                        inference_state, frame_idx, refined_obj_id_to_mask
+                        inference_states[spatial_idx], frame_idx, refined_obj_id_to_mask
                     )
                     out = {
                         "obj_id_to_mask": obj_id_to_mask,
@@ -1186,7 +1272,7 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                         "suppressed_obj_ids"
                     ][frame_idx]
                     self._cache_frame_outputs(
-                        inference_state,
+                        inference_states[spatial_idx],
                         frame_idx,
                         obj_id_to_mask,
                         suppressed_obj_ids=suppressed_obj_ids,
@@ -1197,7 +1283,7 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                     yield (
                         frame_idx,
                         self._postprocess_output(
-                            inference_state, out, suppressed_obj_ids=suppressed_obj_ids
+                            inference_states[spatial_idx], out, suppressed_obj_ids=suppressed_obj_ids
                         ),
                     )
                 else:
