@@ -8,11 +8,12 @@ from collections import OrderedDict
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores
-from sam3.model.utils.sam2_utils import load_video_frames
 from tqdm.auto import tqdm
+import cv2
+import os
+import numpy as np
 
-
-class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
+class SCSam3TrackerPredictor(Sam3TrackerBase):
     """
     The demo class that extends the `Sam3TrackerBase` to handle user interactions
     and manage inference states, with support for multi-object tracking.
@@ -56,19 +57,18 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
     @torch.inference_mode()
     def init_state(
         self,
-        images=None,        
+        images=None,                
         video_height=None,
         video_width=None,
         cached_features=None,
-        num_frames=None,
+        num_frames=None,        
         offload_video_to_cpu=True,
         offload_state_to_cpu=True,
     ):
-        """Initialize a inference state."""                
+        """Initialize a inference state."""
         inference_state = {}
         inference_state["images"] = images
         inference_state["num_frames"] = num_frames
-        
         # whether to offload the video frames to CPU memory
         # turning on this option saves the GPU memory with only a very small overhead
         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
@@ -78,7 +78,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         # and from 24 to 21 when tracking two objects)
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
-        
         inference_state["video_height"] = video_height
         inference_state["video_width"] = video_width
         
@@ -87,7 +86,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         else:
             inference_state["storage_device"] = torch.device("cuda")
 
-        
         # inputs on each frame
         inference_state["point_inputs_per_obj"] = {}
         inference_state["mask_inputs_per_obj"] = {}
@@ -124,6 +122,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         inference_state["frames_already_tracked"] = {}
         self.clear_all_points_in_video(inference_state)
         return inference_state
+
     @torch.inference_mode()
     def reset_state(self, inference_state):
         """Remove all input points or mask in all frames throughout the video."""
@@ -136,7 +135,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         inference_state["mask_inputs_per_obj"].clear()
         inference_state["output_dict_per_obj"].clear()
         inference_state["temp_output_dict_per_obj"].clear()
-        
+
     def _reset_tracking_results(self, inference_state):
         """Reset all tracking inputs and results across the videos."""
         for v in inference_state["point_inputs_per_obj"].values():
@@ -207,7 +206,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         normalize_coords=True,
         box=None,
     ):
-        """Add new points to a frame."""        
+        """Add new points to a frame."""
         obj_idx = self._obj_id_to_idx(inference_state, obj_id)
         point_inputs_per_frame = inference_state["point_inputs_per_obj"][obj_idx]
         mask_inputs_per_frame = inference_state["mask_inputs_per_obj"][obj_idx]
@@ -815,7 +814,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         run_mem_encoder=True,
         propagate_preflight=False,
     ):
-        
         """Propagate the input points across frames to track in the entire video."""
         if propagate_preflight:
             self.propagate_in_video_preflight(inference_state)
@@ -1040,7 +1038,10 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
                 )
             else:
                 # Cache miss -- we will run inference on a single image
-                image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
+                #image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
+
+                img = inference_state["images"][frame_idx]
+                image = img.cuda().float().unsqueeze(0)
                 backbone_out = self.forward_image(image)
                 # Cache the most recent frame's feature (for repeated interactions with
                 # a frame; we can use an LRU cache for more frames in the future).

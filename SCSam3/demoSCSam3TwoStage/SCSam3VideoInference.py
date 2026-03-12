@@ -27,7 +27,6 @@ from torchvision.ops import masks_to_boxes
 from tqdm.auto import tqdm
 import cv2
 import os
-from io_utils import IMAGE_EXTS, load_video_frames, AsyncVideoFrameCPUToGPU
 
 logger = get_logger(__name__)
 
@@ -59,20 +58,15 @@ class SCSam3VideoInference(Sam3VideoBase):
     @torch.inference_mode()
     def init_state(
         self,
-        resource_path,
-        offload_video_to_cpu=True,
-        async_loading_frames=True,
-        video_loader_type="cv2",
+        images,
+        orig_height,
+        orig_width,
     ):
         """Initialize an inference state from `resource_path` (an image or a video)."""        
         
         #images, orig_height, orig_width = load_resource_as_video_frames(resource_path=resource_path, image_size=self.image_size, offload_video_to_cpu=offload_video_to_cpu, img_mean=self.image_mean, std=self.image_std, async_loading_frames=async_loading_frames, video_loader_type=video_loader_type)
         
-        cpu_images, orig_height, orig_width = load_video_frames(video_path=resource_path)
-        images = AsyncVideoFrameCPUToGPU(cpu_images, offload_video_to_cpu=offload_video_to_cpu)
         inference_state = {}
-        inference_state["images"] = images
-        inference_state["cpu_images"] = cpu_images
         inference_state["image_size"] = self.image_size
         inference_state["num_frames"] = len(images)
         # the original video height and width, used for resizing final output scores
@@ -88,7 +82,8 @@ class SCSam3VideoInference(Sam3VideoBase):
         inference_state["feature_cache"] = {}
         inference_state["cached_frame_outputs"] = {}
         inference_state["action_history"] = []  # for logging user actions
-        inference_state["is_image_only"] = is_image_type(resource_path)
+        inference_state["is_image_only"] = False
+                
         return inference_state
 
     @torch.inference_mode()
@@ -548,7 +543,12 @@ class SCSam3VideoInference(Sam3VideoBase):
             for obj_id in objects_to_exclude:
                 if obj_id in filtered_obj_id_to_mask:
                     del filtered_obj_id_to_mask[obj_id]
-
+        
+        # 🚨 [추가] VRAM 누수 방지: GPU 마스크 텐서를 CPU 메모리로 옮겨서 저장!
+        for obj_id, mask_tensor in filtered_obj_id_to_mask.items():
+            if isinstance(mask_tensor, torch.Tensor):
+                filtered_obj_id_to_mask[obj_id] = mask_tensor.cpu()
+        
         inference_state["cached_frame_outputs"][frame_idx] = filtered_obj_id_to_mask
 
     def _build_tracker_output(
@@ -561,9 +561,14 @@ class SCSam3VideoInference(Sam3VideoBase):
             "No cached outputs found. Ensure normal propagation has run first to populate the cache."
         )
         cached_outputs = inference_state["cached_frame_outputs"][frame_idx]
-
-        obj_id_to_mask = cached_outputs.copy()
-
+        
+        #obj_id_to_mask = cached_outputs.copy()
+        # 🚨 [추가] CPU에 보관했던 텐서를 연산을 위해 다시 GPU로 불러옵니다.
+        obj_id_to_mask = {
+            k: (v.to(self.device) if isinstance(v, torch.Tensor) else v)
+            for k, v in cached_outputs.items()
+        }
+        
         # Update with refined masks if provided
         if refined_obj_id_to_mask is not None:
             for obj_id, refined_mask in refined_obj_id_to_mask.items():

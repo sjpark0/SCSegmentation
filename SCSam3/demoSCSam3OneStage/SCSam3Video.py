@@ -1,35 +1,29 @@
 from urllib import response
 
 import torch
-from build_scsam3 import build_scsam3_video_predictor, build_scsam3_video_predictor_spatial
+from build_scsam3 import build_scsam3_video_predictor
 from SCSam3VideoInference import SCSam3VideoInferenceWithInstanceInteractivity
-from SCSam3VideoInferenceSpatial import SCSam3VideoInferenceWithInstanceInteractivitySpatial
 from SCSam3TrackerPredictor import SCSam3TrackerPredictor
-from SCSam3TrackerPredictorSpatial import SCSam3TrackerPredictorSpatial
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from misc import *
 import os
+from io_utils import load_video_frames, AsyncVideoFrameCPUToGPU
 from itertools import chain
 class SCSam3Video:
     def __init__(self, device):
         gpus_to_use = range(torch.cuda.device_count())
         self.predictor = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)
-        self.predictor_spatial = build_scsam3_video_predictor_spatial(gpus_to_use=gpus_to_use)
-
+        
         self.predictor.model.fill_hole_area = 0
-        self.predictor_spatial.model.fill_hole_area = 0
         
         self.masks = {}
         self.masks_spatial = {}
         self.obj_ids = None
         self.images = []
         self.cpu_images = []
-        self.inference_state = []
-        self.inference_state_spatial = None
         self.input_points = {}
         self.input_labels = {}
         self.session_ids = []
@@ -44,8 +38,6 @@ class SCSam3Video:
             self.inference_state.append(state)
             self.images.append(None)    
             self.cpu_images.append(None)
-        #self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms)
-        #self.predictor_spatial.reset_state(self.inference_state_spatial)
         
     def LoadVideo_Folder_MVSeg(self, folder, perms, start_frame, prefix, prefix1 = 0):
         self.folder = folder
@@ -58,8 +50,6 @@ class SCSam3Video:
             self.cpu_images.append(None)
             self.images.append(None)    
 
-        #self.inference_state_spatial = self.predictor_spatial.init_state(original_states = self.inference_state, offload_video_to_cpu = True, perms = perms, start_frame=start_frame)
-        #self.predictor_spatial.reset_state(self.inference_state_spatial)
 
     def LoadVideo_File(self, folder, perms):        
         frame_names = [
@@ -70,15 +60,20 @@ class SCSam3Video:
         frame_names.sort()
         
         self.folder = folder
-        self.numImage = len(perms)        
+        self.numImage = len(perms)      
+        
+        
         for i in range(self.numImage):
             filename = os.path.join(self.folder, frame_names[perms[i]])
-
+            cpu_image, video_height, video_width = load_video_frames(video_path=filename)
+            image = AsyncVideoFrameCPUToGPU(cpu_image, offload_video_to_cpu=True)  
+            
             response = self.predictor.handle_request(
                 request=dict(
                     type="start_session",
-                    resource_path=filename,
-                    offload_video_to_cpu=True,
+                    images=image,
+                    orig_height=video_height,
+                    orig_width=video_width,
                 )
             )
             session_id = response["session_id"]
@@ -89,18 +84,18 @@ class SCSam3Video:
                     session_id=session_id,
                 )
             )
-            self.cpu_images.append(None)
+            self.images.append(image)
+            self.cpu_images.append(cpu_image)
 
-            
-        images = []
-        
+        self.video_width = video_width
+        self.video_height = video_height
+
+        #첫프레임 이미지 가져오기
+        images = []        
         for i in range(self.numImage):
-            images.append(self.predictor._ALL_INFERENCE_STATES[self.session_ids[i]]["state"]["images"][0])
-            self.cpu_images[i] = self.predictor._ALL_INFERENCE_STATES[self.session_ids[i]]["state"]["cpu_images"]
+            images.append(self.images[i][0])
 
-        self.video_height = self.predictor._ALL_INFERENCE_STATES[self.session_ids[0]]["state"]["orig_height"]
-        self.video_width = self.predictor._ALL_INFERENCE_STATES[self.session_ids[0]]["state"]["orig_width"]
-        response = self.predictor_spatial.handle_request(
+        response = self.predictor.handle_request(
                 request=dict(
                     type="start_session",
                     images=images,
@@ -109,7 +104,7 @@ class SCSam3Video:
                 )
             )
         self.session_id_statial = response["session_id"]
-        _ = self.predictor_spatial.handle_request(
+        _ = self.predictor.handle_request(
                 request=dict(
                     type="reset_session",
                     session_id=self.session_id_statial,
@@ -132,7 +127,7 @@ class SCSam3Video:
         #points_tensor = torch.tensor(np.array(self.input_points[obj_id]), dtype=torch.float32)
         #points_labels_tensor = torch.tensor(np.array(self.input_labels[obj_id]), dtype=torch.int32)
         
-        response = self.predictor_spatial.handle_request(
+        response = self.predictor.handle_request(
             request=dict(
                 type="add_prompt",
                 session_id=self.session_id_statial,
@@ -145,9 +140,22 @@ class SCSam3Video:
         out = response["outputs"]
         self.obj_ids = out["out_obj_ids"].tolist()
     
+    def AddText(self, refCamID, text):
+        response = self.predictor.handle_request(
+            request=dict(
+                type="add_prompt",
+                session_id=self.session_id_statial,
+                frame_index=refCamID,
+                text=text,
+            )
+        )
+        
+        out = response["outputs"]
+        self.obj_ids = out["out_obj_ids"].tolist()
+    
         
     def AddMaskSingle(self, refCamID, mask, obj_id):
-        _, out_obj_ids, _, masks = self.predictor_spatial.add_new_mask(
+        _, out_obj_ids, _, masks = self.predictor.add_new_mask(
                 inference_state=self.inference_state_spatial,
                 frame_idx=refCamID,
                 obj_id=obj_id,
@@ -163,7 +171,7 @@ class SCSam3Video:
                 mask=mask // 255,
             )
     def InitializeSegmentation(self, refCamID = 0, reverse = False):
-        responses = self.predictor_spatial.handle_stream_request(
+        responses = self.predictor.handle_stream_request(
             request=dict(
                 type="propagate_in_video",
                 session_id=self.session_id_statial,

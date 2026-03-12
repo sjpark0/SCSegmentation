@@ -17,7 +17,7 @@ from sam3.model.act_ckpt_utils import clone_output_wrapper
 from sam3.model.box_ops import box_xywh_to_cxcywh, box_xyxy_to_xywh
 from sam3.model.data_misc import BatchedDatapoint, convert_my_tensors, FindStage
 from sam3.model.geometry_encoders import Prompt
-from sam3.model.io_utils import IMAGE_EXTS, load_resource_as_video_frames
+from io_utils import IMAGE_EXTS, load_resource_as_video_frames
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores
 from sam3.model.sam3_video_base import MaskletConfirmationStatus, Sam3VideoBase
 from sam3.model.sam3_video_inference import Sam3VideoInferenceWithInstanceInteractivity
@@ -32,7 +32,7 @@ import os
 
 logger = get_logger(__name__)
 
-class SCSam3VideoInferenceSpatial(Sam3VideoBase):
+class SCSam3VideoInference(Sam3VideoBase):
     TEXT_ID_FOR_TEXT = 0
     TEXT_ID_FOR_VISUAL = 1
 
@@ -59,12 +59,21 @@ class SCSam3VideoInferenceSpatial(Sam3VideoBase):
     @torch.inference_mode()
     def init_state(
         self,
-        images,
-        orig_height,
-        orig_width,
+        resource_path,
+        offload_video_to_cpu=False,
+        async_loading_frames=False,
+        video_loader_type="cv2",
     ):
-        """Initialize an inference state from `resource_path` (an image or a video)."""
-        
+        """Initialize an inference state from `resource_path` (an image or a video)."""        
+        images, orig_height, orig_width = load_resource_as_video_frames(
+            resource_path=resource_path,
+            image_size=self.image_size,
+            offload_video_to_cpu=offload_video_to_cpu,
+            img_mean=self.image_mean,
+            img_std=self.image_std,
+            async_loading_frames=async_loading_frames,
+            video_loader_type=video_loader_type,
+        )
         inference_state = {}
         inference_state["images"] = images
         inference_state["image_size"] = self.image_size
@@ -82,7 +91,7 @@ class SCSam3VideoInferenceSpatial(Sam3VideoBase):
         inference_state["feature_cache"] = {}
         inference_state["cached_frame_outputs"] = {}
         inference_state["action_history"] = []  # for logging user actions
-        inference_state["is_image_only"] = False
+        inference_state["is_image_only"] = is_image_type(resource_path)
         return inference_state
 
     @torch.inference_mode()
@@ -959,7 +968,7 @@ class SCSam3VideoInferenceSpatial(Sam3VideoBase):
         return targets
 
 
-class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceSpatial):
+class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
     def __init__(
         self,
         use_prev_mem_frame=False,
@@ -983,12 +992,10 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceS
 
     def _init_new_tracker_state(self, inference_state):
         return self.tracker.init_state(
-            images=inference_state["images"],
             cached_features=inference_state["feature_cache"],
             video_height=inference_state["orig_height"],
             video_width=inference_state["orig_width"],
             num_frames=inference_state["num_frames"],
-
         )
 
     @torch.inference_mode()
@@ -1143,12 +1150,6 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceS
                     ].update({obj_id: refined_score.item()})
 
                 if self.rank == 0:
-                    # ======================== propagate_in_video 패치 =======================
-                    if "cached_frame_outputs" not in inference_state:
-                        inference_state["cached_frame_outputs"] = {}
-                    if frame_idx not in inference_state["cached_frame_outputs"]:
-                        inference_state["cached_frame_outputs"][frame_idx] = {}
-
                     # get predictions from Tracker inference states, it includes the original
                     # VG predictions and the refined predictions from interactivity.
 
@@ -1556,7 +1557,7 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceS
                     fill_holes=True,
                     remove_sprinkles=True,
                 )
-                
+
             # Since the mem encoder has already run for the current input points?
             self.tracker.propagate_in_video_preflight(
                 tracker_state, run_mem_encoder=True
@@ -1583,34 +1584,6 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceS
             new_mask_data = data_list[0].to(self.device)
 
         if self.rank == 0:
-            if "cached_frame_outputs" not in inference_state:
-                inference_state["cached_frame_outputs"] = {}
-            if frame_idx not in inference_state["cached_frame_outputs"]:
-                inference_state["cached_frame_outputs"][frame_idx] = {}
-
-            #=======================================================
-            # 2. [최종 패치] 전역 상태에 객체(obj_id) 공식 등록 및 프롬프트 기록
-            # SAM의 _get_processing_order가 인식할 수 있도록 기초 딕셔너리들을 세팅합니다.
-            if "obj_id_to_idx" not in inference_state:
-                inference_state["obj_id_to_idx"] = {}
-                inference_state["idx_to_obj_id"] = {}
-                inference_state["point_inputs_per_obj"] = {}
-                inference_state["bbox_inputs_per_obj"] = {}
-                inference_state["mask_inputs_per_obj"] = {}
-
-            # 현재 obj_id(예: 2번)가 등록되어 있지 않다면 등록!
-            if obj_id not in inference_state["obj_id_to_idx"]:
-                idx = len(inference_state["obj_id_to_idx"])
-                inference_state["obj_id_to_idx"][obj_id] = idx
-                inference_state["idx_to_obj_id"][idx] = obj_id
-                inference_state["point_inputs_per_obj"][obj_id] = {}
-                inference_state["bbox_inputs_per_obj"][obj_id] = {}
-                inference_state["mask_inputs_per_obj"][obj_id] = {}
-
-            # 포인트와 라벨을 튜플 형태로 저장 (SAM 내부 규격)
-            inference_state["point_inputs_per_obj"][obj_id][frame_idx] = (points, labels)
-            # =======================================================
-
             obj_id_to_mask = self._build_tracker_output(
                 inference_state,
                 frame_idx,
@@ -1630,21 +1603,6 @@ class SCSam3VideoInferenceWithInstanceInteractivitySpatial(SCSam3VideoInferenceS
                 "obj_id_to_score": obj_id_to_score,
                 "obj_id_to_tracker_score": obj_id_to_tracker_score,
             }
-            
-            # =======================================================
-            # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
-            if "previous_stages_out" not in inference_state:
-                inference_state["previous_stages_out"] = {}
-            
-            # 현재 프레임의 결과(out)를 장부에 등록하여 
-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
-            if frame_idx not in inference_state["previous_stages_out"]:
-                inference_state["previous_stages_out"][frame_idx] = out
-            else:
-                # 이미 있다면 안전하게 병합
-                inference_state["previous_stages_out"][frame_idx].update(out)
-            # =======================================================
-
             self._cache_frame_outputs(
                 inference_state,
                 frame_idx,

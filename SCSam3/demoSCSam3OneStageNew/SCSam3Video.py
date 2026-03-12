@@ -203,7 +203,17 @@ class SCSam3Video:
                             mask = torch.tensor(self.masks_spatial[m][obj_id], dtype=torch.float32),
                             obj_id=obj_id,
                         )
-                    )                    
+                    )  
+                else:
+                    response = self.predictor.handle_request(
+                        request=dict(
+                            type="add_prompt",
+                            session_id=self.session_ids[m],
+                            frame_index=frame_idx,
+                            mask = torch.zeros((self.video_height, self.video_width), dtype=torch.float32),
+                            obj_id=obj_id,
+                        )
+                    )               
                     #res_image = show_mask_cv(res_image, response["outputs"]["out_binary_masks"][i] > 0.0, obj_id=obj_id)
             #plt.imshow(res_image)
             #plt.show()

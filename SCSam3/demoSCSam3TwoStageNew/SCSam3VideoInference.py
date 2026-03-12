@@ -1089,7 +1089,6 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                     tracker_state, run_mem_encoder=True
                 )
 
-            print(len(tracker_states_local), tracker_states_local[0].keys())
         for frame_idx in tqdm(processing_order):
             # run Tracker propagation
             if propagation_type == "propagation_partial":

@@ -180,3 +180,4 @@ result
 pretrain_models
 hf_cache
 *.bat
+*.png

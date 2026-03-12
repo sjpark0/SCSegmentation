@@ -199,8 +199,8 @@ class AsyncVideoFrameCPUToGPU:
         img = _load_img_as_tensor_file(self.origin[index], self.image_size)
         if not self.offload_video_to_cpu:
             img = img.cuda()
-            img_mean = img_mean.cuda()
-            img_std = img_std.cuda()
+            self.img_mean = self.img_mean.cuda()
+            self.img_std = self.img_std.cuda()
         img -= self.img_mean
         img /= self.img_std
         self.image = img        

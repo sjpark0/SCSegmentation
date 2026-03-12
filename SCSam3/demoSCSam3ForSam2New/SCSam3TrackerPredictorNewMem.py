@@ -7,12 +7,13 @@ from collections import OrderedDict
 
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
-from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores
-from sam3.model.utils.sam2_utils import load_video_frames
+from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores, select_closest_cond_frames
 from tqdm.auto import tqdm
+import cv2
+import os
+import numpy as np
 
-
-class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
+class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
     """
     The demo class that extends the `Sam3TrackerBase` to handle user interactions
     and manage inference states, with support for multi-object tracking.
@@ -56,19 +57,18 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
     @torch.inference_mode()
     def init_state(
         self,
-        images=None,        
+        images=None,                
         video_height=None,
         video_width=None,
         cached_features=None,
-        num_frames=None,
+        num_frames=None,        
         offload_video_to_cpu=True,
         offload_state_to_cpu=True,
     ):
-        """Initialize a inference state."""                
+        """Initialize a inference state."""
         inference_state = {}
         inference_state["images"] = images
         inference_state["num_frames"] = num_frames
-        
         # whether to offload the video frames to CPU memory
         # turning on this option saves the GPU memory with only a very small overhead
         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
@@ -78,7 +78,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         # and from 24 to 21 when tracking two objects)
         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
         inference_state["device"] = self.device
-        
         inference_state["video_height"] = video_height
         inference_state["video_width"] = video_width
         
@@ -87,7 +86,6 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         else:
             inference_state["storage_device"] = torch.device("cuda")
 
-        
         # inputs on each frame
         inference_state["point_inputs_per_obj"] = {}
         inference_state["mask_inputs_per_obj"] = {}
@@ -124,6 +122,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         inference_state["frames_already_tracked"] = {}
         self.clear_all_points_in_video(inference_state)
         return inference_state
+
     @torch.inference_mode()
     def reset_state(self, inference_state):
         """Remove all input points or mask in all frames throughout the video."""
@@ -136,7 +135,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         inference_state["mask_inputs_per_obj"].clear()
         inference_state["output_dict_per_obj"].clear()
         inference_state["temp_output_dict_per_obj"].clear()
-        
+
     def _reset_tracking_results(self, inference_state):
         """Reset all tracking inputs and results across the videos."""
         for v in inference_state["point_inputs_per_obj"].values():
@@ -207,7 +206,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         normalize_coords=True,
         box=None,
     ):
-        """Add new points to a frame."""        
+        """Add new points to a frame."""
         obj_idx = self._obj_id_to_idx(inference_state, obj_id)
         point_inputs_per_frame = inference_state["point_inputs_per_obj"][obj_idx]
         mask_inputs_per_frame = inference_state["mask_inputs_per_obj"][obj_idx]
@@ -806,7 +805,8 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
     @torch.inference_mode()
     def propagate_in_video(
         self,
-        inference_state,
+        inference_states,
+        spatial_idx,
         start_frame_idx,
         max_frame_num_to_track,
         reverse,
@@ -815,19 +815,27 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         run_mem_encoder=True,
         propagate_preflight=False,
     ):
-        
         """Propagate the input points across frames to track in the entire video."""
         if propagate_preflight:
-            self.propagate_in_video_preflight(inference_state)
+            self.propagate_in_video_preflight(inference_states[spatial_idx])
         # NOTE: This is a copy from the parent class, except that we return object scores as well.
-        output_dict = inference_state["output_dict"]
-        consolidated_frame_inds = inference_state["consolidated_frame_inds"]
+        if inference_states[spatial_idx] == None:
+            return
+        output_dict = inference_states[spatial_idx]["output_dict"]
+        output_dicts = []
+        for m in range(len(inference_states)):
+            if inference_states[m] is None:
+                output_dicts.append(None)
+            else:
+                output_dicts.append(inference_states[m]["output_dict"])
+
+        consolidated_frame_inds = inference_states[spatial_idx]["consolidated_frame_inds"]
         if obj_ids is not None:
             raise NotImplementedError(
                 "Per-object tracking yet for batched inference if not implemented."
             )
-        obj_ids = inference_state["obj_ids"]
-        batch_size = self._get_obj_num(inference_state)
+        obj_ids = inference_states[spatial_idx]["obj_ids"]
+        batch_size = self._get_obj_num(inference_states[spatial_idx])
         if len(output_dict["cond_frame_outputs"]) == 0:
             raise RuntimeError("No points are provided; please add points first")
         clear_non_cond_mem = self.clear_non_cond_mem_around_input and (
@@ -835,7 +843,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         )
 
         processing_order = self._get_processing_order(
-            inference_state,
+            inference_states[spatial_idx],
             start_frame_idx,
             max_frame_num_to_track,
             reverse,
@@ -855,7 +863,7 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
                 obj_scores = current_out["object_score_logits"]
                 if clear_non_cond_mem:
                     # clear non-conditioning memory of the surrounding frames
-                    self._clear_non_cond_mem_around_input(inference_state, frame_idx)
+                    self._clear_non_cond_mem_around_input(inference_states[spatial_idx], frame_idx)
             elif frame_idx in consolidated_frame_inds["non_cond_frame_outputs"]:
                 storage_key = "non_cond_frame_outputs"
                 current_out = output_dict[storage_key][frame_idx]
@@ -863,9 +871,10 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
                 obj_scores = current_out["object_score_logits"]
             else:
                 storage_key = "non_cond_frame_outputs"
-                current_out, pred_masks = self._run_single_frame_inference(
-                    inference_state=inference_state,
-                    output_dict=output_dict,
+                current_out, pred_masks = self._run_single_frame_inference_multiple(
+                    inference_states=inference_states,
+                    output_dicts=output_dicts,
+                    spatial_idx=spatial_idx,
                     frame_idx=frame_idx,
                     batch_size=batch_size,
                     is_init_cond_frame=False,
@@ -879,14 +888,14 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
             # Create slices of per-object outputs for subsequent interaction with each
             # individual object after tracking.
             self._add_output_per_object(
-                inference_state, frame_idx, current_out, storage_key
+                inference_states[spatial_idx], frame_idx, current_out, storage_key
             )
-            inference_state["frames_already_tracked"][frame_idx] = {"reverse": reverse}
+            inference_states[spatial_idx]["frames_already_tracked"][frame_idx] = {"reverse": reverse}
 
             # Resize the output mask to the original video resolution (we directly use
             # the mask scores on GPU for output to avoid any CPU conversion in between)
             low_res_masks, video_res_masks = self._get_orig_video_res_output(
-                inference_state, pred_masks
+                inference_states[spatial_idx], pred_masks
             )
             yield frame_idx, obj_ids, low_res_masks, video_res_masks, obj_scores
 
@@ -1040,7 +1049,10 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
                 )
             else:
                 # Cache miss -- we will run inference on a single image
-                image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
+                #image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
+
+                img = inference_state["images"][frame_idx]
+                image = img.cuda().float().unsqueeze(0)
                 backbone_out = self.forward_image(image)
                 # Cache the most recent frame's feature (for repeated interactions with
                 # a frame; we can use an LRU cache for more frames in the future).
@@ -1065,6 +1077,456 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         features = (expanded_image,) + features
         return features
 
+    def _prepare_memory_conditioned_features_multiple(
+        self,
+        frame_idx,
+        spatial_idx,
+        is_init_cond_frame,
+        current_vision_feats,
+        current_vision_pos_embeds,
+        feat_sizes,
+        output_dicts,
+        num_frames,
+        track_in_reverse=False,  # tracking in reverse time order (for demo usage)
+        use_prev_mem_frame=True,
+    ):
+        """Fuse the current frame's visual feature map with previous memory."""
+        B = current_vision_feats[-1].size(1)  # batch size on this frame
+        C = self.hidden_dim
+        H, W = feat_sizes[-1]  # top-level (lowest-resolution) feature size
+        device = current_vision_feats[-1].device
+        # The case of `self.num_maskmem == 0` below is primarily used for reproducing SAM on images.
+        # In this case, we skip the fusion with any memory.
+        if self.num_maskmem == 0:  # Disable memory and skip fusion
+            pix_feat = current_vision_feats[-1].permute(1, 2, 0).view(B, C, H, W)
+            return pix_feat
+
+        num_obj_ptr_tokens = 0
+        tpos_sign_mul = -1 if track_in_reverse else 1
+        # Step 1: condition the visual features of the current frame on previous memories
+        if not is_init_cond_frame and use_prev_mem_frame:
+            # Retrieve the memories encoded with the maskmem backbone
+            to_cat_prompt, to_cat_prompt_mask, to_cat_prompt_pos_embed = [], [], []
+            # Add conditioning frames's output first (all cond frames have t_pos=0 for
+            # when getting temporal positional embedding below)
+            assert len(output_dicts[spatial_idx]["cond_frame_outputs"]) > 0
+            # Select a maximum number of temporally closest cond frames for cross attention
+            cond_outputs = output_dicts[spatial_idx]["cond_frame_outputs"]
+            selected_cond_outputs, unselected_cond_outputs = select_closest_cond_frames(
+                frame_idx,
+                cond_outputs,
+                self.max_cond_frames_in_attn,
+                keep_first_cond_frame=self.keep_first_cond_frame,
+            )
+            t_pos_and_prevs = [
+                ((frame_idx - t) * tpos_sign_mul, out, True)
+                for t, out in selected_cond_outputs.items()
+            ]
+            # Add last (self.num_maskmem - 1) frames before current frame for non-conditioning memory
+            # the earliest one has t_pos=1 and the latest one has t_pos=self.num_maskmem-1
+            # We also allow taking the memory frame non-consecutively (with r>1), in which case
+            # we take (self.num_maskmem - 2) frames among every r-th frames plus the last frame.
+            r = 1 if self.training else self.memory_temporal_stride_for_eval
+
+            if self.use_memory_selection:
+                valid_indices = self.frame_filter(
+                    output_dicts[spatial_idx], track_in_reverse, frame_idx, num_frames, r
+                )
+
+            for t_pos in range(1, self.num_maskmem):
+                t_rel = self.num_maskmem - t_pos  # how many frames before current frame
+                if self.use_memory_selection:
+                    if t_rel > len(valid_indices):
+                        continue
+                    prev_frame_idx = valid_indices[-t_rel]
+                else:
+                    if t_rel == 1:
+                        # for t_rel == 1, we take the last frame (regardless of r)
+                        if not track_in_reverse:
+                            # the frame immediately before this frame (i.e. frame_idx - 1)
+                            prev_frame_idx = frame_idx - t_rel
+                        else:
+                            # the frame immediately after this frame (i.e. frame_idx + 1)
+                            prev_frame_idx = frame_idx + t_rel
+                    else:
+                        # for t_rel >= 2, we take the memory frame from every r-th frames
+                        if not track_in_reverse:
+                            # first find the nearest frame among every r-th frames before this frame
+                            # for r=1, this would be (frame_idx - 2)
+                            prev_frame_idx = ((frame_idx - 2) // r) * r
+                            # then seek further among every r-th frames
+                            prev_frame_idx = prev_frame_idx - (t_rel - 2) * r
+                        else:
+                            # first find the nearest frame among every r-th frames after this frame
+                            # for r=1, this would be (frame_idx + 2)
+                            prev_frame_idx = -(-(frame_idx + 2) // r) * r
+                            # then seek further among every r-th frames
+                            prev_frame_idx = prev_frame_idx + (t_rel - 2) * r
+
+                out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(prev_frame_idx, None)
+                if out is None:
+                    # If an unselected conditioning frame is among the last (self.num_maskmem - 1)
+                    # frames, we still attend to it as if it's a non-conditioning frame.
+                    out = unselected_cond_outputs.get(prev_frame_idx, None)
+                t_pos_and_prevs.append((t_pos, out, False))
+            
+            # spatial추가
+            s_pos_and_prevs = []            
+            for s_pos in range(-4, 0):
+                prev_spatial_idx = spatial_idx + s_pos
+                if spatial_idx != prev_spatial_idx:                
+                    if output_dicts[prev_spatial_idx] is None:
+                        continue
+                    
+                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)                    
+                    if out is None:
+                        selected_cond_outputs, unselected_cond_outputs1 = select_closest_cond_frames(frame_idx, output_dicts[prev_spatial_idx]["cond_frame_outputs"], self.max_cond_frames_in_attn)            
+                        out = unselected_cond_outputs1.get(frame_idx, None)
+                    s_pos_and_prevs.append((s_pos, out))
+            
+            for t_pos, prev, is_selected_cond_frame in t_pos_and_prevs:
+                if prev is None:
+                    continue  # skip padding frames
+                # "maskmem_features" might have been offloaded to CPU in demo use cases,
+                # so we load it back to GPU (it's a no-op if it's already on GPU).
+                feats = prev["maskmem_features"].cuda(non_blocking=True)
+                seq_len = feats.shape[-2] * feats.shape[-1]
+                to_cat_prompt.append(feats.flatten(2).permute(2, 0, 1))
+                to_cat_prompt_mask.append(
+                    torch.zeros(B, seq_len, device=device, dtype=bool)
+                )
+                # Spatial positional encoding (it might have been offloaded to CPU in eval)
+                maskmem_enc = prev["maskmem_pos_enc"][-1].cuda()
+                maskmem_enc = maskmem_enc.flatten(2).permute(2, 0, 1)
+
+                if (
+                    is_selected_cond_frame
+                    and getattr(self, "cond_frame_spatial_embedding", None) is not None
+                ):
+                    # add a spatial embedding for the conditioning frame
+                    maskmem_enc = maskmem_enc + self.cond_frame_spatial_embedding
+
+                # Temporal positional encoding
+                t = t_pos if not is_selected_cond_frame else 0
+                maskmem_enc = (
+                    maskmem_enc + self.maskmem_tpos_enc[self.num_maskmem - t - 1]
+                )
+                to_cat_prompt_pos_embed.append(maskmem_enc)
+
+            # spatial추가
+            for s_pos, prev in s_pos_and_prevs:
+                if prev is None:
+                    continue  # skip padding frames
+                # "maskmem_features" might have been offloaded to CPU in demo use cases,
+                # so we load it back to GPU (it's a no-op if it's already on GPU).
+                feats = prev["maskmem_features"].to(device, non_blocking=True)
+                to_cat_prompt.append(feats.flatten(2).permute(2, 0, 1))
+                to_cat_prompt_mask.append(
+                    torch.zeros(B, seq_len, device=device, dtype=bool)
+                )
+                
+                # Spatial positional encoding (it might have been offloaded to CPU in eval)
+                maskmem_enc = prev["maskmem_pos_enc"][-1].to(device)
+                maskmem_enc = maskmem_enc.flatten(2).permute(2, 0, 1)
+                # Temporal positional encoding                
+                maskmem_enc = (
+                    maskmem_enc + self.maskmem_tpos_enc[abs(s_pos) - 1]
+                )
+                to_cat_prompt_pos_embed.append(maskmem_enc)
+
+            # Construct the list of past object pointers
+            # Optionally, select only a subset of spatial memory frames during trainining
+            if (
+                self.training
+                and self.prob_to_dropout_spatial_mem > 0
+                and self.rng.random() < self.prob_to_dropout_spatial_mem
+            ):
+                num_spatial_mem_keep = self.rng.integers(len(to_cat_prompt) + 1)
+                keep = self.rng.choice(
+                    range(len(to_cat_prompt)), num_spatial_mem_keep, replace=False
+                ).tolist()
+                to_cat_prompt = [to_cat_prompt[i] for i in keep]
+                to_cat_prompt_mask = [to_cat_prompt_mask[i] for i in keep]
+                to_cat_prompt_pos_embed = [to_cat_prompt_pos_embed[i] for i in keep]
+
+            max_obj_ptrs_in_encoder = min(num_frames, self.max_obj_ptrs_in_encoder)
+            # First add those object pointers from selected conditioning frames
+            # (optionally, only include object pointers in the past during evaluation)
+            if not self.training:
+                ptr_cond_outputs = {
+                    t: out
+                    for t, out in selected_cond_outputs.items()
+                    if (t >= frame_idx if track_in_reverse else t <= frame_idx)
+                }
+            else:
+                ptr_cond_outputs = selected_cond_outputs
+            pos_and_ptrs = [
+                # Temporal pos encoding contains how far away each pointer is from current frame
+                (
+                    (frame_idx - t) * tpos_sign_mul,
+                    out["obj_ptr"],
+                    True,  # is_selected_cond_frame
+                )
+                for t, out in ptr_cond_outputs.items()
+            ]
+
+            # Add up to (max_obj_ptrs_in_encoder - 1) non-conditioning frames before current frame
+            for t_diff in range(1, max_obj_ptrs_in_encoder):
+                if not self.use_memory_selection:
+                    t = frame_idx + t_diff if track_in_reverse else frame_idx - t_diff
+                    if t < 0 or (num_frames is not None and t >= num_frames):
+                        break
+                else:
+                    if -t_diff <= -len(valid_indices):
+                        break
+                    t = valid_indices[-t_diff]
+
+                out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(
+                    t, unselected_cond_outputs.get(t, None)
+                )
+                if out is not None:
+                    pos_and_ptrs.append((t_diff, out["obj_ptr"], False))
+
+            # If we have at least one object pointer, add them to the across attention
+            if len(pos_and_ptrs) > 0:
+                pos_list, ptrs_list, is_selected_cond_frame_list = zip(*pos_and_ptrs)
+                # stack object pointers along dim=0 into [ptr_seq_len, B, C] shape
+                obj_ptrs = torch.stack(ptrs_list, dim=0)
+                if getattr(self, "cond_frame_obj_ptr_embedding", None) is not None:
+                    obj_ptrs = (
+                        obj_ptrs
+                        + self.cond_frame_obj_ptr_embedding
+                        * torch.tensor(is_selected_cond_frame_list, device=device)[
+                            ..., None, None
+                        ].float()
+                    )
+                # a temporal positional embedding based on how far each object pointer is from
+                # the current frame (sine embedding normalized by the max pointer num).
+                obj_pos = self._get_tpos_enc(
+                    pos_list,
+                    max_abs_pos=max_obj_ptrs_in_encoder,
+                    device=device,
+                )
+                # expand to batch size
+                obj_pos = obj_pos.unsqueeze(1).expand(-1, B, -1)
+
+                if self.mem_dim < C:
+                    # split a pointer into (C // self.mem_dim) tokens for self.mem_dim < C
+                    obj_ptrs = obj_ptrs.reshape(-1, B, C // self.mem_dim, self.mem_dim)
+                    obj_ptrs = obj_ptrs.permute(0, 2, 1, 3).flatten(0, 1)
+                    obj_pos = obj_pos.repeat_interleave(C // self.mem_dim, dim=0)
+                to_cat_prompt.append(obj_ptrs)
+                to_cat_prompt_mask.append(None)  # "to_cat_prompt_mask" is not used
+                to_cat_prompt_pos_embed.append(obj_pos)
+                num_obj_ptr_tokens = obj_ptrs.shape[0]
+            else:
+                num_obj_ptr_tokens = 0
+        else:
+            # directly add no-mem embedding (instead of using the transformer encoder)
+            pix_feat_with_mem = current_vision_feats[-1] + self.no_mem_embed
+            pix_feat_with_mem = pix_feat_with_mem.permute(1, 2, 0).view(B, C, H, W)
+            return pix_feat_with_mem
+
+            # Use a dummy token on the first grame (to avoid emtpy memory input to tranformer encoder)
+            to_cat_prompt = [self.no_mem_embed.expand(1, B, self.mem_dim)]
+            to_cat_prompt_mask = [torch.zeros(B, 1, device=device, dtype=bool)]
+            to_cat_prompt_pos_embed = [self.no_mem_pos_enc.expand(1, B, self.mem_dim)]
+
+        # Step 2: Concatenate the memories and forward through the transformer encoder
+        prompt = torch.cat(to_cat_prompt, dim=0)
+        prompt_mask = None  # For now, we always masks are zeros anyways
+        prompt_pos_embed = torch.cat(to_cat_prompt_pos_embed, dim=0)
+        encoder_out = self.transformer.encoder(
+            src=current_vision_feats,
+            src_key_padding_mask=[None],
+            src_pos=current_vision_pos_embeds,
+            prompt=prompt,
+            prompt_pos=prompt_pos_embed,
+            prompt_key_padding_mask=prompt_mask,
+            feat_sizes=feat_sizes,
+            num_obj_ptr_tokens=num_obj_ptr_tokens,
+        )
+        # reshape the output (HW)BC => BCHW
+        pix_feat_with_mem = encoder_out["memory"].permute(1, 2, 0).view(B, C, H, W)
+        return pix_feat_with_mem
+    
+    def track_step_multiple(
+        self,
+        frame_idx,
+        spatial_idx,
+        is_init_cond_frame,
+        current_vision_feats,
+        current_vision_pos_embeds,
+        feat_sizes,
+        image,
+        point_inputs,
+        mask_inputs,
+        output_dicts,
+        num_frames,
+        track_in_reverse=False,  # tracking in reverse time order (for demo usage)
+        # Whether to run the memory encoder on the predicted masks. Sometimes we might want
+        # to skip the memory encoder with `run_mem_encoder=False`. For example,
+        # in demo we might call `track_step` multiple times for each user click,
+        # and only encode the memory when the user finalizes their clicks. And in ablation
+        # settings like SAM training on static images, we don't need the memory encoder.
+        run_mem_encoder=True,
+        # The previously predicted SAM mask logits (which can be fed together with new clicks in demo).
+        prev_sam_mask_logits=None,
+        use_prev_mem_frame=True,
+    ):
+        current_out = {"point_inputs": point_inputs, "mask_inputs": mask_inputs}
+        # High-resolution feature maps for the SAM head, reshape (HW)BC => BCHW
+        if len(current_vision_feats) > 1:
+            high_res_features = [
+                x.permute(1, 2, 0).view(x.size(1), x.size(2), *s)
+                for x, s in zip(current_vision_feats[:-1], feat_sizes[:-1])
+            ]
+        else:
+            high_res_features = None
+        if mask_inputs is not None:
+            # (see it as a GT mask) without using a SAM prompt encoder + mask decoder.
+            pix_feat = current_vision_feats[-1].permute(1, 2, 0)
+            pix_feat = pix_feat.view(-1, self.hidden_dim, *feat_sizes[-1])
+            sam_outputs = self._use_mask_as_output(
+                pix_feat, high_res_features, mask_inputs
+            )
+        else:
+            # fused the visual feature with previous memory features in the memory bank
+            pix_feat_with_mem = self._prepare_memory_conditioned_features_multiple(
+                frame_idx=frame_idx,
+                spatial_idx=spatial_idx,
+                is_init_cond_frame=is_init_cond_frame,
+                current_vision_feats=current_vision_feats[-1:],
+                current_vision_pos_embeds=current_vision_pos_embeds[-1:],
+                feat_sizes=feat_sizes[-1:],
+                output_dicts=output_dicts,
+                num_frames=num_frames,
+                track_in_reverse=track_in_reverse,
+                use_prev_mem_frame=use_prev_mem_frame,
+            )
+            # apply SAM-style segmentation head
+            # here we might feed previously predicted low-res SAM mask logits into the SAM mask decoder,
+            # e.g. in demo where such logits come from earlier interaction instead of correction sampling
+            # (in this case, the SAM mask decoder should have `self.iter_use_prev_mask_pred=True`, and
+            # any `mask_inputs` shouldn't reach here as they are sent to _use_mask_as_output instead)
+            if prev_sam_mask_logits is not None:
+                assert self.iter_use_prev_mask_pred
+                assert point_inputs is not None and mask_inputs is None
+                mask_inputs = prev_sam_mask_logits
+            multimask_output = self._use_multimask(is_init_cond_frame, point_inputs)
+            sam_outputs = self._forward_sam_heads(
+                backbone_features=pix_feat_with_mem,
+                point_inputs=point_inputs,
+                mask_inputs=mask_inputs,
+                high_res_features=high_res_features,
+                multimask_output=multimask_output,
+            )
+        (
+            _,
+            high_res_multimasks,
+            ious,
+            low_res_masks,
+            high_res_masks,
+            obj_ptr,
+            object_score_logits,
+        ) = sam_outputs
+        # Use the final prediction (after all correction steps for output and eval)
+        current_out["pred_masks"] = low_res_masks
+        current_out["pred_masks_high_res"] = high_res_masks
+        current_out["obj_ptr"] = obj_ptr
+        if self.use_memory_selection:
+            current_out["object_score_logits"] = object_score_logits
+            iou_score = ious.max(-1)[0]
+            current_out["iou_score"] = iou_score
+            current_out["eff_iou_score"] = self.cal_mem_score(
+                object_score_logits, iou_score
+            )
+        if not self.training:
+            # Only add this in inference (to avoid unused param in activation checkpointing;
+            # it's mainly used in the demo to encode spatial memories w/ consolidated masks)
+            current_out["object_score_logits"] = object_score_logits
+
+        # Finally run the memory encoder on the predicted mask to encode
+        # it into a new memory feature (that can be used in future frames)
+        # (note that `self.num_maskmem == 0` is primarily used for reproducing SAM on
+        # images, in which case we'll just skip memory encoder to save compute).
+        if run_mem_encoder and self.num_maskmem > 0:
+            high_res_masks_for_mem_enc = high_res_masks
+            maskmem_features, maskmem_pos_enc = self._encode_new_memory(
+                image=image,
+                current_vision_feats=current_vision_feats,
+                feat_sizes=feat_sizes,
+                pred_masks_high_res=high_res_masks_for_mem_enc,
+                object_score_logits=object_score_logits,
+                is_mask_from_pts=(point_inputs is not None),
+                output_dict=output_dicts[spatial_idx],
+                is_init_cond_frame=is_init_cond_frame,
+            )
+            current_out["maskmem_features"] = maskmem_features
+            current_out["maskmem_pos_enc"] = maskmem_pos_enc
+        else:
+            current_out["maskmem_features"] = None
+            current_out["maskmem_pos_enc"] = None
+
+        # Optionally, offload the outputs to CPU memory during evaluation to avoid
+        # GPU OOM on very long videos or very large resolution or too many objects
+        if self.offload_output_to_cpu_for_eval and not self.training:
+            # Here we only keep those keys needed for evaluation to get a compact output
+            trimmed_out = {
+                "pred_masks": current_out["pred_masks"].cpu(),
+                "pred_masks_high_res": current_out["pred_masks_high_res"].cpu(),
+                # other items for evaluation (these are small tensors so we keep them on GPU)
+                "obj_ptr": current_out["obj_ptr"],
+                "object_score_logits": current_out["object_score_logits"],
+            }
+            if run_mem_encoder and self.num_maskmem > 0:
+                trimmed_out["maskmem_features"] = maskmem_features.cpu()
+                trimmed_out["maskmem_pos_enc"] = [x.cpu() for x in maskmem_pos_enc]
+            if self.use_memory_selection:
+                trimmed_out["iou_score"] = current_out["iou_score"].cpu()
+                trimmed_out["eff_iou_score"] = current_out["eff_iou_score"].cpu()
+            current_out = trimmed_out
+
+        # Optionally, trim the output of past non-conditioning frame (r * num_maskmem frames
+        # before the current frame) during evaluation. This is intended to save GPU or CPU
+        # memory for semi-supervised VOS eval, where only the first frame receives prompts.
+        def _trim_past_out(past_out, current_out):
+            if past_out is None:
+                return None
+            return {
+                "pred_masks": past_out["pred_masks"],
+                "obj_ptr": past_out["obj_ptr"],
+                "object_score_logits": past_out["object_score_logits"],
+            }
+
+        if self.trim_past_non_cond_mem_for_eval and not self.training:
+            r = self.memory_temporal_stride_for_eval
+            past_frame_idx = frame_idx - r * self.num_maskmem
+            past_out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(past_frame_idx, None)
+
+            if past_out is not None:
+                print(past_out.get("eff_iou_score", 0))
+                if (
+                    self.use_memory_selection
+                    and past_out.get("eff_iou_score", 0) < self.mf_threshold
+                ) or not self.use_memory_selection:
+                    output_dicts[spatial_idx]["non_cond_frame_outputs"][past_frame_idx] = (
+                        _trim_past_out(past_out, current_out)
+                    )
+
+            if (
+                self.use_memory_selection and not self.offload_output_to_cpu_for_eval
+            ):  ## design for memory selection, trim too old frames to save memory
+                far_old_frame_idx = frame_idx - 20 * self.max_obj_ptrs_in_encoder
+                past_out = output_dicts[spatial_idx]["non_cond_frame_outputs"].get(
+                    far_old_frame_idx, None
+                )
+                if past_out is not None:
+                    output_dicts[spatial_idx]["non_cond_frame_outputs"][far_old_frame_idx] = (
+                        _trim_past_out(past_out, current_out)
+                    )
+
+        return current_out
     def _run_single_frame_inference(
         self,
         inference_state,
@@ -1118,6 +1580,77 @@ class SCSam3TrackerPredictorSpatial(Sam3TrackerBase):
         pred_masks = pred_masks_gpu.to(storage_device, non_blocking=True)
         # "maskmem_pos_enc" is the same across frames, so we only need to store one copy of it
         maskmem_pos_enc = self._get_maskmem_pos_enc(inference_state, current_out)
+        # object pointer is a small tensor, so we always keep it on GPU memory for fast access
+        obj_ptr = current_out["obj_ptr"]
+        object_score_logits = current_out["object_score_logits"]
+        # make a compact version of this frame's output to reduce the state size
+        compact_current_out = {
+            "maskmem_features": maskmem_features,
+            "maskmem_pos_enc": maskmem_pos_enc,
+            "pred_masks": pred_masks,
+            "obj_ptr": obj_ptr,
+            "object_score_logits": object_score_logits,
+        }
+        if self.use_memory_selection:
+            compact_current_out["iou_score"] = current_out["iou_score"]
+            compact_current_out["eff_iou_score"] = current_out["eff_iou_score"]
+        return compact_current_out, pred_masks_gpu
+    
+    def _run_single_frame_inference_multiple(
+        self,
+        inference_states,
+        output_dicts,
+        spatial_idx,
+        frame_idx,
+        batch_size,
+        is_init_cond_frame,
+        point_inputs,
+        mask_inputs,
+        reverse,
+        run_mem_encoder,
+        prev_sam_mask_logits=None,
+        use_prev_mem_frame=True,
+    ):
+        """Run tracking on a single frame based on current inputs and previous memory."""
+        # Retrieve correct image features
+        (
+            image,
+            _,
+            current_vision_feats,
+            current_vision_pos_embeds,
+            feat_sizes,
+        ) = self._get_image_feature(inference_states[spatial_idx], frame_idx, batch_size)
+
+        # point and mask should not appear as input simultaneously on the same frame
+        assert point_inputs is None or mask_inputs is None
+        current_out = self.track_step_multiple(
+            frame_idx=frame_idx,
+            spatial_idx=spatial_idx,
+            is_init_cond_frame=is_init_cond_frame,
+            current_vision_feats=current_vision_feats,
+            current_vision_pos_embeds=current_vision_pos_embeds,
+            feat_sizes=feat_sizes,
+            image=image,
+            point_inputs=point_inputs,
+            mask_inputs=mask_inputs,
+            output_dicts=output_dicts,
+            num_frames=inference_states[spatial_idx]["num_frames"],
+            track_in_reverse=reverse,
+            run_mem_encoder=run_mem_encoder,
+            prev_sam_mask_logits=prev_sam_mask_logits,
+            use_prev_mem_frame=use_prev_mem_frame,
+        )
+
+        # optionally offload the output to CPU memory to save GPU space
+        storage_device = inference_states[spatial_idx]["storage_device"]
+        maskmem_features = current_out["maskmem_features"]
+        if maskmem_features is not None:
+            maskmem_features = maskmem_features.to(torch.bfloat16)
+            maskmem_features = maskmem_features.to(storage_device, non_blocking=True)
+        pred_masks_gpu = current_out["pred_masks"]
+        pred_masks = pred_masks_gpu.to(storage_device, non_blocking=True)
+        # "maskmem_pos_enc" is the same across frames, so we only need to store one copy of it
+        maskmem_pos_enc = self._get_maskmem_pos_enc(inference_states[spatial_idx], current_out)
         # object pointer is a small tensor, so we always keep it on GPU memory for fast access
         obj_ptr = current_out["obj_ptr"]
         object_score_logits = current_out["object_score_logits"]

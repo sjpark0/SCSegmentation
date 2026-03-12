@@ -61,7 +61,9 @@ class SCSam3VideoPredictor:
         request_type = request["type"]
         if request_type == "start_session":
             return self.start_session(
-                resource_path=request["resource_path"],
+                images=request["images"],
+                orig_height=request["orig_height"],
+                orig_width=request["orig_width"],
                 session_id=request.get("session_id", None),
             )
         elif request_type == "add_prompt":
@@ -103,7 +105,7 @@ class SCSam3VideoPredictor:
         else:
             raise RuntimeError(f"invalid request type: {request_type}")
 
-    def start_session(self, resource_path, session_id=None):
+    def start_session(self, images, orig_height, orig_width, session_id=None):
         """
         Start a new inference session on an image or a video. Here `resource_path`
         can be either a path to an image file (for image inference) or an MP4 file
@@ -114,11 +116,7 @@ class SCSam3VideoPredictor:
         a session id and return it.
         """
         # get an initial inference_state from the model
-        inference_state = self.model.init_state(
-            resource_path=resource_path,
-            async_loading_frames=self.async_loading_frames,
-            video_loader_type=self.video_loader_type,
-        )
+        inference_state = self.model.init_state(images, orig_height, orig_width)
         if not session_id:
             session_id = str(uuid.uuid4())
         self._ALL_INFERENCE_STATES[session_id] = {
