@@ -1,0 +1,153 @@
+--- sam3/sam3/model/sam3_tracking_predictor.py	2026-02-23 16:08:44.750701499 +0900
++++ demoSCSam3OneStageNew/SCSam3TrackerPredictor.py	2026-03-09 09:28:06.359556132 +0900
+@@ -8,11 +8,12 @@
+ import torch
+ from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
+ from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores
+-from sam3.model.utils.sam2_utils import load_video_frames
+ from tqdm.auto import tqdm
++import cv2
++import os
++import numpy as np
+ 
+-
+-class Sam3TrackerPredictor(Sam3TrackerBase):
++class SCSam3TrackerPredictor(Sam3TrackerBase):
+     """
+     The demo class that extends the `Sam3TrackerBase` to handle user interactions
+     and manage inference states, with support for multi-object tracking.
+@@ -56,17 +57,19 @@
+     @torch.inference_mode()
+     def init_state(
+         self,
++        images=None,                
+         video_height=None,
+         video_width=None,
+-        num_frames=None,
+-        video_path=None,
+         cached_features=None,
+-        offload_video_to_cpu=False,
+-        offload_state_to_cpu=False,
+-        async_loading_frames=False,
++        num_frames=None,
++        offload_video_to_cpu=True,
++        offload_state_to_cpu=True,
+     ):
+         """Initialize a inference state."""
+         inference_state = {}
++        inference_state["images"] = images
++        inference_state["num_frames"] = num_frames
++        
+         # whether to offload the video frames to CPU memory
+         # turning on this option saves the GPU memory with only a very small overhead
+         inference_state["offload_video_to_cpu"] = offload_video_to_cpu
+@@ -76,28 +79,14 @@
+         # and from 24 to 21 when tracking two objects)
+         inference_state["offload_state_to_cpu"] = offload_state_to_cpu
+         inference_state["device"] = self.device
++        inference_state["video_height"] = video_height
++        inference_state["video_width"] = video_width
++        
+         if offload_state_to_cpu:
+             inference_state["storage_device"] = torch.device("cpu")
+         else:
+             inference_state["storage_device"] = torch.device("cuda")
+ 
+-        if video_path is not None:
+-            images, video_height, video_width = load_video_frames(
+-                video_path=video_path,
+-                image_size=self.image_size,
+-                offload_video_to_cpu=offload_video_to_cpu,
+-                async_loading_frames=async_loading_frames,
+-                compute_device=inference_state["storage_device"],
+-            )
+-            inference_state["images"] = images
+-            inference_state["num_frames"] = len(images)
+-            inference_state["video_height"] = video_height
+-            inference_state["video_width"] = video_width
+-        else:
+-            # the original video height and width, used for resizing final output scores
+-            inference_state["video_height"] = video_height
+-            inference_state["video_width"] = video_width
+-            inference_state["num_frames"] = num_frames
+         # inputs on each frame
+         inference_state["point_inputs_per_obj"] = {}
+         inference_state["mask_inputs_per_obj"] = {}
+@@ -135,6 +124,34 @@
+         self.clear_all_points_in_video(inference_state)
+         return inference_state
+ 
++    @torch.inference_mode()
++    def reset_state(self, inference_state):
++        """Remove all input points or mask in all frames throughout the video."""
++        self._reset_tracking_results(inference_state)
++        # Remove all object ids
++        inference_state["obj_id_to_idx"].clear()
++        inference_state["obj_idx_to_id"].clear()
++        inference_state["obj_ids"].clear()
++        inference_state["point_inputs_per_obj"].clear()
++        inference_state["mask_inputs_per_obj"].clear()
++        inference_state["output_dict_per_obj"].clear()
++        inference_state["temp_output_dict_per_obj"].clear()
++
++    def _reset_tracking_results(self, inference_state):
++        """Reset all tracking inputs and results across the videos."""
++        for v in inference_state["point_inputs_per_obj"].values():
++            v.clear()
++        for v in inference_state["mask_inputs_per_obj"].values():
++            v.clear()
++        for v in inference_state["output_dict_per_obj"].values():
++            v["cond_frame_outputs"].clear()
++            v["non_cond_frame_outputs"].clear()
++        for v in inference_state["temp_output_dict_per_obj"].values():
++            v["cond_frame_outputs"].clear()
++            v["non_cond_frame_outputs"].clear()
++        for v in inference_state["frames_tracked_per_obj"].values():
++            v.clear()
++
+     def _obj_id_to_idx(self, inference_state, obj_id):
+         """Map client-side object id to model-side object index."""
+         obj_idx = inference_state["obj_id_to_idx"].get(obj_id, None)
+@@ -219,7 +236,7 @@
+                 points = points * self.image_size
+             if box is not None:
+                 box = box * self.image_size
+-
++        
+         # If `box` is provided, we add it as the first two points with labels 2 and 3
+         # along with the user-provided points (consistent with how SAM 2 is trained).
+         if box is not None:
+@@ -355,6 +372,7 @@
+ 
+         assert mask.dim() == 2
+         mask_H, mask_W = mask.shape
++        
+         mask_inputs_orig = mask[None, None]  # add batch and channel dimension
+         mask_inputs_orig = mask_inputs_orig.float().to(inference_state["device"])
+ 
+@@ -812,6 +830,13 @@
+         batch_size = self._get_obj_num(inference_state)
+         if len(output_dict["cond_frame_outputs"]) == 0:
+             raise RuntimeError("No points are provided; please add points first")
++        
++        # [수정 후: 마스크 장부가 있으면 에러 패스!]        
++        #has_mask = "mask_inputs_per_obj" in inference_state and any(len(v) > 0 for v in inference_state["mask_inputs_per_obj"].values())
++
++        #if len(output_dict.get("cond_frame_outputs", {})) == 0 and not has_mask:
++        #    raise RuntimeError("No points or masks are provided; please add prompts first")
++        
+         clear_non_cond_mem = self.clear_non_cond_mem_around_input and (
+             self.clear_non_cond_mem_for_multi_obj or batch_size <= 1
+         )
+@@ -1022,7 +1047,10 @@
+                 )
+             else:
+                 # Cache miss -- we will run inference on a single image
+-                image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
++                #image = inference_state["images"][frame_idx].cuda().float().unsqueeze(0)
++
++                img = inference_state["images"][frame_idx]
++                image = img.cuda().float().unsqueeze(0)
+                 backbone_out = self.forward_image(image)
+                 # Cache the most recent frame's feature (for repeated interactions with
+                 # a frame; we can use an LRU cache for more frames in the future).

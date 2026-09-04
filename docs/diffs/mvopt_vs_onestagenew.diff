@@ -1,0 +1,360 @@
+--- demoSCSam3OneStageNew/SCSam3TrackerPredictor.py	2026-03-09 09:28:06.359556132 +0900
++++ demoSCSam3MVOpt/SCSam3TrackerPredictor.py	2026-09-04 01:00:31.229163648 +0900
+@@ -404,7 +404,17 @@
+         # convert mask_inputs_video_res to binary (threshold at 0.5 as it is in range 0~1)
+         mask_inputs_video_res = mask_inputs_video_res > 0.5
+ 
+-        mask_inputs_per_frame[frame_idx] = mask_inputs_video_res
++        # Only the KEYS of `mask_inputs_per_frame` are ever read: `.pop()` at
++        # :267 and :940 (return value discarded), `.keys()` at :759-760, `in`
++        # at :953, `set.update(dict)` at :1241 (iterates keys) and the key
++        # remap in `_map_keys` at :1274 (carries the value through untouched).
++        # No reader consumes the value, so store a zero-storage meta placeholder
++        # of the same shape/dtype instead of an H*W bool mask on the compute
++        # device.  The local `mask_inputs_video_res` is deliberately left
++        # untouched: it still carries the real mask for the uses at :447/:459.
++        mask_inputs_per_frame[frame_idx] = torch.empty(
++            mask_inputs_video_res.shape, dtype=torch.bool, device="meta"
++        )
+         point_inputs_per_frame.pop(frame_idx, None)
+         # If this frame hasn't been tracked before, we treat it as an initial conditioning
+         # frame, meaning that the inputs points are to generate segments on this frame without
+@@ -1388,6 +1398,22 @@
+         pixel_level_non_overlapping_masks = super()._apply_non_overlapping_constraints(
+             pred_masks_single_score
+         )
++        # Memory fast path, mathematically identical for a boolean `pred_masks` with
++        # `background_value == 0` -- the only way this package calls this function (see
++        # SCSam3VideoInference.py:463, which asserts the masks are bool, and :506, which
++        # passes background_value=0). For a bool input, torch.clamp(pred_masks, max=0)
++        # is an all-zero tensor, so the general torch.where below reduces to
++        # `pred_masks & (pixel_level_non_overlapping_masks > 0)` -- but materialized in
++        # int64, because a Python-int `max` promotes bool -> int64. Computing the same
++        # conjunction in bool avoids the two int64 (N, 1, H, W) temporaries (the clamp
++        # and the where output) that dominate this call's peak memory.
++        # NOTE: this branch returns bool instead of the promoted int64; both call sites
++        # immediately threshold the result with `> 0`, so the output is bit-identical.
++        if pred_masks.dtype == torch.bool and background_value == 0:
++            del pred_masks_single_score  # frees one float32 (N, 1, H, W) early
++            keep = pixel_level_non_overlapping_masks > 0
++            keep &= pred_masks  # in-place on the freshly allocated bool tensor
++            return keep
+         # Replace object scores with pixel scores. Note, that now only one object can claim the overlapping region
+         pred_masks = torch.where(
+             pixel_level_non_overlapping_masks > 0,
+--- demoSCSam3OneStageNew/SCSam3TrackerPredictorNewMem.py	2026-03-10 18:54:27.249319673 +0900
++++ demoSCSam3MVOpt/SCSam3TrackerPredictorNewMem.py	2026-09-04 01:00:31.228915562 +0900
+@@ -404,7 +404,18 @@
+         # convert mask_inputs_video_res to binary (threshold at 0.5 as it is in range 0~1)
+         mask_inputs_video_res = mask_inputs_video_res > 0.5
+ 
+-        mask_inputs_per_frame[frame_idx] = mask_inputs_video_res
++        # Only the KEYS of `mask_inputs_per_frame` are ever read: `.pop()` at
++        # :267 and :951 (return value discarded), `.keys()` at :759-760, `in`
++        # at :964, `set.update(dict)` at :1775 (iterates keys) and the key
++        # remap in `_map_keys` at :1808 (carries the value through untouched).
++        # No reader consumes the value, so store a zero-storage meta placeholder
++        # of the same shape/dtype instead of an H*W bool mask on the compute
++        # device (33 objs x 45 views x 2560x1920 = 6.8 GiB of GPU memory).
++        # The local `mask_inputs_video_res` is deliberately left untouched: it
++        # still carries the real mask for the `torch.where` uses at :447/:459.
++        mask_inputs_per_frame[frame_idx] = torch.empty(
++            mask_inputs_video_res.shape, dtype=torch.bool, device="meta"
++        )
+         point_inputs_per_frame.pop(frame_idx, None)
+         # If this frame hasn't been tracked before, we treat it as an initial conditioning
+         # frame, meaning that the inputs points are to generate segments on this frame without
+@@ -1922,6 +1933,22 @@
+         pixel_level_non_overlapping_masks = super()._apply_non_overlapping_constraints(
+             pred_masks_single_score
+         )
++        # Memory fast path, mathematically identical for a boolean `pred_masks` with
++        # `background_value == 0` -- the only way this package calls this function (see
++        # SCSam3VideoInferenceNewMem.py:465, which asserts the masks are bool, and :508,
++        # which passes background_value=0). For a bool input, torch.clamp(pred_masks,
++        # max=0) is an all-zero tensor, so the general torch.where below reduces to
++        # `pred_masks & (pixel_level_non_overlapping_masks > 0)` -- but materialized in
++        # int64, because a Python-int `max` promotes bool -> int64. Computing the same
++        # conjunction in bool avoids the two int64 (N, 1, H, W) temporaries (the clamp
++        # and the where output) that dominate this call's peak memory.
++        # NOTE: this branch returns bool instead of the promoted int64; both call sites
++        # immediately threshold the result with `> 0`, so the output is bit-identical.
++        if pred_masks.dtype == torch.bool and background_value == 0:
++            del pred_masks_single_score  # frees one float32 (N, 1, H, W) early
++            keep = pixel_level_non_overlapping_masks > 0
++            keep &= pred_masks  # in-place on the freshly allocated bool tensor
++            return keep
+         # Replace object scores with pixel scores. Note, that now only one object can claim the overlapping region
+         pred_masks = torch.where(
+             pixel_level_non_overlapping_masks > 0,
+--- demoSCSam3OneStageNew/SCSam3Video.py	2026-03-10 16:27:41.234472497 +0900
++++ demoSCSam3MVOpt/SCSam3Video.py	2026-09-04 01:00:31.229647818 +0900
+@@ -15,6 +15,12 @@
+         gpus_to_use = range(torch.cuda.device_count())
+         self.predictor_spatial = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)        
+         self.predictor_spatial.model.fill_hole_area = 0
++        # This package HAS a separate cross-view predictor.  The flag is what
++        # callers must test to pick the propagate request shape: the model
++        # itself is dropped by RetireSpatialPredictor() once the cross-view
++        # pass is done, so `hasattr(self, "predictor_spatial")` is not a safe
++        # proxy for "this is the NewMem package".
++        self.uses_spatial_predictor = True
+ 
+         self.predictor = build_scsam3_video_predictor_newmem(gpus_to_use=gpus_to_use)        
+         self.predictor.model.fill_hole_area = 0
+@@ -28,6 +34,43 @@
+         self.input_labels = {}
+         self.session_ids = []
+ 
++    def RetireSpatialPredictor(self):
++        """Free the cross-view model and its session.  Call after the cross-view pass.
++
++        Only LoadCameraFolders / AddReferenceMask / PropagateAcrossViews touch
++        `predictor_spatial`; the temporal pass and the write loop run entirely
++        on `self.predictor`.  `masks_spatial` is untouched (its tensors are
++        fresh bool tensors, not views into any model state), so the seeds that
++        TrackForward feeds back in are bit-identical.
++
++        The attribute is set to None rather than deleted so that an older
++        caller sniffing `hasattr(self, "predictor_spatial")` still takes the
++        multi-session branch; `uses_spatial_predictor` is the flag to test.
++        """
++        import gc
++
++        predictor = getattr(self, "predictor_spatial", None)
++        if predictor is None:
++            return
++        session_id = getattr(self, "session_id_statial", None)
++        if session_id is not None:
++            # drops the N-view pseudo-video, the cross-view feature cache and
++            # the per-view/per-object tracker memories (host side)
++            predictor.handle_request(
++                request=dict(type="close_session", session_id=session_id)
++            )
++            self.session_id_statial = None
++        # Drop the parameters outright instead of `.cpu()`-ing them: a host
++        # copy would cost ~3.2 GiB of RAM, and host RAM is the resource that
++        # has been killing the machine.  The bf16 casts of these weights are
++        # still pinned by the global autocast cache, so the caller must also
++        # run torch.clear_autocast_cache() to actually get the memory back.
++        predictor.model = None
++        self.predictor_spatial = None
++        del predictor
++        gc.collect()
++        torch.cuda.empty_cache()
++
+     def LoadVideo_Folder(self, folder, perms):
+         self.folder = folder
+         self.numImage = len(perms)        
+--- demoSCSam3OneStageNew/SCSam3VideoInference.py	2026-03-09 09:28:06.361833437 +0900
++++ demoSCSam3MVOpt/SCSam3VideoInference.py	2026-09-04 01:00:31.228070303 +0900
+@@ -1653,16 +1653,12 @@
+ 
+             # =======================================================
+             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
+-            if "previous_stages_out" not in inference_state:
+-                inference_state["previous_stages_out"] = {}
+-            
+-            # 현재 프레임의 결과(out)를 장부에 등록하여 
+-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
+-            if frame_idx not in inference_state["previous_stages_out"]:
+-                inference_state["previous_stages_out"][frame_idx] = out
+-            else:
+-                # 이미 있다면 안전하게 병합
+-                inference_state["previous_stages_out"][frame_idx].update(out)
++            # Mark this frame as having outputs, the same way upstream SAM 3 does
++            # in `_run_single_frame_inference`. Every reader of
++            # "previous_stages_out" only tests it against None, and storing the
++            # full `out` dict here pins its video-resolution GPU masks for the
++            # lifetime of the session.
++            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+             # =======================================================
+             
+             self._cache_frame_outputs(
+@@ -1877,7 +1873,13 @@
+                 inference_state["mask_inputs_per_obj"][obj_id] = {}
+ 
+             # 포인트와 라벨을 튜플 형태로 저장 (SAM 내부 규격)
+-            inference_state["mask_inputs_per_obj"][obj_id][frame_idx] = mask
++            # [MEM] Do not retain the caller's prompt mask here. This video-level
++            # mask_inputs_per_obj is write-only: no reader exists in this package
++            # (the tracker keeps its own copy, keyed by obj_idx, at
++            # SCSam3TrackerPredictor.py:407, and every read of the name -- :2004
++            # here and the tracker sites -- is on a tracker_state, not this dict).
++            # Storing it pinned one fp32 video-res tensor (H*W*4 bytes) of host RAM
++            # per prompted object for the whole session.
+             # =======================================================
+ 
+             obj_id_to_mask = self._build_tracker_output(
+@@ -1902,16 +1904,12 @@
+ 
+             # =======================================================
+             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
+-            if "previous_stages_out" not in inference_state:
+-                inference_state["previous_stages_out"] = {}
+-            
+-            # 현재 프레임의 결과(out)를 장부에 등록하여 
+-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
+-            if frame_idx not in inference_state["previous_stages_out"]:
+-                inference_state["previous_stages_out"][frame_idx] = out
+-            else:
+-                # 이미 있다면 안전하게 병합
+-                inference_state["previous_stages_out"][frame_idx].update(out)
++            # Mark this frame as having outputs, the same way upstream SAM 3 does
++            # in `_run_single_frame_inference`. Every reader of
++            # "previous_stages_out" only tests it against None, and storing the
++            # full `out` dict here pins its video-resolution GPU masks for the
++            # lifetime of the session.
++            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+             # =======================================================
+             
+             self._cache_frame_outputs(
+--- demoSCSam3OneStageNew/SCSam3VideoInferenceNewMem.py	2026-03-09 11:24:55.093521382 +0900
++++ demoSCSam3MVOpt/SCSam3VideoInferenceNewMem.py	2026-09-04 01:02:05.182313124 +0900
+@@ -32,6 +32,11 @@
+ logger = get_logger(__name__)
+ 
+ 
++# Drop consumed frames from cached_frame_outputs during partial propagation.
++# Off by default: sound only for a single forward walk (see
++# _trim_cached_frame_outputs).
++TRIM_CACHED_OUTPUTS = os.environ.get("SCSAM3_TRIM_CACHED_OUTPUTS", "").strip() not in ("", "0")
++
+ class SCSam3VideoInferenceNewMem(Sam3VideoBase):
+     TEXT_ID_FOR_TEXT = 0
+     TEXT_ID_FOR_VISUAL = 1
+@@ -521,6 +526,37 @@
+         }
+         return outputs
+ 
++    def _trim_cached_frame_outputs(self, inference_state, keep_frame_idx, reverse=False):
++        """Drop already-consumed frame entries from `cached_frame_outputs`.
++
++        The cache exists so a later partial propagation can MERGE a refined
++        object into the VG predictions already stored for each frame
++        (`_build_tracker_output` reads the current frame's entry as its merge
++        base).  When the caller walks forward once and consumes each frame as
++        it is yielded - what the MVSeg runner does - those past entries are
++        dead weight, and at (views x objects x frames) full-resolution masks
++        they are what exhausts host RAM.
++
++        Two guards keep this from corrupting the interactive path:
++          * only strictly-past frames are dropped, never one the walk has not
++            reached yet;
++          * a session that has ever run a full VG propagation is left alone,
++            because then every frame carries predictions this loop is meant to
++            merge into.
++        Off unless SCSAM3_TRIM_CACHED_OUTPUTS is set to a non-zero value.
++        """
++        if not TRIM_CACHED_OUTPUTS:
++            return
++        for action in inference_state.get("action_history", ()):
++            if action.get("type") == "propagation_full":
++                return
++        cache = inference_state.get("cached_frame_outputs")
++        if not cache:
++            return
++        for f in [f for f in cache
++                  if (f > keep_frame_idx if reverse else f < keep_frame_idx)]:
++            del cache[f]
++
+     def _cache_frame_outputs(
+         self,
+         inference_state,
+@@ -1277,6 +1313,9 @@
+                         obj_id_to_mask,
+                         suppressed_obj_ids=suppressed_obj_ids,
+                     )
++                    self._trim_cached_frame_outputs(
++                        inference_states[spatial_idx], frame_idx, reverse=reverse
++                    )
+                     suppressed_obj_ids = tracker_metadata["rank0_metadata"][
+                         "suppressed_obj_ids"
+                     ][frame_idx]
+@@ -1740,16 +1779,12 @@
+ 
+             # =======================================================
+             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
+-            if "previous_stages_out" not in inference_state:
+-                inference_state["previous_stages_out"] = {}
+-            
+-            # 현재 프레임의 결과(out)를 장부에 등록하여 
+-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
+-            if frame_idx not in inference_state["previous_stages_out"]:
+-                inference_state["previous_stages_out"][frame_idx] = out
+-            else:
+-                # 이미 있다면 안전하게 병합
+-                inference_state["previous_stages_out"][frame_idx].update(out)
++            # Mark this frame as having outputs, the same way upstream SAM 3 does
++            # in `_run_single_frame_inference`. Every reader of
++            # "previous_stages_out" only tests it against None, and storing the
++            # full `out` dict here pins its video-resolution GPU masks for the
++            # lifetime of the session.
++            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+             # =======================================================
+             
+             self._cache_frame_outputs(
+@@ -1964,7 +1999,13 @@
+                 inference_state["mask_inputs_per_obj"][obj_id] = {}
+ 
+             # 포인트와 라벨을 튜플 형태로 저장 (SAM 내부 규격)
+-            inference_state["mask_inputs_per_obj"][obj_id][frame_idx] = mask
++            # [MEM] Do not retain the caller's prompt mask here. This video-level
++            # mask_inputs_per_obj is write-only: no reader exists in this package
++            # (the tracker keeps its own copy, keyed by obj_idx, at
++            # SCSam3TrackerPredictorNewMem.py:407, and every read of the name --
++            # :2091 here and the tracker sites -- is on a tracker_state, not this
++            # dict). Storing it pinned one fp32 video-res tensor (H*W*4 bytes) of
++            # host RAM per (view, object) for the whole session.
+             # =======================================================
+ 
+             obj_id_to_mask = self._build_tracker_output(
+@@ -1989,16 +2030,12 @@
+ 
+             # =======================================================
+             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
+-            if "previous_stages_out" not in inference_state:
+-                inference_state["previous_stages_out"] = {}
+-            
+-            # 현재 프레임의 결과(out)를 장부에 등록하여 
+-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
+-            if frame_idx not in inference_state["previous_stages_out"]:
+-                inference_state["previous_stages_out"][frame_idx] = out
+-            else:
+-                # 이미 있다면 안전하게 병합
+-                inference_state["previous_stages_out"][frame_idx].update(out)
++            # Mark this frame as having outputs, the same way upstream SAM 3 does
++            # in `_run_single_frame_inference`. Every reader of
++            # "previous_stages_out" only tests it against None, and storing the
++            # full `out` dict here pins its video-resolution GPU masks for the
++            # lifetime of the session.
++            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
+             # =======================================================
+             
+             self._cache_frame_outputs(
+--- demoSCSam3OneStageNew/io_utils.py	2026-03-09 09:28:06.364463479 +0900
++++ demoSCSam3MVOpt/io_utils.py	2026-09-04 01:00:31.230001603 +0900
+@@ -203,6 +203,23 @@
+             img_std = img_std.cuda()
+         img -= self.img_mean
+         img /= self.img_std
++        # `img` is float64 here: `img_np / 255.0` (io_utils.py:32) promotes
++        # uint8 through numpy to float64, and the two in-place ops above keep
++        # the LHS dtype.  The only consumer that reads the value casts it to
++        # float32 first (sam3/model/sam3_image.py:152, right before
++        # backbone.forward_image); every other path discards it (the tracker's
++        # maskmem_backbone is a SimpleMaskEncoder, which takes no image, and
++        # the `.cuda().float()` cache-miss branch is dead because the tracker
++        # is built with backbone=None).  Rounding the finished float64 value
++        # to float32 here is that same round-to-nearest, and rounding is
++        # idempotent, so the model input is bit-identical while the resident
++        # copy -- one per view, plus N of them in the cross-view pseudo-video
++        # -- halves from 23.26 to 11.63 MiB.
++        # Two things not to do: keep this cast AFTER the mean/std ops above
++        # (casting first makes the arithmetic float32 and double-rounding can
++        # differ by 1 ulp), and do NOT use float16 -- the consumer's float32
++        # cast cannot recover the discarded mantissa bits, so masks change.
++        img = img.to(torch.float32)
+         self.image = img        
+ 
+         return img

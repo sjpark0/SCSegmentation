@@ -32,8 +32,11 @@ RUN pip install -e ".[train,dev]"
 RUN pip install "setuptools==69.5.1"
 
 RUN pip install huggingface_hub
-ARG HF_TOKEN
-RUN hf download facebook/sam3 --token ${HF_TOKEN}
+# The token is mounted for this one command only; BuildKit keeps it out of the
+# image layers. Build with:
+#   DOCKER_BUILDKIT=1 docker build --secret id=hf_token,env=HF_TOKEN -t scsam3 .
+RUN --mount=type=secret,id=hf_token \
+    HF_TOKEN="$(cat /run/secrets/hf_token)" hf download facebook/sam3 --token "${HF_TOKEN}"
 
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
 RUN echo 'ln /dev/null /dev/raw1394' >> ~/.bashrc

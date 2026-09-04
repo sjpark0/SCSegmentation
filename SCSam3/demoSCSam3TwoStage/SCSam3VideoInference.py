@@ -1653,16 +1653,12 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
 
             # =======================================================
             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
-            if "previous_stages_out" not in inference_state:
-                inference_state["previous_stages_out"] = {}
-            
-            # 현재 프레임의 결과(out)를 장부에 등록하여 
-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
-            if frame_idx not in inference_state["previous_stages_out"]:
-                inference_state["previous_stages_out"][frame_idx] = out
-            else:
-                # 이미 있다면 안전하게 병합
-                inference_state["previous_stages_out"][frame_idx].update(out)
+            # Mark this frame as having outputs, the same way upstream SAM 3 does
+            # in `_run_single_frame_inference`. Every reader of
+            # "previous_stages_out" only tests it against None, and storing the
+            # full `out` dict here pins its video-resolution GPU masks for the
+            # lifetime of the session.
+            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
             # =======================================================
             
             self._cache_frame_outputs(
@@ -1877,7 +1873,13 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
                 inference_state["mask_inputs_per_obj"][obj_id] = {}
 
             # 포인트와 라벨을 튜플 형태로 저장 (SAM 내부 규격)
-            inference_state["mask_inputs_per_obj"][obj_id][frame_idx] = mask
+            # [MEM] Do not retain the caller's prompt mask here. This video-level
+            # mask_inputs_per_obj is write-only: no reader exists in this package
+            # (the tracker keeps its own copy, keyed by obj_idx, at
+            # SCSam3TrackerPredictor.py:407, and every read of the name -- :2004
+            # here and the tracker sites -- is on a tracker_state, not this dict).
+            # Storing it pinned one fp32 video-res tensor (H*W*4 bytes) of host RAM
+            # per prompted object for the whole session.
             # =======================================================
 
             obj_id_to_mask = self._build_tracker_output(
@@ -1902,16 +1904,12 @@ class SCSam3VideoInferenceWithInstanceInteractivity(SCSam3VideoInference):
 
             # =======================================================
             # [최종 패치] 회원님이 찾아내신 누락된 Stage 장부 직접 채워넣기!
-            if "previous_stages_out" not in inference_state:
-                inference_state["previous_stages_out"] = {}
-            
-            # 현재 프레임의 결과(out)를 장부에 등록하여 
-            # propagate_in_video가 시작 프레임을 정상적으로 찾을 수 있게 합니다.
-            if frame_idx not in inference_state["previous_stages_out"]:
-                inference_state["previous_stages_out"][frame_idx] = out
-            else:
-                # 이미 있다면 안전하게 병합
-                inference_state["previous_stages_out"][frame_idx].update(out)
+            # Mark this frame as having outputs, the same way upstream SAM 3 does
+            # in `_run_single_frame_inference`. Every reader of
+            # "previous_stages_out" only tests it against None, and storing the
+            # full `out` dict here pins its video-resolution GPU masks for the
+            # lifetime of the session.
+            inference_state["previous_stages_out"][frame_idx] = "_THIS_FRAME_HAS_OUTPUTS_"
             # =======================================================
             
             self._cache_frame_outputs(

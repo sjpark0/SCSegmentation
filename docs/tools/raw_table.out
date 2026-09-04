@@ -1,0 +1,120 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+WARNING: The NVIDIA Driver was not detected.  GPU functionality will not be available.
+   Use the NVIDIA Container Toolkit to start this container with GPU support; see
+   https://docs.nvidia.com/datacenter/cloud-native/ .
+
+per-camera J / F  (view index, #nbrs=min(idx,4), ref marked *)
+AlexaMeadeFacePaint  camera_0007  idx= 6 nb=4   N=46 nobj=12 skNew1:J0.667/F0.687 skNew2:J0.667/F0.687 skNew3:J0.667/F0.687 eStage:J0.659/F0.685 ageNew:J0.659/F0.685 STALE:J0.659/F0.685  dNew-One: J+0.0002 F+0.0004
+AlexaMeadeFacePaint  camera_0008  idx= 7 nb=4 * N=46 nobj=11 skNew1:J0.952/F0.988 skNew2:J0.952/F0.989 skNew3:J0.952/F0.989 eStage:J0.952/F0.990 ageNew:J0.952/F0.990 STALE:J0.952/F0.990  dNew-One: J-0.0000 F-0.0003
+AlexaMeadeFacePaint  camera_0009  idx= 8 nb=4   N=46 nobj=10 skNew1:J0.711/F0.708 skNew2:J0.710/F0.707 skNew3:J0.710/F0.707 eStage:J0.730/F0.753 ageNew:J0.731/F0.753 STALE:J0.730/F0.753  dNew-One: J+0.0006 F+0.0000
+Barn                 v0           idx= 0 nb=0 * N=15 nobj=30 skNew1:J0.904/F0.977 skNew2:J0.906/F0.978 skNew3:J0.906/F0.978 eStage:J0.892/F0.976 ageNew:J0.892/F0.976 STALE:J0.892/F0.976  dNew-One: J-0.0001 F+0.0008
+Barn                 v7           idx= 7 nb=4   N=15 nobj=30 skNew1:J0.738/F0.832 skNew2:J0.737/F0.831 skNew3:J0.737/F0.831 eStage:J0.791/F0.894 ageNew:J0.790/F0.898 STALE:J0.791/F0.894  dNew-One: J-0.0007 F+0.0034
+Barn                 v10          idx=10 nb=4   N=15 nobj=30 skNew1:J0.781/F0.909 skNew2:J0.781/F0.909 skNew3:J0.781/F0.909 eStage:J0.824/F0.938 ageNew:J0.824/F0.939 STALE:J0.824/F0.938  dNew-One: J+0.0005 F+0.0002
+Blocks               cam0         idx= 0 nb=0   N=10 nobj=20 skNew1:J0.568/F0.591 skNew2:J0.567/F0.592 skNew3:J0.567/F0.591 eStage:J0.575/F0.602 ageNew:J0.575/F0.602 STALE:J0.010/F0.010  dNew-One: J-0.0002 F-0.0002
+Blocks               cam4         idx= 4 nb=4   N=10 nobj=16 skNew1:J0.769/F0.823 skNew2:J0.769/F0.824 skNew3:J0.769/F0.824 eStage:J0.772/F0.814 ageNew:J0.772/F0.813 STALE:J0.003/F0.003  dNew-One: J+0.0001 F-0.0007
+Blocks               cam9         idx= 9 nb=4 * N=10 nobj=16 skNew1:J0.894/F0.931 skNew2:J0.894/F0.931 skNew3:J0.894/F0.931 eStage:J0.876/F0.931 ageNew:J0.873/F0.932 STALE:J0.876/F0.931  dNew-One: J-0.0033 F+0.0003
+Breakfast            v5           idx= 5 nb=4 * N=15 nobj=29 skNew1:J0.745/F0.805 skNew2:J0.747/F0.805 skNew3:J0.749/F0.807 eStage:J0.754/F0.832 ageNew:J0.753/F0.827 STALE:J0.754/F0.832  dNew-One: J-0.0004 F-0.0046
+Breakfast            v7           idx= 7 nb=4   N=15 nobj=29 skNew1:J0.646/F0.722 skNew2:J0.647/F0.721 skNew3:J0.646/F0.721 eStage:J0.687/F0.783 ageNew:J0.685/F0.784 STALE:J0.687/F0.783  dNew-One: J-0.0018 F+0.0009
+Breakfast            v9           idx= 9 nb=4   N=15 nobj=27 skNew1:J0.637/F0.723 skNew2:J0.642/F0.731 skNew3:J0.642/F0.731 eStage:J0.647/F0.743 ageNew:J0.651/F0.746 STALE:J0.647/F0.743  dNew-One: J+0.0040 F+0.0038
+Carpark              v0           idx= 0 nb=0 * N= 9 nobj=22 skNew1:J0.916/F0.979 skNew2:J0.917/F0.979 skNew3:J0.917/F0.979 eStage:J0.918/F0.985 ageNew:J0.919/F0.985 STALE:J0.918/F0.985  dNew-One: J+0.0004 F+0.0003
+Carpark              v4           idx= 4 nb=4   N= 9 nobj=22 skNew1:J0.897/F0.977 skNew2:J0.897/F0.977 skNew3:J0.897/F0.977 eStage:J0.892/F0.981 ageNew:J0.892/F0.982 STALE:J0.892/F0.981  dNew-One: J-0.0005 F+0.0004
+Carpark              v8           idx= 8 nb=4   N= 9 nobj=22 skNew1:J0.897/F0.985 skNew2:J0.897/F0.985 skNew3:J0.897/F0.985 eStage:J0.901/F0.985 ageNew:J0.899/F0.985 STALE:J0.901/F0.985  dNew-One: J-0.0020 F-0.0005
+Dog                  camera_0002  idx= 1 nb=1   N=41 nobj= 7 skNew1:J0.909/F0.920 skNew2:J0.909/F0.921 skNew3:J0.910/F0.921 eStage:J0.922/F0.922 ageNew:J0.922/F0.921 STALE:J0.922/F0.922  dNew-One: J-0.0004 F-0.0005
+Dog                  camera_0003  idx= 2 nb=2 * N=41 nobj= 9 skNew1:J0.933/F0.971 skNew2:J0.935/F0.974 skNew3:J0.936/F0.974 eStage:J0.943/F0.976 ageNew:J0.942/F0.976 STALE:J0.943/F0.976  dNew-One: J-0.0002 F+0.0001
+Dog                  camera_0004  idx= 3 nb=3   N=41 nobj= 7 skNew1:J0.872/F0.814 skNew2:J0.872/F0.814 skNew3:J0.872/F0.814 eStage:J0.885/F0.876 ageNew:J0.888/F0.875 STALE:J0.885/F0.876  dNew-One: J+0.0022 F-0.0013
+Fencing              v0           idx= 0 nb=0 * N=10 nobj= 8 skNew1:J0.893/F0.987 skNew2:J0.891/F0.983 skNew3:J0.891/F0.983 eStage:J0.802/F0.928 ageNew:J0.801/F0.924 STALE:J0.802/F0.928  dNew-One: J-0.0014 F-0.0039
+Fencing              v4           idx= 4 nb=4   N=10 nobj= 8 skNew1:J0.893/F0.991 skNew2:J0.894/F0.992 skNew3:J0.894/F0.992 eStage:J0.900/F0.993 ageNew:J0.901/F0.992 STALE:J0.900/F0.993  dNew-One: J+0.0013 F-0.0007
+Fencing              v9           idx= 9 nb=4   N=10 nobj= 8 skNew1:J0.857/F0.972 skNew2:J0.863/F0.980 skNew3:J0.863/F0.980 eStage:J0.801/F0.894 ageNew:J0.867/F0.983 STALE:J0.801/F0.894  dNew-One: J+0.0657 F+0.0889
+Frog                 v4           idx= 3 nb=3 * N=13 nobj= 5 skNew1:J0.975/F0.977 skNew2:J0.975/F0.976 skNew3:J0.975/F0.976 eStage:J0.975/F0.976 ageNew:J0.974/F0.975 STALE:J0.975/F0.976  dNew-One: J-0.0008 F-0.0007
+Frog                 v7           idx= 6 nb=4   N=13 nobj= 5 skNew1:J0.972/F0.971 skNew2:J0.973/F0.972 skNew3:J0.973/F0.971 eStage:J0.974/F0.974 ageNew:J0.973/F0.972 STALE:J0.974/F0.974  dNew-One: J-0.0006 F-0.0011
+Frog                 v10          idx= 9 nb=4   N=13 nobj= 5 skNew1:J0.975/F0.983 skNew2:J0.975/F0.983 skNew3:J0.975/F0.983 eStage:J0.974/F0.979 ageNew:J0.974/F0.977 STALE:J0.974/F0.979  dNew-One: J-0.0005 F-0.0023
+MATF                 S1_CAM_1     idx= 0 nb=0 * N=10 nobj=33 skNew1:J0.821/F0.918 skNew2:J0.821/F0.919 skNew3:J0.821/F0.919 eStage:J0.831/F0.930 ageNew:J0.831/F0.930 STALE:J0.831/F0.930  dNew-One: J+0.0006 F-0.0005
+MATF                 S1_CAM_4     idx= 3 nb=3   N=10 nobj=33 skNew1:J0.525/F0.586 skNew2:J0.525/F0.586 skNew3:J0.524/F0.586 eStage:J0.532/F0.603 ageNew:J0.531/F0.604 STALE:J0.532/F0.603  dNew-One: J-0.0010 F+0.0003
+MATF                 S1_CAM_10    idx= 9 nb=4   N=10 nobj=11 skNew1:J0.327/F0.430 skNew2:J0.327/F0.430 skNew3:J0.327/F0.430 eStage:J0.395/F0.492 ageNew:J0.397/F0.493 STALE:J0.395/F0.492  dNew-One: J+0.0022 F+0.0004
+Painter              v0           idx= 0 nb=0   N=16 nobj=25 skNew1:J0.845/F0.892 skNew2:J0.814/F0.863 skNew3:J0.814/F0.863 eStage:J0.830/F0.882 ageNew:J0.830/F0.882 STALE:J0.027/F0.027  dNew-One: J-0.0006 F+0.0000
+Painter              v6           idx= 6 nb=4   N=16 nobj=26 skNew1:J0.846/F0.889 skNew2:J0.845/F0.889 skNew3:J0.845/F0.889 eStage:J0.844/F0.891 ageNew:J0.844/F0.891 STALE:J0.031/F0.032  dNew-One: J+0.0004 F+0.0005
+Painter              v15          idx=15 nb=4 * N=16 nobj=27 skNew1:J0.859/F0.896 skNew2:J0.860/F0.897 skNew3:J0.860/F0.897 eStage:J0.861/F0.900 ageNew:J0.860/F0.900 STALE:J0.861/F0.900  dNew-One: J-0.0009 F+0.0001
+PoznanStreet         v0           idx= 0 nb=0 * N= 9 nobj=23 skNew1:J0.864/F0.950 skNew2:J0.872/F0.963 skNew3:J0.872/F0.963 eStage:J0.876/F0.968 ageNew:J0.876/F0.968 STALE:J0.876/F0.968  dNew-One: J-0.0000 F+0.0000
+PoznanStreet         v4           idx= 4 nb=4   N= 9 nobj=24 skNew1:J0.813/F0.897 skNew2:J0.812/F0.895 skNew3:J0.812/F0.895 eStage:J0.821/F0.904 ageNew:J0.826/F0.912 STALE:J0.821/F0.904  dNew-One: J+0.0053 F+0.0076
+PoznanStreet         v8           idx= 8 nb=4   N= 9 nobj=24 skNew1:J0.787/F0.880 skNew2:J0.787/F0.878 skNew3:J0.787/F0.878 eStage:J0.766/F0.866 ageNew:J0.795/F0.898 STALE:J0.766/F0.866  dNew-One: J+0.0288 F+0.0322
+Welder               camera_0001  idx= 0 nb=0 * N=46 nobj=16 skNew1:J0.888/F0.963 skNew2:J0.889/F0.964 skNew3:J0.889/F0.964 eStage:J0.880/F0.964 ageNew:J0.880/F0.964 STALE:J0.880/F0.964  dNew-One: J+0.0004 F+0.0004
+Welder               camera_0003  idx= 2 nb=2   N=46 nobj=16 skNew1:J0.819/F0.862 skNew2:J0.818/F0.862 skNew3:J0.817/F0.862 eStage:J0.798/F0.904 ageNew:J0.809/F0.905 STALE:J0.798/F0.904  dNew-One: J+0.0107 F+0.0012
+Welder               camera_0004  idx= 3 nb=3   N=46 nobj=15 skNew1:J0.861/F0.872 skNew2:J0.862/F0.873 skNew3:J0.863/F0.874 eStage:J0.707/F0.787 ageNew:J0.707/F0.784 STALE:J0.707/F0.787  dNew-One: J+0.0004 F-0.0027
+AlexaMeadeExhibit    camera_0001  idx= 0 nb=0 * N=45 nobj=33 skNew1:J0.886/F0.987 skNew2:J0.887/F0.987 skNew3:J0.887/F0.987 eStage:J0.881/F0.994 ageNew:   -     STALE:J0.881/F0.994
+AlexaMeadeExhibit    camera_0003  idx= 2 nb=2   N=45 nobj=31 skNew1:J0.795/F0.956 skNew2:J0.795/F0.956 skNew3:J0.796/F0.956 eStage:J0.770/F0.936 ageNew:   -     STALE:J0.770/F0.936
+AlexaMeadeExhibit    camera_0004  idx= 3 nb=3   N=45 nobj=29 skNew1:J0.774/F0.940 skNew2:J0.774/F0.940 skNew3:J0.774/F0.940 eStage:J0.730/F0.840 ageNew:   -     STALE:J0.730/F0.840
+CoffeeMartini        cam02        idx= 2 nb=2 * N=18 nobj=58 skNew1:J0.931/F0.983 skNew2:J0.929/F0.979 skNew3:J0.926/F0.975 eStage:J0.941/F0.988 ageNew:   -     STALE:J0.941/F0.988
+CoffeeMartini        cam10        idx= 9 nb=4   N=18 nobj=35 skNew1:J0.717/F0.767 skNew2:J0.717/F0.767 skNew3:J0.717/F0.767 eStage:J0.733/F0.796 ageNew:   -     STALE:J0.733/F0.796
+CoffeeMartini        cam16        idx=14 nb=4   N=18 nobj=50 skNew1:J0.729/F0.804 skNew2:J0.729/F0.804 skNew3:J0.729/F0.804 eStage:J0.726/F0.805 ageNew:   -     STALE:J0.726/F0.805
+FlameSteak           cam01        idx= 1 nb=1   N=21 nobj=31 skNew1:J0.441/F0.488 skNew2:J0.440/F0.487 skNew3:J0.440/F0.487 eStage:J0.428/F0.486 ageNew:   -     STALE:J0.428/F0.486
+FlameSteak           cam10        idx=10 nb=4 * N=21 nobj=53 skNew1:J0.906/F0.981 skNew2:J0.907/F0.982 skNew3:J0.907/F0.982 eStage:J0.903/F0.984 ageNew:   -     STALE:J0.903/F0.984
+FlameSteak           cam16        idx=16 nb=4   N=21 nobj=50 skNew1:J0.785/F0.837 skNew2:J0.785/F0.837 skNew3:J0.785/F0.837 eStage:J0.751/F0.829 ageNew:   -     STALE:J0.751/F0.829
+
+delta OneStageNew-OneStage grouped by #cross-view neighbours
+ nb=0: n= 8 meanJ-0.0001 meanF-0.0004  cams=[('Barn', 'v0'), ('Blocks', 'cam0'), ('Carpar', 'v0'), ('Fencin', 'v0'), ('MATF', 'S1_CAM_1'), ('Painte', 'v0'), ('Poznan', 'v0'), ('Welder', 'camera_0001')]
+ nb=1: n= 1 meanJ-0.0004 meanF-0.0005  cams=[('Dog', 'camera_0002')]
+ nb=2: n= 2 meanJ+0.0053 meanF+0.0006  cams=[('Dog', 'camera_0003'), ('Welder', 'camera_0003')]
+ nb=3: n= 4 meanJ+0.0002 meanF-0.0011  cams=[('Dog', 'camera_0004'), ('Frog', 'v4'), ('MATF', 'S1_CAM_4'), ('Welder', 'camera_0004')]
+ nb=4: n=21 meanJ+0.0047 meanF+0.0061  cams=[('AlexaM', 'camera_0007'), ('AlexaM', 'camera_0008'), ('AlexaM', 'camera_0009'), ('Barn', 'v7'), ('Barn', 'v10'), ('Blocks', 'cam4'), ('Blocks', 'cam9'), ('Breakf', 'v5'), ('Breakf', 'v7'), ('Breakf', 'v9'), ('Carpar', 'v4'), ('Carpar', 'v8'), ('Fencin', 'v4'), ('Fencin', 'v9'), ('Frog', 'v7'), ('Frog', 'v10'), ('MATF', 'S1_CAM_10'), ('Painte', 'v6'), ('Painte', 'v15'), ('Poznan', 'v4'), ('Poznan', 'v8')]
+ref cams: [('AlexaMea', 'camera_0008', 7, -0.0, -0.0003), ('Barn', 'v0', 0, -0.0001, 0.0008), ('Blocks', 'cam9', 9, -0.0033, 0.0003), ('Breakfas', 'v5', 5, -0.0004, -0.0046), ('Carpark', 'v0', 0, 0.0004, 0.0003), ('Dog', 'camera_0003', 2, -0.0002, 0.0001), ('Fencing', 'v0', 0, -0.0014, -0.0039), ('Frog', 'v4', 3, -0.0008, -0.0007), ('MATF', 'S1_CAM_1', 0, 0.0006, -0.0005), ('Painter', 'v15', 15, -0.0009, 0.0001), ('PoznanSt', 'v0', 0, -0.0, 0.0), ('Welder', 'camera_0001', 0, 0.0004, 0.0004)]
+
+dataset              SegMaskNew1 SegMaskNew2 SegMaskNew3 am3OneStage OneStageNew  STALE_1stage  inner:One/New
+AlexaMeadeFacePaint       0.7845      0.7844      0.7844      0.7927      0.7928      0.7927   0.7925/0.7926
+Barn                      0.8569      0.8569      0.8569      0.8858      0.8865      0.8858   0.8848/0.8853
+Blocks                    0.7488      0.7487      0.7487      0.7484      0.7478      0.2827   0.7478/0.7473
+Breakfast                 0.7138      0.7160      0.7167      0.7419      0.7421      0.7419   0.7377/0.7385
+Carpark                   0.9416      0.9420      0.9420      0.9438      0.9434      0.9438   0.9430/0.9426
+Dog                       0.9075      0.9086      0.9087      0.9241      0.9241      0.9241   0.9237/0.9236
+Fencing                   0.9321      0.9337      0.9337      0.8862      0.9112      0.8862   0.8837/0.9097
+Frog                      0.9754      0.9756      0.9755      0.9753      0.9743      0.9753   0.9750/0.9738
+MATF                      0.6649      0.6650      0.6649      0.6840      0.6841      0.6840   0.6825/0.6825
+Painter                   0.8713      0.8619      0.8618      0.8682      0.8681      0.3237   0.8652/0.8651
+PoznanStreet              0.8646      0.8672      0.8672      0.8662      0.8787      0.8662   0.8656/0.8778
+Welder                    0.8778      0.8781      0.8784      0.8419      0.8437      0.8419   0.8404/0.8422
+AlexaMeadeExhibit         0.8913      0.8916      0.8919      0.8618           -      0.8618   0.8611/nan
+CoffeeMartini             0.8380      0.8365      0.8352      0.8461           -      0.8461   0.8458/nan
+FlameSteak                0.7832      0.7833      0.7833      0.7736           -      0.7736   0.7734/nan
+12 datasets
+  SegMaskNew1              J=0.8171 F=0.8727 J&F=0.8449
+  SegMaskNew2              J=0.8170 F=0.8727 J&F=0.8449
+  SegMaskNew3              J=0.8171 F=0.8728 J&F=0.8449
+  SegMaskSam3OneStage      J=0.8145 F=0.8786 J&F=0.8465
+  SegMaskSam3OneStageNew   J=0.8175 F=0.8820 J&F=0.8497
+  STALE                    J=0.7326 F=0.7921 J&F=0.7624
+15 datasets
+  SegMaskNew1              J=0.8125 F=0.8744 J&F=0.8434
+  SegMaskNew2              J=0.8124 F=0.8743 J&F=0.8433
+  SegMaskNew3              J=0.8124 F=0.8742 J&F=0.8433
+  SegMaskSam3OneStage      J=0.8081 F=0.8772 J&F=0.8427
+  SegMaskSam3OneStageNew   incomplete (12/15)
+  STALE                    J=0.7426 F=0.8080 J&F=0.7753
+SAM2 repeat-run spread per dataset (J&F): New1/New2/New3 ; SAM3 OneStage stale vs final
+  AlexaMeadeFacePaint  0.7845 0.7844 0.7844 range=0.0001   stale=0.7927 final=0.7927
+  Barn                 0.8569 0.8569 0.8569 range=0.0000   stale=0.8858 final=0.8858
+  Blocks               0.7488 0.7487 0.7487 range=0.0001   stale=0.2827 final=0.7484
+  Breakfast            0.7138 0.7160 0.7167 range=0.0029   stale=0.7419 final=0.7419
+  Carpark              0.9416 0.9420 0.9420 range=0.0004   stale=0.9438 final=0.9438
+  Dog                  0.9075 0.9086 0.9087 range=0.0012   stale=0.9241 final=0.9241
+  Fencing              0.9321 0.9337 0.9337 range=0.0016   stale=0.8862 final=0.8862
+  Frog                 0.9754 0.9756 0.9755 range=0.0003   stale=0.9753 final=0.9753
+  MATF                 0.6649 0.6650 0.6649 range=0.0002   stale=0.6840 final=0.6840
+  Painter              0.8713 0.8619 0.8618 range=0.0095   stale=0.3237 final=0.8682
+  PoznanStreet         0.8646 0.8672 0.8672 range=0.0026   stale=0.8662 final=0.8662
+  Welder               0.8778 0.8781 0.8784 range=0.0006   stale=0.8419 final=0.8419
+  AlexaMeadeExhibit    0.8913 0.8916 0.8919 range=0.0006   stale=0.8618 final=0.8618
+  CoffeeMartini        0.8380 0.8365 0.8352 range=0.0028   stale=0.8461 final=0.8461
+  FlameSteak           0.7832 0.7833 0.7833 range=0.0001   stale=0.7736 final=0.7736

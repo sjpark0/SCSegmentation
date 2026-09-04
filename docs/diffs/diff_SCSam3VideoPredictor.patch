@@ -1,0 +1,90 @@
+--- sam3/sam3/model/sam3_video_predictor.py	2026-02-23 16:08:44.750701499 +0900
++++ demoSCSam3OneStageNew/SCSam3VideoPredictor.py	2026-03-09 09:28:06.363495720 +0900
+@@ -21,7 +21,7 @@
+ logger = get_logger(__name__)
+ 
+ 
+-class Sam3VideoPredictor:
++class SCSam3VideoPredictor:
+     # a global dictionary that holds all inference states for this model (key is session_id)
+     _ALL_INFERENCE_STATES = {}
+ 
+@@ -39,10 +39,10 @@
+     ):
+         self.async_loading_frames = async_loading_frames
+         self.video_loader_type = video_loader_type
+-        from sam3.model_builder import build_sam3_video_model
++        from build_scsam3 import build_scsam3_video_model
+ 
+         self.model = (
+-            build_sam3_video_model(
++            build_scsam3_video_model(
+                 checkpoint_path=checkpoint_path,
+                 bpe_path=bpe_path,
+                 has_presence_token=has_presence_token,
+@@ -61,7 +61,9 @@
+         request_type = request["type"]
+         if request_type == "start_session":
+             return self.start_session(
+-                resource_path=request["resource_path"],
++                images=request["images"],
++                orig_height=request["orig_height"],
++                orig_width=request["orig_width"],
+                 session_id=request.get("session_id", None),
+             )
+         elif request_type == "add_prompt":
+@@ -73,6 +75,7 @@
+                 point_labels=request.get("point_labels", None),
+                 bounding_boxes=request.get("bounding_boxes", None),
+                 bounding_box_labels=request.get("bounding_box_labels", None),
++                mask=request.get("mask", None),
+                 obj_id=request.get("obj_id", None),
+             )
+         elif request_type == "remove_object":
+@@ -102,7 +105,7 @@
+         else:
+             raise RuntimeError(f"invalid request type: {request_type}")
+ 
+-    def start_session(self, resource_path, session_id=None):
++    def start_session(self, images, orig_height, orig_width, session_id=None):
+         """
+         Start a new inference session on an image or a video. Here `resource_path`
+         can be either a path to an image file (for image inference) or an MP4 file
+@@ -113,11 +116,7 @@
+         a session id and return it.
+         """
+         # get an initial inference_state from the model
+-        inference_state = self.model.init_state(
+-            resource_path=resource_path,
+-            async_loading_frames=self.async_loading_frames,
+-            video_loader_type=self.video_loader_type,
+-        )
++        inference_state = self.model.init_state(images, orig_height, orig_width)
+         if not session_id:
+             session_id = str(uuid.uuid4())
+         self._ALL_INFERENCE_STATES[session_id] = {
+@@ -140,6 +139,7 @@
+         point_labels: Optional[List[int]] = None,
+         bounding_boxes: Optional[List[List[float]]] = None,
+         bounding_box_labels: Optional[List[int]] = None,
++        mask: Optional[any] = None,
+         obj_id: Optional[int] = None,
+     ):
+         """Add text, box and/or point prompt on a specific video frame."""
+@@ -159,6 +159,7 @@
+             point_labels=point_labels,
+             boxes_xywh=bounding_boxes,
+             box_labels=bounding_box_labels,
++            mask = mask,
+             obj_id=obj_id,
+         )
+         return {"frame_index": frame_idx, "outputs": outputs}
+@@ -290,7 +291,7 @@
+         self._ALL_INFERENCE_STATES.clear()
+ 
+ 
+-class Sam3VideoPredictorMultiGPU(Sam3VideoPredictor):
++class SCSam3VideoPredictorMultiGPU(SCSam3VideoPredictor):
+     def __init__(self, *model_args, gpus_to_use=None, **model_kwargs):
+         if gpus_to_use is None:
+             # if not specified, use only the current GPU by default

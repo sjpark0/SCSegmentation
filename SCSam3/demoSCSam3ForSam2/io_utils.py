@@ -204,6 +204,23 @@ class AsyncVideoFrameCPUToGPU:
             img_std = img_std.cuda()
         img -= self.img_mean
         img /= self.img_std
+        # `img` is float64 here: `img_np / 255.0` (io_utils.py:32) promotes
+        # uint8 through numpy to float64, and the two in-place ops above keep
+        # the LHS dtype.  The only consumer that reads the value casts it to
+        # float32 first (sam3/model/sam3_image.py:152, right before
+        # backbone.forward_image); every other path discards it (the tracker's
+        # maskmem_backbone is a SimpleMaskEncoder, which takes no image, and
+        # the `.cuda().float()` cache-miss branch is dead because the tracker
+        # is built with backbone=None).  Rounding the finished float64 value
+        # to float32 here is that same round-to-nearest, and rounding is
+        # idempotent, so the model input is bit-identical while the resident
+        # copy -- one per view, plus N of them in the cross-view pseudo-video
+        # -- halves from 23.26 to 11.63 MiB.
+        # Two things not to do: keep this cast AFTER the mean/std ops above
+        # (casting first makes the arithmetic float32 and double-rounding can
+        # differ by 1 ulp), and do NOT use float16 -- the consumer's float32
+        # cast cannot recover the discarded mantissa bits, so masks change.
+        img = img.to(torch.float32)
         self.image = img        
 
         return img

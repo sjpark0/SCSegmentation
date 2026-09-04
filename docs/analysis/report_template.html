@@ -1,0 +1,199 @@
+<title>SCSam3 다중시점 감사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --sunk:#E9EDF2;
+  --ink:#13171D; --ink-2:#39414E; --muted:#6A7484; --line:#DCE2EA;
+  --accent:#2A5FA8;
+  --correctness:#C0392F; --algorithm:#7A4FA8; --memory:#B4791A;
+  --evaluation:#1B7A6B; --engineering:#55636F;
+  --shadow:0 1px 2px rgba(16,22,34,.05), 0 14px 34px -22px rgba(16,22,34,.30);
+  --display:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --sans:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C0F13; --surface:#14181E; --sunk:#10141A;
+    --ink:#E7EAF0; --ink-2:#BEC6D2; --muted:#8F99A8; --line:#242A33;
+    --accent:#5A93DC;
+    --correctness:#E8756A; --algorithm:#B08BDC; --memory:#DFA845;
+    --evaluation:#3FB39F; --engineering:#8E9BA8;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 16px 36px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C0F13; --surface:#14181E; --sunk:#10141A;
+  --ink:#E7EAF0; --ink-2:#BEC6D2; --muted:#8F99A8; --line:#242A33;
+  --accent:#5A93DC;
+  --correctness:#E8756A; --algorithm:#B08BDC; --memory:#DFA845;
+  --evaluation:#3FB39F; --engineering:#8E9BA8;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 16px 36px -22px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font-family:var(--sans);
+     font-size:16px; line-height:1.72; -webkit-font-smoothing:antialiased}
+.shell{max-width:1400px; margin:0 auto; padding:48px 28px 120px;
+       display:grid; grid-template-columns:260px minmax(0,1fr); gap:52px;
+       align-items:start}
+@media (max-width:1080px){ .shell{grid-template-columns:1fr; gap:32px} }
+
+/* ------------------------------------------------------------- header */
+header{grid-column:1 / -1; display:flex; flex-direction:column; gap:14px;
+       padding-bottom:26px; border-bottom:2px solid var(--line)}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.13em;
+         text-transform:uppercase; color:var(--muted)}
+h1{font-family:var(--display); font-weight:700; font-size:clamp(32px,4.4vw,48px);
+   line-height:1.14; letter-spacing:-.012em; margin:0; text-wrap:balance}
+.lede{font-size:17.5px; line-height:1.65; color:var(--ink-2); max-width:68ch; margin:0}
+.facts{display:flex; flex-wrap:wrap; gap:0 34px; margin-top:6px}
+.fact{display:flex; flex-direction:column; gap:1px}
+.fact b{font-family:var(--mono); font-size:26px; font-weight:600;
+        font-variant-numeric:tabular-nums; letter-spacing:-.02em; line-height:1.2}
+.fact span{font-family:var(--mono); font-size:11.5px; letter-spacing:.07em;
+           text-transform:uppercase; color:var(--muted)}
+
+/* --------------------------------------------------------------- rail */
+.rail{position:sticky; top:26px; display:flex; flex-direction:column; gap:22px}
+@media (max-width:1080px){ .rail{position:static} }
+.secnav{display:flex; flex-direction:column; gap:1px}
+.secnav a{font-family:var(--display); font-size:15.5px; color:var(--ink-2);
+          text-decoration:none; padding:5px 10px; border-left:2px solid var(--line)}
+.secnav a:hover{color:var(--accent); border-left-color:var(--accent);
+                background:var(--sunk)}
+.navgroup{display:flex; flex-direction:column; gap:6px}
+.navlabel{font-family:var(--mono); font-size:11px; letter-spacing:.09em;
+          text-transform:uppercase; color:var(--muted)}
+.navchips{display:flex; flex-wrap:wrap; gap:4px}
+.navchip{font-family:var(--mono); font-size:12px; font-weight:500;
+         text-decoration:none; padding:3px 7px; border-radius:4px;
+         border:1px solid var(--line); color:var(--ink-2); background:var(--surface)}
+.navchip:hover{border-color:currentColor}
+.navchip.correctness{color:var(--correctness)}
+.navchip.algorithm{color:var(--algorithm)}
+.navchip.memory{color:var(--memory)}
+.navchip.evaluation{color:var(--evaluation)}
+.navchip.engineering{color:var(--engineering)}
+.navchip.prop{color:var(--accent)}
+
+/* --------------------------------------------------------------- body */
+main{display:flex; flex-direction:column; gap:18px; min-width:0}
+main > h2{font-family:var(--display); font-weight:700; font-size:29px;
+          letter-spacing:-.008em; margin:34px 0 0; padding-bottom:9px;
+          border-bottom:1px solid var(--line); text-wrap:balance;
+          scroll-margin-top:22px}
+main > h2:first-of-type{margin-top:0}
+h3.sub{font-family:var(--sans); font-weight:600; font-size:14px;
+       letter-spacing:.1em; text-transform:uppercase; color:var(--muted);
+       margin:22px 0 -4px}
+main > h4{font-family:var(--sans); font-weight:600; font-size:17px;
+          margin:16px 0 -6px; text-wrap:balance}
+p{margin:0; color:var(--ink-2); max-width:74ch}
+main > p{max-width:74ch}
+strong{color:var(--ink); font-weight:600}
+code{font-family:var(--mono); font-size:.875em; background:var(--sunk);
+     padding:.1em .34em; border-radius:3px; color:var(--ink);
+     overflow-wrap:anywhere}
+ul{margin:0; padding-left:22px; display:flex; flex-direction:column; gap:7px;
+   color:var(--ink-2); max-width:74ch}
+li{line-height:1.68}
+hr{border:0; border-top:1px solid var(--line); margin:16px 0}
+
+pre{margin:0; background:var(--sunk); border:1px solid var(--line);
+    border-radius:9px; padding:15px 17px; overflow-x:auto}
+pre code{background:none; padding:0; font-size:12.8px; line-height:1.6}
+
+.callout{background:var(--surface); border:1px solid var(--line);
+         border-left:3px solid var(--correctness); border-radius:8px;
+         padding:15px 18px; color:var(--ink-2); box-shadow:var(--shadow);
+         max-width:74ch}
+
+/* ------------------------------------------------------------ records */
+.rec{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+     padding:16px 19px 17px; display:flex; flex-direction:column; gap:9px;
+     scroll-margin-top:22px; box-shadow:var(--shadow)}
+.rec-head{display:flex; align-items:baseline; gap:9px; flex-wrap:wrap}
+.rec-head h4{margin:0; font-size:16.5px; font-weight:600; line-height:1.45;
+             flex:1 1 22ch; min-width:0; text-wrap:balance}
+.rec p{max-width:none}
+.rec ul{max-width:none}
+.chip{font-family:var(--mono); font-size:11.5px; font-weight:600;
+      letter-spacing:.04em; padding:2.5px 7px; border-radius:4px;
+      white-space:nowrap; flex:none}
+.chip.fid{color:#fff}
+.fid.correctness{background:var(--correctness)}
+.fid.algorithm{background:var(--algorithm)}
+.fid.memory{background:var(--memory)}
+.fid.evaluation{background:var(--evaluation)}
+.fid.engineering{background:var(--engineering)}
+.chip.pid{background:var(--accent); color:#fff}
+.chip.brief{background:var(--sunk); color:var(--muted); font-weight:500}
+.chip.cons{border:1px solid currentColor; color:var(--muted)}
+.chip.cons.c3{color:var(--evaluation)}
+.chip.cons.c2{color:var(--memory)}
+.rec.find{border-left:3px solid var(--line)}
+.rec.find.correctness{border-left-color:var(--correctness)}
+.rec.find.algorithm{border-left-color:var(--algorithm)}
+.rec.find.memory{border-left-color:var(--memory)}
+.rec.find.evaluation{border-left-color:var(--evaluation)}
+.rec.find.engineering{border-left-color:var(--engineering)}
+.rec.prop{border-left:3px solid var(--accent)}
+
+/* ------------------------------------------------------------- tables */
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px;
+           background:var(--surface); box-shadow:var(--shadow)}
+table{border-collapse:collapse; width:100%; min-width:760px; font-size:14px}
+th,td{text-align:left; padding:10px 13px; vertical-align:top;
+      border-top:1px solid var(--line)}
+thead th{border-top:0; border-bottom:1px solid var(--line);
+         font-family:var(--mono); font-size:11.5px; font-weight:500;
+         letter-spacing:.05em; text-transform:uppercase; color:var(--muted);
+         white-space:nowrap}
+tbody td{color:var(--ink-2); font-variant-numeric:tabular-nums}
+tbody td:first-child{font-family:var(--mono); color:var(--ink);
+                     white-space:nowrap}
+tbody tr:hover td{background:var(--sunk)}
+
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px;
+               border-radius:3px}
+footer{grid-column:1 / -1; margin-top:44px; padding-top:20px;
+       border-top:1px solid var(--line); font-family:var(--mono);
+       font-size:12.5px; color:var(--muted); line-height:1.8}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="shell">
+
+<header>
+  <div class="eyebrow">SCSegmentation · demoSCSam3OneStageNew · 코드 감사</div>
+  <h1>다중시점 SAM 3 알고리즘 감사</h1>
+  <p class="lede">기준 시점 한 장의 마스크를 N대 카메라에 전파하고, 이웃 시점의 memory를
+     SAM 3 memory attention에 이어 붙여 추적하는 구현을 upstream diff 기준으로
+     분석했습니다. 모든 문제는 두 명의 독립 검증자가 코드에서 재현을 확인한 것만
+     남겼고, 수치는 MVSeg 15개 데이터셋 실측입니다.</p>
+  <div class="facts">
+    <div class="fact"><b>__NFIND__</b><span>검증된 문제</span></div>
+    <div class="fact"><b>__NPROP__</b><span>개선 제안</span></div>
+    <div class="fact"><b>0.8497</b><span>J&amp;F · OneStageNew</span></div>
+    <div class="fact"><b>+0.005</b><span>SAM 2 대비</span></div>
+    <div class="fact"><b>131</b><span>분석 에이전트</span></div>
+  </div>
+</header>
+
+<nav class="rail">
+  <div class="secnav">__SECNAV__</div>
+  __NAV__
+</nav>
+
+<main>__BODY__</main>
+
+<footer>
+  검증 통과분만 수록 · 반박된 18건은 제외<br>
+  원본: /tmp/.../analysis/REPORT.md · 실행 스크립트: SCSam3/runMVSeg.py · 평가: Data/MVSeg/eval_jf.py
+</footer>
+
+</div>
