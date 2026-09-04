@@ -1,3 +1,7 @@
+> **2026-09-04 상태 변경.** `demoSCSam3OneStageNew`는 이제 `demoSCSam3MVOpt`의 바이트 동일
+> 동결 스냅샷입니다. 아래에서 "OneStageNew"가 *무패치 원본 코드*를 뜻하는 서술은
+> **git 태그 `baseline-onestagenew`** 기준으로 읽으십시오. 배경: [README.md](README.md)
+
 # 실행 — 방법과 함정
 
 ## 하드웨어
@@ -118,11 +122,12 @@ TypeError: expected str, bytes or os.PathLike object, not NoneType
 | 패키지 | `predictor_spatial` | `uses_spatial_predictor` | `RetireSpatialPredictor` |
 |---|---|---|---|
 | OneStage | 없음 | 없음 | **있음** |
-| OneStageNew | 있음 | 없음 | 없음 |
+| OneStageNew | 있음 | **있음** | **있음** | ← 2026-09-04 이후. 이전에는 `없음 / 없음`
 | MVOpt | 있음 | **있음** | **있음** |
 
 MVOpt는 폐기 시 `predictor_spatial = None`으로 만들기 때문에, 폐기 후에는 속성 검사가 **틀린 분기를 고릅니다.**
-그래서 플래그를 봅니다. OneStageNew는 플래그가 없어 속성 대체 경로로 같은 분기를 탑니다.
+그래서 플래그를 봅니다. 2026-09-04 이후 OneStageNew도 플래그를 가지므로 같은 경로입니다
+(그 이전에는 속성 대체 경로로 같은 분기를 탔습니다).
 
 ## 5. `spatial model retired` 로그는 거짓일 수 있습니다 ★
 
@@ -130,8 +135,9 @@ MVOpt는 폐기 시 `predictor_spatial = None`으로 만들기 때문에, 폐기
 
 - **OneStage**는 `predictor_spatial`을 애초에 만들지 않아 메서드가 즉시 `return`합니다 —
   **아무것도 반환하지 않고 "retired"를 찍습니다.**
-- **OneStageNew**는 메서드 자체가 없어 약 3.2 GiB 교차시점 모델이 시간 추적 내내 상주합니다.
-  이것이 OneStageNew가 무거운 데이터셋에서 터지는 이유 중 하나입니다.
+- **OneStageNew**는 2026-09-04 이전에 메서드 자체가 없어 약 3.2 GiB 교차시점 모델이 시간 추적 내내 상주했습니다.
+  이것이 무거운 데이터셋에서 터지던 이유 중 하나였습니다. **지금은 메서드가 있어 실제로 폐기합니다** —
+  Welder가 90 GiB 상한 안에서 완주하게 된 직접적 원인입니다.
 - 실제로 회수하려면 `torch.clear_autocast_cache()`가 반드시 함께 호출되어야 합니다.
   autocast 캐시가 죽은 fp32 파라미터에 대한 약한 참조로 bf16 사본을 붙들고 있기 때문입니다.
 

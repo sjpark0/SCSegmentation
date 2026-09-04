@@ -22,8 +22,12 @@ WORKDIR="/host${ROOT}/SCSam3"
 ALL_DATASETS=(AlexaMeadeExhibit AlexaMeadeFacePaint Barn Blocks Breakfast
               Carpark CoffeeMartini Dog Fencing FlameSteak Frog MATF Painter
               PoznanStreet Welder)
-ALGOS=(OneStage OneStageNew)
-declare -A OUTNAME=([OneStage]=SegMaskSam3OneStage [OneStageNew]=SegMaskSam3OneStageNew)
+# 개발은 MVOpt에서 진행합니다. demoSCSam3OneStageNew는 2026-09-04부로 MVOpt의
+# 동결 스냅샷이므로(코드가 동일), 여기서 OneStageNew를 돌리면 패치 코드의 출력이
+# 발표 기준선 폴더 SegMaskSam3OneStageNew를 덮어씁니다. 그래서 MVOpt를 씁니다.
+# 기준선 마스크를 재생성해야 한다면 git tag baseline-onestagenew를 먼저 체크아웃하십시오.
+ALGOS=(OneStage MVOpt)
+declare -A OUTNAME=([OneStage]=SegMaskSam3OneStage [MVOpt]=SegMaskSam3MVOpt [OneStageNew]=SegMaskSam3OneStageNew)
 
 DATASETS=()
 EXTRA=()

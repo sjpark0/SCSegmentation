@@ -1,3 +1,7 @@
+> **2026-09-04 상태 변경.** `demoSCSam3OneStageNew`는 이제 `demoSCSam3MVOpt`의 바이트 동일
+> 동결 스냅샷입니다. 아래에서 "OneStageNew"가 *무패치 원본 코드*를 뜻하는 서술은
+> **git 태그 `baseline-onestagenew`** 기준으로 읽으십시오. 배경: [README.md](README.md)
+
 # 메모리 최적화 — 무엇을 왜 바꿨나
 
 **목적.** MVSeg 15개 중 3개(AlexaMeadeExhibit, CoffeeMartini, FlameSteak)가 OOM으로 완주하지 못했습니다.
@@ -7,7 +11,9 @@
 이 조건은 실측으로 지켰습니다 (12개 데이터셋 12,692장, 차이 0건).
 
 **작업 폴더.** `SCSam3/demoSCSam3MVOpt/` — `demoSCSam3OneStageNew`의 바이트 사본에서 시작했습니다.
-원본은 손대지 않았습니다.
+
+작업 당시에는 원본을 손대지 않았으나, **2026-09-04에 검증을 마치고 원본에 반영했습니다.**
+지금은 두 폴더가 동일하고, OneStageNew는 동결 스냅샷입니다.
 
 상세 설계 근거는 [analysis/SCHEDULE.md](analysis/SCHEDULE.md)에 있습니다. 아래는 실제로 들어간 것의 요약입니다.
 
@@ -172,6 +178,11 @@ TRIM_CACHED_OUTPUTS = os.environ.get("SCSAM3_TRIM_CACHED_OUTPUTS", "").strip() n
 | MVOpt vs OneStageNew — 12개 데이터셋 | PNG 12,692장 | **0** |
 | 카메라 단위 J·F 값 집합 | 36개 | **0** |
 | 트림 ON vs OFF (Blocks) | PNG 882장 | **0** |
+| **반영 후 OneStageNew vs MVOpt** — Welder + 무거운 3개 | PNG 8,064장 | **0** |
+
+마지막 줄은 2026-09-04 반영 직후 실측입니다. 이 넷은 **원본 OneStageNew가 90 GiB 상한 안에서
+완주하지 못하던 것들**입니다 (Welder는 OOM 중단, 나머지 셋은 한 번도 완주한 적 없음).
+반영 후 전부 완주하고 MVOpt와 바이트 동일합니다.
 | OneStage 패치 전/후 — 15개 데이터셋 | 14개 바이트 동일 | Painter만 14파일, **점수 동일** |
 | ForSam2New 패치 전/후 — Frog | PNG 315장 | **0** |
 
@@ -191,9 +202,10 @@ Painter 건은 패치가 원인이 아닙니다. [investigations-closed.md](inve
 | `demoSCSam3TwoStageNew` | ✓ | ✓ | ✓ | ✓ | ✓ | — | 해당없음 |
 | `demoSCSam3ForSam2` | 해당없음 | 해당없음 | ✓ | ✓ | ✓ | — | 해당없음 |
 | `demoSCSam3ForSam2New` | 해당없음 | 해당없음 | ✓ | ✓ | ✓ | — | 해당없음 |
-| `demoSCSam3OneStageNew` | — | — | — | — | — | — | — |
+| `demoSCSam3OneStageNew` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-**MVOpt만 7종 전부를 갖습니다. OneStageNew는 하나도 없습니다** — 무패치 기준 폴더입니다.
+**MVOpt와 OneStageNew가 7종 전부를 갖습니다** — 2026-09-04부로 두 폴더는 바이트 동일합니다.
+무패치 원본은 git 태그 `baseline-onestagenew`에만 있습니다.
 
 ### "해당없음"의 이유
 

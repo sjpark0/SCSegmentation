@@ -1,3 +1,7 @@
+> **2026-09-04 상태 변경.** `demoSCSam3OneStageNew`는 이제 `demoSCSam3MVOpt`의 바이트 동일
+> 동결 스냅샷입니다. 아래에서 "OneStageNew"가 *무패치 원본 코드*를 뜻하는 서술은
+> **git 태그 `baseline-onestagenew`** 기준으로 읽으십시오. 배경: [README.md](README.md)
+
 # 실험 — MVSeg J&F
 
 ## 평가 방법
@@ -49,7 +53,8 @@ DAVIS J&F. `Data/MVSeg/eval_jf.py`가 원시 점수를, `report_jf.py`가 집계
 
 ## 결과 — 12개 공통 부분집합
 
-제외: AlexaMeadeExhibit, CoffeeMartini, FlameSteak (OneStageNew가 완주하지 못한 것들).
+제외: AlexaMeadeExhibit, CoffeeMartini, FlameSteak (**당시** OneStageNew가 완주하지 못한 것들.
+2026-09-04 메모리 수정 반영 이후에는 완주합니다).
 데이터셋별 값은 위 표와 동일합니다 — 평균만 달라집니다.
 
 | | M | M1 | MN | MN1 | MN2 | MN3 | S3‑1S | S3‑1SN | S3‑MVO |
@@ -72,13 +77,20 @@ DAVIS J&F. `Data/MVSeg/eval_jf.py`가 원시 점수를, `report_jf.py`가 집계
 
 ### (2) 15개짜리 OneStageNew 열은 MVOpt 출력입니다
 
-OneStageNew는 무거운 3개를 **완주한 적이 없고**, 해당 마스크 폴더가 디스크에 존재하지 않습니다.
+**원본** OneStageNew 코드는 무거운 3개를 완주한 적이 없고, 해당 마스크 폴더가 디스크에 존재하지 않습니다.
+(2026-09-04 이후의 `demoSCSam3OneStageNew` 폴더 코드는 완주할 수 있습니다 — 아래 ★ 주의)
 `jf_sam3_onestagenew_full.json`의 그 9개 항목은 MVOpt 출력을 OneStageNew 이름으로 채점한 것입니다.
 
 정당화는 가능합니다 — MVOpt는 같은 알고리즘이고 12개에서 바이트 동일이 증명됐습니다.
 하지만 **"OneStageNew가 15개를 돌았다"고 쓰면 사실이 아닙니다.**
 
 권장: 정본으로 `jf_sam3_mvopt_all.json`을 쓰고, 방법 이름은 알고리즘 이름으로 하나만 쓰십시오.
+
+**★ 주의 — 기본 스윕이 조용히 마스크를 만들 수 있습니다.**
+무거운 3개에는 `SegMaskSam3OneStageNew` 폴더가 없으므로, `runMVSeg.py:294-295`의
+"이미 존재함" 가드가 걸리지 않습니다. `--algo OneStageNew`로 스윕을 돌리면
+**논문이 완주 불가라고 적은 바로 그 3개에 마스크가 생성**되어 `jf_sam3_onestagenew_full.json`을
+사후적으로 "검증"해 버립니다. `runMVSegAll.sh`는 이 때문에 MVOpt를 향하도록 바꿨습니다.
 
 ### (3) `exported only` 집계는 OneStageNew에서 `nan`입니다
 
@@ -138,15 +150,14 @@ docker run --rm -v /:/host -w /host/$PWD/Data/MVSeg scsam3 \
 | `SegMask` `SegMask1` `SegMaskNew` `SegMaskNew1~3` | 15 | SAM 2 결과 (2025) |
 | `SegMaskSam3OneStage` | 15 | SAM 3 OneStage |
 | `SegMaskSam3MVOpt` | 15 | **SAM 3 최종 결과 정본** |
-| `SegMaskSam3OneStageNew` | 12 | 무거운 3개는 완주 불가 |
+| `SegMaskSam3OneStageNew` | 12 | **원본 코드** 출력. 무거운 3개는 당시 완주 불가 |
 | `SegMask*_SA3D` `SegMask*_SAM2` | 9 | 타 방법 비교군 |
 | `SegMaskSam3OneStage_recheck` | 15 | 검증 부산물 — 메모리 수정 전후 대조용. **채점된 적 없음** |
-| `SegMaskSam3OneStageNew_verify` | 진행중 | 검증 부산물 — MVOpt 동등성 재확인용 |
-| `SegMaskSam3MVOpt_notrim` | 1 | 검증 부산물 — 트림 OFF A/B (Blocks) |
 | `SegMaskSam3ForSam2New` | 1 | ForSam2New 시험 실행 (CoffeeMartini). 채점된 적 없음 |
 | `SegMaskSam2Recheck` | 1 | SAM 2 재현 검증 (CoffeeMartini). `jf_recheck.json` |
 
-아래 넷은 **검증 부산물이라 삭제해도 결과에 영향이 없습니다** — 다만 재실행하려면 GPU 시간이 듭니다:
-`SegMaskSam3OneStage_recheck`, `SegMaskSam3OneStageNew_verify`, `SegMaskSam3MVOpt_notrim`, `SegMaskSam3ForSam2New`.
+아래 둘은 **검증 부산물이라 삭제해도 결과에 영향이 없습니다** — 다만 재실행하려면 GPU 시간이 듭니다:
+`SegMaskSam3OneStage_recheck`, `SegMaskSam3ForSam2New`.
+(`SegMaskSam3OneStageNew_verify`와 `SegMaskSam3MVOpt_notrim`은 2026-09-04에 삭제했습니다.)
 
 `SegMask (Copy)` 류가 보이면 실수로 만들어진 사본입니다. 어떤 `jf_*.json`도 참조하지 않습니다.

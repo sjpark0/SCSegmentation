@@ -52,7 +52,7 @@ while :; do
 done
 
 say "smoke test: Frog / OneStageNew"
-./runMVSegAll.sh --algo OneStageNew --no-eval --overwrite Frog >>"${LOG}" 2>&1
+./runMVSegAll.sh --algo MVOpt --no-eval --overwrite Frog >>"${LOG}" 2>&1
 if [[ $? -ne 0 ]] || ! grep -q "all runs finished" "${LOG}"; then
 	say "SMOKE TEST FAILED - sweep not started. See ${LOG}"
 	exit 4

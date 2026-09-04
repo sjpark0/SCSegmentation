@@ -1,3 +1,8 @@
+> **시점 안내 (2026-09-04).** 이 문서는 `demoSCSam3OneStageNew`가 **무패치 원본**이던 시점의
+> 조사 결과입니다. 이후 그 폴더는 `demoSCSam3MVOpt`의 동결 스냅샷으로 바뀌었으므로,
+> "OneStageNew에는 없다 / 무패치다" 류의 서술은 **현재 상태가 아닙니다.**
+> 원본은 git 태그 `baseline-onestagenew`. 배경: `docs/README.md`
+
 Repo root: `/home/sjpark/Documents/SCSegmentation` (referred to below as **`$R`**). All citations are `$R`-prefixed paths with line numbers.
 
 ---

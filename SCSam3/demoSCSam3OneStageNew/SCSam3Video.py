@@ -15,6 +15,12 @@ class SCSam3Video:
         gpus_to_use = range(torch.cuda.device_count())
         self.predictor_spatial = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)        
         self.predictor_spatial.model.fill_hole_area = 0
+        # This package HAS a separate cross-view predictor.  The flag is what
+        # callers must test to pick the propagate request shape: the model
+        # itself is dropped by RetireSpatialPredictor() once the cross-view
+        # pass is done, so `hasattr(self, "predictor_spatial")` is not a safe
+        # proxy for "this is the NewMem package".
+        self.uses_spatial_predictor = True
 
         self.predictor = build_scsam3_video_predictor_newmem(gpus_to_use=gpus_to_use)        
         self.predictor.model.fill_hole_area = 0
@@ -27,6 +33,43 @@ class SCSam3Video:
         self.input_points = {}
         self.input_labels = {}
         self.session_ids = []
+
+    def RetireSpatialPredictor(self):
+        """Free the cross-view model and its session.  Call after the cross-view pass.
+
+        Only LoadCameraFolders / AddReferenceMask / PropagateAcrossViews touch
+        `predictor_spatial`; the temporal pass and the write loop run entirely
+        on `self.predictor`.  `masks_spatial` is untouched (its tensors are
+        fresh bool tensors, not views into any model state), so the seeds that
+        TrackForward feeds back in are bit-identical.
+
+        The attribute is set to None rather than deleted so that an older
+        caller sniffing `hasattr(self, "predictor_spatial")` still takes the
+        multi-session branch; `uses_spatial_predictor` is the flag to test.
+        """
+        import gc
+
+        predictor = getattr(self, "predictor_spatial", None)
+        if predictor is None:
+            return
+        session_id = getattr(self, "session_id_statial", None)
+        if session_id is not None:
+            # drops the N-view pseudo-video, the cross-view feature cache and
+            # the per-view/per-object tracker memories (host side)
+            predictor.handle_request(
+                request=dict(type="close_session", session_id=session_id)
+            )
+            self.session_id_statial = None
+        # Drop the parameters outright instead of `.cpu()`-ing them: a host
+        # copy would cost ~3.2 GiB of RAM, and host RAM is the resource that
+        # has been killing the machine.  The bf16 casts of these weights are
+        # still pinned by the global autocast cache, so the caller must also
+        # run torch.clear_autocast_cache() to actually get the memory back.
+        predictor.model = None
+        self.predictor_spatial = None
+        del predictor
+        gc.collect()
+        torch.cuda.empty_cache()
 
     def LoadVideo_Folder(self, folder, perms):
         self.folder = folder

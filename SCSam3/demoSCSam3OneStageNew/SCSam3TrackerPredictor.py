@@ -404,7 +404,17 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         # convert mask_inputs_video_res to binary (threshold at 0.5 as it is in range 0~1)
         mask_inputs_video_res = mask_inputs_video_res > 0.5
 
-        mask_inputs_per_frame[frame_idx] = mask_inputs_video_res
+        # Only the KEYS of `mask_inputs_per_frame` are ever read: `.pop()` at
+        # :267 and :940 (return value discarded), `.keys()` at :759-760, `in`
+        # at :953, `set.update(dict)` at :1241 (iterates keys) and the key
+        # remap in `_map_keys` at :1274 (carries the value through untouched).
+        # No reader consumes the value, so store a zero-storage meta placeholder
+        # of the same shape/dtype instead of an H*W bool mask on the compute
+        # device.  The local `mask_inputs_video_res` is deliberately left
+        # untouched: it still carries the real mask for the uses at :447/:459.
+        mask_inputs_per_frame[frame_idx] = torch.empty(
+            mask_inputs_video_res.shape, dtype=torch.bool, device="meta"
+        )
         point_inputs_per_frame.pop(frame_idx, None)
         # If this frame hasn't been tracked before, we treat it as an initial conditioning
         # frame, meaning that the inputs points are to generate segments on this frame without
@@ -1388,6 +1398,22 @@ class SCSam3TrackerPredictor(Sam3TrackerBase):
         pixel_level_non_overlapping_masks = super()._apply_non_overlapping_constraints(
             pred_masks_single_score
         )
+        # Memory fast path, mathematically identical for a boolean `pred_masks` with
+        # `background_value == 0` -- the only way this package calls this function (see
+        # SCSam3VideoInference.py:463, which asserts the masks are bool, and :506, which
+        # passes background_value=0). For a bool input, torch.clamp(pred_masks, max=0)
+        # is an all-zero tensor, so the general torch.where below reduces to
+        # `pred_masks & (pixel_level_non_overlapping_masks > 0)` -- but materialized in
+        # int64, because a Python-int `max` promotes bool -> int64. Computing the same
+        # conjunction in bool avoids the two int64 (N, 1, H, W) temporaries (the clamp
+        # and the where output) that dominate this call's peak memory.
+        # NOTE: this branch returns bool instead of the promoted int64; both call sites
+        # immediately threshold the result with `> 0`, so the output is bit-identical.
+        if pred_masks.dtype == torch.bool and background_value == 0:
+            del pred_masks_single_score  # frees one float32 (N, 1, H, W) early
+            keep = pixel_level_non_overlapping_masks > 0
+            keep &= pred_masks  # in-place on the freshly allocated bool tensor
+            return keep
         # Replace object scores with pixel scores. Note, that now only one object can claim the overlapping region
         pred_masks = torch.where(
             pixel_level_non_overlapping_masks > 0,

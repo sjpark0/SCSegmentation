@@ -3,6 +3,27 @@
 다중시점 비디오 객체분리 — SAM 3 기반. 이 폴더는 **분석 결과와 판단 근거**를 담습니다.
 코드 사용법이 아니라 "왜 이렇게 되어 있는가"와 "무엇을 이미 조사했는가"가 목적입니다.
 
+---
+
+## ★ 2026-09-04 상태 변경 — 먼저 읽으십시오
+
+`SCSam3/demoSCSam3OneStageNew`는 이제 **`demoSCSam3MVOpt`의 바이트 동일 동결 스냅샷**입니다.
+개발은 `demoSCSam3MVOpt`에서 진행합니다.
+
+**폴더 이름이 오해를 부릅니다.** 발표된 J&F 수치를 만든 원본 OneStageNew 코드는 이제
+git 태그에만 있습니다:
+
+```bash
+git show baseline-onestagenew:SCSam3/demoSCSam3OneStageNew/SCSam3Video.py
+git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복원
+```
+
+`Data/MVSeg/*/SegMaskSam3OneStageNew/`의 마스크는 **원본 코드**가 만든 것입니다.
+현재 코드로 재생성하면 출력은 같지만(실측 확인) 출처가 달라집니다.
+
+이 변경 이전을 기술하는 문장이 아래 문서들에 남아 있을 수 있습니다.
+각 문서에 시점을 표시해 두었으니, `docs/raw/`의 자료는 **조사 당시 상태**로 읽으십시오.
+
 ## 먼저 읽을 것
 
 **[investigations-closed.md](investigations-closed.md) — 종결된 조사 13건.**
@@ -31,9 +52,11 @@
 | [analysis/SCHEDULE.md](analysis/SCHEDULE.md) | 메모리 최적화 구현 스케줄 + 보류 항목 11건 + Phase 2 로드맵 |
 | [analysis/BRIEF.md](analysis/BRIEF.md) | 실측으로 확립한 기준선 — 동작에 관한 근거 자료 |
 | [analysis/report.html](analysis/report.html) | 감사 보고서 웹페이지 (`build_report_page.py`로 REPORT.md에서 생성) |
-| [diffs/](diffs/) | upstream SAM 3 대비 알고리즘 diff 9종 + MVOpt vs OneStageNew diff |
+| [diffs/](diffs/) | upstream SAM 3 대비 알고리즘 diff 9종 + MVOpt vs OneStageNew diff (**복사 이전 기준**, 지금은 두 폴더가 동일하므로 재생성 불가) |
 | [tools/](tools/) | 평가 타당성 검증·GT 커버리지·프레임 단위 분석 스크립트와 그 출력 |
-| [raw/](raw/) | 사실 조사 원본 — J&F 표 전체, 실행 이력, 출력 목록, 러너 분석, 패치 적용 현황, 환경 |
+| [raw/](raw/) | 사실 조사 원본 — J&F 표, 실행 이력, 출력 목록, 러너 분석, 패치 현황, 환경. **2026-09-04 복사 이전 상태** |
+| `raw/copy_verify.json` | 복사 직후 독립 검증 5개 축 + 비평 (차단급 5건 포함) |
+| `raw/sweep_*.md` | 복사 전 위험 분석 — 현재 상태를 가장 정확히 기술한 자료 |
 | `raw/audit_full.json` | 감사 7종 × (분석 1 + 반증 3)의 전체 근거와 file:line 인용 |
 
 ## 노션 대응
@@ -49,8 +72,9 @@
 
 | 경로 | 역할 |
 |---|---|
-| `SCSam3/demoSCSam3OneStageNew/` | 기준 알고리즘 — 교차시점 메모리 추적. 발표 결과를 만든 코드 |
-| `SCSam3/demoSCSam3MVOpt/` | 위의 사본 + 메모리 수정. **알고리즘 동일**, 출력 동일 |
+| `SCSam3/demoSCSam3MVOpt/` | **개발 대상.** 교차시점 메모리 추적 + 메모리 수정 7종 |
+| `SCSam3/demoSCSam3OneStageNew/` | **동결 스냅샷** — 위와 바이트 동일. 개발 금지 (`FROZEN.md` 참조) |
+| git 태그 `baseline-onestagenew` | 발표 결과를 만든 원본 OneStageNew 코드 |
 | `SCSam3/demoSCSam3OneStage/` | 교차시점 메모리 없는 판 |
 | `SCSam3/demoSCSam3ForSam2*/` | SAM 2 스타일 API 판 |
 | `SCSam3/demoSCSam3TwoStage*/` | 2단계 판 — 러너 미등록, 미검증 |

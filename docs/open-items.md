@@ -1,3 +1,7 @@
+> **2026-09-04 상태 변경.** `demoSCSam3OneStageNew`는 이제 `demoSCSam3MVOpt`의 바이트 동일
+> 동결 스냅샷입니다. 아래에서 "OneStageNew"가 *무패치 원본 코드*를 뜻하는 서술은
+> **git 태그 `baseline-onestagenew`** 기준으로 읽으십시오. 배경: [README.md](README.md)
+
 # 미해결 항목
 
 ## 1. HuggingFace 토큰 폐기 — 사용자 조치 필요 ★
@@ -43,7 +47,15 @@ SAM 2 스타일 API라 S1·S2의 앵커가 없어 절감이 0.1 GiB 수준에 �
 
 원본 백업: `/tmp/sibling_backup/` — **`/tmp`이므로 재부팅 시 사라집니다.** 필요하면 옮기십시오.
 
-## 4. MVOpt를 OneStageNew에 반영할 것인가
+## 4. ~~MVOpt를 OneStageNew에 반영할 것인가~~ — 완료 (2026-09-04)
+
+**반영했습니다.** `.py` 6개를 복사했고, 숫자 폴더·`.dockerignore`·백업 파일은 보존했습니다.
+OneStageNew는 동결 스냅샷이 되었고 개발은 MVOpt에서 진행합니다.
+반영 전 상태는 git 태그 `baseline-onestagenew`.
+
+검증: Welder 941장 완전 일치(반영 전에는 OOM), 독립 검증 5개 축 통과.
+
+아래는 당시의 판단 근거입니다.
 
 MVOpt는 OneStageNew + 메모리 수정입니다. 알고리즘 변화가 없으므로 되돌려 넣을 수 있습니다.
 

@@ -41,8 +41,11 @@ ALGOS = {"OneStage": "demoSCSam3OneStage",
 DEFAULT_OUT = {"OneStage": "SegMaskSam3OneStage",
                "OneStageNew": "SegMaskSam3OneStageNew",
                "MVOpt": "SegMaskSam3MVOpt"}
-# MVOpt is OneStageNew with the memory fixes; it shares the cross-view memory
-# design, so it needs every view tracked, like OneStageNew.
+# MVOpt is the development target. As of 2026-09-04 demoSCSam3OneStageNew holds
+# a byte-identical frozen snapshot of it (see that folder's FROZEN.md); the
+# unpatched original that produced the published J&F numbers is at git tag
+# baseline-onestagenew. Both share the cross-view memory design, so both need
+# every view tracked.
 NEEDS_ALL_VIEWS = ("OneStageNew", "MVOpt")
 
 
@@ -246,8 +249,9 @@ def build_runner(algo):
                 # Test the flag, not the attribute: the cross-view model is
                 # retired before this point, so its presence says nothing.
                 # The attribute check is the fallback for packages that do not
-                # set the flag (OneStage has neither; OneStageNew has only the
-                # attribute).
+                # set the flag. Since 2026-09-04 both OneStageNew and MVOpt set
+                # it; OneStage sets neither and takes the single-session branch,
+                # because its __init__ never builds predictor_spatial at all.
                 if getattr(self, "uses_spatial_predictor",
                            getattr(self, "predictor_spatial", None) is not None):
                     request["session_ids"] = self.session_ids

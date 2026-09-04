@@ -1,6 +1,14 @@
+> **2026-09-04 상태 변경.** `demoSCSam3OneStageNew`는 이제 `demoSCSam3MVOpt`의 바이트 동일
+> 동결 스냅샷입니다. 아래에서 "OneStageNew"가 *무패치 원본 코드*를 뜻하는 서술은
+> **git 태그 `baseline-onestagenew`** 기준으로 읽으십시오. 배경: [README.md](README.md)
+
 # MVOpt ↔ OneStageNew 변경 감사
 
 **질문.** MVOpt는 OneStageNew에 메모리 수정만 넣은 것인가? 그대로 되돌려 넣어도 되는가?
+
+> **결론과 후속.** 답은 "그렇다"였고, **2026-09-04에 실제로 반영했습니다.**
+> 두 폴더는 이제 바이트 동일하며 OneStageNew는 동결 스냅샷입니다.
+> 아래 "되돌려 넣을 때 알아야 할 것"은 이미 수행된 판단의 근거로 읽으십시오.
 
 **방법.** 변경 7종 각각에 분석자 1명 + 서로 다른 관점의 반증자 3명(도달가능성 / dtype·수치 / 객체수명·공유상태).
 반증자는 "반증하라"는 지시를 받았고, 구체적이고 **도달 가능한** 경로를 제시할 때만 반박으로 인정했습니다.
@@ -32,7 +40,7 @@ S1은 특히 안전합니다 — upstream SAM 3가 `sam3_video_inference.py:400`
 메서드만 복사하고 플래그를 빠뜨리면, 폐기 후 속성 검사가 틀린 분기를 골라
 `SCSam3VideoPredictorNewMem.py:100`에서 `KeyError: 'session_ids'`로 죽습니다.
 
-**새로 생기는 실패 양상** (OneStageNew에는 없던 것):
+**새로 생기는 실패 양상** (원본 OneStageNew에는 없던 것 — 반영 후에는 그 폴더에도 존재):
 
 - 폐기 후 `predictor_spatial`이 `None`이라, `runMVSeg.py:144`의
   `getattr(self, "predictor_spatial", self.predictor)` 대체 경로가 **작동하지 않습니다**
@@ -93,7 +101,7 @@ Blocks, 트림 명시적 OFF vs 저장된 MVOpt 출력
 
 | 대조 | 규모 | 결과 |
 |---|---|---|
-| MVOpt(**트림 ON**) vs OneStageNew(트림 기능 없음) | 12개 데이터셋 · PNG 12,692장 | **차이 0** |
+| MVOpt(**트림 ON**) vs OneStageNew(당시 트림 기능 없음) | 12개 데이터셋 · PNG 12,692장 | **차이 0** |
 | MVOpt(트림 ON, 저장본) vs MVOpt(**트림 명시적 OFF**), Blocks | PNG 882장 | **차이 0** |
 
 비평자가 비어 있다고 본 칸은 이미 채워져 있었고, 12개 데이터셋 규모입니다.
