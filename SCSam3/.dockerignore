@@ -1,0 +1,11 @@
+# 빌드 컨텍스트 축소. 이 파일이 없으면 SCSam3/ 전체 84 GB가 전송됩니다
+# (demoSCSam3* 폴더들이 각각 데모 출력 PNG를 13~14 GB씩 갖고 있습니다).
+# Dockerfile이 실제로 쓰는 것은 sam3/ 와 hf_cache/ 뿐입니다.
+*
+!sam3
+!hf_cache
+
+# 위에서 살린 두 디렉토리 안에서도 불필요한 것 제외
+sam3/.git
+sam3/**/__pycache__
+hf_cache/hub/.locks

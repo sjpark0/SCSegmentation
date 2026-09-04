@@ -178,8 +178,12 @@ logs
 results
 result
 pretrain_models
-hf_cache
 *.bat
 *.png   
 # upstream SAM 3 체크아웃 (자체 .git 보유, 별도 저장소)
 SCSam3/sam3/
+
+# SAM 3 웨이트 (6.5 GB) — 빌드 시 COPY 되지만 저장소에는 넣지 않음.
+# 디렉터리 자체는 남겨야 Dockerfile 의 COPY 가 실패하지 않습니다.
+SCSam3/hf_cache/*
+!SCSam3/hf_cache/.gitkeep

@@ -32,11 +32,36 @@ RUN pip install -e ".[train,dev]"
 RUN pip install "setuptools==69.5.1"
 
 RUN pip install huggingface_hub
-# The token is mounted for this one command only; BuildKit keeps it out of the
-# image layers. Build with:
-#   DOCKER_BUILDKIT=1 docker build --secret id=hf_token,env=HF_TOKEN -t scsam3 .
-RUN --mount=type=secret,id=hf_token \
-    HF_TOKEN="$(cat /run/secrets/hf_token)" hf download facebook/sam3 --token "${HF_TOKEN}"
+
+# SAM 3 weights: two ways in, no token stored anywhere in the image either way.
+#
+#   1. Local weights (preferred, no token at all).
+#      Put a HuggingFace hub cache at ./hf_cache so that
+#      ./hf_cache/hub/models--facebook--sam3 exists, then:
+#          docker build -t scsam3 .
+#      Populate it once per machine with:
+#          cd SCSam3 && HF_HOME=./hf_cache hf download facebook/sam3 --token <token>
+#
+#   2. Fresh clone with no weights: pass a token as a BuildKit secret.
+#          export HF_TOKEN=...
+#          DOCKER_BUILDKIT=1 docker build --secret id=hf_token,env=HF_TOKEN -t scsam3 .
+#      The secret is mounted for that one command and never lands in a layer.
+#
+# ./hf_cache is committed as an empty directory (.gitkeep); its contents are
+# gitignored because the weights are 6.5 GB.
+COPY ./hf_cache /root/.cache/huggingface
+
+RUN --mount=type=secret,id=hf_token,required=false \
+    if [ -f /root/.cache/huggingface/hub/models--facebook--sam3/refs/main ]; then \
+        echo "SAM 3 weights: using the copy from ./hf_cache"; \
+    elif [ -s /run/secrets/hf_token ]; then \
+        echo "SAM 3 weights: not in ./hf_cache, downloading with the mounted token"; \
+        HF_TOKEN="$(cat /run/secrets/hf_token)" hf download facebook/sam3 --token "${HF_TOKEN}"; \
+    else \
+        echo "ERROR: SAM 3 weights are neither in ./hf_cache nor downloadable." >&2; \
+        echo "       Populate ./hf_cache, or build with --secret id=hf_token,env=HF_TOKEN." >&2; \
+        exit 1; \
+    fi
 
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
 RUN echo 'ln /dev/null /dev/raw1394' >> ~/.bashrc
