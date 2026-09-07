@@ -148,17 +148,33 @@ MVOpt는 폐기 시 `predictor_spatial = None`으로 만들기 때문에, 폐기
 
 OOM의 원인이 아닙니다 — [investigations-closed.md](investigations-closed.md) 3번.
 
-## 7. Docker 이미지가 Dockerfile보다 오래됐습니다 ★
+## 7. Docker 이미지와 빌드 — 토큰은 더 이상 쓰지 않습니다
 
-`scsam3:latest`는 2026-02-25 빌드본으로, `HF_TOKEN` 레이어 3개를 갖고 있고 secret mount 레이어는 0개입니다.
-즉 **현재 Dockerfile(secret mount)로 빌드된 적이 없습니다.** 모든 스크립트가 이 옛 이미지를 씁니다.
-
-빌드하려면:
+`scsam3:latest`(`9064e3dc8548`, 2026-09-04 빌드)는 토큰 없는 빌드본입니다. `HF_TOKEN` 레이어 0개,
+가중치는 `SCSam3/hf_cache/`를 `COPY`해서 들어갑니다. 토큰 레이어 3개를 갖고 있던 2026-02-25 이미지는
+Phase 0(2026-09-07)에서 삭제했습니다. `scsam3:notoken`은 같은 이미지의 중복 태그입니다.
 
 ```bash
-echo -n "<토큰>" > /tmp/hf_token
-DOCKER_BUILDKIT=1 docker build --secret id=hf_token,src=/tmp/hf_token -t scsam3 SCSam3/
-rm /tmp/hf_token
+DOCKER_BUILDKIT=1 docker build -t scsam3 SCSam3/     # SCSam3/hf_cache/ 가 채워져 있으면 토큰 불필요
 ```
 
-[open-items.md](open-items.md) 1번 참조.
+`hf_cache/`가 비어 있을 때만 `--secret id=hf_token,src=<파일>`로 내려받습니다 (루트 README 참조).
+`SCSam3/hf_cache/*`는 gitignore 대상이고 `.gitkeep`만 추적됩니다 — 6.5 GB 가중치를 커밋하지 마십시오.
+
+## 8. 워크플로 원본 출력(`docs/raw/*.json`)에 비밀값이 섞일 수 있습니다 ★
+
+2026-09-07, `docs/raw/roadmap_raw.json`에 옛 이미지의 HF 토큰 전문이 그대로 들어간 채 커밋됐고
+(에이전트가 `docker history` 출력을 인용), GitHub 푸시 보호가 푸시를 막았습니다.
+푸시되기 전이라 로컬 커밋 4개를 `git filter-branch --index-filter`로 다시 써서 값을 `hf_ShVKFypk[REDACTED]`로 가렸습니다.
+토큰은 원격에 간 적이 없습니다.
+
+- **증상**: `! [remote rejected] main -> main (push declined due to repository rule violations)`.
+  원인은 그 위 `remote: error: GH013 …` 블록에 커밋 해시와 `경로:행`으로 나옵니다. 태그까지 함께 거부됩니다.
+- **대응**: "allow the secret" 링크는 쓰지 마십시오 — 토큰이 원격 이력에 영구히 남습니다.
+  미푸시 커밋이면 다시 쓰고, 이미 푸시됐다면 토큰을 폐기하십시오.
+- **예방**: `docs/tools/pre-commit-secrets.sh`가 스테이징된 추가 줄에서 토큰 패턴을 찾으면 커밋을 막습니다.
+  훅은 저장소에 포함되지 않으므로 클론마다 설치해야 합니다:
+
+  ```bash
+  cp docs/tools/pre-commit-secrets.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+  ```

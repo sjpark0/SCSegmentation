@@ -12,6 +12,8 @@
 - 이미지는 레지스트리에 푸시된 적 없음 (`RepoDigests: []`).
 - 유일한 노출이던 로컬 이미지의 빌드 이력 레이어 3개는 토큰 없는 재빌드로 사라졌고, 옛 이미지(`pre-secret-backup`)는 2026-09-07 Phase 0에서 삭제했습니다.
 
+- **2026-09-07 추가**: 로드맵 워크플로 원본 출력(`docs/raw/roadmap_raw.json`)에 옛 토큰 전문이 들어간 로컬 커밋이 있었으나 GitHub 푸시 보호가 막았고, 푸시 전에 커밋을 다시 써서 가렸습니다. 원격에는 간 적 없습니다 — [operations.md](operations.md) 함정 8.
+
 빌드는 이제 토큰이 필요 없습니다 (`SCSam3/hf_cache/` COPY, README 참조). 폐기는 위생 차원의 선택 사항입니다.
 
 ## 2. `demoSCSam3ForSam2New`의 메모리 절감
