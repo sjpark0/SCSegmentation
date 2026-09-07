@@ -41,6 +41,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
 | [experiments.md](experiments.md) | J&F 평가 방법과 전체 결과 |
+| [phase1-measurement.md](phase1-measurement.md) | **Phase 1 결과** — 재현 확인, 짝지은 통계, ref/nonref, nb 구간, 면적 가중, ceiling, 퇴화 시드, 엔드포인트 제안 |
 | [operations.md](operations.md) | 실행 방법, 러너 옵션, 자원 한계, Docker |
 | [open-items.md](open-items.md) | 미해결 항목 |
 | **[ROADMAP.md](ROADMAP.md)** | **구현 계획 (살아있는 문서) — P1~P14 상태, 단계, 실험 행 상태. 노션과 함께 갱신** |

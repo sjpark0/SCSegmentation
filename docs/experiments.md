@@ -4,9 +4,13 @@
 
 # 실험 — MVSeg J&F
 
+> **2026-09-07 Phase 1.** 채점기·집계기가 저장소의 [`eval/`](../eval/)로 옮겨져 v2가 됐습니다(프레임별 점수, 짝지은 통계, ref/nonref, nb 구간, 면적 가중, ceiling, `--paper`).
+> 정본 원시 점수는 `Data/MVSeg/jf_v2.json`(9개 방법 × 15개, 저장본과 396/396 항목 동일), 논문 표는 `docs/raw/paper_tables.md`,
+> 판독과 엔드포인트 제안은 [phase1-measurement.md](phase1-measurement.md)입니다. 아래 표의 숫자는 그대로 유효합니다.
+
 ## 평가 방법
 
-DAVIS J&F. `Data/MVSeg/eval_jf.py`가 원시 점수를, `report_jf.py`가 집계를 담당합니다.
+DAVIS J&F. `eval/eval_jf.py`가 원시 점수를, `eval/report_jf.py`가 집계를 담당합니다 (`Data/MVSeg/`의 원본 두 파일은 발표 당시 그대로 보존; git 이력은 `eval/` 첫 커밋 b54e7b6).
 
 | 항목 | 내용 | 근거 |
 |---|---|---|
@@ -99,35 +103,36 @@ OneStageNew의 3개 폴더가 없으므로 그 9개 카메라의 모든 객체�
 
 `as-is`를 쓰면 이 문제가 없습니다. 저장된 점수만으로 계산되기 때문입니다.
 
-## 재현 명령
+## 재현 명령 (2026-09-07 이후)
 
 ```bash
-cd Data/MVSeg
+cd /home/sjpark/Documents/SCSegmentation
+M="SegMaskNew1 SegMaskSam3OneStage SegMaskSam3MVOpt"
 
-# 15개 전체
-python3 report_jf.py \
-  --raw jf_raw.json jf_sam3_onestage.json jf_sam3_onestagenew_full.json jf_sam3_mvopt_all.json \
-  --methods SegMask SegMask1 SegMaskNew SegMaskNew1 SegMaskNew2 SegMaskNew3 \
-            SegMaskSam3OneStage SegMaskSam3OneStageNew SegMaskSam3MVOpt \
-  --no-missing
+# 15개 전체 (--common 이 기본값; 12개는 --datasets 로 명시)
+python3 eval/report_jf.py --methods $M
+python3 eval/report_jf.py --methods $M --datasets AlexaMeadeFacePaint Barn Blocks Breakfast Carpark Dog Fencing Frog MATF Painter PoznanStreet Welder
 
-# 12개 공통 부분집합
-python3 report_jf.py \
-  --raw jf_raw.json jf_sam3_onestage.json jf_sam3_onestagenew.json jf_sam3_mvopt_all.json \
-  --methods ... --common --no-missing
+# 논문 표 전부 → docs/raw/paper_tables.md
+python3 eval/report_jf.py --paper docs/raw/paper_tables.md
 ```
 
-원시 점수를 다시 만들려면 (컨테이너 필요):
+원시 점수를 다시 만들려면 (컨테이너, CPU만, 약 3분):
 
 ```bash
-docker run --rm -v /:/host -w /host/$PWD/Data/MVSeg scsam3 \
-  python eval_jf.py --methods SegMaskSam3MVOpt --out jf_sam3_mvopt_all.json
+docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host/$PWD scsam3 \
+  python eval/eval_jf.py --methods SegMask SegMask1 SegMaskNew SegMaskNew1 SegMaskNew2 SegMaskNew3 \
+      SegMaskSam3OneStage SegMaskSam3OneStageNew SegMaskSam3MVOpt --out /host$PWD/Data/MVSeg/jf_v2.json
 ```
+
+옛 명령(`Data/MVSeg/report_jf.py --raw jf_raw.json jf_sam3_onestage.json jf_sam3_mvopt_all.json ...`)도 그대로 동작하며 같은 숫자를 냅니다.
 
 ## 파일 목록
 
 | 파일 | 상태 | 내용 |
 |---|---|---|
+| `jf_v2.json` | **정본 (2026-09-07)** | 9개 방법 × 15개, 프레임별 J·F·면적·메타 포함. 아래 4개 정본과 항목 단위로 동일 |
+| `seed_census.json` | 진단 | 퇴화 시드 집계 원자료 (`eval/seed_census.py`) |
 | `jf_raw.json` | **정본** | SAM 2 6종, 15개 데이터셋 |
 | `jf_sam3_onestage.json` | **정본** | OneStage 15개 |
 | `jf_sam3_mvopt_all.json` | **정본** | MVOpt 15개 — SAM 3 최종 결과의 정본 |
@@ -138,7 +143,7 @@ docker run --rm -v /:/host -w /host/$PWD/Data/MVSeg scsam3 \
 | `jf_recheck.json` | 보조 | SAM 2 재현 검증 (CoffeeMartini) |
 | `jf_summary.json`, `missing.json`, `jf_report.txt` | 구자료 | 2026-09-02 SAM 2 작업 산출물 |
 
-`Data/`는 git 제외 대상이라(`.gitignore:172`) 이 파일들에는 git 이력이 없습니다. mtime이 유일한 출처 정보입니다.
+`Data/`는 git 제외 대상이라 이 파일들에는 git 이력이 없습니다. 2026-09-07부터는 각 마스크 폴더의 `MANIFEST.json`이 내용 해시(sha256)와 출처(git rev·인자·플래그, 기존 폴더는 로그에서 추정)를 담습니다 — `python3 eval/manifest.py verify <폴더>`. `diff -rq`로 폴더를 비교할 때는 `-x MANIFEST.json`을 붙이십시오.
 
 ## 출력 디렉토리 목록
 

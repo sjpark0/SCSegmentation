@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-09-07 · 갱신 이력은 문서 끝.
+**최종 갱신**: 2026-09-07 (Phase 1 완료) · 갱신 이력은 문서 끝. Phase 1 결과: [phase1-measurement.md](phase1-measurement.md)
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -10,24 +10,24 @@
 
 ## 한눈에 보기
 
-REPORT.md가 낸 제안 14개 중 **3개가 끝났고 전부 메모리 항목**입니다. 정확도·평가·대조군 항목은 하나도 시작하지 않았습니다.
-실험 계획 11행 중 **새로 돌린 행은 0개**입니다(행 0·1은 기존 결과).
+REPORT.md가 낸 제안 14개 중 **4개 완료(P1·P3·P6 + G1), 4개 부분(P5·P7·P8·P13)**입니다. 평가 프로토콜(P3)은 끝났고, 정확도·대조군 항목은 시작하지 않았습니다.
+실험 계획 11행 중 **새로 돌린 행은 0개**입니다(행 0·1은 기존 결과). Phase 1은 GPU 없이 기존 출력만 재측정했습니다.
 
 | P | 제안 | 상태 | 단계 | 비고 |
 |---|---|---|---|---|
 | P1 | seed/프레임 마스크 고정 해제 | ✅ | — | S1·S2·S3·S7로 반영. (d) 트림은 env-gated, `propagation_full` 가드는 이 패키지에서 발동 안 함 |
 | P2 | 패키지 내 window ablation + 위생 3건 + closure | ⬜ | **2** | 심사 3/3 합의 1순위. 대조군의 전부 |
-| P3 | 주장을 담을 수 있는 평가 프로토콜 | ⬜ | **1** | GPU 불필요. 이후 모든 판정의 엔드포인트 |
+| P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트는 [phase1-measurement.md](phase1-measurement.md) §5에 제안, **확정 대기** |
 | P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | ⬜ | 3 | P2 (1)~(3) 위에 얹음 |
-| P5 | seed 품질 검사와 복구 | ⬜ | 1(진단) → 3(복구) | 유일하게 정량화된 정확도 이득 |
+| P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
 | P7 | spatial predictor 은퇴 + autocast 정리 + fp16 프레임 | 🔶 | — | 은퇴·autocast ✅(S6). **fp16 ❌** — 출력 변경 확인, fp32(S5)로 대체 |
-| P8 | reference 규칙(객체 수) + ceiling 열 | ⬜ | 1(ceiling) → 3(규칙) | 프로토콜 변경, 순위 불변 |
+| P8 | reference 규칙(객체 수) + ceiling 열 | 🔶 | 1(ceiling ✅) → 3(규칙 ⬜) | ceiling 0.9375(max-id) → 0.9594(객체 수). Blocks +0.128 / MATF +0.087 / FacePaint +0.061 재현 |
 | P9 | 하나의 propagation 계약 | ⬜ | 5 | 벤치마크 숫자 불변. P5 재전파를 안전하게 |
 | P10 | seeding 응답 생략 | ⬜ | 5 | SCHEDULE H2. 시간만 절감(120~260초 → 수초) |
 | P11 | 뷰당 detector 잔재 축소 | ⬜ | 5 | 안전한 부분집합만 |
 | P12 | 이웃 토큰 조건화 ablation | ⬜ | 3 | 이웃 obj_ptr이 가장 유망. 사전 선언 기준으로 채택/기각 |
-| P13 | 엔지니어링 위생 묶음 | 🔶 | 0·2·5 | 문서·형제 폴더 패치·`.dockerignore` ✅. **테스트·dead API·배너 ⬜** |
+| P13 | 엔지니어링 위생 묶음 | 🔶 | 0·1·2·5 | 문서·형제 폴더 패치·`.dockerignore`·**마스크 폴더 매니페스트** ✅. **테스트·dead API·배너 ⬜** |
 | P14 | 이벤트 구동 cross-view 재시딩 | 🔒 | 5 | P4·P5 결과 본 뒤 |
 | G1 | 토큰 폐기(0순위) | ✅ | — | 두 토큰 모두 외부 유출 없음 확인. 이미지는 토큰 없이 재빌드 |
 
@@ -65,23 +65,25 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 
 **완료 조건**: `git status -sb`에 ahead 없음 · 실행 스크립트 4개 전부 메모리 상한 보유 · 토큰 보유 이미지 없음.
 
-### Phase 1 — 정직한 측정 (1주, GPU 불필요) · P3 · P5 진단 · P8 ceiling ★
+### Phase 1 — 정직한 측정 (GPU 불필요) · P3 · P5 진단 · P8 ceiling — ✅ 완료 2026-09-07
 
-**이 단계가 이후 전부를 바꾸거나 죽일 수 있고, 아무것도 망가뜨릴 수 없습니다.** 디스크에 있는 `jf_*.json`과 마스크만 씁니다.
+결과와 엔드포인트 제안: **[phase1-measurement.md](phase1-measurement.md)**. 도구는 `eval/` (채점기·집계기 v2, 시드 집계, 매니페스트). 정본 원시 점수는 `Data/MVSeg/jf_v2.json`, 논문 표 47개는 `docs/raw/paper_tables.md`.
 
-| 할 일 | P | 예상 판독 (REPORT 기준) |
-|---|---|---|
-| `report_jf.py --paired` (36캠 부호검정 + 부트스트랩 CI) | P3 | 과장 → 방어 가능한 주장 |
-| `--split ref\|nonref` | P3 | nonref 0.8052 / 0.8093 / 0.8144, Δ≈+0.009 |
-| `--bin-by-nb` (min(view_idx, W)) | P3 | nb=4 +0.0047, nb=0 −0.0001 |
-| `--area-weighted` (`eval_jf.py`에 `gt_area`) | P3 | Δ≈0 |
-| 집계 방식 명시(object-pooled vs per-sequence), `--common` 상시 | P3 | OneStage는 시퀀스 집계에서 동타 |
-| 퇴화 시드 집계 (기존 `<cam>/0/*.png`, 데이터셋별) | P5 | Welder 손실의 상한 파악, 비용 0 |
-| `--ceiling` 열 (GT 시드 상한) | P8 | Blocks +0.128, MATF +0.087, FacePaint +0.061 |
-| 마스크 폴더마다 매니페스트(git rev·인자·플래그) | P13 | `Data/`가 gitignore라 지금은 mtime뿐 |
-| 논문이 보고할 SAM 3 열 하나 확정 | — | `experiments.md` (2) |
+| 할 일 | P | 예상 판독 (REPORT 기준) | 결과 (15개 기준) |
+|---|---|---|---|
+| `report_jf.py --paired` | P3 | 과장 → 방어 가능한 주장 | ✅ MVOpt−OneStage +0.0024, 7/8, CI [−0.0003, +0.0065]; vs SAM 2 +0.0016, 8/7, CI [−0.008, +0.011]. **유의하지 않음** |
+| `--split ref\|nonref` | P3 | nonref 0.8052 / 0.8093 / 0.8144 | ✅ 12개 값 재현. 15개 nonref 0.7976 / 0.7973 / 0.8012 (Δ +0.0039); ref에서는 Δ −0.0005 |
+| `--bin-by-nb` | P3 | nb=4 +0.0047, nb=0 −0.0001 | ✅ 재현(ΔJ). nb≥4 ΔJ&F +0.0043 (13/12), nb=0 −0.0001 |
+| `--area-weighted` | P3 | Δ≈0 | ✅ MVOpt−OneStage +0.0001. 새 사실: SAM 3 vs SAM 2 +0.030 (큰 객체 우위) |
+| 집계 방식 명시, `--common` 상시 | P3 | OneStage는 시퀀스 집계에서 동타 | ✅ sequence 0.8358/0.8357/0.8381, 순위 불변. `--common` 기본값 |
+| 퇴화 시드 집계 | P5 | Welder 손실의 상한 | ✅ SAM 3 20개(missing 15·tiny 4·misaligned 1). 상한 +0.015, donor 가능분 +0.009, Welder +0.040 |
+| `--ceiling` 열 | P8 | Blocks +0.128, MATF +0.087, FacePaint +0.061 | ✅ 정확히 재현. 평균 ceiling 0.9375 → 0.9594 |
+| 마스크 폴더 매니페스트 | P13 | 지금은 mtime뿐 | ✅ 117개 폴더 `MANIFEST.json`(내용 해시·추정 출처). `runMVSeg.py`가 새 실행마다 자동 기록 |
+| 논문이 보고할 SAM 3 열 하나 확정 | — | `experiments.md` (2) | 🔶 제안: `SegMaskSam3MVOpt` 하나 (E0). **사용자 확정 대기** |
 
-**완료 조건**: `report_jf.py` 하나로 논문의 모든 표 재생성 · 기존 폴더 재채점이 0.8449/0.8465/0.8497 재현 · **어느 엔드포인트가 주장을 감당하는지 문서로 결정**.
+**완료 조건**: `report_jf.py` 하나로 논문의 모든 표 재생성 ✅ · 기존 폴더 재채점이 0.8449/0.8465/0.8497 재현 ✅ (396/396 항목 동일) · 어느 엔드포인트가 주장을 감당하는지 문서로 결정 🔶 (제안 §5, 확정 대기).
+
+**Phase 2에 사전 등록된 합격 기준 (E1)**: nb≥4 구간 Δ(XW4 − XW0)의 클러스터 부트스트랩 95% CI가 0을 제외 · nb=0 구간 |Δ| < 0.001.
 
 ### Phase 2 — 없는 대조군 (2주) · P2 · P13 테스트
 
@@ -168,3 +170,4 @@ REPORT.md의 결론 그대로: **행 3·4가 나오기 전에는 어떤 정확�
 | 2026-09-04 | v1 — 단계별 계획 초안 (세 관점 비교) |
 | 2026-09-07 | v2 — REPORT.md P1~P14 기준으로 재구성. 상태표·실험 행 상태·갱신 이력 추가. 노션 개발 › SCSegmentation 아래 동기화 |
 | 2026-09-07 | **Phase 0 완료.** 메모리 상한 4개 스크립트 전부, `baseline-siblings` 태그, 토큰 보유 이미지 삭제. open-items #1(토큰) 해소로 정정 |
+| 2026-09-07 | **Phase 1 완료.** `eval/` 채점기·집계기 v2(발표 수치 396/396 재현), 퇴화 시드 집계, 매니페스트 117개. P3 ✅, P5·P8 진단/ceiling ✅, P13 매니페스트 ✅. 결과·엔드포인트 제안은 phase1-measurement.md — **엔드포인트·misaligned 임계값·수 px 프롬프트 처리는 사용자 확정 대기** |
