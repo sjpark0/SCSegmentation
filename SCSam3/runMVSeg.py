@@ -21,6 +21,7 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
 
     python runMVSeg.py Blocks --algo OneStageNew
     python runMVSeg.py Blocks --algo OneStage --out SegMaskSam3OneStage
+    python runMVSeg.py Welder --algo MVOpt --xview-window 0   # -> SegMaskSam3XW0, closure
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -47,6 +48,13 @@ DEFAULT_OUT = {"OneStage": "SegMaskSam3OneStage",
 # baseline-onestagenew. Both share the cross-view memory design, so both need
 # every view tracked.
 NEEDS_ALL_VIEWS = ("OneStageNew", "MVOpt")
+# Cross-view (XW) lineage: hygiene fixes + window, MVOpt only (OneStage has no
+# cross-view memory, OneStageNew is a frozen snapshot).  ROADMAP Phase 2.
+XVIEW_ALGOS = ("MVOpt",)
+XVIEW_MAX_WINDOW = 6                    # maskmem_tpos_enc has 7 rows; row 6 is the cond row
+XVIEW_ENV = ("SCSAM3_XVIEW_WINDOW", "SCSAM3_XVIEW_HYGIENE")
+XVIEW_OUT_PREFIX = "SegMaskSam3XW"      # every XW output folder starts with this; legacy never does
+ONESTAGE_CLOSURE_OUT = "SegMaskSam3OneStageC"   # experiment row 2
 
 
 def parse_args():
@@ -59,11 +67,25 @@ def parse_args():
     ap.add_argument("--config", default=os.path.join(HERE, "demo", "MVSeg.json"))
     ap.add_argument("--data-root", default=os.path.join(HERE, "..", "Data", "MVSeg"))
     ap.add_argument("--device", default=None, help="cuda (default), cpu or mps")
-    ap.add_argument("--track-cams", choices=["written", "all"], default=None,
+    ap.add_argument("--track-cams", choices=["written", "all", "closure"], default=None,
                     help="open a temporal session for only the scored cameras "
-                         "(written) or for every camera (all). Default: written "
-                         "for OneStage, all for OneStageNew, which needs every "
-                         "view's state for its cross-view memory.")
+                         "(written), for every camera (all), or for cameras "
+                         "0..max(scored index) (closure). Default: written for "
+                         "OneStage, all for OneStageNew/MVOpt, closure for XW runs. "
+                         "closure on MVOpt requires --xview-window/--xview-hygiene: "
+                         "the legacy gather wraps negative indices (operations.md 함정 1).")
+    ap.add_argument("--xview-window", type=int, choices=range(0, XVIEW_MAX_WINDOW + 1),
+                    metavar="W", default=None,
+                    help="XW lineage: cross-view window W (0 = no neighbour memory), "
+                         "hygiene fixes on, output SegMaskSam3XW{W} (SegMaskSam3XW{W}all "
+                         "with --track-cams all), closure by default. MVOpt only. "
+                         "Reading XW results: under closure+hygiene camera 0 has no "
+                         "neighbour for any W, so its inputs are identical across "
+                         "windows; an nb=0 delta between XW runs other than exactly 0 "
+                         "signals nondeterminism or a cross-session leak, not a "
+                         "control effect.")
+    ap.add_argument("--xview-hygiene", action="store_true",
+                    help="XW lineage with the legacy window (W=4): same as --xview-window 4")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -112,6 +134,78 @@ def pick_reference(ds_dir, c, cv2, np):
         if n > best_n:
             best_cam, best_n = cam, n
     return best_cam, best_n
+
+
+def resolve_run(args, cam_names, written_cams):
+    """Everything main() decides from the flags: output folder, track mode, session
+    list and the tracker kwargs.  Legacy invocations resolve exactly as before this
+    function existed; every new combination is explicit or refused."""
+    scored_idx = [i for i, n in enumerate(cam_names) if n in written_cams]
+    xview_on = args.xview_window is not None or args.xview_hygiene
+    if xview_on and args.algo not in XVIEW_ALGOS:
+        sys.exit(f"--xview-window/--xview-hygiene are wired into {XVIEW_ALGOS} only "
+                 f"(OneStage has no cross-view memory, OneStageNew is frozen)")
+    if not xview_on:
+        stray = [k for k in XVIEW_ENV if os.environ.get(k, "").strip()]
+        if stray:
+            sys.exit(f"{stray} set in the environment but no --xview flag given: the runner "
+                     "takes the cross-view configuration from the command line only "
+                     "(unset the variable, or pass --xview-window)")
+    window = None
+    xview_kwargs = {}
+    lineage = "legacy"
+    if xview_on:
+        window = 4 if args.xview_window is None else args.xview_window
+        xview_kwargs = dict(cross_view_window=window, cross_view_hygiene=True)
+        lineage = f"XW{window}"
+
+    if args.track_cams is not None:
+        track_mode = args.track_cams
+    elif xview_on:
+        track_mode = "closure"
+    else:
+        track_mode = "all" if args.algo in NEEDS_ALL_VIEWS else "written"
+    if track_mode == "closure" and args.algo in NEEDS_ALL_VIEWS and not xview_on:
+        sys.exit("--track-cams closure on a NEEDS_ALL_VIEWS package needs --xview-window "
+                 "or --xview-hygiene: the legacy gather wraps negative indices, so closure "
+                 "would be a different model (operations.md 함정 1, REPORT C1/C2)")
+    if xview_on and track_mode == "written":
+        sys.exit("XW runs define neighbours by camera index; --track-cams written would "
+                 "renumber them (operations.md 함정 1). Use closure (default) or all.")
+    # Session list, computed per mode: the legacy modes never look at max(scored_idx),
+    # so an empty cam_list resolves exactly as it always did (all -> every camera,
+    # written -> no session).  Closure is the only mode that needs a scored camera.
+    if track_mode == "all":
+        track_idx = list(range(len(cam_names)))
+    elif track_mode == "written":
+        track_idx = scored_idx
+    else:
+        if not scored_idx:
+            sys.exit("--track-cams closure needs at least one scored camera (cam_list) "
+                     f"among the loaded cameras, but none of {written_cams} is in "
+                     f"{cam_names}")
+        track_idx = list(range(max(scored_idx) + 1))
+
+    if args.out:
+        out_name = args.out
+    elif xview_on:
+        # closure is the XW default and keeps the bare name; an `all` run is a
+        # different session set (experiment row 6 compares the two), so it gets its own
+        out_name = f"{XVIEW_OUT_PREFIX}{window}" + ("all" if track_mode == "all" else "")
+    elif track_mode == "closure":            # OneStage only: the guard above excludes the rest
+        out_name = ONESTAGE_CLOSURE_OUT
+    else:
+        out_name = DEFAULT_OUT[args.algo]
+    if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
+        sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
+                 "legacy lineage (pass --out SegMaskSam3XW...)")
+    if not xview_on and out_name.startswith(XVIEW_OUT_PREFIX):
+        sys.exit(f"refusing to write a legacy run into {out_name}: folder names starting "
+                 f"with {XVIEW_OUT_PREFIX} are the XW lineage (pass --xview-window, or "
+                 "another --out)")
+    return dict(out_name=out_name, track_mode=track_mode, track_idx=track_idx,
+                scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
+                xview_kwargs=xview_kwargs, lineage=lineage)
 
 
 def build_runner(algo):
@@ -266,13 +360,14 @@ def build_runner(algo):
 
 def main():
     args = parse_args()
-    out_name = args.out or DEFAULT_OUT[args.algo]
     c = load_config(args.config, args.dataset)
     data_root = os.path.abspath(args.data_root)
     ds_dir = os.path.join(data_root, c["folder"])
     video_root = os.path.join(ds_dir, "Video")
     cam_names = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["perms"]]
     written_cams = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["cam_list"]]
+    run = resolve_run(args, cam_names, written_cams)
+    out_name = run["out_name"]
 
     missing = [n for n in cam_names if not os.path.isdir(os.path.join(video_root, n))]
     if missing:
@@ -293,6 +388,8 @@ def main():
           f"{c['start_frame'] + c['num_frame'] - 1}  ({c['num_frame']})")
     print(f"reference      {cam_name(ref_cam, c['prefix'], c['prefix1'])} "
           f"(view index {ref_index}), {n_obj} objects prompted", flush=True)
+    print(f"cross-view     lineage {run['lineage']}, track {run['track_mode']} "
+          f"({len(run['track_idx'])} sessions)", flush=True)
 
     out_dir = os.path.join(ds_dir, out_name)
     if not args.overwrite and os.path.isdir(out_dir) and os.listdir(out_dir):
@@ -305,11 +402,19 @@ def main():
     device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device         {device}", flush=True)
 
-    track_mode = args.track_cams or ("all" if args.algo in NEEDS_ALL_VIEWS else "written")
-    track_idx = (list(range(len(cam_names))) if track_mode == "all"
-                 else [i for i, n in enumerate(cam_names) if n in written_cams])
+    track_mode, track_idx = run["track_mode"], run["track_idx"]
 
-    sc = MVSegVideo(device)
+    sc = MVSegVideo(device, **run["xview_kwargs"])
+    # Read back what the model actually holds (catches an env override or a broken hop).
+    tracker = getattr(getattr(sc.predictor, "model", None), "tracker", None)
+    eff_window = getattr(tracker, "cross_view_window", None)
+    eff_hygiene = getattr(tracker, "cross_view_hygiene", None)
+    if args.algo in XVIEW_ALGOS:
+        want = ((run["xview_window"] if run["xview_on"] else 4), run["xview_on"])
+        if (eff_window, eff_hygiene) != want:
+            sys.exit(f"tracker holds cross_view=({eff_window}, {eff_hygiene}) but the "
+                     f"command line asked for {want}")
+    print(f"cross-view     window {eff_window}, hygiene {eff_hygiene}", flush=True)
     sc.LoadCameraFolders(video_root, cam_names, c["start_frame"], track_idx)
     print(f"sessions ready ({sc.numImage} cameras loaded, "
           f"{len(track_idx)} tracked [{track_mode}], "
@@ -387,7 +492,12 @@ def main():
                    "reference_view_index": ref_index,
                    "n_objects_prompted": n_obj,
                    "start_frame": c["start_frame"], "num_frame": c["num_frame"],
-                   "device": device})
+                   "device": device,
+                   "lineage": run["lineage"],
+                   "xview_window": eff_window, "xview_hygiene": eff_hygiene,
+                   "track_cams_requested": args.track_cams,
+                   "track_idx": run["track_idx"], "n_sessions": len(run["track_idx"]),
+                   "scored_view_idx": run["scored_idx"]})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
         print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)

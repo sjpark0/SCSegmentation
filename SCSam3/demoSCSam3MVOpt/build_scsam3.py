@@ -50,6 +50,34 @@ from sam3.model.vitdet import ViT
 from sam3.model.vl_combiner import SAM3VLBackbone
 from sam3.sam.transformer import RoPEAttention
 
+# Cross-view env fallback (ROADMAP Phase 2).  Read at build time, only when the caller
+# passed None.  SCSam3/runMVSeg.py refuses to run when these are set without a CLI flag;
+# they exist for the bare `SCSam3Video(device)` demo path.  Parsing is strict on purpose
+# (contrast SCSAM3_TRIM_CACHED_OUTPUTS, where "false" means on: memory-optimization.md S7).
+XVIEW_WINDOW_ENV = "SCSAM3_XVIEW_WINDOW"
+XVIEW_HYGIENE_ENV = "SCSAM3_XVIEW_HYGIENE"
+
+
+def xview_env_window(environ=None):
+    v = (os.environ if environ is None else environ).get(XVIEW_WINDOW_ENV, "").strip()
+    if v == "":
+        return None
+    try:
+        return int(v)
+    except ValueError:
+        raise ValueError(f"{XVIEW_WINDOW_ENV}={v!r}: expected an integer 0..6") from None
+
+
+def xview_env_hygiene(environ=None):
+    v = (os.environ if environ is None else environ).get(XVIEW_HYGIENE_ENV, "").strip().lower()
+    if v == "":
+        return None
+    if v in ("1", "true", "yes", "on"):
+        return True
+    if v in ("0", "false", "no", "off"):
+        return False
+    raise ValueError(f"{XVIEW_HYGIENE_ENV}={v!r}: expected 1/0/true/false/yes/no/on/off")
+
 
 # Setup TensorFloat-32 for Ampere GPUs if available
 def _setup_tf32() -> None:
@@ -492,7 +520,8 @@ def build_tracker(
     return model
 
 def build_tracker_newmem(
-    apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None
+    apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None,
+    cross_view_window=None, cross_view_hygiene=None,
 ) -> SCSam3TrackerPredictorNewMem:
     """
     Build the SAM3 Tracker module for video tracking.
@@ -500,6 +529,10 @@ def build_tracker_newmem(
     Returns:
         Sam3TrackerPredictor: Wrapped SAM3 Tracker module
     """
+    if cross_view_window is None:
+        cross_view_window = xview_env_window()
+    if cross_view_hygiene is None:
+        cross_view_hygiene = xview_env_hygiene()
 
     # Create model components
     maskmem_backbone = _create_tracker_maskmem_backbone()
@@ -541,6 +574,8 @@ def build_tracker_newmem(
         clear_non_cond_mem_around_input=True,
         fill_hole_area=0,
         use_memory_selection=apply_temporal_disambiguation,
+        cross_view_window=cross_view_window,
+        cross_view_hygiene=cross_view_hygiene,
     )
 
     return model
@@ -860,6 +895,8 @@ def build_scsam3_video_model_newmem(
     apply_temporal_disambiguation: bool = True,
     device="cuda" if torch.cuda.is_available() else "cpu",
     compile=False,
+    cross_view_window=None,
+    cross_view_hygiene=None,
 ) -> SCSam3VideoInferenceWithInstanceInteractivityNewMem:
     """
     Build SAM3 dense tracking model.
@@ -877,7 +914,11 @@ def build_scsam3_video_model_newmem(
         )
 
     # Build Tracker module
-    tracker = build_tracker_newmem(apply_temporal_disambiguation=apply_temporal_disambiguation)
+    tracker = build_tracker_newmem(
+        apply_temporal_disambiguation=apply_temporal_disambiguation,
+        cross_view_window=cross_view_window,
+        cross_view_hygiene=cross_view_hygiene,
+    )
 
     # Build Detector components
     visual_neck = _create_vision_backbone()

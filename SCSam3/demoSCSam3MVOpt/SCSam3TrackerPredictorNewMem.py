@@ -8,6 +8,7 @@ from collections import OrderedDict
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores, select_closest_cond_frames
+from xview_gather import gather_cross_view_memories, resolve_cross_view, UNCHANGED
 from tqdm.auto import tqdm
 import cv2
 import os
@@ -38,6 +39,11 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         max_point_num_in_prompt_enc=16,
         non_overlap_masks_for_output=True,
         # checkpoint_file=None,
+        # Cross-view memory (ROADMAP Phase 2 / REPORT P2).  None -> legacy (4, False),
+        # byte-identical to the published SegMaskSam3MVOpt.  Anything else is the XW
+        # lineage; see xview_gather.resolve_cross_view for the bounds.
+        cross_view_window=None,
+        cross_view_hygiene=None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -53,6 +59,9 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
 
         self.iter_use_prev_mask_pred = True
         self.add_all_frames_to_correct_as_cond = True
+        # needs self.num_maskmem, which Sam3TrackerBase.__init__ sets (:100)
+        self.cross_view_window, self.cross_view_hygiene = resolve_cross_view(
+            cross_view_window, cross_view_hygiene, self.num_maskmem)
 
     @torch.inference_mode()
     def init_state(
@@ -1259,20 +1268,17 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
                     out = unselected_cond_outputs.get(prev_frame_idx, None)
                 t_pos_and_prevs.append((t_pos, out, False))
             
-            # spatial추가
-            s_pos_and_prevs = []            
-            for s_pos in range(-4, 0):
-                prev_spatial_idx = spatial_idx + s_pos
-                if spatial_idx != prev_spatial_idx:                
-                    if output_dicts[prev_spatial_idx] is None:
-                        s_pos_and_prevs.append((s_pos, None))
-                        continue
-                    
-                    out = output_dicts[prev_spatial_idx]["non_cond_frame_outputs"].get(frame_idx, None)                    
-                    if out is None:
-                        selected_cond_outputs, unselected_cond_outputs1 = select_closest_cond_frames(frame_idx, output_dicts[prev_spatial_idx]["cond_frame_outputs"], self.max_cond_frames_in_attn)            
-                        out = unselected_cond_outputs1.get(frame_idx, None)
-                    s_pos_and_prevs.append((s_pos, out))
+            # spatial추가 -- cross-view gather, see xview_gather.py.  With the legacy
+            # (4, False) configuration this is bit-for-bit the loop that used to live
+            # here, including the C2 rebinding of `selected_cond_outputs`.
+            s_pos_and_prevs, rebound = gather_cross_view_memories(
+                output_dicts, spatial_idx, frame_idx,
+                window=self.cross_view_window, hygiene=self.cross_view_hygiene,
+                max_cond_frames_in_attn=self.max_cond_frames_in_attn,
+                select_fn=select_closest_cond_frames,
+            )
+            if rebound is not UNCHANGED:
+                selected_cond_outputs = rebound
             
             for t_pos, prev, is_selected_cond_frame in t_pos_and_prevs:
                 if prev is None:

@@ -627,7 +627,8 @@ def nb_table(store, methods, datasets, cfg, pair=None, key=""):
               f"(no view index) left out: {', '.join(skipped)}", file=sys.stderr)
     columns = ["cameras"] + list(methods)
     if pair:
-        columns += ["delta J&F", "delta J", "delta F", "wins", "ties", "losses"]
+        columns += ["delta J&F", "delta J", "delta F", "wins", "ties", "losses",
+                    "cluster CI lo", "cluster CI hi"]
     rows = []
     for b, cams in bins.items():
         label = f"nb={b}" if b < cfg.window else f"nb>={b}"
@@ -641,9 +642,17 @@ def nb_table(store, methods, datasets, cfg, pair=None, key=""):
             cells += [mean([x[i] for x in dl]) for i in range(3)]
             cells += [sum(1 for x in djf if x >= TIE), sum(1 for x in djf if abs(x) < TIE),
                       sum(1 for x in djf if x <= -TIE)]
+            # cluster bootstrap of the bin's mean delta J&F, datasets as clusters
+            # (same boot_ci / seed / scheme as the paired camera-level row)
+            groups = [[cs[(d, c, bm)][0] - cs[(d, c, a)][0]
+                       for d2, c in cams if d2 == d and (d, c, a) in cs and (d, c, bm) in cs]
+                      for d in datasets]
+            cells += list(boot_ci([g for g in groups if g]))
         rows.append((label, cells))
     name = "camera J&F by nb bin" + (f", delta = {pair[1]} - {pair[0]}" if pair else "")
-    return Table(f"{key}nb bins", name, cfg.statement(len(datasets)), columns, rows)
+    statement = (cfg.statement(len(datasets), bootstrap=BOOT_SCHEME) if pair
+                 else cfg.statement(len(datasets)))
+    return Table(f"{key}nb bins", name, statement, columns, rows)
 
 
 def paired_tables(store, a, b, datasets, cfg, key=""):

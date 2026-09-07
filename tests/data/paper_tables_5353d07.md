@@ -458,57 +458,57 @@ subset: 12 datasets (AlexaMeadeFacePaint, Barn, Blocks, Breakfast, Carpark, Dog,
 
 ### camera J&F by nb bin, delta = SegMaskSam3MVOpt - SegMaskSam3OneStage
 
-*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)*
+*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)*
 
-| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses | cluster CI lo | cluster CI hi |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| nb=0 | 9 | 0.8794 | 0.8730 | 0.8729 | -0.0001 | 0.0001 | -0.0003 | 6 | 0 | 3 | -0.0008 | 0.0004 |
-| nb=1 | 2 | 0.6896 | 0.6895 | 0.6894 | -0.0001 | -0.0001 | -0.0002 | 1 | 0 | 1 | -0.0005 | 0.0002 |
-| nb=2 | 4 | 0.9064 | 0.9070 | 0.9082 | 0.0012 | 0.0020 | 0.0004 | 1 | 0 | 3 | -0.0006 | 0.0044 |
-| nb=3 | 5 | 0.8196 | 0.7912 | 0.7907 | -0.0005 | -0.0000 | -0.0010 | 1 | 0 | 4 | -0.0010 | -0.0000 |
-| nb>=4 | 25 | 0.8238 | 0.8314 | 0.8357 | 0.0043 | 0.0039 | 0.0048 | 13 | 0 | 12 | -0.0005 | 0.0116 |
+| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| nb=0 | 9 | 0.8794 | 0.8730 | 0.8729 | -0.0001 | 0.0001 | -0.0003 | 6 | 0 | 3 |
+| nb=1 | 2 | 0.6896 | 0.6895 | 0.6894 | -0.0001 | -0.0001 | -0.0002 | 1 | 0 | 1 |
+| nb=2 | 4 | 0.9064 | 0.9070 | 0.9082 | 0.0012 | 0.0020 | 0.0004 | 1 | 0 | 3 |
+| nb=3 | 5 | 0.8196 | 0.7912 | 0.7907 | -0.0005 | -0.0000 | -0.0010 | 1 | 0 | 4 |
+| nb>=4 | 25 | 0.8238 | 0.8314 | 0.8357 | 0.0043 | 0.0039 | 0.0048 | 13 | 0 | 12 |
 
 **SegMaskSam3MVOpt - SegMaskSam3OneStage, 12-dataset subset**
 
 ### camera J&F by nb bin, delta = SegMaskSam3MVOpt - SegMaskSam3OneStage
 
-*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=12 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)*
+*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=12 | as-is (missing objects scored as empty, the DAVIS convention)*
 
-| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses | cluster CI lo | cluster CI hi |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| nb=0 | 8 | 0.8723 | 0.8650 | 0.8647 | -0.0002 | -0.0001 | -0.0004 | 5 | 0 | 3 | -0.0010 | 0.0002 |
-| nb=1 | 1 | 0.9146 | 0.9220 | 0.9215 | -0.0005 | -0.0004 | -0.0005 | 0 | 0 | 1 | -0.0005 | -0.0005 |
-| nb=2 | 2 | 0.8963 | 0.9052 | 0.9082 | 0.0029 | 0.0053 | 0.0006 | 1 | 0 | 1 | -0.0001 | 0.0060 |
-| nb=3 | 4 | 0.8102 | 0.7927 | 0.7922 | -0.0004 | 0.0002 | -0.0011 | 1 | 0 | 3 | -0.0010 | 0.0002 |
-| nb>=4 | 21 | 0.8253 | 0.8343 | 0.8397 | 0.0054 | 0.0047 | 0.0061 | 11 | 0 | 10 | -0.0002 | 0.0141 |
+| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| nb=0 | 8 | 0.8723 | 0.8650 | 0.8647 | -0.0002 | -0.0001 | -0.0004 | 5 | 0 | 3 |
+| nb=1 | 1 | 0.9146 | 0.9220 | 0.9215 | -0.0005 | -0.0004 | -0.0005 | 0 | 0 | 1 |
+| nb=2 | 2 | 0.8963 | 0.9052 | 0.9082 | 0.0029 | 0.0053 | 0.0006 | 1 | 0 | 1 |
+| nb=3 | 4 | 0.8102 | 0.7927 | 0.7922 | -0.0004 | 0.0002 | -0.0011 | 1 | 0 | 3 |
+| nb>=4 | 21 | 0.8253 | 0.8343 | 0.8397 | 0.0054 | 0.0047 | 0.0061 | 11 | 0 | 10 |
 
 **SegMaskSam3MVOpt - SegMaskNew1, 15 datasets**
 
 ### camera J&F by nb bin, delta = SegMaskSam3MVOpt - SegMaskNew1
 
-*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)*
+*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)*
 
-| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses | cluster CI lo | cluster CI hi |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| nb=0 | 9 | 0.8794 | 0.8730 | 0.8729 | -0.0065 | -0.0108 | -0.0021 | 5 | 0 | 4 | -0.0261 | 0.0067 |
-| nb=1 | 2 | 0.6896 | 0.6895 | 0.6894 | -0.0002 | 0.0001 | -0.0006 | 1 | 0 | 1 | -0.0074 | 0.0069 |
-| nb=2 | 4 | 0.9064 | 0.9070 | 0.9082 | 0.0018 | -0.0046 | 0.0082 | 3 | 0 | 1 | -0.0153 | 0.0141 |
-| nb=3 | 5 | 0.8196 | 0.7912 | 0.7907 | -0.0289 | -0.0355 | -0.0224 | 2 | 0 | 3 | -0.0849 | 0.0199 |
-| nb>=4 | 25 | 0.8238 | 0.8314 | 0.8357 | 0.0119 | 0.0091 | 0.0147 | 17 | 0 | 8 | 0.0027 | 0.0227 |
+| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| nb=0 | 9 | 0.8794 | 0.8730 | 0.8729 | -0.0065 | -0.0108 | -0.0021 | 5 | 0 | 4 |
+| nb=1 | 2 | 0.6896 | 0.6895 | 0.6894 | -0.0002 | 0.0001 | -0.0006 | 1 | 0 | 1 |
+| nb=2 | 4 | 0.9064 | 0.9070 | 0.9082 | 0.0018 | -0.0046 | 0.0082 | 3 | 0 | 1 |
+| nb=3 | 5 | 0.8196 | 0.7912 | 0.7907 | -0.0289 | -0.0355 | -0.0224 | 2 | 0 | 3 |
+| nb>=4 | 25 | 0.8238 | 0.8314 | 0.8357 | 0.0119 | 0.0091 | 0.0147 | 17 | 0 | 8 |
 
 **SegMaskSam3MVOpt - SegMaskNew1, 12-dataset subset**
 
 ### camera J&F by nb bin, delta = SegMaskSam3MVOpt - SegMaskNew1
 
-*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=12 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)*
+*aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=12 | as-is (missing objects scored as empty, the DAVIS convention)*
 
-| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses | cluster CI lo | cluster CI hi |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| nb=0 | 8 | 0.8723 | 0.8650 | 0.8647 | -0.0075 | -0.0118 | -0.0033 | 4 | 0 | 4 | -0.0295 | 0.0077 |
-| nb=1 | 1 | 0.9146 | 0.9220 | 0.9215 | 0.0069 | 0.0127 | 0.0010 | 1 | 0 | 0 | 0.0069 | 0.0069 |
-| nb=2 | 2 | 0.8963 | 0.9052 | 0.9082 | 0.0119 | -0.0003 | 0.0241 | 2 | 0 | 0 | 0.0071 | 0.0167 |
-| nb=3 | 4 | 0.8102 | 0.7927 | 0.7922 | -0.0180 | -0.0331 | -0.0029 | 2 | 0 | 2 | -0.0879 | 0.0285 |
-| nb>=4 | 21 | 0.8253 | 0.8343 | 0.8397 | 0.0144 | 0.0121 | 0.0167 | 16 | 0 | 5 | 0.0044 | 0.0263 |
+| | cameras | SegMaskNew1 | SegMaskSam3OneStage | SegMaskSam3MVOpt | delta J&F | delta J | delta F | wins | ties | losses |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| nb=0 | 8 | 0.8723 | 0.8650 | 0.8647 | -0.0075 | -0.0118 | -0.0033 | 4 | 0 | 4 |
+| nb=1 | 1 | 0.9146 | 0.9220 | 0.9215 | 0.0069 | 0.0127 | 0.0010 | 1 | 0 | 0 |
+| nb=2 | 2 | 0.8963 | 0.9052 | 0.9082 | 0.0119 | -0.0003 | 0.0241 | 2 | 0 | 0 |
+| nb=3 | 4 | 0.8102 | 0.7927 | 0.7922 | -0.0180 | -0.0331 | -0.0029 | 2 | 0 | 2 |
+| nb>=4 | 21 | 0.8253 | 0.8343 | 0.8397 | 0.0144 | 0.0121 | 0.0167 | 16 | 0 | 5 |
 
 ## 5. Paired statistics
 

@@ -67,7 +67,7 @@ SCHEMA_VERSION = 1
 MANIFEST_NAME = "MANIFEST.json"
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UNKNOWN = "unknown"
-ENV_FLAGS = ("SPATIAL_START_IMPLICIT", "SCSAM3_TRIM_CACHED_OUTPUTS")
+ENV_FLAGS = ("SPATIAL_START_IMPLICIT", "SCSAM3_TRIM_CACHED_OUTPUTS", "SCSAM3_XVIEW_WINDOW", "SCSAM3_XVIEW_HYGIENE")
 PROVENANCE_KEYS = ("git_rev", "git_rev_note", "git_dirty", "algo", "argv", "track_cams",
                    "env", "docker_image_id", "source_digest")
 CONTENT_DIGEST_SPEC = (

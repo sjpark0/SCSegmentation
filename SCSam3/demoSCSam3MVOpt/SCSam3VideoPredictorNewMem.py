@@ -36,6 +36,8 @@ class SCSam3VideoPredictorNewMem:
         video_loader_type="cv2",
         apply_temporal_disambiguation: bool = True,
         compile: bool = False,
+        cross_view_window=None,
+        cross_view_hygiene=None,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
@@ -50,6 +52,8 @@ class SCSam3VideoPredictorNewMem:
                 strict_state_dict_loading=strict_state_dict_loading,
                 apply_temporal_disambiguation=apply_temporal_disambiguation,
                 compile=compile,
+                cross_view_window=cross_view_window,
+                cross_view_hygiene=cross_view_hygiene,
             )
             .cuda()
             .eval()
