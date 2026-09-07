@@ -43,7 +43,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [experiments.md](experiments.md) | J&F 평가 방법과 전체 결과 |
 | [operations.md](operations.md) | 실행 방법, 러너 옵션, 자원 한계, Docker |
 | [open-items.md](open-items.md) | 미해결 항목 |
-| **[ROADMAP.md](ROADMAP.md)** | **앞으로의 계획 — 진단과 단계별 일정** |
+| **[ROADMAP.md](ROADMAP.md)** | **구현 계획 (살아있는 문서) — P1~P14 상태, 단계, 실험 행 상태. 노션과 함께 갱신** |
 
 ## 분석 원본
 
