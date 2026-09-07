@@ -4,29 +4,15 @@
 
 # 미해결 항목
 
-## 1. HuggingFace 토큰 폐기 — 사용자 조치 필요 ★
+## 1. ~~HuggingFace 토큰 폐기~~ — 해소 (2026-09-04)
 
-두 개의 토큰이 **아직 유효합니다.** https://huggingface.co/settings/tokens 에서 폐기하십시오.
+**폐기가 필요하지 않은 것으로 확인됐습니다.** 두 토큰 모두 이 머신을 벗어난 적이 없습니다:
 
-| 토큰 | 노출 위치 | 저장소 조치 |
-|---|---|---|
-| `hf_lNSmBozD…` | `README.md` | 제거 완료 |
-| `hf_ShVKFypk…` | `scsam3:latest` 이미지 레이어 3곳 | Dockerfile 수정 완료, **이미지 재빌드 필요** |
+- git 이력에 없음 — 푸시된 `99c05c7`의 README·Dockerfile 모두 0개. README의 토큰은 커밋되지 않은 작업트리에만 있었습니다.
+- 이미지는 레지스트리에 푸시된 적 없음 (`RepoDigests: []`).
+- 유일한 노출이던 로컬 이미지의 빌드 이력 레이어 3개는 토큰 없는 재빌드로 사라졌고, 옛 이미지(`pre-secret-backup`)는 2026-09-07 Phase 0에서 삭제했습니다.
 
-**저장소 쪽은 끝났습니다.** git 이력도 44개 커밋 전부 확인했고 깨끗합니다.
-`Dockerfile`은 build ARG에서 BuildKit secret mount로 바꿨습니다:
-
-```dockerfile
-RUN --mount=type=secret,id=hf_token \
-    HF_TOKEN="$(cat /run/secrets/hf_token)" hf download facebook/sam3 --token "${HF_TOKEN}"
-```
-
-**남은 것.**
-- 토큰 폐기 (사용자만 가능)
-- 기존 이미지 레이어에서 토큰을 지우려면 새 Dockerfile로 재빌드
-- `~/.bash_history`에 토큰이 담긴 2줄 — 일부러 건드리지 않았습니다
-
-폐기 전까지 이미지 레이어의 토큰은 살아 있는 자격증명입니다.
+빌드는 이제 토큰이 필요 없습니다 (`SCSam3/hf_cache/` COPY, README 참조). 폐기는 위생 차원의 선택 사항입니다.
 
 ## 2. `demoSCSam3ForSam2New`의 메모리 절감
 

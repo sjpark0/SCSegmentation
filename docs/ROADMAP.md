@@ -55,13 +55,13 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 
 기간은 1인 · RTX 6000 Ada 1대 · 15개 스윕 35~90분 기준입니다.
 
-### Phase 0 — 보존 (1일, GPU 불필요) · P13 일부
+### Phase 0 — 보존 (1일, GPU 불필요) · P13 일부 — ✅ 완료 2026-09-07
 
 | 할 일 | 상태 |
 |---|---|
-| `runMVSegAll.sh`·`launch_container.sh`에 `--memory=90g --memory-swap=90g` | ⬜ |
-| `/tmp/sibling_backup`을 git 태그 `baseline-siblings`로 | ⬜ |
-| 미푸시 커밋 푸시, `scsam3:pre-secret-backup` 삭제 | ⬜ |
+| `runMVSegAll.sh`·`launch_container.sh`에 `--memory=90g --memory-swap=90g` | ✅ 09-07 |
+| `/tmp/sibling_backup`을 git 태그 `baseline-siblings`로 | ✅ 09-07 — `/tmp`는 재부팅으로 이미 소실, 태그는 `99c05c7`(마지막 무패치 푸시본)에 |
+| 미푸시 커밋 푸시, `scsam3:pre-secret-backup` 삭제 | ✅ 09-07 — 이미지 삭제, 전체 이미지 이력에 토큰 레이어 0개 |
 
 **완료 조건**: `git status -sb`에 ahead 없음 · 실행 스크립트 4개 전부 메모리 상한 보유 · 토큰 보유 이미지 없음.
 
@@ -167,3 +167,4 @@ REPORT.md의 결론 그대로: **행 3·4가 나오기 전에는 어떤 정확�
 |---|---|
 | 2026-09-04 | v1 — 단계별 계획 초안 (세 관점 비교) |
 | 2026-09-07 | v2 — REPORT.md P1~P14 기준으로 재구성. 상태표·실험 행 상태·갱신 이력 추가. 노션 개발 › SCSegmentation 아래 동기화 |
+| 2026-09-07 | **Phase 0 완료.** 메모리 상한 4개 스크립트 전부, `baseline-siblings` 태그, 토큰 보유 이미지 삭제. open-items #1(토큰) 해소로 정정 |

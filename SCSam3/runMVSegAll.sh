@@ -59,7 +59,7 @@ for algo in "${ALGOS[@]}"; do
 		log="${LOGDIR}/${algo}-${ds}.log"
 		printf '%-12s %-20s ' "${algo}" "${ds}"
 		start=$SECONDS
-		docker run --rm --gpus all --shm-size=32g \
+		docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \
 			-v /:/host -w "${WORKDIR}" "${IMAGE}" \
 			python runMVSeg.py "${ds}" --algo "${algo}" "${EXTRA[@]}" \
 			> "${log}" 2>&1
