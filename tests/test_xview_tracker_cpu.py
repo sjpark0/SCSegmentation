@@ -1,7 +1,8 @@
-"""T2a-e: the REAL _prepare_memory_conditioned_features_multiple on CPU (bare instance).
+"""T2a-j: the REAL _prepare_memory_conditioned_features_multiple on CPU (bare instance).
 
 Golden values are SPEC.md section 1 (N=10, t=5, lockstep), captured from the unmodified
-code with the same harness.  Container only (torch + sam3).
+code with the same harness; T2f-j add the SPEC_P4 mode goldens, the closure cones per
+mode and the Jacobi properties of mode E.  Container only (torch + sam3).
 """
 import os
 
@@ -12,7 +13,7 @@ pytest.importorskip("sam3")
 
 from conftest import PKG  # noqa: E402
 from harness import (GOLDEN_HW, SMALL_HW, bare_tracker, output_dicts_lockstep, run,  # noqa: E402
-                     lockstep, same_inputs)
+                     call, lockstep, same_inputs)
 
 N, T5 = 10, 5
 
@@ -127,3 +128,162 @@ def test_lockstep_21_frames_closure_equals_all(cpu_tensors):
     assert list(order) == list(range(start, start + num_frame + 1)) and len(order) == num_frame + 1
     assert end == start + num_frame
     assert os.path.isfile(os.path.join(PKG, "SCSam3VideoInferenceNewMem.py"))
+
+
+# ------------------------------------------------------------- P4: T2f-T2j
+MODE_GATHER = (("A", "lower_t", None), ("D", "lower_tm1", None), ("B", "both_tm1", None),
+               ("C", "mixed", None), ("E1", "both_tm1", 1), ("E2", "all_t", 2))
+TWO_SIDED = ("both_tm1", "mixed", "all_t")
+# neighbour part of mem_src (src = 1000*view+frame): SPEC_P4 section 4 goldens
+GOLD = {(1, "A", 5, 0): [], (1, "A", 5, 1): [5], (1, "A", 5, 5): [4005], (1, "A", 5, 9): [8005],
+        (1, "D", 5, 0): [], (1, "D", 5, 1): [4], (1, "D", 5, 5): [4004], (1, "D", 5, 9): [8004],
+        (1, "B", 5, 0): [1004], (1, "B", 5, 1): [4, 2004], (1, "B", 5, 5): [4004, 6004], (1, "B", 5, 9): [8004],
+        (1, "C", 5, 0): [1004], (1, "C", 5, 1): [5, 2004], (1, "C", 5, 5): [4005, 6004], (1, "C", 5, 9): [8005],
+        (1, "E2", 5, 0): [1005], (1, "E2", 5, 1): [5, 2005], (1, "E2", 5, 5): [4005, 6005], (1, "E2", 5, 9): [8005],
+        (1, "B", 31, 1): [30, 2030], (1, "C", 31, 5): [4031, 6030], (1, "E2", 31, 5): [4031, 6031],
+        (2, "A", 5, 5): [3005, 4005], (2, "B", 5, 0): [1004, 2004], (2, "B", 5, 1): [4, 2004, 3004],
+        (2, "B", 5, 5): [3004, 4004, 6004, 7004], (2, "B", 5, 9): [7004, 8004],
+        (2, "C", 5, 5): [3005, 4005, 6004, 7004], (2, "E2", 5, 5): [3005, 4005, 6005, 7005]}
+ROWS_GOLD = {(2, "A", 5, 5): [1, 0], (2, "B", 5, 0): [0, 1], (2, "B", 5, 1): [0, 0, 1],
+             (2, "B", 5, 5): [1, 0, 0, 1], (2, "B", 5, 9): [1, 0]}
+
+
+def expected_neighbours(mode, v, t, start, W, holders):
+    """SPEC_P4 section 0 per entry, as (src, tpos rows); a None entry is skipped by the
+    token loop, so it does not appear."""
+    cells = []
+    for s in list(range(-W, 0)) + (list(range(1, W + 1)) if mode in TWO_SIDED else []):
+        m = v + s
+        if not 0 <= m < N:
+            continue
+        f = t if (mode in ("lower_t", "all_t") or (mode == "mixed" and s < 0)) else t - 1
+        if f == t and m not in holders:
+            continue
+        cells.append((s, 1000 * m + f))
+    return [x for _, x in cells], [abs(s) - 1 for s, _ in cells]
+
+
+# ----------------------------------------------------------------------- T2f
+def test_real_method_mode_goldens(cpu_tensors):
+    seen = {}
+    for W in (1, 2):
+        for letter, mode, xp in MODE_GATHER:
+            tr = bare_tracker(xw=W, xh=True, xm=letter[0])
+            assert (tr.cross_view_window, tr.cross_view_hygiene, tr.cross_view_mode) == (W, True, letter[0])
+            for t, start in ((5, 0), (31, 30)):
+                for v in (0, 1, 5, 9):
+                    all_hold = mode == "all_t"
+                    ods = output_dicts_lockstep(N, v, t, start, SMALL_HW, all_hold_t=all_hold)
+                    r = run(tr, ods, v, t, SMALL_HW, start + 22, xview_pass=xp)
+                    own = [1000 * v + f for f in range(start, t)]         # cond, then frames < t
+                    assert r["mem_src"][:len(own)] == own, (W, letter, t, v)
+                    src, rows = r["mem_src"][len(own):], r["tpos_rows"][len(own):]
+                    holders = set(range(N)) if all_hold else set(range(v))
+                    assert (src, rows) == expected_neighbours(mode, v, t, start, W, holders), (W, letter, t, v)
+                    seen[(W, letter, t, v)] = (src, rows)
+                    if t == 5:                                             # pointers unchanged in every mode
+                        assert r["n_ptr_tokens"] == 16
+                        assert r["ptr_src"] == [1000 * v, 1000 * v + 4, 1000 * v + 3, 1000 * v + 2]
+                    else:
+                        assert r["n_ptr_tokens"] == 4 and r["ptr_src"] == [1000 * v + 30]
+    for k, want in GOLD.items():
+        assert seen[k][0] == want, k
+    for k, want in ROWS_GOLD.items():
+        assert seen[k][1] == want, k
+    for k in [k for k in seen if k[1] == "E1"]:                            # E pass 1 is B
+        assert seen[k] == seen[(k[0], "B", k[2], k[3])], k
+
+
+# ----------------------------------------------------------------------- T2h
+def test_mode_A_identical_to_none(cpu_tensors):
+    for W in (0, 1, 4, 6):
+        a, b = bare_tracker(xw=W, xh=True, xm=None), bare_tracker(xw=W, xh=True, xm="A")
+        assert (a.cross_view_mode, b.cross_view_mode) == ("A", "A")
+        for v in range(N):
+            for t, start in ((5, 0), (1, 0), (31, 30)):
+                ods = output_dicts_lockstep(N, v, t, start, SMALL_HW)
+                ka = call(a, ods, v, t, SMALL_HW, start + 22)
+                for kb in (call(b, ods, v, t, SMALL_HW, start + 22),
+                           call(a, ods, v, t, SMALL_HW, start + 22, xview_pass=1),
+                           call(b, ods, v, t, SMALL_HW, start + 22, xview_pass=None)):
+                    assert torch.equal(ka["prompt"], kb["prompt"]) and torch.equal(ka["prompt_pos"], kb["prompt_pos"])
+                    assert ka["num_obj_ptr_tokens"] == kb["num_obj_ptr_tokens"]
+        with pytest.raises(ValueError):                                    # pass 2 is E only
+            call(b, output_dicts_lockstep(N, 5, T5, 0, SMALL_HW, all_hold_t=True), 5, T5, SMALL_HW, xview_pass=2)
+    # the legacy (4, False) bare tracker still reproduces T2a
+    tr = bare_tracker(xw=None, xh=None)
+    assert (tr.cross_view_window, tr.cross_view_hygiene, tr.cross_view_mode) == (4, False, "A")
+    for v in range(N):
+        r = run(tr, output_dicts_lockstep(N, v, T5), v, T5)
+        osrc, orows = own_tokens(v)
+        nsrc, nrows = neighbour_tokens(v, 4)
+        assert r["mem_src"] == osrc + nsrc and r["tpos_rows"] == orows + nrows
+        first_ptr = 9000 if v <= 3 else 1000 * v
+        assert r["ptr_src"] == [first_ptr, 1000 * v + 4, 1000 * v + 3, 1000 * v + 2]
+    for xm in "BCDE":                                                      # letters need hygiene
+        with pytest.raises(ValueError):
+            bare_tracker(xw=4, xh=False, xm=xm)
+
+
+# ----------------------------------------------------------------------- T2g
+_FULL = {}
+
+
+def cone_mismatches(xm, W, T, K, two_pass=False, NN=12, scored_max=2):
+    """(v, t) of the scored views whose encoder inputs differ between an NN-session and a
+    K-session lockstep drive."""
+    tr = bare_tracker(xw=W, xh=True, xm=xm)
+    key = (xm, W, T, two_pass, NN)
+    if key not in _FULL:
+        _FULL[key] = lockstep(tr, NN, T, two_pass=two_pass)
+    full, trunc = _FULL[key], lockstep(tr, K, T, two_pass=two_pass)
+    return [(v, t) for v in range(scored_max + 1) for t in range(1, T + 1)
+            if not same_inputs(full[(v, t)], trunc[(v, t)])]
+
+
+def test_closure_cone_per_mode(cpu_tensors):
+    """SPEC_P4 section 3 lemma with K = max(scored)+1 = 3, T = 4 tracked frames, W = 1:
+    A/D exact at K; B/C first exact at K + W*T = 7; E first exact at K + 2*W*T = 11."""
+    assert cone_mismatches("A", 1, 4, 3) == []
+    assert cone_mismatches("D", 1, 4, 3) == []
+    for xm in ("B", "C"):
+        assert cone_mismatches(xm, 1, 4, 6) != [], xm
+        assert cone_mismatches(xm, 1, 4, 7) == [], xm
+    assert cone_mismatches("E", 1, 4, 10, two_pass=True) != []
+    assert cone_mismatches("E", 1, 4, 11, two_pass=True) == []
+    assert cone_mismatches("B", 2, 3, 8) != []                              # K + W*T = 3 + 2*3
+    assert cone_mismatches("B", 2, 3, 9) == []
+
+
+# ----------------------------------------------------------------------- T2i
+def test_two_pass_jacobi_order_free(cpu_tensors):
+    tr = bare_tracker(xw=1, xh=True, xm="E")
+    fwd = lockstep(tr, 8, 4, two_pass=True)
+    rev = lockstep(tr, 8, 4, two_pass=True, pass2_reverse=True)
+    assert fwd.keys() == rev.keys() and all(same_inputs(fwd[k], rev[k]) for k in fwd)
+    gs = lockstep(tr, 8, 4, two_pass=True, gauss_seidel=True)
+    gs_rev = lockstep(tr, 8, 4, two_pass=True, gauss_seidel=True, pass2_reverse=True)
+    assert any(not same_inputs(fwd[k], gs[k]) for k in fwd)               # the test is sensitive
+    assert any(not same_inputs(fwd[k], gs_rev[k]) for k in fwd)
+    assert any(not same_inputs(gs[k], gs_rev[k]) for k in fwd)
+    # the first frame's pass-2 inputs are order-free even under Gauss-Seidel for view 0
+    # in forward order (it reads pass-1 t of view 1, not yet committed): sanity of the drive
+    assert same_inputs(fwd[(0, 1)], gs[(0, 1)])
+
+
+# ----------------------------------------------------------------------- T2j
+def test_pass2_never_reads_own_pass1(cpu_tensors):
+    for W in (1, 2):
+        tr = bare_tracker(xw=W, xh=True, xm="E")
+        for v in (0, 3, 5, 9):
+            ods = output_dicts_lockstep(N, v, T5, 0, SMALL_HW, all_hold_t=True)
+            r = run(tr, ods, v, T5, SMALL_HW, xview_pass=2)
+            assert r["mem_src"][:5] == [1000 * v + f for f in range(0, 5)]     # cond + frames < t
+            nb = [1000 * (v + s) + 5 for s in list(range(-W, 0)) + list(range(1, W + 1)) if 0 <= v + s < N]
+            assert r["mem_src"][5:] == nb                                       # exactly v+-k @ t
+            assert 1000 * v + 5 not in r["mem_src"]
+            assert r["ptr_src"] == [1000 * v, 1000 * v + 4, 1000 * v + 3, 1000 * v + 2]
+            assert r["tpos_rows"][5:] == [abs(s) - 1 for s in list(range(-W, 0)) + list(range(1, W + 1)) if 0 <= v + s < N]
+        # pass 1 of E (= B) with every session holding t: t-1 on both sides, never t
+        r = run(tr, output_dicts_lockstep(N, 5, T5, 0, SMALL_HW, all_hold_t=True), 5, T5, SMALL_HW, xview_pass=1)
+        assert r["mem_src"][5:] == [1000 * (5 + s) + 4 for s in list(range(-W, 0)) + list(range(1, W + 1))]

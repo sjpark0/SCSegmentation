@@ -1,4 +1,4 @@
-"""T1a-g and T4: the torch-free gather (SCSam3/demoSCSam3MVOpt/xview_gather.py).
+"""T1a-h and T4: the torch-free gather (SCSam3/demoSCSam3MVOpt/xview_gather.py).
 
 Runs on the host.  The oracle is tests/legacy_ref.py (verbatim pre-change loop); the
 real sam3 select_closest_cond_frames is used when importable (container), else the
@@ -10,8 +10,8 @@ import random
 import pytest
 
 import legacy_ref
-from xview_gather import (UNCHANGED, LEGACY_WINDOW, LEGACY_HYGIENE,
-                          gather_cross_view_memories, resolve_cross_view)
+from xview_gather import (UNCHANGED, LEGACY_WINDOW, LEGACY_HYGIENE, LEGACY_MODE,
+                          gather_cross_view_memories, gather_mode_for, resolve_cross_view)
 
 try:
     from sam3.model.sam3_tracker_utils import select_closest_cond_frames as SELECT
@@ -213,3 +213,48 @@ def test_tpos_rows():
     assert (num_maskmem - 1) in [abs(sp) - 1 for sp in range(-7, 0)]
     with pytest.raises(ValueError):
         resolve_cross_view(7, True, num_maskmem)
+
+
+# ------------------------------------------------------------------ T1h (P4)
+def test_mode_lower_t_is_default_signature():
+    """SPEC_P4: `mode="lower_t", track_in_reverse=False` are the defaults, they are what
+    the tracker passes for mode A / None, and they reproduce the Phase 2 call (the T1a
+    oracle re-applied with the explicit kwargs), legacy and hygiene alike."""
+    assert gather_mode_for(LEGACY_MODE) == gather_mode_for("A", 1) == "lower_t"
+    rng = random.Random(4)
+    n_ok = n_exc = 0
+    for trial in range(2000):
+        N = rng.randint(1, 9)
+        t = rng.randint(1, 30)
+        v = rng.randrange(N)
+        ods = random_ods(rng, N, v, t)
+        self_sel = ods[v]["cond_frame_outputs"]
+        for window, hygiene in ((LEGACY_WINDOW, LEGACY_HYGIENE), (rng.randint(0, 6), True)):
+            try:
+                implicit = gather(ods, v, t, window, hygiene)
+            except IndexError:
+                implicit = IndexError
+            try:
+                explicit = gather_cross_view_memories(ods, v, t, window, hygiene, MAXC, SELECT,
+                                                     mode="lower_t", track_in_reverse=False)
+            except IndexError:
+                explicit = IndexError
+            if implicit is IndexError or explicit is IndexError:
+                assert implicit is explicit, trial
+                n_exc += 1
+                continue
+            assert implicit[0] == explicit[0], trial
+            # the rebound is UNCHANGED, a session's own cond dict, or (more than MAXC cond
+            # frames) a dict select_fn builds per call: compare as T1a does
+            if implicit[1] is UNCHANGED or explicit[1] is UNCHANGED:
+                assert implicit[1] is explicit[1], trial
+            else:
+                assert implicit[1].keys() == explicit[1].keys(), trial
+                assert all(implicit[1][k] is explicit[1][k] for k in implicit[1]), trial
+            if (window, hygiene) == (LEGACY_WINDOW, LEGACY_HYGIENE):      # the T1a oracle
+                exp = legacy_ref.legacy_gather(ods, v, t, self_sel, MAXC, select_fn=SELECT)
+                got = (explicit[0], self_sel if explicit[1] is UNCHANGED else explicit[1])
+                assert exp[0] == got[0] and exp[1].keys() == got[1].keys(), trial
+                assert (exp[1] is self_sel) == (got[1] is self_sel), trial
+            n_ok += 1
+    assert n_ok > 0 and n_exc > 0

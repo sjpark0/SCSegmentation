@@ -19,6 +19,8 @@ RAW = os.path.join(REPO, "Data", "MVSeg", "jf_v2.json")
 PAPER = os.path.join(REPO, "docs", "raw", "paper_tables.md")
 A, B = "SegMaskSam3OneStage", "SegMaskSam3MVOpt"
 NEW_COLS = ["cluster CI lo", "cluster CI hi"]
+RAW_XW = os.path.join(REPO, "Data", "MVSeg", "jf_xw.json")
+XW0, XW4 = "SegMaskSam3XW0", "SegMaskSam3XW4"
 
 
 @pytest.fixture(scope="module")
@@ -107,3 +109,64 @@ def test_paper_tables_columns_only(rj, tmp_path):
     # the normaliser only removes what it claims: 4 nb tables x (header + rule + 5 rows)
     n_stripped = sum(1 for a, b in zip(fresh.split("\n"), normalise(fresh).split("\n")) if a != b)
     assert n_stripped >= 4 * 7
+
+
+# ------------------------------------------------------------------ P4: --nb-mode
+def test_nb_mode_both_partition():
+    """W=1: `lower` bins nb=0 (9 index-0 cameras) / nb>=1 (36); `both` bins nb=0 (empty),
+    nb=1 (15 edge cameras), nb>=2 (30 interior), plus the cumulative nb>=1 row (SPEC_P4
+    amendment A4) that is the primary bin of modes B/C/E; `--split nonref` gives the 28
+    (lower, A/D) and 30 (both, B/C/E) camera sets of the pre-registered E1 reading."""
+    if not os.path.isfile(RAW_XW):
+        pytest.skip(f"{RAW_XW} not present")
+    mod = load_report_jf()
+    store = mod.Store(mod.load([RAW_XW]))
+    for m in (XW0, XW4):
+        if m not in store.methods:
+            pytest.skip(f"{m} not in {RAW_XW}")
+    methods, pair = [XW0, XW4], (XW0, XW4)
+    cfg_l, cfg_b = mod.Cfg(window=1), mod.Cfg(window=1, nb_mode="both")
+    assert mod.nb_max(cfg_l) == 1 and mod.nb_max(cfg_b) == 2
+    lower = mod.nb_table(store, methods, store.datasets, cfg_l, pair=pair)
+    both = mod.nb_table(store, methods, store.datasets, cfg_b, pair=pair)
+    assert [lab for lab, _ in lower.rows] == ["nb=0", "nb>=1"]
+    assert [c[0] for _, c in lower.rows] == [9, 36]
+    assert [lab for lab, _ in both.rows] == ["nb=0", "nb=1", "nb>=2", "nb>=1"]
+    assert [c[0] for _, c in both.rows] == [0, 15, 30, 45]
+    assert both.columns == lower.columns
+    empty = dict(zip(both.columns, both.rows[0][1]))                  # nb=0 stays as a nan row
+    assert all(math.isnan(empty[k]) for k in (XW0, XW4, "delta J&F", "cluster CI lo", "cluster CI hi"))
+    assert (empty["wins"], empty["ties"], empty["losses"]) == (0, 0, 0)
+    for lab, cells in both.rows[1:]:
+        d = dict(zip(both.columns, cells))
+        assert not math.isnan(d["delta J&F"]) and d["cluster CI lo"] <= d["delta J&F"] <= d["cluster CI hi"]
+        assert d["wins"] + d["ties"] + d["losses"] == d["cameras"]
+    # the two definitions partition the same 45 cameras; nb=0 (lower) = view index 0
+    cams = [(d, c) for d in store.datasets for c in mod.select_cams(store, d, cfg_l) if (d, c) in store.gt]
+    assert len(cams) == 45
+    lb = {k: mod.nb_of(store, *k, cfg_l) for k in cams}
+    bb = {k: mod.nb_of(store, *k, cfg_b) for k in cams}
+    assert [sum(1 for x in lb.values() if x == b) for b in (0, 1)] == [9, 36]
+    assert [sum(1 for x in bb.values() if x == b) for b in (0, 1, 2)] == [0, 15, 30]
+    assert all((lb[k] == 0) == (store.view_index(*k) == 0) for k in cams)
+    assert all(bb[k] >= lb[k] for k in cams) and all(bb[k] == 2 for k in cams if 0 < store.view_index(*k) < store.n_views(*k) - 1)
+    # the cumulative row pools every camera with a neighbour: the same cameras (and the
+    # same cluster bootstrap) as the paired camera-level row of the whole set
+    stats = mod.paired_tables(store, XW0, XW4, store.datasets, cfg_b)[0]
+    cam_row = dict(zip(stats.columns, next(cells for lab, cells in stats.rows if lab.startswith("camera"))))
+    cum = dict(zip(both.columns, both.rows[-1][1]))
+    assert cum["cameras"] == cam_row["n"] == 45
+    assert cum["delta J&F"] == pytest.approx(cam_row["mean"], abs=1e-12)
+    assert cum["cluster CI lo"] == pytest.approx(cam_row["cluster CI lo"], abs=1e-12)
+    assert cum["cluster CI hi"] == pytest.approx(cam_row["cluster CI hi"], abs=1e-12)
+    # the E1 primary bins: nonref -> 28 (lower nb>=1, modes A/D) and 30 (both nb>=1, B/C/E)
+    lower_nr = mod.nb_table(store, methods, store.datasets, cfg_l.replace(split="nonref"), pair=pair)
+    both_nr = mod.nb_table(store, methods, store.datasets, cfg_b.replace(split="nonref"), pair=pair)
+    assert [c[0] for _, c in lower_nr.rows] == [2, 28]
+    assert both_nr.rows[-1][0] == "nb>=1" and both_nr.rows[-1][1][0] == 30
+    assert both_nr.rows[0][1][0] == 0 and both_nr.rows[1][1][0] + both_nr.rows[2][1][0] == 30
+    # statement: the default keeps every existing line, `both` adds one field
+    assert "nb_mode=" not in mod.Cfg().statement(15) and "nb_mode=" not in cfg_l.statement(15)
+    assert " | nb_mode=both | " in cfg_b.statement(15)
+    nd = len(store.datasets)
+    assert both.statement == lower.statement.replace(f" | datasets={nd} | ", f" | datasets={nd} | nb_mode=both | ")

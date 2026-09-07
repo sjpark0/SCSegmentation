@@ -38,6 +38,7 @@ class SCSam3VideoPredictorNewMem:
         compile: bool = False,
         cross_view_window=None,
         cross_view_hygiene=None,
+        cross_view_mode=None,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
@@ -54,6 +55,7 @@ class SCSam3VideoPredictorNewMem:
                 compile=compile,
                 cross_view_window=cross_view_window,
                 cross_view_hygiene=cross_view_hygiene,
+                cross_view_mode=cross_view_mode,
             )
             .cuda()
             .eval()
@@ -92,6 +94,12 @@ class SCSam3VideoPredictorNewMem:
             return self.reset_session(session_id=request["session_id"])
         elif request_type == "close_session":
             return self.close_session(session_id=request["session_id"])
+        elif request_type == "recompute_frame":
+            return self.recompute_frame(
+                session_ids=request["session_ids"],
+                frame_idx=request["frame_index"],
+                output_for=request.get("output_for", None),
+            )
         else:
             raise RuntimeError(f"invalid request type: {request_type}")
 
@@ -188,6 +196,16 @@ class SCSam3VideoPredictorNewMem:
             is_user_action=is_user_action,
         )
         return {"is_success": True}
+
+    def recompute_frame(self, session_ids, frame_idx, output_for=None):
+        """XW mode E pass 2: recompute `frame_idx` in every session from the pass-1
+        memories, commit all at once, return the per-session outputs (None where
+        `output_for`, a list of positions in session_ids, excludes the session)."""
+        logger.debug(f"recompute frame {frame_idx} in sessions {session_ids}")
+        inference_states = [self._get_session(id)["state"] for id in session_ids]
+        outputs = self.model.recompute_frame_all_views(
+            inference_states, frame_idx, reverse=False, output_for=output_for)
+        return {"frame_index": frame_idx, "outputs": outputs}
 
     def propagate_in_video(
         self,

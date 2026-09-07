@@ -20,11 +20,34 @@ hygiene the camera at index 0 has no non-negative neighbour for ANY window, so i
 encoder inputs are identical across every W (and across closure/all).  An nb=0 delta
 between two XW runs that is not exactly 0 therefore signals nondeterminism or a
 cross-session leak outside this gather, never a control effect of W.
+
+Phase 3 / P4 adds the neighbourhood variants (docs/phase3-neighbourhood.md): A = lower
+views v-W..v-1 at frame t (today's gather), B = both sides v-W..v-1 and v+1..v+W at
+t-1, C = lower at t and upper at t-1, D = lower at t-1, E = pass 1 as B, then a second
+pass that recomputes t from v-W..v+W at t (the pass-1 outputs, Jacobi commit).  Frame
+convention: t is the frame being computed, "tm1" is t-1 (t+1 when tracking in reverse);
+the seed frame is found in cond_frame_outputs.  Under two-sided modes camera 0 DOES have
+neighbours, so the nb=0 sentinel of Phase 2 does not apply; use the A-vs-D index-0
+identity and closure==all instead (SPEC_P4 §6).
 """
 
 UNCHANGED = object()      # "leave the caller's selected_cond_outputs as it is"
 LEGACY_WINDOW = 4
 LEGACY_HYGIENE = False
+# Phase 3 / P4 neighbourhood variants (docs/phase3-neighbourhood.md).  The letter is the
+# tracker's `cross_view_mode`; None means "A".  A is, statement for statement, the Phase 2
+# gather.  Every other letter needs hygiene (no wrap, no C2 rebinding) and is its own
+# lineage XW{W}{letter}.  Frame convention: t = frame being computed, "tm1" = t-1
+# (t+1 when tracking in reverse); the seed frame is found in cond_frame_outputs.
+MODES = ("A", "B", "C", "D", "E")
+LEGACY_MODE = "A"
+GATHER_MODES = ("lower_t", "lower_tm1", "both_tm1", "mixed", "all_t")
+_MODE_GATHER = {"A": "lower_t",     # v-W..v-1 at t            (today)
+                "B": "both_tm1",    # v-W..v-1, v+1..v+W at t-1
+                "C": "mixed",       # v-W..v-1 at t, v+1..v+W at t-1   (REPORT P4)
+                "D": "lower_tm1",   # v-W..v-1 at t-1          (frame-freshness control)
+                "E": "both_tm1"}    # pass 1 = B; pass 2 = all_t
+E_PASS2_GATHER = "all_t"            # v-W..v+W at t, every entry a pass-1 output
 
 
 def resolve_cross_view(cross_view_window, cross_view_hygiene, num_maskmem):
@@ -44,32 +67,95 @@ def resolve_cross_view(cross_view_window, cross_view_hygiene, num_maskmem):
     return window, hygiene
 
 
+def resolve_cross_view_mode(cross_view_mode, hygiene):
+    """Canonical mode letter for the constructor; None -> "A".  Raises ValueError early."""
+    mode = LEGACY_MODE if cross_view_mode is None else str(cross_view_mode).upper()
+    if mode not in MODES:
+        raise ValueError(f"cross_view_mode={cross_view_mode!r}: expected one of {MODES}")
+    if mode != LEGACY_MODE and not hygiene:
+        raise ValueError(f"cross_view_mode={mode} needs cross_view_hygiene=True (the legacy "
+                         "gather wraps negative indices and rebinds the cond pointer, REPORT C1/C2)")
+    return mode
+
+
+def gather_mode_for(cross_view_mode, xview_pass=None):
+    """Which gather variant a call uses.  xview_pass None/1 = the generator's pass (every
+    mode); 2 = the recompute pass, which exists only in mode E."""
+    if xview_pass not in (None, 1, 2):
+        raise ValueError(f"xview_pass={xview_pass!r}: expected None, 1 or 2")
+    if xview_pass == 2:
+        if cross_view_mode != "E":
+            raise ValueError(f"xview_pass=2 is defined for mode E only, not {cross_view_mode!r}")
+        return E_PASS2_GATHER
+    return _MODE_GATHER[cross_view_mode]
+
+
+def _offsets(mode, window):
+    lower = list(range(-window, 0))            # -W..-1, farthest first (unchanged order)
+    if mode in ("lower_t", "lower_tm1"):
+        return lower
+    return lower + list(range(1, window + 1))  # then +1..+W, nearest first (mirror)
+
+
+def _frame_for(mode, s_pos, frame_idx, lag):
+    """Frame of neighbour v+s_pos this variant reads (lag = +1 forward, -1 reverse)."""
+    if mode in ("lower_t", "all_t"):
+        return frame_idx
+    if mode == "mixed":
+        return frame_idx if s_pos < 0 else frame_idx - lag
+    return frame_idx - lag                     # lower_tm1, both_tm1
+
+
+def _lookup(prev_dict, f, mode):
+    """A session's stored output at frame f.  A tracked frame lives in
+    non_cond_frame_outputs; the seed lives in cond_frame_outputs (preflight pops a cond
+    frame out of non_cond, SCSam3TrackerPredictorNewMem.py:761-765), so a t-1 == start
+    read falls through to the cond dict.  all_t (E pass 2) reads the pass-1 output of
+    frame t, which is what non_cond[t] holds until the Jacobi commit."""
+    out = prev_dict["non_cond_frame_outputs"].get(f, None)
+    if out is None and mode != "all_t":
+        out = prev_dict["cond_frame_outputs"].get(f, None)
+    return out
+
+
 def gather_cross_view_memories(output_dicts, spatial_idx, frame_idx, window, hygiene,
-                               max_cond_frames_in_attn, select_fn):
+                               max_cond_frames_in_attn, select_fn, mode="lower_t",
+                               track_in_reverse=False):
     """Return (s_pos_and_prevs, rebound).
 
     s_pos_and_prevs: [(s_pos, out_or_None)] in loop order, consumed by the spatial
-    token loop.  rebound: UNCHANGED, or the dict the legacy code left bound to
-    `selected_cond_outputs` (the LAST neighbour that took the fallback).
+    token loop (row = abs(s_pos) - 1 for every entry).  rebound: UNCHANGED, or the dict
+    the legacy code left bound to `selected_cond_outputs` (mode lower_t, hygiene off).
     """
+    if mode not in GATHER_MODES:
+        raise ValueError(f"mode={mode!r}: expected one of {GATHER_MODES}")
+    if mode != "lower_t" and not hygiene:
+        raise ValueError(f"mode={mode!r} requires hygiene=True")
+    lag = -1 if track_in_reverse else 1
+    n = len(output_dicts)
     s_pos_and_prevs = []
     rebound = UNCHANGED
-    for s_pos in range(-window, 0):
+    for s_pos in _offsets(mode, window):
         prev_spatial_idx = spatial_idx + s_pos
         if hygiene and prev_spatial_idx < 0:
             continue                                   # fix (2): no wrap, no IndexError
+        if hygiene and prev_spatial_idx >= n:
+            continue                                   # upper clip: positive offsets only
         if spatial_idx == prev_spatial_idx:            # never true (s_pos != 0); legacy guard kept
             continue
         prev_dict = output_dicts[prev_spatial_idx]     # legacy: wraps / raises here, same point
         if prev_dict is None:
             s_pos_and_prevs.append((s_pos, None))
             continue
-        out = prev_dict["non_cond_frame_outputs"].get(frame_idx, None)
-        if out is None and not hygiene:
-            # Dead fallback (REPORT C2): `unselected` never contains frame_idx (proof in
-            # SPEC §3), so `out` stays None; the rebinding is the published behaviour.
-            rebound, unselected = select_fn(
-                frame_idx, prev_dict["cond_frame_outputs"], max_cond_frames_in_attn)
-            out = unselected.get(frame_idx, None)
+        if mode == "lower_t":
+            out = prev_dict["non_cond_frame_outputs"].get(frame_idx, None)
+            if out is None and not hygiene:
+                # Dead fallback (REPORT C2): `unselected` never contains frame_idx (proof in
+                # SPEC §3), so `out` stays None; the rebinding is the published behaviour.
+                rebound, unselected = select_fn(
+                    frame_idx, prev_dict["cond_frame_outputs"], max_cond_frames_in_attn)
+                out = unselected.get(frame_idx, None)
+        else:
+            out = _lookup(prev_dict, _frame_for(mode, s_pos, frame_idx, lag), mode)
         s_pos_and_prevs.append((s_pos, out))
     return s_pos_and_prevs, rebound

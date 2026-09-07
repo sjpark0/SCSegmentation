@@ -1120,6 +1120,117 @@ class SCSam3VideoInferenceWithInstanceInteractivityNewMem(SCSam3VideoInferenceNe
         return obj_ids_local, low_res_masks_local, obj_scores_local
 
     @torch.inference_mode()
+    def recompute_frame_all_views(self, inference_states, frame_idx, reverse=False, output_for=None):
+        """XW mode E, pass 2 (ROADMAP Phase 3 / REPORT P4; docs/phase3-neighbourhood.md).
+
+        Every session's frame `frame_idx` was computed once by its suspended partial
+        propagation (pass 1; the tracker stored it at :916).  This recomputes it for
+        every session and object with the pass-2 gather (all neighbours' pass-1 frame t),
+        Jacobi style: nothing is stored until every (session, object) is computed, so no
+        pass-2 output can enter another view's pass-2 input and the result does not
+        depend on the session order.  The committed outputs replace the pass-1 memories
+        and pointers (what frame t+1 reads) and the cached masks (what the caller writes).
+
+        Contract: call after every session has yielded `frame_idx` and BEFORE any
+        session is advanced to `frame_idx + 1` (that advance pops feature_cache[t];
+        the tracker then raises "Image features for frame ... are not cached").
+        Touches neither action_history nor feature_cache.  Returns one `outputs` dict per
+        session (same shape as the generator's), None for sessions not in `output_for`.
+        """
+        assert self.world_size == 1 and self.rank == 0, "lockstep is single-GPU (REPORT C6)"
+        n = len(inference_states)
+        staged = []           # (tracker_state, current_out), committed after the sweep
+        per_view = []         # what :1054-1099 collects per session
+        for v in range(n):
+            state = inference_states[v]
+            history = state["action_history"]
+            assert history and history[-1]["type"] == "propagation_partial", (
+                f"session {v}: pass 2 needs a suspended partial propagation, got {history[-1:]}")
+            obj_ids = history[-1]["obj_ids"]          # pass 1's object list, same order (:1132-1140)
+            obj_ids_local, low_res_masks_list, obj_scores_list = [], [], []
+            for obj_id in obj_ids:                    # mirror of :1058-1099
+                tmps = self._get_tracker_inference_states_by_obj_ids(state, [obj_id])
+                if len(tmps) == 0:
+                    continue
+                tracker_state = tmps[0]
+                iss = []
+                for m in range(n):
+                    tmp = self._get_tracker_inference_states_by_obj_ids(inference_states[m], [obj_id])
+                    iss.append(None if len(tmp) == 0 else tmp[0])
+                if len(tracker_state["obj_ids"]) == 0:
+                    continue
+                current_out, out_obj_ids, out_low_res_masks, out_obj_scores = self.tracker.recompute_frame(
+                    iss, spatial_idx=v, frame_idx=frame_idx, reverse=reverse)
+                staged.append((tracker_state, current_out))
+                assert isinstance(out_obj_ids, list)
+                obj_ids_local.extend(out_obj_ids)
+                low_res_masks_list.append(out_low_res_masks.squeeze(1))
+                obj_scores_list.append(out_obj_scores.squeeze(1))
+            per_view.append((obj_ids, obj_ids_local, low_res_masks_list, obj_scores_list))
+
+        # Commit.  From here on frame t of every session is its pass-2 output.
+        for tracker_state, current_out in staged:
+            self.tracker.commit_frame(tracker_state, frame_idx, current_out, reverse)
+
+        outputs = []
+        for v in range(n):
+            state = inference_states[v]
+            obj_ids, obj_ids_local, low_res_masks_list, obj_scores_list = per_view[v]
+            # :1101-1118 verbatim
+            H_mask = W_mask = self.tracker.low_res_mask_size
+            if len(low_res_masks_list) > 0:
+                low_res_masks_local = torch.cat(low_res_masks_list, dim=0)
+                obj_scores_local = torch.cat(obj_scores_list, dim=0)
+                assert low_res_masks_local.shape[1:] == (H_mask, W_mask)
+                low_res_masks_local = fill_holes_in_mask_scores(
+                    low_res_masks_local.unsqueeze(1),
+                    max_area=self.fill_hole_area,
+                    fill_holes=True,
+                    remove_sprinkles=True,
+                )
+                low_res_masks_local = low_res_masks_local.squeeze(1)
+            else:
+                low_res_masks_local = torch.zeros(0, H_mask, W_mask, device=self.device)
+                obj_scores_local = torch.zeros(0, device=self.device)
+            # :1230-1244 + :1267-1269 (world_size == 1)
+            tracker_metadata = state["tracker_metadata"]
+            refined_obj_data = {}
+            for obj_id in obj_ids:
+                obj_rank = self._get_gpu_id_by_obj_id(state, obj_id)
+                if self.rank == obj_rank and obj_id in obj_ids_local:
+                    refined_obj_idx = obj_ids_local.index(obj_id)
+                    refined_obj_data[obj_id] = (obj_scores_local[refined_obj_idx],
+                                                low_res_masks_local[refined_obj_idx])
+            # :1272-1275
+            for obj_id, (refined_score, _) in refined_obj_data.items():
+                tracker_metadata["obj_id_to_tracker_score_frame_wise"][frame_idx].update(
+                    {obj_id: refined_score.item()})
+            # :1279-1318, without the yield; the pass-1 entry of cached_frame_outputs[t] is
+            # the merge base of _build_tracker_output and is overwritten by _cache_frame_outputs
+            if "cached_frame_outputs" not in state:
+                state["cached_frame_outputs"] = {}
+            if frame_idx not in state["cached_frame_outputs"]:
+                state["cached_frame_outputs"][frame_idx] = {}
+            refined_obj_id_to_mask = {}
+            for obj_id, (_, refined_mask_low_res) in refined_obj_data.items():
+                refined_obj_id_to_mask[obj_id] = self._convert_low_res_mask_to_video_res(
+                    refined_mask_low_res, state)
+            obj_id_to_mask = self._build_tracker_output(state, frame_idx, refined_obj_id_to_mask)
+            out = {
+                "obj_id_to_mask": obj_id_to_mask,
+                "obj_id_to_score": tracker_metadata["obj_id_to_score"],
+                "obj_id_to_tracker_score": tracker_metadata["obj_id_to_tracker_score_frame_wise"][frame_idx],
+            }
+            suppressed_obj_ids = tracker_metadata["rank0_metadata"]["suppressed_obj_ids"][frame_idx]
+            self._cache_frame_outputs(state, frame_idx, obj_id_to_mask, suppressed_obj_ids=suppressed_obj_ids)
+            self._trim_cached_frame_outputs(state, frame_idx, reverse=reverse)
+            if output_for is None or v in output_for:
+                outputs.append(self._postprocess_output(state, out, suppressed_obj_ids=suppressed_obj_ids))
+            else:
+                outputs.append(None)          # _postprocess_output is pure; skip its full-res numpy
+        return outputs
+
+    @torch.inference_mode()
     def propagate_in_video(
         self,
         inference_states,

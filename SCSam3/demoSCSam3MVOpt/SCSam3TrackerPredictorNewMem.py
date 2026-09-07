@@ -8,7 +8,8 @@ from collections import OrderedDict
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores, select_closest_cond_frames
-from xview_gather import gather_cross_view_memories, resolve_cross_view, UNCHANGED
+from xview_gather import (gather_cross_view_memories, gather_mode_for, resolve_cross_view,
+                          resolve_cross_view_mode, UNCHANGED)
 from tqdm.auto import tqdm
 import cv2
 import os
@@ -44,6 +45,8 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         # lineage; see xview_gather.resolve_cross_view for the bounds.
         cross_view_window=None,
         cross_view_hygiene=None,
+        # Phase 3 / P4 neighbourhood variant "A".."E"; None -> "A" (the Phase 2 gather).
+        cross_view_mode=None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -62,6 +65,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         # needs self.num_maskmem, which Sam3TrackerBase.__init__ sets (:100)
         self.cross_view_window, self.cross_view_hygiene = resolve_cross_view(
             cross_view_window, cross_view_hygiene, self.num_maskmem)
+        self.cross_view_mode = resolve_cross_view_mode(cross_view_mode, self.cross_view_hygiene)
 
     @torch.inference_mode()
     def init_state(
@@ -928,6 +932,56 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
             )
             yield frame_idx, obj_ids, low_res_masks, video_res_masks, obj_scores
 
+    @torch.inference_mode()
+    def recompute_frame(self, inference_states, spatial_idx, frame_idx, reverse,
+                        run_mem_encoder=True):
+        """XW mode E, pass 2 (Phase 3 / P4): recompute an already-tracked frame of one
+        session from the current memories, WITHOUT storing it.  The pass-2 gather (all
+        neighbours v-W..v+W at frame_idx) reads the neighbours' pass-1 outputs, which is
+        what their non_cond_frame_outputs[frame_idx] hold until commit_frame; the own
+        view's temporal memory and pointer loops read frames < frame_idx only, so the
+        own pass-1 output is never an input.  Mirrors the else branch of
+        propagate_in_video (:901-915) plus the low-res half of :926-928.
+
+        Returns (current_out, obj_ids, low_res_masks, obj_scores); the caller stores
+        current_out with commit_frame once every session has been recomputed (Jacobi).
+        """
+        assert self.cross_view_mode == "E", "recompute_frame exists for cross_view_mode E only"
+        state = inference_states[spatial_idx]
+        output_dicts = []
+        for m in range(len(inference_states)):
+            output_dicts.append(None if inference_states[m] is None else inference_states[m]["output_dict"])
+        consolidated_frame_inds = state["consolidated_frame_inds"]
+        if (frame_idx in consolidated_frame_inds["cond_frame_outputs"]
+                or frame_idx in consolidated_frame_inds["non_cond_frame_outputs"]):
+            raise ValueError(f"frame {frame_idx} carries a prompt; pass 2 recomputes tracked frames only")
+        if frame_idx not in state["output_dict"]["non_cond_frame_outputs"]:
+            raise RuntimeError(f"frame {frame_idx} has no pass-1 output in session {spatial_idx}")
+        batch_size = self._get_obj_num(state)
+        current_out, pred_masks = self._run_single_frame_inference_multiple(
+            inference_states=inference_states,
+            output_dicts=output_dicts,
+            spatial_idx=spatial_idx,
+            frame_idx=frame_idx,
+            batch_size=batch_size,
+            is_init_cond_frame=False,
+            point_inputs=None,
+            mask_inputs=None,
+            reverse=reverse,
+            run_mem_encoder=run_mem_encoder,
+            xview_pass=2,
+        )
+        # :926-928 yields any_res_masks.to(device) as low_res_masks; pred_masks is already on
+        # the device, so this is the same tensor.  The video-res half is not needed here
+        # (the inference level rebuilds it from the low-res mask, :1288-1295).
+        return current_out, state["obj_ids"], pred_masks, current_out["object_score_logits"]
+
+    def commit_frame(self, inference_state, frame_idx, current_out, reverse):
+        """Store a recomputed frame: exactly :916 and :919-922 of propagate_in_video."""
+        inference_state["output_dict"]["non_cond_frame_outputs"][frame_idx] = current_out
+        self._add_output_per_object(inference_state, frame_idx, current_out, "non_cond_frame_outputs")
+        inference_state["frames_already_tracked"][frame_idx] = {"reverse": reverse}
+
     def _add_output_per_object(
         self, inference_state, frame_idx, current_out, storage_key
     ):
@@ -1187,6 +1241,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         num_frames,
         track_in_reverse=False,  # tracking in reverse time order (for demo usage)
         use_prev_mem_frame=True,
+        xview_pass=None,         # None/1: generator pass; 2: mode-E recompute (xview_gather.gather_mode_for)
     ):
         """Fuse the current frame's visual feature map with previous memory."""
         B = current_vision_feats[-1].size(1)  # batch size on this frame
@@ -1276,6 +1331,8 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
                 window=self.cross_view_window, hygiene=self.cross_view_hygiene,
                 max_cond_frames_in_attn=self.max_cond_frames_in_attn,
                 select_fn=select_closest_cond_frames,
+                mode=gather_mode_for(self.cross_view_mode, xview_pass),
+                track_in_reverse=track_in_reverse,
             )
             if rebound is not UNCHANGED:
                 selected_cond_outputs = rebound
@@ -1469,6 +1526,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         # The previously predicted SAM mask logits (which can be fed together with new clicks in demo).
         prev_sam_mask_logits=None,
         use_prev_mem_frame=True,
+        xview_pass=None,
     ):
         current_out = {"point_inputs": point_inputs, "mask_inputs": mask_inputs}
         # High-resolution feature maps for the SAM head, reshape (HW)BC => BCHW
@@ -1499,6 +1557,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
                 num_frames=num_frames,
                 track_in_reverse=track_in_reverse,
                 use_prev_mem_frame=use_prev_mem_frame,
+                xview_pass=xview_pass,
             )
             # apply SAM-style segmentation head
             # here we might feed previously predicted low-res SAM mask logits into the SAM mask decoder,
@@ -1638,6 +1697,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         run_mem_encoder,
         prev_sam_mask_logits=None,
         use_prev_mem_frame=True,
+        xview_pass=None,
     ):
         """Run tracking on a single frame based on current inputs and previous memory."""
         # Retrieve correct image features
@@ -1667,6 +1727,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
             run_mem_encoder=run_mem_encoder,
             prev_sam_mask_logits=prev_sam_mask_logits,
             use_prev_mem_frame=use_prev_mem_frame,
+            xview_pass=xview_pass,
         )
 
         # optionally offload the output to CPU memory to save GPU space

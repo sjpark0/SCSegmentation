@@ -22,6 +22,7 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
     python runMVSeg.py Blocks --algo OneStageNew
     python runMVSeg.py Blocks --algo OneStage --out SegMaskSam3OneStage
     python runMVSeg.py Welder --algo MVOpt --xview-window 0   # -> SegMaskSam3XW0, closure
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-mode B   # -> SegMaskSam3XW1B, closure cone
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -55,6 +56,14 @@ XVIEW_MAX_WINDOW = 6                    # maskmem_tpos_enc has 7 rows; row 6 is 
 XVIEW_ENV = ("SCSAM3_XVIEW_WINDOW", "SCSAM3_XVIEW_HYGIENE")
 XVIEW_OUT_PREFIX = "SegMaskSam3XW"      # every XW output folder starts with this; legacy never does
 ONESTAGE_CLOSURE_OUT = "SegMaskSam3OneStageC"   # experiment row 2
+# Phase 3 / P4 neighbourhood variants (docs/phase3-neighbourhood.md).  "A" is today's
+# gather and keeps the bare XW{W} name; the others get XW{W}{letter}.  E runs two passes
+# per frame (the generators, then a recompute request).  closure growth: how many
+# sessions per tracked frame the dependency cone of a scored view widens by (x W).
+XVIEW_MODES = ("A", "B", "C", "D", "E")
+XVIEW_LEGACY_MODE = "A"
+XVIEW_TWO_PASS = ("E",)
+XVIEW_CLOSURE_GROWTH = {"A": 0, "B": 1, "C": 1, "D": 0, "E": 2}
 
 
 def parse_args():
@@ -86,6 +95,13 @@ def parse_args():
                          "control effect.")
     ap.add_argument("--xview-hygiene", action="store_true",
                     help="XW lineage with the legacy window (W=4): same as --xview-window 4")
+    ap.add_argument("--xview-mode", choices=XVIEW_MODES, default=None,
+                    help="XW lineage neighbourhood: A = lower views at t (default, folder "
+                         "SegMaskSam3XW{W}); B = both sides at t-1; C = lower at t, upper at "
+                         "t-1; D = lower at t-1; E = pass 1 as B, then recompute t from all "
+                         "neighbours' pass-1 t. Folder SegMaskSam3XW{W}{mode}. Needs "
+                         "--xview-window W >= 1. closure = the dependency cone "
+                         "(A/D: max(scored)+1; B/C: +W per tracked frame; E: +2W).")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -136,12 +152,29 @@ def pick_reference(ds_dir, c, cv2, np):
     return best_cam, best_n
 
 
-def resolve_run(args, cam_names, written_cams):
+def closure_reach(mode, window, max_scored, n_cams, num_frame):
+    """Number of sessions 0..reach-1 that give the scored views exactly their `all`
+    outputs.  A/D read lower views only: max_scored+1.  B/C read (v+k, t-1), k <= W,
+    whose memory came from (v+2k, t-2), ... down to the seed: the cone widens by W per
+    tracked frame.  E has two links per frame (pass 2 reads pass-1 t of v+-W, which read
+    t-1 of v+-2W): 2W.  num_frame-1 frames are tracked after the seed."""
+    growth = XVIEW_CLOSURE_GROWTH[mode]
+    if growth == 0:
+        return max_scored + 1
+    if num_frame is None:
+        sys.exit(f"--track-cams closure with --xview-mode {mode} needs the dataset's num_frame")
+    return min(n_cams, max_scored + 1 + growth * window * (num_frame - 1))
+
+
+def resolve_run(args, cam_names, written_cams, num_frame=None):
     """Everything main() decides from the flags: output folder, track mode, session
     list and the tracker kwargs.  Legacy invocations resolve exactly as before this
     function existed; every new combination is explicit or refused."""
     scored_idx = [i for i, n in enumerate(cam_names) if n in written_cams]
     xview_on = args.xview_window is not None or args.xview_hygiene
+    mode = getattr(args, "xview_mode", None)          # None -> "A" (the Phase 2 gather)
+    if mode is not None and not xview_on:
+        sys.exit("--xview-mode needs an XW flag (--xview-window W, or --xview-hygiene for W=4)")
     if xview_on and args.algo not in XVIEW_ALGOS:
         sys.exit(f"--xview-window/--xview-hygiene are wired into {XVIEW_ALGOS} only "
                  f"(OneStage has no cross-view memory, OneStageNew is frozen)")
@@ -154,10 +187,17 @@ def resolve_run(args, cam_names, written_cams):
     window = None
     xview_kwargs = {}
     lineage = "legacy"
+    mode_eff = XVIEW_LEGACY_MODE
     if xview_on:
         window = 4 if args.xview_window is None else args.xview_window
         xview_kwargs = dict(cross_view_window=window, cross_view_hygiene=True)
-        lineage = f"XW{window}"
+        if mode is not None:                          # an explicit letter reaches the tracker
+            xview_kwargs["cross_view_mode"] = mode
+            mode_eff = mode
+        if mode_eff != XVIEW_LEGACY_MODE and window == 0:
+            sys.exit(f"--xview-mode {mode_eff} with --xview-window 0 reads no neighbour; W=0 is "
+                     "the control XW0 (drop --xview-mode)")
+        lineage = f"XW{window}" + ("" if mode_eff == XVIEW_LEGACY_MODE else mode_eff)
 
     if args.track_cams is not None:
         track_mode = args.track_cams
@@ -184,14 +224,15 @@ def resolve_run(args, cam_names, written_cams):
             sys.exit("--track-cams closure needs at least one scored camera (cam_list) "
                      f"among the loaded cameras, but none of {written_cams} is in "
                      f"{cam_names}")
-        track_idx = list(range(max(scored_idx) + 1))
+        track_idx = list(range(closure_reach(mode_eff, window, max(scored_idx), len(cam_names), num_frame)))
 
     if args.out:
         out_name = args.out
     elif xview_on:
         # closure is the XW default and keeps the bare name; an `all` run is a
         # different session set (experiment row 6 compares the two), so it gets its own
-        out_name = f"{XVIEW_OUT_PREFIX}{window}" + ("all" if track_mode == "all" else "")
+        out_name = (f"{XVIEW_OUT_PREFIX}{window}" + ("" if mode_eff == XVIEW_LEGACY_MODE else mode_eff)
+                    + ("all" if track_mode == "all" else ""))
     elif track_mode == "closure":            # OneStage only: the guard above excludes the rest
         out_name = ONESTAGE_CLOSURE_OUT
     else:
@@ -205,7 +246,10 @@ def resolve_run(args, cam_names, written_cams):
                  "another --out)")
     return dict(out_name=out_name, track_mode=track_mode, track_idx=track_idx,
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
-                xview_kwargs=xview_kwargs, lineage=lineage)
+                xview_kwargs=xview_kwargs, lineage=lineage,
+                xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
+                two_pass=bool(xview_on and mode_eff in XVIEW_TWO_PASS),
+                closure_reach=(len(track_idx) if track_mode == "closure" else None))
 
 
 def build_runner(algo):
@@ -355,7 +399,49 @@ def build_runner(algo):
                 self.tracking_result[m] = self.predictor.handle_stream_request(
                     request=request)
 
+        def RecomputeFrame(self, frame_idx, output_for=None):
+            """XW mode E pass 2: recompute frame_idx in every session from the pass-1
+            memories (compute all, then commit, inside the predictor).  Returns the
+            per-session outputs list; None where `output_for` excludes the session."""
+            response = self.predictor.handle_request(
+                request=dict(type="recompute_frame", session_ids=self.session_ids,
+                             frame_index=frame_idx, output_for=output_for))
+            return response["outputs"]
+
     return MVSegVideo, torch
+
+
+def run_two_pass(sc, start_frame, num_frame, cam_names, written_cams, out_dir, cv2, np):
+    """XW mode E write loop.  Pass 1 = one next() per session in camera order (exactly the
+    lockstep of main's loop; those outputs are provisional and are dropped).  Pass 2 =
+    one recompute request for the frame, issued after every session yielded it and
+    before any session is advanced (the tracker needs feature_cache[t], which the
+    next() for t+1 pops).  The seed frame is prompted, never recomputed: its pass-1
+    response is written as is.  The PNG writing mirrors main's loop line for line."""
+    scored_j = [j for j, view in enumerate(sc.track_views) if cam_names[view] in written_cams]
+    for _ in range(num_frame):
+        frame_idx, seed_outputs = None, {}
+        for j in range(len(sc.track_views)):
+            response = next(sc.tracking_result[j])                     # pass 1
+            if frame_idx is None:
+                frame_idx = response["frame_index"]
+            assert response["frame_index"] == frame_idx, (j, response["frame_index"], frame_idx)
+            if frame_idx == start_frame and j in scored_j:
+                seed_outputs[j] = response["outputs"]
+        if frame_idx == start_frame:
+            outputs = seed_outputs
+        else:
+            outputs = sc.RecomputeFrame(frame_idx, output_for=scored_j)  # pass 2, all sessions
+        for j in scored_j:
+            out = outputs[j]
+            folder = os.path.join(out_dir, cam_names[sc.track_views[j]], f"{frame_idx:d}")
+            os.makedirs(folder, exist_ok=True)
+            for i, obj_id in enumerate(out["out_obj_ids"].tolist()):
+                mask = (out["out_binary_masks"][i] > 0.0)
+                mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
+                cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
+                            mask.squeeze().astype(np.uint8) * 255)
+        print(f"  frame {frame_idx} written", flush=True)
 
 
 def main():
@@ -366,7 +452,7 @@ def main():
     video_root = os.path.join(ds_dir, "Video")
     cam_names = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["perms"]]
     written_cams = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["cam_list"]]
-    run = resolve_run(args, cam_names, written_cams)
+    run = resolve_run(args, cam_names, written_cams, num_frame=c["num_frame"])
     out_name = run["out_name"]
 
     missing = [n for n in cam_names if not os.path.isdir(os.path.join(video_root, n))]
@@ -409,12 +495,14 @@ def main():
     tracker = getattr(getattr(sc.predictor, "model", None), "tracker", None)
     eff_window = getattr(tracker, "cross_view_window", None)
     eff_hygiene = getattr(tracker, "cross_view_hygiene", None)
+    eff_mode = getattr(tracker, "cross_view_mode", None)
     if args.algo in XVIEW_ALGOS:
-        want = ((run["xview_window"] if run["xview_on"] else 4), run["xview_on"])
-        if (eff_window, eff_hygiene) != want:
-            sys.exit(f"tracker holds cross_view=({eff_window}, {eff_hygiene}) but the "
+        want = ((run["xview_window"] if run["xview_on"] else 4), run["xview_on"],
+                (run["xview_mode_eff"] if run["xview_on"] else XVIEW_LEGACY_MODE))
+        if (eff_window, eff_hygiene, eff_mode) != want:
+            sys.exit(f"tracker holds cross_view=({eff_window}, {eff_hygiene}, {eff_mode}) but the "
                      f"command line asked for {want}")
-    print(f"cross-view     window {eff_window}, hygiene {eff_hygiene}", flush=True)
+    print(f"cross-view     window {eff_window}, hygiene {eff_hygiene}, mode {eff_mode}", flush=True)
     sc.LoadCameraFolders(video_root, cam_names, c["start_frame"], track_idx)
     print(f"sessions ready ({sc.numImage} cameras loaded, "
           f"{len(track_idx)} tracked [{track_mode}], "
@@ -448,21 +536,24 @@ def main():
 
     sc.TrackForward(c["start_frame"], c["num_frame"])
 
-    for _ in range(c["num_frame"]):
-        for j, view in enumerate(sc.track_views):
-            response = next(sc.tracking_result[j])
-            if cam_names[view] not in written_cams:
-                continue
-            frame_idx = response["frame_index"]
-            out = response["outputs"]
-            folder = os.path.join(out_dir, cam_names[view], f"{frame_idx:d}")
-            os.makedirs(folder, exist_ok=True)
-            for i, obj_id in enumerate(out["out_obj_ids"].tolist()):
-                mask = (out["out_binary_masks"][i] > 0.0)
-                mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
-                cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
-                            mask.squeeze().astype(np.uint8) * 255)
-        print(f"  frame {response['frame_index']} written", flush=True)
+    if run["two_pass"]:
+        run_two_pass(sc, c["start_frame"], c["num_frame"], cam_names, written_cams, out_dir, cv2, np)
+    else:
+        for _ in range(c["num_frame"]):
+            for j, view in enumerate(sc.track_views):
+                response = next(sc.tracking_result[j])
+                if cam_names[view] not in written_cams:
+                    continue
+                frame_idx = response["frame_index"]
+                out = response["outputs"]
+                folder = os.path.join(out_dir, cam_names[view], f"{frame_idx:d}")
+                os.makedirs(folder, exist_ok=True)
+                for i, obj_id in enumerate(out["out_obj_ids"].tolist()):
+                    mask = (out["out_binary_masks"][i] > 0.0)
+                    mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
+                    cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
+                                mask.squeeze().astype(np.uint8) * 255)
+            print(f"  frame {response['frame_index']} written", flush=True)
 
     print(f"done -> {out_dir}", flush=True)
 
@@ -497,7 +588,9 @@ def main():
                    "xview_window": eff_window, "xview_hygiene": eff_hygiene,
                    "track_cams_requested": args.track_cams,
                    "track_idx": run["track_idx"], "n_sessions": len(run["track_idx"]),
-                   "scored_view_idx": run["scored_idx"]})
+                   "scored_view_idx": run["scored_idx"],
+                   "xview_mode": eff_mode, "two_pass": run["two_pass"],
+                   "closure_reach": run["closure_reach"]})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
         print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)

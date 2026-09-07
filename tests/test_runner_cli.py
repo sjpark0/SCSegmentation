@@ -28,7 +28,8 @@ def clean_env(monkeypatch):
 
 
 def ns(**kw):
-    d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None)
+    d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
+             xview_mode=None)
     d.update(kw)
     return argparse.Namespace(**d)
 
@@ -188,3 +189,101 @@ def test_parse_args(monkeypatch):
     a = mod.parse_args()
     assert a.xview_window is None and a.xview_hygiene is False and a.track_cams is None
     assert mod.XVIEW_MAX_WINDOW == 6 and mod.XVIEW_ALGOS == ("MVOpt",)
+
+
+# ------------------------------------------------------------------ P4: --xview-mode
+# (N, K = max(scored)+1, B/C reach = min(N, K+20), E reach = min(N, K+40)) at W=1, nf=21
+MODE_REACH = {"AlexaMeadeExhibit": (45, 4, 24, 44), "AlexaMeadeFacePaint": (46, 9, 29, 46),
+              "Barn": (15, 11, 15, 15), "Blocks": (10, 10, 10, 10), "Breakfast": (15, 10, 15, 15),
+              "Carpark": (9, 9, 9, 9), "CoffeeMartini": (18, 15, 18, 18), "Dog": (41, 4, 24, 41),
+              "Fencing": (10, 10, 10, 10), "FlameSteak": (21, 17, 21, 21), "Frog": (13, 10, 13, 13),
+              "MATF": (10, 10, 10, 10), "Painter": (16, 16, 16, 16), "PoznanStreet": (9, 9, 9, 9),
+              "Welder": (46, 4, 24, 44)}
+
+
+@pytest.mark.parametrize("ds", sorted(MODE_REACH))
+def test_mode_table(ds):
+    cam_names, written = cams(ds)
+    N, K, BC, E = MODE_REACH[ds]
+    assert len(cam_names) == N and K == CANONICAL_K[ds]
+    for M in "BCDE":
+        r = mod.resolve_run(ns(xview_window=1, xview_mode=M), cam_names, written, num_frame=21)
+        assert r["out_name"] == f"SegMaskSam3XW1{M}" and r["lineage"] == f"XW1{M}"
+        assert r["xview_kwargs"] == dict(cross_view_window=1, cross_view_hygiene=True, cross_view_mode=M)
+        assert r["two_pass"] == (M == "E") and (r["xview_mode"], r["xview_mode_eff"]) == (M, M)
+        reach = {"B": BC, "C": BC, "D": K, "E": E}[M]
+        assert r["track_mode"] == "closure" and r["track_idx"] == list(range(reach))
+        assert r["closure_reach"] == reach and r["xview_on"] is True and r["xview_window"] == 1
+        r4 = mod.resolve_run(ns(xview_window=4, xview_mode=M), cam_names, written, num_frame=21)
+        assert r4["out_name"] == f"SegMaskSam3XW4{M}" and r4["lineage"] == f"XW4{M}"
+        assert len(r4["track_idx"]) == (N if M in "BCE" else K)
+    r = mod.resolve_run(ns(xview_window=1, xview_mode="A"), cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW1" and r["lineage"] == "XW1" and r["track_idx"] == list(range(K))
+    assert r["xview_kwargs"] == dict(cross_view_window=1, cross_view_hygiene=True, cross_view_mode="A")
+    assert r["two_pass"] is False and r["xview_mode_eff"] == "A" and r["closure_reach"] == K
+    # no mode: the Phase 2 resolution, the new keys at their neutral values
+    r = mod.resolve_run(ns(xview_window=1), cam_names, written, num_frame=21)
+    assert r["xview_kwargs"] == dict(cross_view_window=1, cross_view_hygiene=True)
+    assert (r["xview_mode"], r["xview_mode_eff"], r["two_pass"], r["closure_reach"]) == (None, "A", False, K)
+    assert r == mod.resolve_run(ns(xview_window=1), cam_names, written)          # num_frame unused
+    r = mod.resolve_run(ns(), cam_names, written)
+    assert (r["xview_mode"], r["xview_mode_eff"], r["two_pass"], r["closure_reach"]) == (None, None, False, None)
+
+
+def test_mode_all_and_refusals():
+    cam_names, written = cams("Welder")
+    n = len(cam_names)
+    r = mod.resolve_run(ns(xview_window=1, xview_mode="B", track_cams="all"), cam_names, written, num_frame=21)
+    assert (r["out_name"], r["track_mode"], r["track_idx"]) == ("SegMaskSam3XW1Ball", "all", list(range(n)))
+    assert r["closure_reach"] is None and r["lineage"] == "XW1B"
+    r = mod.resolve_run(ns(xview_window=1, xview_mode="E", track_cams="all", out="SegMaskSam3XWmine"),
+                        cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XWmine" and r["two_pass"] is True
+    with pytest.raises(SystemExit):                                   # mode without an XW flag
+        mod.resolve_run(ns(xview_mode="B"), cam_names, written, num_frame=21)
+    for M in "BCDE":                                                  # W=0 reads no neighbour
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, xview_mode=M), cam_names, written, num_frame=21)
+    assert mod.resolve_run(ns(xview_window=0, xview_mode="A"), cam_names, written)["out_name"] == "SegMaskSam3XW0"
+    for algo in ("OneStage", "OneStageNew"):                          # MVOpt only
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(algo=algo, xview_window=1, xview_mode="B"), cam_names, written, num_frame=21)
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(algo=algo, xview_mode="B"), cam_names, written, num_frame=21)
+    with pytest.raises(SystemExit):                                   # written renumbers neighbours
+        mod.resolve_run(ns(xview_window=1, xview_mode="E", track_cams="written"), cam_names, written, num_frame=21)
+    for M in "BCE":                                                   # the cone needs num_frame
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=1, xview_mode=M), cam_names, written)
+        r = mod.resolve_run(ns(xview_window=1, xview_mode=M, track_cams="all"), cam_names, written)
+        assert r["track_idx"] == list(range(n))                       # all: no cone, no num_frame
+    for M in "AD":
+        assert mod.resolve_run(ns(xview_window=1, xview_mode=M), cam_names, written)["track_idx"] == list(range(4))
+    with pytest.raises(SystemExit):                                   # existing legacy-folder guard
+        mod.resolve_run(ns(xview_window=1, xview_mode="B", out="SegMaskSam3MVOpt"), cam_names, written, num_frame=21)
+    r = mod.resolve_run(ns(algo="OneStage", track_cams="closure"), cam_names, written, num_frame=21)
+    assert r["track_idx"] == list(range(4)) and r["closure_reach"] == 4 and r["xview_mode_eff"] is None
+
+
+def test_closure_reach():
+    f = mod.closure_reach
+    assert f("A", 1, 3, 45, 21) == 4 and f("B", 1, 3, 45, 21) == 24 and f("E", 1, 3, 45, 21) == 44
+    assert f("E", 1, 3, 41, 21) == 41 and f("B", 4, 3, 46, 21) == 46 and f("D", 1, 9, 10, 21) == 10
+    assert f("C", 1, 3, 45, 21) == 24 and f("C", 2, 3, 45, 11) == 24 and f("E", 2, 3, 46, 11) == 44
+    assert f("A", None, 3, 45, None) == 4 and f("D", 1, 3, 45, None) == 4    # growth 0: no num_frame
+    with pytest.raises(SystemExit):
+        f("B", 1, 3, 45, None)
+    assert mod.XVIEW_CLOSURE_GROWTH == {"A": 0, "B": 1, "C": 1, "D": 0, "E": 2}
+    assert mod.XVIEW_TWO_PASS == ("E",) and mod.XVIEW_LEGACY_MODE == "A"
+
+
+def test_parse_args_mode(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks", "--xview-window", "1", "--xview-mode", "b"])
+    with pytest.raises(SystemExit):
+        mod.parse_args()
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks", "--xview-window", "1", "--xview-mode", "E"])
+    a = mod.parse_args()
+    assert (a.xview_mode, a.xview_window, a.xview_hygiene) == ("E", 1, False)
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks"])
+    assert mod.parse_args().xview_mode is None
+    assert mod.XVIEW_MODES == ("A", "B", "C", "D", "E")

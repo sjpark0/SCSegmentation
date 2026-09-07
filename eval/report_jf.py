@@ -190,6 +190,9 @@ class Store:
     def view_index(self, d, cam):
         return self.gt[(d, cam)]["meta"]["view_index"]
 
+    def n_views(self, d, cam):
+        return self.gt[(d, cam)]["meta"]["n_views"]
+
 
 def find_absent(store):
     """(dataset|camera|method) -> object ids with no exported mask in any frame.
@@ -236,6 +239,7 @@ class Cfg:
     split: str = "all"
     weighted: bool = False
     window: int = 4
+    nb_mode: str = "lower"      # lower = min(v, W); both = min(v, W) + min(N-1-v, W)
 
     def replace(self, **kw):
         """A copy with some fields changed; an unknown field is a TypeError."""
@@ -246,6 +250,8 @@ class Cfg:
         f = dict(aggregation=self.agg, frames=self.variant, split=self.split,
                  weights="gt_area" if self.weighted else "none",
                  window=self.window, datasets=n_datasets)
+        if self.nb_mode != "lower":
+            f["nb_mode"] = self.nb_mode         # the default keeps every existing statement line
         f.update(override)
         conv = ("exported only (objects with no output file dropped)" if exported
                 else "as-is (missing objects scored as empty, the DAVIS convention)")
@@ -610,18 +616,32 @@ def ceiling_counts(store, datasets, cfg, rules, key=""):
                  cfg.statement(len(datasets)), cols, rows, [("TOTAL", tot)])
 
 
+def nb_of(store, d, cam, cfg):
+    """Neighbour count of a camera under the gather's neighbourhood.  lower: min(v, W)
+    (Phase 2 XW, modes A/D).  both: min(v, W) + min(N-1-v, W) (modes B/C/E), where N is
+    the dataset's camera count (meta n_views)."""
+    v, W = store.view_index(d, cam), cfg.window
+    if cfg.nb_mode == "lower":
+        return min(v, W)
+    return min(v, W) + min(store.n_views(d, cam) - 1 - v, W)
+
+
+def nb_max(cfg):
+    return cfg.window if cfg.nb_mode == "lower" else 2 * cfg.window
+
+
 def nb_table(store, methods, datasets, cfg, pair=None, key=""):
-    """Cameras pooled across datasets and binned by nb = min(view_index, W)."""
+    """Cameras pooled across datasets and binned by nb (nb_of), capped at nb_max."""
     cols = list(methods) + [m for m in (pair or ()) if m not in methods]
     _, cs = score_all(store, cols, datasets, cfg)
-    bins = {b: [] for b in range(cfg.window + 1)}
+    bins = {b: [] for b in range(nb_max(cfg) + 1)}
     skipped = []                # cameras only a version 1 entry knows about
     for d in datasets:
         for cam in select_cams(store, d, cfg):
             if (d, cam) not in store.gt:
                 skipped.append(f"{d}/{cam}")
                 continue
-            bins[min(store.view_index(d, cam), cfg.window)].append((d, cam))
+            bins[min(nb_of(store, d, cam, cfg), nb_max(cfg))].append((d, cam))
     if skipped:
         print(f"warning: nb bins: {len(skipped)} cameras without a version 2 entry "
               f"(no view index) left out: {', '.join(skipped)}", file=sys.stderr)
@@ -629,9 +649,13 @@ def nb_table(store, methods, datasets, cfg, pair=None, key=""):
     if pair:
         columns += ["delta J&F", "delta J", "delta F", "wins", "ties", "losses",
                     "cluster CI lo", "cluster CI hi"]
+    groups = [(f"nb={b}" if b < nb_max(cfg) else f"nb>={b}", cams) for b, cams in bins.items()]
+    if cfg.nb_mode == "both":
+        # SPEC_P4 amendment A4: the cumulative reading (every camera with a neighbour on
+        # either side, the primary bin of modes B/C/E) next to the fixed-partition bins
+        groups.append(("nb>=1", [c for b, cams in bins.items() if b >= 1 for c in cams]))
     rows = []
-    for b, cams in bins.items():
-        label = f"nb={b}" if b < cfg.window else f"nb>={b}"
+    for label, cams in groups:
         cells = [len(cams)] + [mean([cs[(d, c, m)][0] for d, c in cams if (d, c, m) in cs])
                                for m in methods]
         if pair:
@@ -743,7 +767,10 @@ def default_items(store, methods, datasets, cfg, args):
     items.append(H("AVERAGE row only, for every combination"))
     items.append(summary_table(store, methods, datasets, cfg, absent, args.exported_only))
     if args.bin_by_nb:
-        items.append(H(f"cameras binned by nb = min(view_index, {cfg.window})"))
+        items.append(H(f"cameras binned by nb = min(view_index, {cfg.window})"
+                       if cfg.nb_mode == "lower" else
+                       f"cameras binned by nb = min(view_index, {cfg.window}) + "
+                       f"min(n_views-1-view_index, {cfg.window})   (+ cumulative nb>=1 row)"))
         items.append(nb_table(store, methods, datasets, cfg, args.paired))
     if args.paired:
         a, b = args.paired
@@ -854,6 +881,10 @@ def main():
                     help="reference camera only, or the non-reference cameras only")
     ap.add_argument("--window", type=non_negative, default=4,
                     help="W >= 0 for the nb = min(view_index, W) bins")
+    ap.add_argument("--nb-mode", choices=("lower", "both"), default="lower",
+                    help="nb definition for --bin-by-nb: lower = min(view_index, W) (XW, "
+                         "modes A/D); both = min(view_index, W) + min(N-1-view_index, W) "
+                         "(modes B/C/E)")
     ap.add_argument("--area-weighted", action="store_true",
                     help="weight objects by their mean GT area")
     ap.add_argument("--bin-by-nb", action="store_true",
@@ -878,7 +909,8 @@ def main():
             ("--bin-by-nb", args.bin_by_nb),
             ("--paired", args.paired is not None),
             ("--ceiling", args.ceiling is not None),
-            ("--exported-only", args.exported_only)) if on]
+            ("--exported-only", args.exported_only),
+            ("--nb-mode", args.nb_mode != "lower")) if on]
         if ignored:
             sys.exit(f"--paper fixes its own settings and would ignore: "
                      f"{', '.join(ignored)}; drop them or run without --paper")
@@ -890,7 +922,8 @@ def main():
                      f"methods: {', '.join(store.methods)}")
     methods = args.methods or (PAPER_METHODS if args.paper else store.methods)
     datasets = [d for d in store.datasets if not args.datasets or d in args.datasets]
-    cfg = Cfg(args.aggregation, args.frames, args.split, args.area_weighted, args.window)
+    cfg = Cfg(args.aggregation, args.frames, args.split, args.area_weighted, args.window,
+              args.nb_mode)
     for feature, on in (("--split ref|nonref", args.split != "all"),
                         ("--area-weighted", args.area_weighted),
                         ("--bin-by-nb", args.bin_by_nb),

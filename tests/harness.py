@@ -20,7 +20,7 @@ GOLDEN_HW = 72            # 1008 / 14: the real memory grid, 5184 tokens per mem
 SMALL_HW = 8              # for the lockstep drives
 
 
-def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=None, xh=None):
+def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=None, xh=None, xm=None):
     tr = M.SCSam3TrackerPredictorNewMem.__new__(M.SCSam3TrackerPredictorNewMem)
     torch.nn.Module.__init__(tr)
     tr.training = False
@@ -55,6 +55,7 @@ def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=N
     tr.transformer.encoder = Enc()
     # what __init__ would have done (the bare instance skipped it)
     tr.cross_view_window, tr.cross_view_hygiene = M.resolve_cross_view(xw, xh, num_maskmem)
+    tr.cross_view_mode = M.resolve_cross_view_mode(xm, tr.cross_view_hygiene)
     return tr
 
 
@@ -67,20 +68,21 @@ def mem_out(frame, view, hw=GOLDEN_HW, eff=1.0):
             "eff_iou_score": torch.tensor([eff])}
 
 
-def output_dicts_lockstep(N, v, t, start=0, hw=GOLDEN_HW):
+def output_dicts_lockstep(N, v, t, start=0, hw=GOLDEN_HW, all_hold_t=False):
     """Session m holds cond[start]; non_cond[start+1..t-1] for all m; non_cond[t] iff m < v
-    (runMVSeg.py:346-348 lockstep: lower views have already computed frame t)."""
+    (runMVSeg.py:346-348 lockstep: lower views have already computed frame t).
+    all_hold_t: every session holds non_cond[t] (mode-E pass-2 inputs: pass-1 outputs)."""
     ods = []
     for m in range(N):
         nc = {f: mem_out(f, m, hw) for f in range(start + 1, t)}
-        if m < v:
+        if m < v or all_hold_t:
             nc[t] = mem_out(t, m, hw)
         ods.append({"cond_frame_outputs": {start: mem_out(start, m, hw)},
                     "non_cond_frame_outputs": nc})
     return ods
 
 
-def call(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, rev=False):
+def call(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, rev=False, xview_pass=None):
     """One real call; returns the recorded encoder kwargs."""
     seq = hw * hw
     feats = [torch.zeros(seq, 1, C)]
@@ -90,14 +92,15 @@ def call(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, rev=False):
         tr._prepare_memory_conditioned_features_multiple(
             frame_idx=t, spatial_idx=v, is_init_cond_frame=False,
             current_vision_feats=feats, current_vision_pos_embeds=pos, feat_sizes=[(hw, hw)],
-            output_dicts=ods, num_frames=num_frames, track_in_reverse=rev)
+            output_dicts=ods, num_frames=num_frames, track_in_reverse=rev,
+            xview_pass=xview_pass)
     return tr.transformer.encoder.calls[-1]
 
 
-def run(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22):
+def run(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, xview_pass=None):
     """Decode the recorded prompt: memory-token sources, tpos rows, pointer sources."""
     seq = hw * hw
-    kw = call(tr, ods, v, t, hw, num_frames)
+    kw = call(tr, ods, v, t, hw, num_frames, xview_pass=xview_pass)
     prompt, ppos, nptr = kw["prompt"], kw["prompt_pos"], kw["num_obj_ptr_tokens"]
     n_mem = (prompt.shape[0] - nptr) // seq
     per_ptr = C // MEM                                   # each pointer is split into 4 tokens
@@ -130,18 +133,42 @@ def derived_out(prompt, ppos, view, frame, hw):
             "eff_iou_score": torch.tensor([float((view * 7 + frame) % 5 != 0)])}  # some frames filtered
 
 
-def lockstep(tr, N, T=20, start=0, hw=SMALL_HW):
-    """Runner order (for t: for v), frames start+1..start+T.  {(v, t): (prompt, ppos, nptr)}."""
+def lockstep(tr, N, T=20, start=0, hw=SMALL_HW, two_pass=False, pass2_reverse=False,
+             gauss_seidel=False):
+    """Runner order (for t: for v), frames start+1..start+T.  {(v, t): (prompt, ppos, nptr)}.
+
+    two_pass (mode E, run_two_pass): per frame, pass 1 stores every session's output at
+    once (as :916 does), then pass 2 (xview_pass=2) is computed for every session and
+    committed only after the sweep (Jacobi).  `rec` then holds the pass-2 inputs, the
+    ones that define the written mask.  pass2_reverse sweeps pass 2 in reversed session
+    order; gauss_seidel commits inside the sweep (the order-sensitive variant, for the
+    test that shows the Jacobi commit is what makes E order-free)."""
     sessions = [{"cond_frame_outputs": {start: seed_out(m, hw)}, "non_cond_frame_outputs": {}}
                 for m in range(N)]
     rec = {}
     num_frames = start + T + 1
     for t in range(start + 1, start + T + 1):
-        for v in range(N):
-            kw = call(tr, sessions, v, t, hw, num_frames)
+        if not two_pass:
+            for v in range(N):
+                kw = call(tr, sessions, v, t, hw, num_frames)
+                p, pp, n = kw["prompt"].clone(), kw["prompt_pos"].clone(), kw["num_obj_ptr_tokens"]
+                rec[(v, t)] = (p, pp, n)
+                sessions[v]["non_cond_frame_outputs"][t] = derived_out(p, pp, v, t, hw)
+            continue
+        for v in range(N):                                     # pass 1 (both_tm1), stored at once
+            kw = call(tr, sessions, v, t, hw, num_frames, xview_pass=1)
+            sessions[v]["non_cond_frame_outputs"][t] = derived_out(kw["prompt"], kw["prompt_pos"], v, t, hw)
+        staged = {}
+        order = list(range(N))[::-1] if pass2_reverse else list(range(N))
+        for v in order:                                        # pass 2 (all_t), compute
+            kw = call(tr, sessions, v, t, hw, num_frames, xview_pass=2)
             p, pp, n = kw["prompt"].clone(), kw["prompt_pos"].clone(), kw["num_obj_ptr_tokens"]
             rec[(v, t)] = (p, pp, n)
-            sessions[v]["non_cond_frame_outputs"][t] = derived_out(p, pp, v, t, hw)
+            staged[v] = derived_out(p, pp, v, t, hw)
+            if gauss_seidel:
+                sessions[v]["non_cond_frame_outputs"][t] = staged[v]
+        for v in range(N):                                     # Jacobi commit
+            sessions[v]["non_cond_frame_outputs"][t] = staged[v]
     return rec
 
 

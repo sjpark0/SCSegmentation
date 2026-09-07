@@ -1,4 +1,4 @@
-"""T3: the two constructor kwargs are threaded through all five hops, the env helpers
+"""T3: the three constructor kwargs are threaded through all five hops, the env helpers
 parse strictly, and the frozen OneStage SCSam3Video.__init__(self, device) contract the
 runner relies on (it passes no kwargs for non-XW runs) is intact."""
 import ast
@@ -9,7 +9,7 @@ import pytest
 
 from conftest import PKG, REPO
 
-NAMES = ("cross_view_window", "cross_view_hygiene")
+NAMES = ("cross_view_window", "cross_view_hygiene", "cross_view_mode")
 
 
 def _init_args(path):
@@ -28,7 +28,7 @@ def test_frozen_onestage_signature_ast():
 def test_mvopt_signature_ast():
     a = _init_args(os.path.join(PKG, "SCSam3Video.py"))
     assert [x.arg for x in a.args] == ["self", "device", *NAMES]
-    assert len(a.defaults) == 2 and all(d.value is None for d in a.defaults)
+    assert len(a.defaults) == 3 and all(d.value is None for d in a.defaults)
 
 
 def test_signatures_thread_cross_view():
@@ -54,6 +54,10 @@ def test_signatures_thread_cross_view():
     # the constructor bound (W=7 aliases the cond row) lives in the pure module
     with pytest.raises(ValueError):
         T.resolve_cross_view(7, True, 7)
+    # the mode bound (a letter other than A needs hygiene) lives there too
+    with pytest.raises(ValueError):
+        T.resolve_cross_view_mode("B", False)
+    assert T.resolve_cross_view_mode(None, False) == "A"
 
 
 def test_env_parsing():
