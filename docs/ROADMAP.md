@@ -17,7 +17,7 @@ REPORT.md가 낸 제안 14개 중 **4개 완료(P1·P3·P6 + G1), 4개 부분(P5
 |---|---|---|---|---|
 | P1 | seed/프레임 마스크 고정 해제 | ✅ | — | S1·S2·S3·S7로 반영. (d) 트림은 env-gated, `propagation_full` 가드는 이 패키지에서 발동 안 함 |
 | P2 | 패키지 내 window ablation + 위생 3건 + closure | ⬜ | **2** | 심사 3/3 합의 1순위. 대조군의 전부 |
-| P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트는 [phase1-measurement.md](phase1-measurement.md) §5에 제안, **확정 대기** |
+| P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07, [phase1-measurement.md](phase1-measurement.md) §5) |
 | P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | ⬜ | 3 | P2 (1)~(3) 위에 얹음 |
 | P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
@@ -79,11 +79,13 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 | 퇴화 시드 집계 | P5 | Welder 손실의 상한 | ✅ SAM 3 20개(missing 15·tiny 4·misaligned 1). 상한 +0.015, donor 가능분 +0.009, Welder +0.040 |
 | `--ceiling` 열 | P8 | Blocks +0.128, MATF +0.087, FacePaint +0.061 | ✅ 정확히 재현. 평균 ceiling 0.9375 → 0.9594 |
 | 마스크 폴더 매니페스트 | P13 | 지금은 mtime뿐 | ✅ 117개 폴더 `MANIFEST.json`(내용 해시·추정 출처). `runMVSeg.py`가 새 실행마다 자동 기록 |
-| 논문이 보고할 SAM 3 열 하나 확정 | — | `experiments.md` (2) | 🔶 제안: `SegMaskSam3MVOpt` 하나 (E0). **사용자 확정 대기** |
+| 논문이 보고할 SAM 3 열 하나 확정 | — | `experiments.md` (2) | ✅ `SegMaskSam3MVOpt` 하나 (E0, 확정 2026-09-07) |
 
-**완료 조건**: `report_jf.py` 하나로 논문의 모든 표 재생성 ✅ · 기존 폴더 재채점이 0.8449/0.8465/0.8497 재현 ✅ (396/396 항목 동일) · 어느 엔드포인트가 주장을 감당하는지 문서로 결정 🔶 (제안 §5, 확정 대기).
+**완료 조건**: `report_jf.py` 하나로 논문의 모든 표 재생성 ✅ · 기존 폴더 재채점이 0.8449/0.8465/0.8497 재현 ✅ (396/396 항목 동일) · 어느 엔드포인트가 주장을 감당하는지 문서로 결정 ✅ (E0/E1/E2, phase1-measurement.md §5, 2026-09-07 확정).
 
-**Phase 2에 사전 등록된 합격 기준 (E1)**: nb≥4 구간 Δ(XW4 − XW0)의 클러스터 부트스트랩 95% CI가 0을 제외 · nb=0 구간 |Δ| < 0.001.
+**확정된 엔드포인트** — E0 헤드라인: 15개·pooled·as-is·전체 프레임, SAM 3 열은 MVOpt 하나, 짝지은 CI 병기 · E1 메커니즘: 비기준 카메라 J&F와 nb≥4 구간의 짝지은 Δ, 대조군은 패키지 내 W=0(행 3) · E2 보조: 면적 가중, ceiling, 퇴화 시드, 시퀀스 집계 · 쓰지 않음: 12개 부분집합 p값, OneStageNew 별도 열, exported-only.
+**Phase 2에 사전 등록된 합격 기준 (E1)**: nb≥4 구간 Δ(XW4 − XW0)의 클러스터 부트스트랩 95% CI가 0을 제외 · nb=0 구간 |Δ| < 0.001. 못 넘으면 "효과 없음"으로 보고합니다.
+**남은 결정 2건**: P5 misaligned 임계값 0.10 vs 0.20 · 수 px 프롬프트 객체의 프로토콜 처리.
 
 ### Phase 2 — 없는 대조군 (2주) · P2 · P13 테스트
 
@@ -170,4 +172,5 @@ REPORT.md의 결론 그대로: **행 3·4가 나오기 전에는 어떤 정확�
 | 2026-09-04 | v1 — 단계별 계획 초안 (세 관점 비교) |
 | 2026-09-07 | v2 — REPORT.md P1~P14 기준으로 재구성. 상태표·실험 행 상태·갱신 이력 추가. 노션 개발 › SCSegmentation 아래 동기화 |
 | 2026-09-07 | **Phase 0 완료.** 메모리 상한 4개 스크립트 전부, `baseline-siblings` 태그, 토큰 보유 이미지 삭제. open-items #1(토큰) 해소로 정정 |
-| 2026-09-07 | **Phase 1 완료.** `eval/` 채점기·집계기 v2(발표 수치 396/396 재현), 퇴화 시드 집계, 매니페스트 117개. P3 ✅, P5·P8 진단/ceiling ✅, P13 매니페스트 ✅. 결과·엔드포인트 제안은 phase1-measurement.md — **엔드포인트·misaligned 임계값·수 px 프롬프트 처리는 사용자 확정 대기** |
+| 2026-09-07 | **Phase 1 완료.** `eval/` 채점기·집계기 v2(발표 수치 396/396 재현), 퇴화 시드 집계, 매니페스트 117개. P3 ✅, P5·P8 진단/ceiling ✅, P13 매니페스트 ✅. 결과·엔드포인트 제안은 phase1-measurement.md — 엔드포인트·misaligned 임계값·수 px 프롬프트 처리는 사용자 확정 대기 |
+| 2026-09-07 | **엔드포인트 확정** (E0 헤드라인 · E1 메커니즘 = 비기준·nb≥4, 대조군 W=0 · E2 보조; 12개 부분집합 p값·OneStageNew 별도 열·exported-only는 사용 안 함). P3 ✅ 확정. 남은 결정: misaligned 임계값, 수 px 프롬프트 처리 |
