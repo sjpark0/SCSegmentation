@@ -17,6 +17,12 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${IMAGE:-scsam3}"
+# passed into the container so runMVSeg.py can record it in MANIFEST.json.
+# Query one tag: `docker images -q scsam3` lists every tag of the repository,
+# so a bare repository name is pinned to :latest, which is what `docker run`
+# resolves it to.
+IMAGE_REF="${IMAGE}"; [[ "${IMAGE_REF}" == *:* ]] || IMAGE_REF="${IMAGE_REF}:latest"
+IMAGE_ID="$(docker images --no-trunc -q "${IMAGE_REF}" 2>/dev/null | head -n1)"
 WORKDIR="/host${ROOT}/SCSam3"
 
 ALL_DATASETS=(AlexaMeadeExhibit AlexaMeadeFacePaint Barn Blocks Breakfast
@@ -60,6 +66,7 @@ for algo in "${ALGOS[@]}"; do
 		printf '%-12s %-20s ' "${algo}" "${ds}"
 		start=$SECONDS
 		docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \
+			-e SCSAM3_IMAGE_ID="${IMAGE_ID}" \
 			-v /:/host -w "${WORKDIR}" "${IMAGE}" \
 			python runMVSeg.py "${ds}" --algo "${algo}" "${EXTRA[@]}" \
 			> "${log}" 2>&1

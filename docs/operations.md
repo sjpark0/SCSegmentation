@@ -38,6 +38,45 @@ ALGO=MVOpt OUT=SegMaskSam3MVOpt ./runMVOptThree.sh Blocks Painter
 docker run --rm -v /:/host scsam3 chown -R "$(id -u):$(id -g)" "/host$PWD/Data/MVSeg"
 ```
 
+### 마스크 폴더 매니페스트 (`MANIFEST.json`)
+
+`Data/`는 git 제외 대상이라 마스크 폴더의 출처 정보가 mtime뿐이었습니다 (REPORT.md P13). 2026-09-07부터
+`<데이터셋>/<method>/MANIFEST.json`이 그 역할을 합니다 — **method 폴더 바로 아래의 파일 하나**이고,
+카메라 폴더 안에는 아무것도 들어가지 않습니다. 도구는 `eval/manifest.py`(호스트 python, 표준 라이브러리만).
+
+- **내용**: 카메라 목록, 카메라별 프레임 범위·개수, PNG 수, `content_digest`
+  (PNG 전체의 (상대경로, sha256)를 정렬해 다시 sha256 — mtime·`MANIFEST.json` 자체·PNG가 아닌 파일에 무관),
+  PNG mtime 범위, `provenance`(git rev·dirty, `algo`, `argv`, `track_cams`,
+  `SPATIAL_START_IMPLICIT`·`SCSAM3_TRIM_CACHED_OUTPUTS`, 도커 이미지 ID, 패키지 `*.py`의 `source_digest`,
+  torch/cuda, 호스트명) + `provenance_basis`(실행 시 기록인지 사후 추정인지, 근거).
+- **자동 기록**: `runMVSeg.py`가 `done -> <out_dir>`를 찍은 **뒤에** 씁니다. 마스크 출력에는 영향이 없고,
+  실패해도 실행은 실패하지 않으며 `manifest not written (...)`만 찍습니다. `--dry-run`에서는 쓰지 않습니다.
+  이미지 ID는 실행 스크립트 4개가 `-e SCSAM3_IMAGE_ID=$(docker images --no-trunc -q scsam3:latest | head -n1)`로
+  넘깁니다 — `docker run`을 손으로 치면 `"unknown"`으로 남습니다.
+- **기존 폴더**: 2026-09-07에 `eval/manifest.py sweep --legacy`로 15개 데이터셋 × 8 method(117개)를 채웠습니다.
+  SAM 3 폴더의 provenance는 로그·mtime·git 이력에서 **추정**한 값이고(`recorded_at_run_time: false`,
+  근거는 `provenance_basis`에 인용), SAM 2 폴더(`SegMask1`, `SegMaskNew1~3`)는 거의 전부 `unknown`입니다.
+  같은 스윕에서 `SegMaskSam3MVOpt`와 `SegMaskSam3OneStageNew`의 다이제스트가 12개 데이터셋 전부 같음을 확인했습니다.
+
+```bash
+python3 eval/manifest.py show   Data/MVSeg/Barn/SegMaskSam3MVOpt     # 보기
+python3 eval/manifest.py verify Data/MVSeg/Barn/SegMaskSam3MVOpt     # 다이제스트 재계산, 불일치면 exit 1
+python3 eval/manifest.py write  Data/MVSeg/Barn/SegMaskSam3XW0 \
+        --live --package SCSam3/demoSCSam3MVOpt --algo MVOpt          # 수동 실행 뒤 직접 기록
+python3 eval/manifest.py sweep  --root Data/MVSeg --methods SegMaskSam3MVOpt SegMaskSam3XW0   # 있는 폴더 전부
+```
+
+**다른 도구와의 공존.** `eval_jf.py`는 `<method>/<카메라>/`만, `report_jf.py`의 `find_absent`는
+`<method>/<카메라>/<프레임>/`만 나열하므로 method 폴더에 놓인 파일은 보지 못합니다
+(2026-09-07 확인: 매니페스트 117개를 쓴 전후로 `report_jf.py` 출력이 동일, 컨테이너에서 돌린 `eval_jf.py`의
+Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMVSegAll.sh`·`runMVOptThree.sh`는
+폴더 내용을 읽지 않고, 끝의 `chown -R`이 매니페스트까지 덮습니다.
+두 가지만 주의하십시오:
+
+- 폴더를 **바이트 비교할 때는 `diff -rq -x MANIFEST.json A B`** — 매니페스트는 `written_at`·`path`가
+  달라 항상 차이로 잡힙니다.
+- `runMVSeg.py`의 "이미 존재함" 가드는 매니페스트만 남은 폴더도 비어 있지 않다고 보므로 `--overwrite`가 필요합니다.
+
 ## 러너 등록표
 
 `SCSam3/runMVSeg.py`:

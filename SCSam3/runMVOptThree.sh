@@ -7,11 +7,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGDIR="${ROOT}/SCSam3/logs/mvopt-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "${LOGDIR}"
 echo "logs -> ${LOGDIR}"
+# passed into the container so runMVSeg.py can record it in MANIFEST.json
+IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
 	printf '%-20s ' "${ds}"
 	start=$SECONDS
 	docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \
-		-e SCSAM3_TRIM_CACHED_OUTPUTS=1 \
+		-e SCSAM3_TRIM_CACHED_OUTPUTS=1 -e SCSAM3_IMAGE_ID="${IMAGE_ID}" \
 		-v /:/host -w "/host${ROOT}/SCSam3" scsam3 \
 		python runMVSeg.py "${ds}" --algo "${ALGO:-MVOpt}" ${OUT:+--out "${OUT}"} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1

@@ -7,10 +7,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGDIR="${ROOT}/SCSam3/logs/forsam2-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "${LOGDIR}"
 echo "logs -> ${LOGDIR}"
+# passed into the container for the provenance manifest (see eval/manifest.py)
+IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
 	printf '%-20s ' "${ds}"
 	start=$SECONDS
 	docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \
+		-e SCSAM3_IMAGE_ID="${IMAGE_ID}" \
 		-v /:/host -w "/host${ROOT}/SCSam3" scsam3 \
 		python runMVSegForSam2.py "${ds}" --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1

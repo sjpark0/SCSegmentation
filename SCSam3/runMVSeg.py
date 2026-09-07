@@ -361,6 +361,37 @@ def main():
 
     print(f"done -> {out_dir}", flush=True)
 
+    # Provenance manifest, <out_dir>/MANIFEST.json (ROADMAP Phase 1, REPORT.md
+    # P13).  Purely additive: every mask is already on disk, and a failure
+    # here must never fail a run.  --dry-run returned before the model was
+    # built, so it never reaches this point.  The repo root goes on sys.path
+    # for this one import only; the sys.path surgery in build_runner stays as
+    # it is.  Bytecode writing is off so a root process in the container does
+    # not leave a root-owned .pyc under eval/.
+    try:
+        repo_root = os.path.dirname(HERE)
+        dont_write = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True
+        sys.path.insert(0, repo_root)
+        try:
+            from eval.manifest import write_run_manifest
+        finally:
+            sys.path.remove(repo_root)
+            sys.dont_write_bytecode = dont_write
+        manifest = write_run_manifest(
+            out_dir, dataset=c["folder"], method=out_name, algo=args.algo,
+            package_dir=os.path.join(HERE, ALGOS[args.algo]), track_cams=track_mode,
+            repo=repo_root, torch=torch,
+            extra={"dataset_config_key": args.dataset,
+                   "reference": cam_name(ref_cam, c["prefix"], c["prefix1"]),
+                   "reference_view_index": ref_index,
+                   "n_objects_prompted": n_obj,
+                   "start_frame": c["start_frame"], "num_frame": c["num_frame"],
+                   "device": device})
+        print(f"manifest -> {manifest}", flush=True)
+    except Exception as exc:  # bookkeeping only: never let it fail the run
+        print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)
+
 
 if __name__ == "__main__":
     main()
