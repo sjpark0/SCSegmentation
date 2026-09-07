@@ -1,0 +1,11 @@
+== nb=0 sentinel (index-0 camera folders, XW0 vs XW4) ==
+AlexaMeadeExhibit/camera_0001: diff entries 0
+Barn/v0: diff entries 0
+Blocks/cam0: diff entries 0
+Carpark/v0: diff entries 0
+Fencing/v0: diff entries 0
+MATF/S1_CAM_1: diff entries 0
+Painter/v0: diff entries 0
+PoznanStreet/v0: diff entries 0
+Welder/camera_0001: diff entries 0
+TOTAL 0 (must be 0)

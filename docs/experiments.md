@@ -133,6 +133,7 @@ docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host/$PWD scsam3 \
 |---|---|---|
 | `jf_v2.json` | **정본 (2026-09-07)** | 9개 방법 × 15개, 프레임별 J·F·면적·메타 포함. 아래 4개 정본과 항목 단위로 동일 |
 | `seed_census.json` | 진단 | 퇴화 시드 집계 원자료 (`eval/seed_census.py`) |
+| `jf_xw.json` | **정본 (XW 계열)** | XW0·XW4·XW4all·XW1·XW2·XW6 원시 점수 (v2 형식) |
 | `jf_raw.json` | **정본** | SAM 2 6종, 15개 데이터셋 |
 | `jf_sam3_onestage.json` | **정본** | OneStage 15개 |
 | `jf_sam3_mvopt_all.json` | **정본** | MVOpt 15개 — SAM 3 최종 결과의 정본 |
@@ -156,6 +157,9 @@ docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host/$PWD scsam3 \
 | `SegMaskSam3OneStage` | 15 | SAM 3 OneStage |
 | `SegMaskSam3MVOpt` | 15 | **SAM 3 최종 결과 정본** |
 | `SegMaskSam3OneStageNew` | 12 | **원본 코드** 출력. 무거운 3개는 당시 완주 불가 |
+| `SegMaskSam3XW0` `SegMaskSam3XW4` | 15 | **XW 계열**(2026-09-07, 위생 on, closure). XW0 = 패키지 내 W=0 대조군 = OneStage와 바이트 동일; XW4 = 0.8451 (= MVOpt) — [phase2-control.md](phase2-control.md) |
+| `SegMaskSam3XW1` `XW2` `XW6` | 6 | W 곡선 (Barn·Blocks·Carpark·Fencing·PoznanStreet·Welder) |
+| `SegMaskSam3XW4all` | 3 | closure == all 검증 (Welder·Dog·Blocks, XW4와 diff 0) |
 | `SegMask*_SA3D` `SegMask*_SAM2` | 9 | 타 방법 비교군 |
 | `SegMaskSam3OneStage_recheck` | 15 | 검증 부산물 — 메모리 수정 전후 대조용. **채점된 적 없음** |
 | `SegMaskSam3ForSam2New` | 1 | ForSam2New 시험 실행 (CoffeeMartini). 채점된 적 없음 |

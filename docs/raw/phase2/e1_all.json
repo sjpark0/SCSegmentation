@@ -1,0 +1,595 @@
+{
+ "as-is/J&F": {
+  "name": "J&F",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3MVOpt",
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4"
+  ],
+  "rows": [
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3MVOpt": 0.8617712928190184,
+    "SegMaskSam3XW0": 0.8618333825718314,
+    "SegMaskSam3XW4": 0.8623393531462094
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3MVOpt": 0.7928103768113002,
+    "SegMaskSam3XW0": 0.7926677878446575,
+    "SegMaskSam3XW4": 0.7928135483623515
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3MVOpt": 0.8864621518135591,
+    "SegMaskSam3XW0": 0.8857736940970609,
+    "SegMaskSam3XW4": 0.8863750142817735
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3MVOpt": 0.7477669487345485,
+    "SegMaskSam3XW0": 0.7483810860900946,
+    "SegMaskSam3XW4": 0.7479911409617758
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3MVOpt": 0.7421365346703696,
+    "SegMaskSam3XW0": 0.7418861006205011,
+    "SegMaskSam3XW4": 0.7421132626535725
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3MVOpt": 0.9434441318470765,
+    "SegMaskSam3XW0": 0.943770650529727,
+    "SegMaskSam3XW4": 0.9433898740095821
+   },
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3MVOpt": 0.8440491274756838,
+    "SegMaskSam3XW0": 0.8460611774138476,
+    "SegMaskSam3XW4": 0.8443923204962192
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3MVOpt": 0.9240546908354772,
+    "SegMaskSam3XW0": 0.9240802208500697,
+    "SegMaskSam3XW4": 0.9238364095932053
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3MVOpt": 0.9112002961944863,
+    "SegMaskSam3XW0": 0.8862093368018259,
+    "SegMaskSam3XW4": 0.9118929883709064
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3MVOpt": 0.7733874864843401,
+    "SegMaskSam3XW0": 0.7736433353764222,
+    "SegMaskSam3XW4": 0.7733047633977403
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3MVOpt": 0.9743383670198116,
+    "SegMaskSam3XW0": 0.9753264005996367,
+    "SegMaskSam3XW4": 0.9747970014191956
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3MVOpt": 0.6840915553985747,
+    "SegMaskSam3XW0": 0.6840395530813479,
+    "SegMaskSam3XW4": 0.6839761940926534
+   },
+   {
+    "label": "Painter",
+    "SegMaskSam3MVOpt": 0.8681396469783464,
+    "SegMaskSam3XW0": 0.8682232336146426,
+    "SegMaskSam3XW4": 0.8681430803161228
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3MVOpt": 0.8787073130678857,
+    "SegMaskSam3XW0": 0.8662093065270573,
+    "SegMaskSam3XW4": 0.8789071894335699
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3MVOpt": 0.843687449898296,
+    "SegMaskSam3XW0": 0.841892692629791,
+    "SegMaskSam3XW4": 0.842810250198857
+   },
+   {
+    "label": "AVERAGE",
+    "SegMaskSam3MVOpt": 0.8450698246699183,
+    "SegMaskSam3XW0": 0.8426665305765675,
+    "SegMaskSam3XW4": 0.8451388260489155
+   }
+  ]
+ },
+ "as-is/J": {
+  "name": "J",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3MVOpt",
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4"
+  ],
+  "rows": [
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3MVOpt": 0.7970725217906387,
+    "SegMaskSam3XW0": 0.7970028670769401,
+    "SegMaskSam3XW4": 0.7974940075672968
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3MVOpt": 0.7783840575703664,
+    "SegMaskSam3XW0": 0.778131344451126,
+    "SegMaskSam3XW4": 0.7783978543123027
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3MVOpt": 0.8353297484158811,
+    "SegMaskSam3XW0": 0.8354561324487751,
+    "SegMaskSam3XW4": 0.8354321232716608
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3MVOpt": 0.7271992643291798,
+    "SegMaskSam3XW0": 0.728231099610196,
+    "SegMaskSam3XW4": 0.7274681768693427
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3MVOpt": 0.6975768161215223,
+    "SegMaskSam3XW0": 0.6970331156777657,
+    "SegMaskSam3XW4": 0.6974246108494866
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3MVOpt": 0.9029415923839696,
+    "SegMaskSam3XW0": 0.9036446710704589,
+    "SegMaskSam3XW4": 0.9029643216305318
+   },
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3MVOpt": 0.8142203446226537,
+    "SegMaskSam3XW0": 0.8148827904209894,
+    "SegMaskSam3XW4": 0.8148347261265291
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3MVOpt": 0.9193939152132949,
+    "SegMaskSam3XW0": 0.9189211740015644,
+    "SegMaskSam3XW4": 0.9185041683047538
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3MVOpt": 0.8561208019070362,
+    "SegMaskSam3XW0": 0.8342338725467221,
+    "SegMaskSam3XW4": 0.8564368004261085
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3MVOpt": 0.7354592165522021,
+    "SegMaskSam3XW0": 0.7361434564047079,
+    "SegMaskSam3XW4": 0.7354293020092321
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3MVOpt": 0.9739120326993659,
+    "SegMaskSam3XW0": 0.9745296731247194,
+    "SegMaskSam3XW4": 0.9744750633514417
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3MVOpt": 0.6406809436460876,
+    "SegMaskSam3XW0": 0.6405485911166018,
+    "SegMaskSam3XW4": 0.6402283285108634
+   },
+   {
+    "label": "Painter",
+    "SegMaskSam3MVOpt": 0.8450552220158744,
+    "SegMaskSam3XW0": 0.8454247708620983,
+    "SegMaskSam3XW4": 0.8450203765370066
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3MVOpt": 0.8320368054777121,
+    "SegMaskSam3XW0": 0.8205112269779551,
+    "SegMaskSam3XW4": 0.8321977028458949
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3MVOpt": 0.8007745964726907,
+    "SegMaskSam3XW0": 0.7968569096661505,
+    "SegMaskSam3XW4": 0.7977967821553673
+   },
+   {
+    "label": "AVERAGE",
+    "SegMaskSam3MVOpt": 0.8104105252812317,
+    "SegMaskSam3XW0": 0.8081034463637847,
+    "SegMaskSam3XW4": 0.8102736229845212
+   }
+  ]
+ },
+ "as-is/F": {
+  "name": "F",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3MVOpt",
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4"
+  ],
+  "rows": [
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3MVOpt": 0.9264700638473983,
+    "SegMaskSam3XW0": 0.9266638980667226,
+    "SegMaskSam3XW4": 0.9271846987251218
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3MVOpt": 0.807236696052234,
+    "SegMaskSam3XW0": 0.8072042312381891,
+    "SegMaskSam3XW4": 0.8072292424124005
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3MVOpt": 0.9375945552112372,
+    "SegMaskSam3XW0": 0.9360912557453467,
+    "SegMaskSam3XW4": 0.9373179052918862
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3MVOpt": 0.7683346331399172,
+    "SegMaskSam3XW0": 0.7685310725699932,
+    "SegMaskSam3XW4": 0.7685141050542088
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3MVOpt": 0.7866962532192168,
+    "SegMaskSam3XW0": 0.7867390855632365,
+    "SegMaskSam3XW4": 0.7868019144576582
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3MVOpt": 0.9839466713101835,
+    "SegMaskSam3XW0": 0.9838966299889952,
+    "SegMaskSam3XW4": 0.9838154263886323
+   },
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3MVOpt": 0.8738779103287141,
+    "SegMaskSam3XW0": 0.8772395644067057,
+    "SegMaskSam3XW4": 0.8739499148659092
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3MVOpt": 0.9287154664576593,
+    "SegMaskSam3XW0": 0.929239267698575,
+    "SegMaskSam3XW4": 0.9291686508816569
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3MVOpt": 0.9662797904819365,
+    "SegMaskSam3XW0": 0.9381848010569297,
+    "SegMaskSam3XW4": 0.9673491763157044
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3MVOpt": 0.811315756416478,
+    "SegMaskSam3XW0": 0.8111432143481364,
+    "SegMaskSam3XW4": 0.8111802247862486
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3MVOpt": 0.9747647013402573,
+    "SegMaskSam3XW0": 0.976123128074554,
+    "SegMaskSam3XW4": 0.9751189394869493
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3MVOpt": 0.7275021671510619,
+    "SegMaskSam3XW0": 0.7275305150460941,
+    "SegMaskSam3XW4": 0.7277240596744433
+   },
+   {
+    "label": "Painter",
+    "SegMaskSam3MVOpt": 0.8912240719408187,
+    "SegMaskSam3XW0": 0.8910216963671869,
+    "SegMaskSam3XW4": 0.8912657840952388
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3MVOpt": 0.9253778206580595,
+    "SegMaskSam3XW0": 0.9119073860761595,
+    "SegMaskSam3XW4": 0.925616676021245
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3MVOpt": 0.8866003033239014,
+    "SegMaskSam3XW0": 0.8869284755934316,
+    "SegMaskSam3XW4": 0.8878237182423468
+   },
+   {
+    "label": "AVERAGE",
+    "SegMaskSam3MVOpt": 0.8797291240586049,
+    "SegMaskSam3XW0": 0.8772296147893504,
+    "SegMaskSam3XW4": 0.88000402911331
+   }
+  ]
+ },
+ "summary": {
+  "name": "AVERAGE row only, for every combination",
+  "statement": "aggregation=pooled | frames=per row | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3MVOpt",
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4"
+  ],
+  "rows": [
+   {
+    "label": "J&F  all frames               as-is",
+    "SegMaskSam3MVOpt": 0.8450698246699183,
+    "SegMaskSam3XW0": 0.8426665305765675,
+    "SegMaskSam3XW4": 0.8451388260489155
+   },
+   {
+    "label": "J&F  DAVIS (drop first/last)  as-is",
+    "SegMaskSam3MVOpt": 0.8439355290993183,
+    "SegMaskSam3XW0": 0.8414722160027696,
+    "SegMaskSam3XW4": 0.8440093245822948
+   }
+  ]
+ },
+ "nb bins": {
+  "name": "camera J&F by nb bin, delta = SegMaskSam3XW4 - SegMaskSam3XW0",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "cameras",
+   "SegMaskSam3MVOpt",
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4",
+   "delta J&F",
+   "delta J",
+   "delta F",
+   "wins",
+   "ties",
+   "losses",
+   "cluster CI lo",
+   "cluster CI hi"
+  ],
+  "rows": [
+   {
+    "label": "nb=0",
+    "cameras": 9,
+    "SegMaskSam3MVOpt": 0.8729132323616429,
+    "SegMaskSam3XW0": 0.8730247533256126,
+    "SegMaskSam3XW4": 0.8730247533256126,
+    "delta J&F": 0.0,
+    "delta J": 0.0,
+    "delta F": 0.0,
+    "wins": 0,
+    "ties": 9,
+    "losses": 0,
+    "cluster CI lo": 0.0,
+    "cluster CI hi": 0.0
+   },
+   {
+    "label": "nb=1",
+    "cameras": 2,
+    "SegMaskSam3MVOpt": 0.6893957620654484,
+    "SegMaskSam3XW0": 0.6895398442606533,
+    "SegMaskSam3XW4": 0.6897456562112957,
+    "delta J&F": 0.00020581195064237057,
+    "delta J": 0.00034393423618689356,
+    "delta F": 6.768966509790308e-05,
+    "wins": 2,
+    "ties": 0,
+    "losses": 0,
+    "cluster CI lo": 0.0001626415558765859,
+    "cluster CI hi": 0.0002489823454081552
+   },
+   {
+    "label": "nb=2",
+    "cameras": 4,
+    "SegMaskSam3MVOpt": 0.9081896827226585,
+    "SegMaskSam3XW0": 0.9069971096668628,
+    "SegMaskSam3XW4": 0.9078614189142029,
+    "delta J&F": 0.0008643092473401282,
+    "delta J": 0.0006887054183438435,
+    "delta F": 0.001039913076336496,
+    "wins": 2,
+    "ties": 0,
+    "losses": 2,
+    "cluster CI lo": -9.924034968805673e-05,
+    "cluster CI hi": 0.001827858844368313
+   },
+   {
+    "label": "nb=3",
+    "cameras": 5,
+    "SegMaskSam3MVOpt": 0.7906566304985023,
+    "SegMaskSam3XW0": 0.791194364831096,
+    "SegMaskSam3XW4": 0.7910625969350058,
+    "delta J&F": -0.00013176789609006256,
+    "delta J": -0.00021766765021871137,
+    "delta F": -4.586814196132494e-05,
+    "wins": 2,
+    "ties": 0,
+    "losses": 3,
+    "cluster CI lo": -0.0005898483080961636,
+    "cluster CI hi": 0.00039822686772983396
+   },
+   {
+    "label": "nb>=4",
+    "cameras": 25,
+    "SegMaskSam3MVOpt": 0.8356936685203142,
+    "SegMaskSam3XW0": 0.8313625279004639,
+    "SegMaskSam3XW4": 0.8357259959147043,
+    "delta J&F": 0.004363468014240395,
+    "delta J": 0.0038885629651218535,
+    "delta F": 0.004838373063358972,
+    "wins": 12,
+    "ties": 0,
+    "losses": 13,
+    "cluster CI lo": -0.0004185814849289268,
+    "cluster CI hi": 0.011615929599453827
+   }
+  ]
+ },
+ "paired stats": {
+  "name": "paired: SegMaskSam3XW4 - SegMaskSam3XW0",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | wilcoxon=exact over the 2^m sign assignments of the m non-tied deltas for m<=22, normal approximation above | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "n",
+   "mean",
+   "median",
+   "wins",
+   "ties",
+   "losses",
+   "sign p",
+   "wilcoxon p",
+   "wilcoxon",
+   "CI lo",
+   "CI hi",
+   "cluster CI lo",
+   "cluster CI hi"
+  ],
+  "rows": [
+   {
+    "label": "dataset",
+    "n": 15,
+    "mean": 0.002472295472348085,
+    "median": -6.335898869447298e-05,
+    "wins": 7,
+    "ties": 0,
+    "losses": 8,
+    "sign p": 1.0,
+    "wilcoxon p": 0.67877197265625,
+    "wilcoxon": "exact, m=15",
+    "CI lo": -0.00022074833878693042,
+    "CI hi": 0.006665318416160447,
+    "cluster CI lo": null,
+    "cluster CI hi": null
+   },
+   {
+    "label": "camera",
+    "n": 45,
+    "mean": 0.0024954827059156626,
+    "median": 0.0,
+    "wins": 18,
+    "ties": 9,
+    "losses": 18,
+    "sign p": 1.0,
+    "wilcoxon p": 0.6543326321072541,
+    "wilcoxon": "normal, m=36",
+    "CI lo": -0.00012034140174230181,
+    "CI hi": 0.0067119497782711255,
+    "cluster CI lo": -0.00017794975212043624,
+    "cluster CI hi": 0.006681403104943419
+   }
+  ]
+ },
+ "paired per dataset": {
+  "name": "per-dataset delta: SegMaskSam3XW4 - SegMaskSam3XW0",
+  "statement": "aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3XW0",
+   "SegMaskSam3XW4",
+   "delta"
+  ],
+  "rows": [
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3XW0": 0.8460611774138476,
+    "SegMaskSam3XW4": 0.8443923204962192,
+    "delta": -0.001668856917628414
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3XW0": 0.9753264005996367,
+    "SegMaskSam3XW4": 0.9747970014191956,
+    "delta": -0.000529399180441148
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3XW0": 0.7483810860900946,
+    "SegMaskSam3XW4": 0.7479911409617758,
+    "delta": -0.0003899451283188027
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3XW0": 0.943770650529727,
+    "SegMaskSam3XW4": 0.9433898740095821,
+    "delta": -0.0003807765201448987
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3XW0": 0.7736433353764222,
+    "SegMaskSam3XW4": 0.7733047633977403,
+    "delta": -0.000338571978681812
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3XW0": 0.9240802208500697,
+    "SegMaskSam3XW4": 0.9238364095932053,
+    "delta": -0.0002438112568643458
+   },
+   {
+    "label": "Painter",
+    "SegMaskSam3XW0": 0.8682232336146426,
+    "SegMaskSam3XW4": 0.8681430803161228,
+    "delta": -8.01532985198472e-05
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3XW0": 0.6840395530813479,
+    "SegMaskSam3XW4": 0.6839761940926534,
+    "delta": -6.335898869447298e-05
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3XW0": 0.7926677878446575,
+    "SegMaskSam3XW4": 0.7928135483623515,
+    "delta": 0.00014576051769399356
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3XW0": 0.7418861006205011,
+    "SegMaskSam3XW4": 0.7421132626535725,
+    "delta": 0.00022716203307138194
+   },
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3XW0": 0.8618333825718314,
+    "SegMaskSam3XW4": 0.8623393531462094,
+    "delta": 0.0005059705743779563
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3XW0": 0.8857736940970609,
+    "SegMaskSam3XW4": 0.8863750142817735,
+    "delta": 0.0006013201847125949
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3XW0": 0.841892692629791,
+    "SegMaskSam3XW4": 0.842810250198857,
+    "delta": 0.0009175575690659743
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3XW0": 0.8662093065270573,
+    "SegMaskSam3XW4": 0.8789071894335699,
+    "delta": 0.012697882906512636
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3XW0": 0.8862093368018259,
+    "SegMaskSam3XW4": 0.9118929883709064,
+    "delta": 0.02568365156908048
+   }
+  ]
+ }
+}

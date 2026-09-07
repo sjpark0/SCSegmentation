@@ -1,0 +1,86 @@
+common subset: 6 datasets
+
+====================================================================================================
+as-is  (missing exports scored as empty predictions)   -   all frames, 6 datasets
+====================================================================================================
+J&F
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW2
+----------------------------------------------
+Barn                    0.8618          0.8635
+Blocks                  0.6793          0.6793
+Carpark                 0.9398          0.9396
+Fencing                 0.8969          0.9362
+PoznanStreet            0.8393          0.8550
+Welder                  0.8006          0.8020
+----------------------------------------------
+AVERAGE                 0.8363          0.8459
+
+J
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW2
+----------------------------------------------
+Barn                    0.8073          0.8082
+Blocks                  0.6625          0.6624
+Carpark                 0.8963          0.8956
+Fencing                 0.8503          0.8849
+PoznanStreet            0.7937          0.8088
+Welder                  0.7539          0.7554
+----------------------------------------------
+AVERAGE                 0.7940          0.8025
+
+F
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW2
+----------------------------------------------
+Barn                    0.9164          0.9189
+Blocks                  0.6961          0.6961
+Carpark                 0.9833          0.9836
+Fencing                 0.9435          0.9876
+PoznanStreet            0.8848          0.9013
+Welder                  0.8472          0.8486
+----------------------------------------------
+AVERAGE                 0.8786          0.8893
+
+====================================================================================================
+AVERAGE row only, for every combination
+====================================================================================================
+AVERAGE row only, for every combination
+aggregation=pooled | frames=per row | split=nonref | weights=none | window=2 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                                       SegMaskSam3XW0  SegMaskSam3XW2
+---------------------------------------------------------------------
+J&F  all frames               as-is            0.8363          0.8459
+J&F  DAVIS (drop first/last)  as-is            0.8358          0.8457
+
+====================================================================================================
+cameras binned by nb = min(view_index, 2)
+====================================================================================================
+camera J&F by nb bin, delta = SegMaskSam3XW2 - SegMaskSam3XW0
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)
+               cameras  SegMaskSam3XW0  SegMaskSam3XW2    delta J&F      delta J      delta F         wins         ties       losses  cluster CI lo  cluster CI hi
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nb=0                 1          0.5887          0.5887       0.0000       0.0000       0.0000            0            1            0         0.0000         0.0000
+nb=1                 0             nan             nan          nan          nan          nan            0            0            0            nan            nan
+nb>=2               11          0.8605          0.8711       0.0105       0.0093       0.0117            7            0            4         0.0006         0.0239
+
+====================================================================================================
+paired comparison: SegMaskSam3XW2 - SegMaskSam3XW0
+====================================================================================================
+paired: SegMaskSam3XW2 - SegMaskSam3XW0
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | wilcoxon=exact over the 2^m sign assignments of the m non-tied deltas for m<=22, normal approximation above | as-is (missing objects scored as empty, the DAVIS convention)
+                     n         mean       median         wins         ties       losses       sign p   wilcoxon p     wilcoxon        CI lo        CI hi  cluster CI lo  cluster CI hi
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dataset              6       0.0097       0.0015            4            0            2       0.6875       0.1562   exact, m=6       0.0004       0.0225              -              -
+camera              12       0.0096       0.0004            7            1            4       0.5488      0.08301  exact, m=11       0.0004       0.0234         0.0004         0.0225
+
+per-dataset delta: SegMaskSam3XW2 - SegMaskSam3XW0
+aggregation=pooled | frames=all | split=nonref | weights=none | window=2 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW2        delta
+-----------------------------------------------------------
+Carpark                 0.9398          0.9396      -0.0002
+Blocks                  0.6793          0.6793      -0.0001
+Welder                  0.8006          0.8020       0.0014
+Barn                    0.8618          0.8635       0.0017
+PoznanStreet            0.8393          0.8550       0.0158
+Fencing                 0.8969          0.9362       0.0393
+

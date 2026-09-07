@@ -1,0 +1,54 @@
+common subset: 6 datasets
+
+====================================================================================================
+as-is  (missing exports scored as empty predictions)   -   all frames, 6 datasets
+====================================================================================================
+J&F
+aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW1  SegMaskSam3XW2  SegMaskSam3XW4  SegMaskSam3XW6
+----------------------------------------------------------------------------------------------
+Barn                    0.8858          0.8858          0.8869          0.8864          0.8879
+Blocks                  0.7484          0.7479          0.7481          0.7480          0.7476
+Carpark                 0.9438          0.9436          0.9436          0.9434          0.9434
+Fencing                 0.8862          0.9126          0.9124          0.9119          0.9123
+PoznanStreet            0.8662          0.8770          0.8769          0.8789          0.8788
+Welder                  0.8419          0.8418          0.8428          0.8428          0.8428
+----------------------------------------------------------------------------------------------
+AVERAGE                 0.8620          0.8681          0.8685          0.8686          0.8688
+
+J
+aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW1  SegMaskSam3XW2  SegMaskSam3XW4  SegMaskSam3XW6
+----------------------------------------------------------------------------------------------
+Barn                    0.8355          0.8355          0.8361          0.8354          0.8371
+Blocks                  0.7282          0.7271          0.7276          0.7275          0.7267
+Carpark                 0.9036          0.9033          0.9032          0.9030          0.9029
+Fencing                 0.8342          0.8574          0.8573          0.8564          0.8570
+PoznanStreet            0.8205          0.8308          0.8307          0.8322          0.8320
+Welder                  0.7969          0.7971          0.7978          0.7978          0.7978
+----------------------------------------------------------------------------------------------
+AVERAGE                 0.8198          0.8252          0.8254          0.8254          0.8256
+
+F
+aggregation=pooled | frames=all | split=all | weights=none | window=4 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                SegMaskSam3XW0  SegMaskSam3XW1  SegMaskSam3XW2  SegMaskSam3XW4  SegMaskSam3XW6
+----------------------------------------------------------------------------------------------
+Barn                    0.9361          0.9361          0.9377          0.9373          0.9386
+Blocks                  0.7685          0.7686          0.7686          0.7685          0.7685
+Carpark                 0.9839          0.9838          0.9841          0.9838          0.9839
+Fencing                 0.9382          0.9678          0.9676          0.9673          0.9675
+PoznanStreet            0.9119          0.9232          0.9231          0.9256          0.9255
+Welder                  0.8869          0.8865          0.8878          0.8878          0.8878
+----------------------------------------------------------------------------------------------
+AVERAGE                 0.9043          0.9110          0.9115          0.9117          0.9120
+
+====================================================================================================
+AVERAGE row only, for every combination
+====================================================================================================
+AVERAGE row only, for every combination
+aggregation=pooled | frames=per row | split=all | weights=none | window=4 | datasets=6 | as-is (missing objects scored as empty, the DAVIS convention)
+                                       SegMaskSam3XW0  SegMaskSam3XW1  SegMaskSam3XW2  SegMaskSam3XW4  SegMaskSam3XW6
+---------------------------------------------------------------------------------------------------------------------
+J&F  all frames               as-is            0.8620          0.8681          0.8685          0.8686          0.8688
+J&F  DAVIS (drop first/last)  as-is            0.8609          0.8671          0.8674          0.8675          0.8678
+

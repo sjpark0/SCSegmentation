@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-09-07 (Phase 1 완료) · 갱신 이력은 문서 끝. Phase 1 결과: [phase1-measurement.md](phase1-measurement.md)
+**최종 갱신**: 2026-09-07 (Phase 2 완료) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md)
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -10,13 +10,13 @@
 
 ## 한눈에 보기
 
-REPORT.md가 낸 제안 14개 중 **4개 완료(P1·P3·P6 + G1), 4개 부분(P5·P7·P8·P13)**입니다. 평가 프로토콜(P3)은 끝났고, 정확도·대조군 항목은 시작하지 않았습니다.
-실험 계획 11행 중 **새로 돌린 행은 0개**입니다(행 0·1은 기존 결과). Phase 1은 GPU 없이 기존 출력만 재측정했습니다.
+REPORT.md가 낸 제안 14개 중 **5개 완료(P1·P2·P3·P6 + G1), 4개 부분(P5·P7·P8·P13)**입니다. 평가 프로토콜(P3)과 대조군(P2)이 끝났고, 정확도 항목(P4·P5·P8·P12)이 남았습니다.
+실험 계획 11행 중 **행 3·4·5·6을 돌렸습니다**(행 2는 보류). 핵심 결과: 패키지 내 W=0 대조군이 OneStage와 바이트 동일, 교차시점 메모리의 순효과는 사전 등록 기준 미달(+0.0057, CI [−0.0002, +0.0140]).
 
 | P | 제안 | 상태 | 단계 | 비고 |
 |---|---|---|---|---|
 | P1 | seed/프레임 마스크 고정 해제 | ✅ | — | S1·S2·S3·S7로 반영. (d) 트림은 env-gated, `propagation_full` 가드는 이 패키지에서 발동 안 함 |
-| P2 | 패키지 내 window ablation + 위생 3건 + closure | ⬜ | **2** | 심사 3/3 합의 1순위. 대조군의 전부 |
+| P2 | 패키지 내 window ablation + 위생 3건 + closure | ✅ | 2 | XW 계열(커밋 44e5199). XW0 ≡ OneStage 바이트 동일, closure == all 실측, W 곡선은 W=1에서 포화 ([phase2-control.md](phase2-control.md)) |
 | P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07, [phase1-measurement.md](phase1-measurement.md) §5) |
 | P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | ⬜ | 3 | P2 (1)~(3) 위에 얹음 |
 | P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
@@ -27,7 +27,7 @@ REPORT.md가 낸 제안 14개 중 **4개 완료(P1·P3·P6 + G1), 4개 부분(P5
 | P10 | seeding 응답 생략 | ⬜ | 5 | SCHEDULE H2. 시간만 절감(120~260초 → 수초) |
 | P11 | 뷰당 detector 잔재 축소 | ⬜ | 5 | 안전한 부분집합만 |
 | P12 | 이웃 토큰 조건화 ablation | ⬜ | 3 | 이웃 obj_ptr이 가장 유망. 사전 선언 기준으로 채택/기각 |
-| P13 | 엔지니어링 위생 묶음 | 🔶 | 0·1·2·5 | 문서·형제 폴더 패치·`.dockerignore`·**마스크 폴더 매니페스트** ✅. **테스트·dead API·배너 ⬜** |
+| P13 | 엔지니어링 위생 묶음 | 🔶 | 0·1·2·5 | 문서·형제 폴더 패치·`.dockerignore`·매니페스트·**CPU 테스트 62개** ✅. **dead API·배너 ⬜** |
 | P14 | 이벤트 구동 cross-view 재시딩 | 🔒 | 5 | P4·P5 결과 본 뒤 |
 | G1 | 토큰 폐기(0순위) | ✅ | — | 두 토큰 모두 외부 유출 없음 확인. 이미지는 토큰 없이 재빌드 |
 
@@ -87,7 +87,9 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 **Phase 2에 사전 등록된 합격 기준 (E1)**: nb≥4 구간 Δ(XW4 − XW0)의 클러스터 부트스트랩 95% CI가 0을 제외 · nb=0 구간 |Δ| < 0.001. 못 넘으면 "효과 없음"으로 보고합니다.
 **남은 결정 2건**: P5 misaligned 임계값 0.10 vs 0.20 · 수 px 프롬프트 객체의 프로토콜 처리.
 
-### Phase 2 — 없는 대조군 (2주) · P2 · P13 테스트
+### Phase 2 — 없는 대조군 · P2 · P13 테스트 — ✅ 완료 2026-09-07
+
+결과와 계열 결정 입력: **[phase2-control.md](phase2-control.md)**. 코드는 커밋 44e5199, 마스크는 `SegMaskSam3XW{0,1,2,4,6}`·`XW4all`, 원시 점수 `Data/MVSeg/jf_xw.json`, 표 `docs/raw/phase2/`.
 
 | 할 일 | 세부 |
 |---|---|
@@ -97,9 +99,19 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 | CPU-only pytest | 메모리 불변식 7종, N=3 IndexError/wrap/clobber, ref=N−1, 21프레임 |
 | **행 3·4 실행**: XW0 vs XW4, 15개 | 이 방법이 가진 적 없는 첫 유효 대조군 |
 
+| 할 일 | 결과 |
+|---|---|
+| 위생 수정 3건 | ✅ `cross_view_window`·`cross_view_hygiene`(기본 off, 플래그 없이는 바이트 동일 — 가드 Blocks·Fencing diff 0) |
+| `--track-cams closure` | ✅ closure == all: Welder(4 vs 46세션)·Dog(4 vs 41)·Blocks diff 0. Welder 433 → 86초 |
+| `--xview-window N` | ✅ `SegMaskSam3XW{N}`, 위생 자동 on, 거부 규칙 6종, 모델 read-back |
+| CPU pytest | ✅ 62개(수집 함수 등가 20k 구성, 실제 메서드 golden, closure 보조정리, 러너 해석표, 메모리 불변식 S1~S7) |
+| 행 3·4 | ✅ **XW0 ≡ OneStage 바이트 동일(19,848 PNG)**. XW4 − XW0: 15개 +0.0024, 비기준 +0.0039, nb≥4 +0.0057 (12/8), 클러스터 CI [−0.0002, +0.0140] → **사전 등록 기준 미달, "효과 없음"**. nb=0 정확히 0 |
+| C2 버그 효과 | MVOpt − XW4 = +0.0001 (CI [−0.0001, +0.0002]): 마스크는 바뀌고 점수는 안 바뀜 |
+| 행 5 (W 곡선, 6개) | ✅ XW0 0.8620 / XW1 0.8681 / XW2 0.8685 / XW4 0.8686 / XW6 0.8688 — W=1에서 포화 |
+
 **주의**: 위생 수정은 출력을 바꿉니다. **0.8451과 다른 시스템**이 되므로 논문은 한 계열을 택해 끝까지 그것으로 보고합니다.
 
-**완료 조건**: closure = all (`diff -rq` 0, Blocks·Fencing·Welder) · XW0/XW4 15개 존재·채점 · 순효과가 nonref·nb 구간·paired CI로 보고 · 어느 계열이 헤드라인인지 문서로 결정.
+**완료 조건**: closure = all ✅ · XW0/XW4 15개 존재·채점 ✅ · 순효과가 nonref·nb 구간·paired CI로 보고 ✅ · 어느 계열이 헤드라인인지 문서로 결정 🔶 (phase2-control.md §6: XW 계열 권장, **사용자 확정 대기**).
 
 ### Phase 3 — 측정된 손실 회복 (3~4주) · P5 · P4 · P8 · P12
 
@@ -137,18 +149,18 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 |---|---|---|---|---|
 | 0 | SAM 2 baseline | `SegMaskNew1` | ✅ 기존 | — |
 | 1 | OneStage / written | `SegMaskSam3OneStage` | ✅ 기존 | — |
-| 2 | OneStage / closure (타이밍) | `SegMaskSam3OneStageC` | ⬜ | 2 |
-| 3 | **XW0 대조군** | `SegMaskSam3XW0` | ⬜ | **2** |
-| 4 | **XW4 위생 수정** | `SegMaskSam3XW4` | ⬜ | **2** |
-| 5 | W ∈ {1,2,6} 곡선 (6개 데이터셋) | `SegMaskSam3XW{1,2,6}` | ⬜ | 2~3 |
-| 6 | closure = all 검증 | `SegMaskSam3XW4all` | ⬜ | 2 |
+| 2 | OneStage / closure (타이밍) | `SegMaskSam3OneStageC` | 보류 | 2 — XW0(= OneStage 출력)의 closure 타이밍으로 대체 |
+| 3 | **XW0 대조군** | `SegMaskSam3XW0` | ✅ 09-07 | 2 — OneStage와 바이트 동일 |
+| 4 | **XW4 위생 수정** | `SegMaskSam3XW4` | ✅ 09-07 | 2 — 0.8451 (= MVOpt) |
+| 5 | W ∈ {1,2,6} 곡선 (6개 데이터셋) | `SegMaskSam3XW{1,2,6}` | ✅ 09-07 | W=1 포화 |
+| 6 | closure = all 검증 | `SegMaskSam3XW4all` | ✅ 09-07 | Welder·Dog·Blocks diff 0 |
 | 7 | 양측 창 (P4) | `SegMaskSam3XV_two{2,4}` | ⬜ | 3 |
 | 8 | seed 복구 (P5) | `SegMaskSeedRepair` | ⬜ | 3 |
 | 9 | reference 규칙 (P8) | `*_refcount` | ⬜ | 3 |
 | 10 | 이웃 토큰 (P12) | `SegMaskSam3X_<tag>` | ⬜ | 3 |
 | 11 | 설정 매칭 (E6) | `SegMaskNew1_matched` | ⬜ | 4 |
 
-REPORT.md의 결론 그대로: **행 3·4가 나오기 전에는 어떤 정확도 제안도 판정할 수 없습니다.**
+행 3·4가 나왔습니다. 이후 정확도 제안(P4·P5·P8·P12)은 **XW 계열 위에서, E1 엔드포인트로** 판정합니다.
 
 ---
 
@@ -174,3 +186,4 @@ REPORT.md의 결론 그대로: **행 3·4가 나오기 전에는 어떤 정확�
 | 2026-09-07 | **Phase 0 완료.** 메모리 상한 4개 스크립트 전부, `baseline-siblings` 태그, 토큰 보유 이미지 삭제. open-items #1(토큰) 해소로 정정 |
 | 2026-09-07 | **Phase 1 완료.** `eval/` 채점기·집계기 v2(발표 수치 396/396 재현), 퇴화 시드 집계, 매니페스트 117개. P3 ✅, P5·P8 진단/ceiling ✅, P13 매니페스트 ✅. 결과·엔드포인트 제안은 phase1-measurement.md — 엔드포인트·misaligned 임계값·수 px 프롬프트 처리는 사용자 확정 대기 |
 | 2026-09-07 | **엔드포인트 확정** (E0 헤드라인 · E1 메커니즘 = 비기준·nb≥4, 대조군 W=0 · E2 보조; 12개 부분집합 p값·OneStageNew 별도 열·exported-only는 사용 안 함). P3 ✅ 확정. 남은 결정: misaligned 임계값, 수 px 프롬프트 처리 |
+| 2026-09-07 | **Phase 2 완료.** XW 계열 구현(44e5199, 기본 경로 바이트 동일, 테스트 62개), GPU 56회. XW0 ≡ OneStage, closure == all, E1 **미달**(+0.0057, CI [−0.0002, +0.0140]), C2 효과 0, W=1 포화. P2 ✅. 계열 결정(XW 권장)은 사용자 확정 대기 |

@@ -1,0 +1,81 @@
+common subset: 15 datasets
+
+====================================================================================================
+as-is  (missing exports scored as empty predictions)   -   all frames, 15 datasets
+====================================================================================================
+J&F
+aggregation=sequence | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskNew1  SegMaskSam3OneStage  SegMaskSam3MVOpt  SegMaskSam3XW0  SegMaskSam3XW4
+---------------------------------------------------------------------------------------------------------
+AlexaMeadeExhibit           0.8896               0.8586            0.8585          0.8586          0.8591
+AlexaMeadeFacePaint         0.7855               0.7948            0.7949          0.7948          0.7949
+Barn                        0.8569               0.8858            0.8865          0.8858          0.8864
+Blocks                      0.7629               0.7617            0.7610          0.7617          0.7613
+Breakfast                   0.7130               0.7408            0.7411          0.7408          0.7411
+Carpark                     0.9416               0.9438            0.9434          0.9438          0.9434
+CoffeeMartini               0.8220               0.8316            0.8297          0.8316          0.8300
+Dog                         0.9033               0.9207            0.9207          0.9207          0.9205
+Fencing                     0.9321               0.8862            0.9112          0.8862          0.9119
+FlameSteak                  0.7397               0.7302            0.7300          0.7302          0.7299
+Frog                        0.9754               0.9753            0.9743          0.9753          0.9748
+MATF                        0.6013               0.6306            0.6309          0.6306          0.6308
+Painter                     0.8712               0.8679            0.8678          0.8679          0.8678
+PoznanStreet                0.8652               0.8670            0.8793          0.8670          0.8795
+Welder                      0.8776               0.8399            0.8416          0.8399          0.8408
+---------------------------------------------------------------------------------------------------------
+AVERAGE                     0.8358               0.8357            0.8381          0.8357          0.8381
+
+J
+aggregation=sequence | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskNew1  SegMaskSam3OneStage  SegMaskSam3MVOpt  SegMaskSam3XW0  SegMaskSam3XW4
+---------------------------------------------------------------------------------------------------------
+AlexaMeadeExhibit           0.8182               0.7938            0.7938          0.7938          0.7943
+AlexaMeadeFacePaint         0.7765               0.7803            0.7806          0.7803          0.7806
+Barn                        0.8079               0.8355            0.8353          0.8355          0.8354
+Blocks                      0.7438               0.7410            0.7399          0.7410          0.7402
+Breakfast                   0.6762               0.6959            0.6965          0.6959          0.6964
+Carpark                     0.9030               0.9036            0.9029          0.9036          0.9030
+CoffeeMartini               0.7927               0.8000            0.7995          0.8000          0.8000
+Dog                         0.9047               0.9167            0.9172          0.9167          0.9162
+Fencing                     0.8809               0.8342            0.8561          0.8342          0.8564
+FlameSteak                  0.7106               0.6938            0.6933          0.6938          0.6933
+Frog                        0.9739               0.9745            0.9739          0.9745          0.9745
+MATF                        0.5576               0.5860            0.5866          0.5860          0.5861
+Painter                     0.8498               0.8450            0.8447          0.8450          0.8446
+PoznanStreet                0.8211               0.8213            0.8327          0.8213          0.8328
+Welder                      0.8560               0.7950            0.7988          0.7950          0.7959
+---------------------------------------------------------------------------------------------------------
+AVERAGE                     0.8049               0.8011            0.8034          0.8011          0.8033
+
+F
+aggregation=sequence | frames=all | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskNew1  SegMaskSam3OneStage  SegMaskSam3MVOpt  SegMaskSam3XW0  SegMaskSam3XW4
+---------------------------------------------------------------------------------------------------------
+AlexaMeadeExhibit           0.9610               0.9234            0.9232          0.9234          0.9239
+AlexaMeadeFacePaint         0.7944               0.8093            0.8093          0.8093          0.8093
+Barn                        0.9059               0.9361            0.9376          0.9361          0.9373
+Blocks                      0.7820               0.7824            0.7822          0.7824          0.7824
+Breakfast                   0.7498               0.7857            0.7858          0.7857          0.7859
+Carpark                     0.9802               0.9839            0.9839          0.9839          0.9838
+CoffeeMartini               0.8513               0.8632            0.8599          0.8632          0.8600
+Dog                         0.9018               0.9248            0.9242          0.9248          0.9247
+Fencing                     0.9832               0.9382            0.9663          0.9382          0.9673
+FlameSteak                  0.7687               0.7665            0.7666          0.7665          0.7665
+Frog                        0.9768               0.9761            0.9748          0.9761          0.9751
+MATF                        0.6450               0.6753            0.6753          0.6753          0.6755
+Painter                     0.8926               0.8908            0.8910          0.8908          0.8910
+PoznanStreet                0.9093               0.9127            0.9260          0.9127          0.9262
+Welder                      0.8991               0.8848            0.8845          0.8848          0.8857
+---------------------------------------------------------------------------------------------------------
+AVERAGE                     0.8667               0.8702            0.8727          0.8702          0.8730
+
+====================================================================================================
+AVERAGE row only, for every combination
+====================================================================================================
+AVERAGE row only, for every combination
+aggregation=sequence | frames=per row | split=all | weights=none | window=4 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                                       SegMaskNew1  SegMaskSam3OneStage  SegMaskSam3MVOpt  SegMaskSam3XW0  SegMaskSam3XW4
+-------------------------------------------------------------------------------------------------------------------------
+J&F  all frames               as-is         0.8358               0.8357            0.8381          0.8357          0.8381
+J&F  DAVIS (drop first/last)  as-is         0.8349               0.8345            0.8370          0.8345          0.8370
+

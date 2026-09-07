@@ -19,7 +19,7 @@ GPU 48 GiB가 상한입니다. SAM 3의 무거운 데이터셋은 45~46 GiB에�
 | 스크립트 | 용도 | 메모리 상한 |
 |---|---|---|
 | `runMVSegAll.sh` | 전체 스윕 | **없음 ★** |
-| `runMVOptThree.sh` | 데이터셋 지정 실행. `ALGO`·`OUT` 환경변수로 알고리즘/출력 지정 | `--memory=90g` |
+| `runMVOptThree.sh` | 데이터셋 지정 실행. `ALGO`·`OUT`·`XVIEW`·`TRACK`·`LOGTAG` 환경변수로 알고리즘/출력/교차시점 창/추적 모드/로그 폴더 지정 | `--memory=90g` |
 | `runForSam2Three.sh` | ForSam2New 판 | `--memory=90g` |
 | `waitAndRunMVSeg.sh` | GPU가 빌 때까지 대기 후 스윕. Frog 스모크 테스트 먼저 | — |
 | `launch_container.sh` | X11 대화형 셸 | **없음 ★** |
@@ -86,8 +86,52 @@ Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMV
 | `OneStage` | `demoSCSam3OneStage` | `SegMaskSam3OneStage` | `written` |
 | `OneStageNew` | `demoSCSam3OneStageNew` | `SegMaskSam3OneStageNew` | **`all`** |
 | `MVOpt` | `demoSCSam3MVOpt` | `SegMaskSam3MVOpt` | **`all`** |
+| `MVOpt --xview-window W` (0..6) | `demoSCSam3MVOpt` | `SegMaskSam3XW{W}` (`--track-cams all`이면 `SegMaskSam3XW{W}all`) | **`closure`** |
+| `MVOpt --xview-hygiene` | `demoSCSam3MVOpt` | `SegMaskSam3XW4` | **`closure`** |
+| `OneStage --track-cams closure` | `demoSCSam3OneStage` | `SegMaskSam3OneStageC` (실험 행 2) | `closure` |
 
-`NEEDS_ALL_VIEWS = ("OneStageNew", "MVOpt")`.
+`NEEDS_ALL_VIEWS = ("OneStageNew", "MVOpt")`. `--track-cams closure`는 카메라 `0..max(채점 시점 인덱스)`만 세션을 엽니다.
+
+### XW 계열 — 교차시점 창 파라미터와 위생 수정 (2026-09-07, Phase 2)
+
+`demoSCSam3MVOpt`의 트래커에 생성자 인자 `cross_view_window`(기본 4)·`cross_view_hygiene`(기본 off)가 생겼고,
+교차시점 수집 루프는 `xview_gather.py`의 순수 함수입니다. **플래그 없이 돌리면 발표본(`SegMaskSam3MVOpt`)과 바이트 동일**합니다
+(legacy 경로는 음수 인덱스 wrap·`IndexError`·`selected_cond_outputs` 덮어쓰기(REPORT C1/C2)까지 그대로 재현).
+
+- `--xview-window W`: 이웃 창 W(0 = 이웃 메모리 없음, 패키지 내 대조군), **위생 수정 2건 자동 on**
+  (음수 인덱스 건너뜀 → wrap·IndexError 없음 / cond pointer 덮어쓰기 제거), 추적 기본값 `closure`, 출력 `SegMaskSam3XW{W}`.
+  W ≠ 4는 위생 없이 허용되지 않습니다(다른 이웃 집합으로 wrap하므로).
+- `--xview-hygiene`: W=4에 위생만 켠 것(= `--xview-window 4`).
+- **거부되는 조합** (`sys.exit`): OneStage/OneStageNew에 `--xview-*`; MVOpt에 위생 없는 `--track-cams closure`(legacy는 wrap 때문에
+  closure ≠ all); XW + `--track-cams written`(이웃이 카메라 인덱스로 정의됨); XW 출력을 기본 폴더(`SegMaskSam3MVOpt` 등)에;
+  legacy 실행을 `SegMaskSam3XW*` 이름에; `SCSAM3_XVIEW_*` 환경변수만 있고 플래그 없음(함정 9).
+- 실행 시 모델이 실제로 든 값을 읽어 `cross-view     window W, hygiene H`로 찍고, 명령줄과 다르면 종료합니다.
+  매니페스트에 `lineage`, `xview_window`, `xview_hygiene`, `track_cams_requested`, `track_idx`, `n_sessions`가 기록됩니다.
+- **closure == all 보조정리**: 위생 on이면 시점 v는 시점 0..v만 읽으므로 closure와 all의 출력이 같습니다(실험 행 6이 실측 검증).
+  nb=0 카메라는 W에 무관하게 입력이 같으므로 XW0 vs XW4에서 정확히 0이어야 하며, 0이 아니면 비결정성·누수 신호입니다.
+
+```bash
+XVIEW=0 LOGTAG=xw0 ./runMVOptThree.sh Blocks              # SegMaskSam3XW0, closure
+XVIEW=4 TRACK=all OUT=SegMaskSam3XW4all ./runMVOptThree.sh Welder
+OUT=SegMaskSam3MVOpt_guard LOGTAG=guard ./runMVOptThree.sh Blocks Fencing   # 바이트 동일성 가드
+diff -rq -x MANIFEST.json ../Data/MVSeg/Blocks/SegMaskSam3MVOpt ../Data/MVSeg/Blocks/SegMaskSam3MVOpt_guard   # 출력 0줄이어야 함
+```
+
+**가드 규칙.** `SCSam3TrackerPredictorNewMem.py`, `xview_gather.py`, `build_scsam3.py`, `SCSam3VideoPredictorNewMem.py`,
+`SCSam3Video.py`, `runMVSeg.py` 중 하나라도 바뀌면 XW 폴더를 채점하기 전에 위 가드(Blocks·Fencing)를 다시 돌립니다.
+
+### 테스트 (CPU, 컨테이너)
+
+`tests/`에 pytest 62개가 있습니다 — 수집 함수 등가(무작위 20,000 구성), 실제 메서드 golden, closure 보조정리, 러너 해석표(15개 데이터셋),
+집계기 CI 열, 메모리 불변식 S1~S7. 실제 트래커는 CPU에서 생성되지 않으므로(`PositionEmbeddingSine`이 cuda 할당) bare-instance 하니스를 씁니다.
+
+```bash
+cd /home/sjpark/Documents/SCSegmentation
+docker run --rm --user $(id -u):$(id -g) -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH= \
+  -v /:/host -w /host$PWD scsam3 python -m pytest tests -q -p no:cacheprovider
+```
+
+`SCSam3/` 안에서 python을 띄우지 마십시오(그 안의 `sam3` 체크아웃이 설치된 패키지를 가립니다).
 `demoSCSam3ForSam2*`는 별도 러너 `runMVSegForSam2.py`, `demoSCSam3TwoStage*`는 **미등록**입니다.
 
 ---
@@ -217,3 +261,11 @@ DOCKER_BUILDKIT=1 docker build -t scsam3 SCSam3/     # SCSam3/hf_cache/ 가 채�
   ```bash
   cp docs/tools/pre-commit-secrets.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
   ```
+
+## 9. `SCSAM3_XVIEW_WINDOW` / `SCSAM3_XVIEW_HYGIENE` 환경변수는 데모 경로를 조용히 바꿉니다
+
+`build_tracker_newmem`은 생성자 인자가 None일 때만 이 두 변수를 읽습니다(`sam3_demoVideo.py`처럼 인자 없이 `SCSam3Video(device)`를 부르는 경로용).
+셸 프로파일에 남아 있으면 데모가 다른 모델로 돌고, `runMVSeg.py`는 플래그 없이 이 변수가 설정돼 있으면 **실행을 거부**합니다
+(설정은 명령줄에서만 받습니다). 파싱은 엄격합니다: 빈 값은 미설정, `4`·`1`/`true`/`on`·`0`/`false`/`off`만 허용, 그 외는 `ValueError`.
+`SCSAM3_TRIM_CACHED_OUTPUTS`와 달리 `"false"`가 on을 뜻하지 않습니다.
+
