@@ -1,0 +1,26 @@
+Z1 AlexaMeadeExhibit/camera_0001 XW0 vs 3XW1: diff 0
+Z1 AlexaMeadeExhibit/camera_0001 XW0 vs XW1D: diff 0
+Z1 Barn/v0 XW0 vs 3XW1: diff 0
+Z1 Barn/v0 XW0 vs XW1D: diff 0
+Z1 Blocks/cam0 XW0 vs 3XW1: diff 0
+Z1 Blocks/cam0 XW0 vs XW1D: diff 0
+Z1 Carpark/v0 XW0 vs 3XW1: diff 0
+Z1 Carpark/v0 XW0 vs XW1D: diff 0
+Z1 Fencing/v0 XW0 vs 3XW1: diff 0
+Z1 Fencing/v0 XW0 vs XW1D: diff 0
+Z1 MATF/S1_CAM_1 XW0 vs 3XW1: diff 0
+Z1 MATF/S1_CAM_1 XW0 vs XW1D: diff 0
+Z1 Painter/v0 XW0 vs 3XW1: diff 0
+Z1 Painter/v0 XW0 vs XW1D: diff 0
+Z1 PoznanStreet/v0 XW0 vs 3XW1: diff 0
+Z1 PoznanStreet/v0 XW0 vs XW1D: diff 0
+Z1 Welder/camera_0001 XW0 vs 3XW1: diff 0
+Z1 Welder/camera_0001 XW0 vs XW1D: diff 0
+Z1 TOTAL 0 (must be 0)
+Z2 B Welder: 0
+Z2 B Dog: 0
+Z2 C Welder: 0
+Z2 C Dog: 0
+Z2 E Welder: 0
+Z2 E Dog: 0
+Z3 Blocks E rerun: 0

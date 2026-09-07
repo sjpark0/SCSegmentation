@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-09-07 (Phase 2 완료) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md)
+**최종 갱신**: 2026-09-08 (P4 절제 완료) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md)
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -18,7 +18,7 @@ REPORT.md가 낸 제안 14개 중 **5개 완료(P1·P2·P3·P6 + G1), 4개 부�
 | P1 | seed/프레임 마스크 고정 해제 | ✅ | — | S1·S2·S3·S7로 반영. (d) 트림은 env-gated, `propagation_full` 가드는 이 패키지에서 발동 안 함 |
 | P2 | 패키지 내 window ablation + 위생 3건 + closure | ✅ | 2 | XW 계열(커밋 44e5199). XW0 ≡ OneStage 바이트 동일, closure == all 실측, W 곡선은 W=1에서 포화 ([phase2-control.md](phase2-control.md)) |
 | P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07, [phase1-measurement.md](phase1-measurement.md) §5) |
-| P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | ⬜ | 3 | P2 (1)~(3) 위에 얹음 |
+| P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | 🔶 | 3 | 모드 A~E 구현·절제 완료(09-08). 1차 기준 통과 모드 없음 → 규칙상 A 유지; C는 Fencing v0 +0.079·헤드라인 0.8468. **채택 여부 사용자 결정** ([phase3-neighbourhood.md](phase3-neighbourhood.md) §5) |
 | P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
 | P7 | spatial predictor 은퇴 + autocast 정리 + fp16 프레임 | 🔶 | — | 은퇴·autocast ✅(S6). **fp16 ❌** — 출력 변경 확인, fp32(S5)로 대체 |
@@ -120,7 +120,7 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 | 할 일 | P | 기대값 | 근거 성격 |
 |---|---|---|---|
 | `RepairSeeds()` — 퇴화 시드 감지·donor 재전파 | P5 | Welder 0.8437 → ~0.879, 헤드라인 +0.0023~0.0027 | **정량화됨** |
-| 양측 창 + 경계 클리핑 + t−1 fallback | P4 | Fencing ~+0.02 | 추론, 미측정 |
+| 양측 창 + 경계 클리핑 + t−1 fallback | P4 | Fencing ~+0.02 | **측정됨(09-08)**: C에서 Fencing +0.052(v0 +0.079), 15개 +0.0018 vs A, 비기준은 불변. 1차 기준 미달 |
 | `--reference count` | P8 | 모든 방법 동반 상승, 순위 불변 | 프로토콜 |
 | 이웃 obj_ptr 4토큰 | P12 | 기준: nonref +0.005 초과 & reference 무손실 | 진단 실험 |
 
@@ -154,7 +154,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 4 | **XW4 위생 수정** | `SegMaskSam3XW4` | ✅ 09-07 | 2 — 0.8451 (= MVOpt) |
 | 5 | W ∈ {1,2,6} 곡선 (6개 데이터셋) | `SegMaskSam3XW{1,2,6}` | ✅ 09-07 | W=1 포화 |
 | 6 | closure = all 검증 | `SegMaskSam3XW4all` | ✅ 09-07 | Welder·Dog·Blocks diff 0 |
-| 7 | 양측 창 (P4) | `SegMaskSam3XV_two{2,4}` | ⬜ | 3 |
+| 7 | 양측 창 (P4) | `SegMaskSam3XW1{B,C,D,E}` | ✅ 09-08 | 3 — 규칙상 A 유지, C 채택은 결정 대기 |
 | 8 | seed 복구 (P5) | `SegMaskSeedRepair` | ⬜ | 3 |
 | 9 | reference 규칙 (P8) | `*_refcount` | ⬜ | 3 |
 | 10 | 이웃 토큰 (P12) | `SegMaskSam3X_<tag>` | ⬜ | 3 |
@@ -187,3 +187,4 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 2026-09-07 | **Phase 1 완료.** `eval/` 채점기·집계기 v2(발표 수치 396/396 재현), 퇴화 시드 집계, 매니페스트 117개. P3 ✅, P5·P8 진단/ceiling ✅, P13 매니페스트 ✅. 결과·엔드포인트 제안은 phase1-measurement.md — 엔드포인트·misaligned 임계값·수 px 프롬프트 처리는 사용자 확정 대기 |
 | 2026-09-07 | **엔드포인트 확정** (E0 헤드라인 · E1 메커니즘 = 비기준·nb≥4, 대조군 W=0 · E2 보조; 12개 부분집합 p값·OneStageNew 별도 열·exported-only는 사용 안 함). P3 ✅ 확정. 남은 결정: misaligned 임계값, 수 px 프롬프트 처리 |
 | 2026-09-07 | **Phase 2 완료.** XW 계열 구현(44e5199, 기본 경로 바이트 동일, 테스트 62개), GPU 56회. XW0 ≡ OneStage, closure == all, E1 **미달**(+0.0057, CI [−0.0002, +0.0140]), C2 효과 0, W=1 포화. P2 ✅. 계열 결정(XW 권장)은 사용자 확정 대기 |
+| 2026-09-08 | **P4 절제 완료** (사전 등록 2847fd2 → 구현 e1bba33 → GPU 80회). 모드 A~E, 감시값 전부 통과. 1차 기준(비기준 CI>0) 통과 모드 없음 → **규칙상 A 유지**. B·C·E는 S1(Fencing v0 ≥0.85) 통과, C·E 헤드라인 0.8468(+0.0018 vs A), E는 C 대비 이득 없음. C 채택 여부는 사용자 결정 |

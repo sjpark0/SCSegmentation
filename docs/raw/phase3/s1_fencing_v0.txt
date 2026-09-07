@@ -1,0 +1,6 @@
+SegMaskSam3XW0         J(1..20) = 0.7936
+SegMaskSam3XW1         J(1..20) = 0.7936
+SegMaskSam3XW1B        J(1..20) = 0.8916
+SegMaskSam3XW1C        J(1..20) = 0.8942
+SegMaskSam3XW1D        J(1..20) = 0.7936
+SegMaskSam3XW1E        J(1..20) = 0.9016
