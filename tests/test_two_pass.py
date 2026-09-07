@@ -253,3 +253,76 @@ def test_tracker_recompute_refuses_prompt_frames(cpu_tensors):
         assert sl["iou_score"].item() == cur["iou_score"][i].item()
         assert state["output_dict_per_obj"][i]["cond_frame_outputs"] == {}
     assert state["frames_already_tracked"] == {7: {"reverse": False}}
+
+
+def test_tracker_recompute_frame_pass2_call_and_deferred_store(cpu_tensors, monkeypatch):
+    """The REAL recompute_frame is the pass-2 entry: it must hand
+    _run_single_frame_inference_multiple the LIVE output_dict of every session (None where
+    the session has no state) with xview_pass=2 and no prompt, on the default memory-encoder
+    path, and store NOTHING until commit_frame."""
+    import copy
+    torch = cpu_tensors
+    harness = _bare_tracker_module()
+    tr = harness.bare_tracker(xw=1, xh=True, xm="E")
+    t, objs = 5, [1, 2]
+
+    def state(v):                                     # tensor-free: deepcopy/== are exact
+        per_obj = {i: {"cond_frame_outputs": {0: {"seed": (v, i)}},
+                       "non_cond_frame_outputs": {f: {"pass1": (v, f, i)} for f in range(1, t + 1)}}
+                   for i in range(len(objs))}
+        return {"obj_ids": list(objs), "obj_idx_to_id": dict(enumerate(objs)),
+                "output_dict": {"cond_frame_outputs": {0: {"seed": v}},
+                                "non_cond_frame_outputs": {f: {"pass1": (v, f)} for f in range(1, t + 1)}},
+                "output_dict_per_obj": per_obj,
+                "frames_already_tracked": {f: {"reverse": False} for f in range(1, t + 1)},
+                "consolidated_frame_inds": {"cond_frame_outputs": {0}, "non_cond_frame_outputs": set()}}
+
+    v, states = 1, [state(0), state(1), None]
+    calls = []
+
+    def fake(**kw):                                   # keyword-only: a positional call is a TypeError
+        calls.append(kw)
+        n = len(kw["inference_states"][kw["spatial_idx"]]["obj_ids"])
+        out = {"maskmem_features": torch.full((n, harness.MEM, 8, 8), 2.0),
+               "maskmem_pos_enc": [torch.zeros(n, harness.MEM, 8, 8)],
+               "pred_masks": torch.full((n, 1, 8, 8), 3.0),
+               "obj_ptr": torch.arange(float(n)).view(n, 1).expand(n, harness.C).clone(),
+               "object_score_logits": torch.tensor([[7.0]] * n),
+               "iou_score": torch.tensor([[0.8]] * n), "eff_iou_score": torch.tensor([[0.8]] * n)}
+        return out, torch.full((n, 1, 8, 8), 3.0)
+    monkeypatch.setattr(tr, "_run_single_frame_inference_multiple", fake)
+
+    snap = copy.deepcopy([s for s in states if s is not None])
+    pass1 = states[v]["output_dict"]["non_cond_frame_outputs"][t]
+    cur, obj_ids, pred, scores = tr.recompute_frame(states, v, t, False)
+
+    assert len(calls) == 1
+    kw = calls[0]
+    assert set(kw) == {"inference_states", "output_dicts", "spatial_idx", "frame_idx", "batch_size",
+                       "is_init_cond_frame", "point_inputs", "mask_inputs", "reverse",
+                       "run_mem_encoder", "xview_pass"}
+    assert kw["xview_pass"] == 2
+    assert kw["output_dicts"] == [s["output_dict"] if s else None for s in states]
+    assert all(od is s["output_dict"] for od, s in zip(kw["output_dicts"], states) if s is not None)
+    assert kw["inference_states"] is states
+    assert (kw["spatial_idx"], kw["frame_idx"], kw["batch_size"]) == (v, t, len(objs))
+    assert kw["is_init_cond_frame"] is False and kw["point_inputs"] is None and kw["mask_inputs"] is None
+    assert kw["run_mem_encoder"] is True and kw["reverse"] is False
+    # return contract: (current_out, obj_ids, low_res_masks, obj_scores)
+    assert cur is not None and "object_score_logits" in cur
+    assert obj_ids == objs and obj_ids is states[v]["obj_ids"]
+    assert torch.equal(pred, torch.full((2, 1, 8, 8), 3.0)) and scores is cur["object_score_logits"]
+    # nothing stored: every session is exactly what it was, the pass-1 entry of frame t included
+    assert [s for s in states if s is not None] == snap
+    assert states[v]["output_dict"]["non_cond_frame_outputs"][t] is pass1
+    # commit_frame is the store, and it touches this session only
+    tr.commit_frame(states[v], t, cur, False)
+    assert states[v]["output_dict"]["non_cond_frame_outputs"][t] is cur
+    for i in range(len(objs)):
+        sl = states[v]["output_dict_per_obj"][i]["non_cond_frame_outputs"][t]
+        assert torch.equal(sl["obj_ptr"], cur["obj_ptr"][i:i + 1]) and "pass1" not in sl
+    assert states[v]["frames_already_tracked"][t] == {"reverse": False}
+    assert states[0] == snap[0]
+    # reverse / run_mem_encoder pass through unchanged; the pass is still 2
+    tr.recompute_frame(states, 0, t, True, run_mem_encoder=False)
+    assert (calls[-1]["reverse"], calls[-1]["run_mem_encoder"], calls[-1]["xview_pass"]) == (True, False, 2)

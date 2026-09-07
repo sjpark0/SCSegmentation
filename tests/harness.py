@@ -97,10 +97,10 @@ def call(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, rev=False, xview_pass=None)
     return tr.transformer.encoder.calls[-1]
 
 
-def run(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, xview_pass=None):
+def run(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, xview_pass=None, rev=False):
     """Decode the recorded prompt: memory-token sources, tpos rows, pointer sources."""
     seq = hw * hw
-    kw = call(tr, ods, v, t, hw, num_frames, xview_pass=xview_pass)
+    kw = call(tr, ods, v, t, hw, num_frames, rev=rev, xview_pass=xview_pass)
     prompt, ppos, nptr = kw["prompt"], kw["prompt_pos"], kw["num_obj_ptr_tokens"]
     n_mem = (prompt.shape[0] - nptr) // seq
     per_ptr = C // MEM                                   # each pointer is split into 4 tokens

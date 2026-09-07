@@ -12,7 +12,7 @@ torch = pytest.importorskip("torch")
 pytest.importorskip("sam3")
 
 from conftest import PKG  # noqa: E402
-from harness import (GOLDEN_HW, SMALL_HW, bare_tracker, output_dicts_lockstep, run,  # noqa: E402
+from harness import (GOLDEN_HW, SMALL_HW, bare_tracker, mem_out, output_dicts_lockstep, run,  # noqa: E402
                      call, lockstep, same_inputs)
 
 N, T5 = 10, 5
@@ -287,3 +287,32 @@ def test_pass2_never_reads_own_pass1(cpu_tensors):
         # pass 1 of E (= B) with every session holding t: t-1 on both sides, never t
         r = run(tr, output_dicts_lockstep(N, 5, T5, 0, SMALL_HW, all_hold_t=True), 5, T5, SMALL_HW, xview_pass=1)
         assert r["mem_src"][5:] == [1000 * (5 + s) + 4 for s in list(range(-W, 0)) + list(range(1, W + 1))]
+
+
+# ----------------------------------------------------------------------- T2k
+def test_real_method_mode_B_reverse_lag(cpu_tensors):
+    """Reverse tracking flips the neighbour lag of the t-1 modes to t+1 (xview_gather
+    `lag`), which only happens because the tracker hands its own `track_in_reverse` to
+    the gather.  Every session holds cond[0], frames 1..4 and frame 6; nobody holds 5."""
+    v, t = 5, T5
+
+    def ods():
+        return [{"cond_frame_outputs": {0: mem_out(0, m, SMALL_HW)},
+                 "non_cond_frame_outputs": {f: mem_out(f, m, SMALL_HW) for f in (1, 2, 3, 4, 6)}}
+                for m in range(N)]
+
+    tr = bare_tracker(xw=1, xh=True, xm="B")
+    r = run(tr, ods(), v, t, SMALL_HW, rev=True)
+    assert r["mem_src"] == [5000, 5006, 4006, 6006]      # own: cond + the frame after t; nb: v+-1 @ t+1
+    assert r["tpos_rows"] == [6, 0, 0, 0]
+    f = run(tr, ods(), v, t, SMALL_HW, rev=False)         # no reverse lag: v+-1 @ t-1
+    assert f["mem_src"] == [5000, 5001, 5002, 5003, 5004, 4004, 6004]
+    assert f["tpos_rows"] == [6, 3, 2, 1, 0, 0, 0]
+    # W=2: mirror order (-2, -1, +1, +2), all at t+1
+    r2 = run(bare_tracker(xw=2, xh=True, xm="B"), ods(), v, t, SMALL_HW, rev=True)
+    assert r2["mem_src"] == [5000, 5006, 3006, 4006, 6006, 7006] and r2["tpos_rows"][2:] == [1, 0, 0, 1]
+    # the lag is per mode: E pass 1 is B; D reads the lower side at t+1; C keeps the lower
+    # side at t (nobody holds 5 -> skipped) and lags the upper side to t+1
+    assert run(bare_tracker(xw=1, xh=True, xm="E"), ods(), v, t, SMALL_HW, rev=True, xview_pass=1)["mem_src"] == r["mem_src"]
+    assert run(bare_tracker(xw=1, xh=True, xm="D"), ods(), v, t, SMALL_HW, rev=True)["mem_src"] == [5000, 5006, 4006]
+    assert run(bare_tracker(xw=1, xh=True, xm="C"), ods(), v, t, SMALL_HW, rev=True)["mem_src"] == [5000, 5006, 6006]

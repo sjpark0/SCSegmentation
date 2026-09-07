@@ -88,6 +88,7 @@ Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMV
 | `MVOpt` | `demoSCSam3MVOpt` | `SegMaskSam3MVOpt` | **`all`** |
 | `MVOpt --xview-window W` (0..6) | `demoSCSam3MVOpt` | `SegMaskSam3XW{W}` (`--track-cams all`이면 `SegMaskSam3XW{W}all`) | **`closure`** |
 | `MVOpt --xview-hygiene` | `demoSCSam3MVOpt` | `SegMaskSam3XW4` | **`closure`** |
+| `MVOpt --xview-window W --xview-mode M` (M ∈ B,C,D,E) | `demoSCSam3MVOpt` | `SegMaskSam3XW{W}{M}` | **`closure`** = 의존 원뿔 (아래 함정 10) |
 | `OneStage --track-cams closure` | `demoSCSam3OneStage` | `SegMaskSam3OneStageC` (실험 행 2) | `closure` |
 
 `NEEDS_ALL_VIEWS = ("OneStageNew", "MVOpt")`. `--track-cams closure`는 카메라 `0..max(채점 시점 인덱스)`만 세션을 엽니다.
@@ -109,6 +110,10 @@ Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMV
   매니페스트에 `lineage`, `xview_window`, `xview_hygiene`, `track_cams_requested`, `track_idx`, `n_sessions`가 기록됩니다.
 - **closure == all 보조정리**: 위생 on이면 시점 v는 시점 0..v만 읽으므로 closure와 all의 출력이 같습니다(실험 행 6이 실측 검증).
   nb=0 카메라는 W에 무관하게 입력이 같으므로 XW0 vs XW4에서 정확히 0이어야 하며, 0이 아니면 비결정성·누수 신호입니다.
+- **이웃 모드 `--xview-mode`** (2026-09-08, P4): A = 이전 시점의 프레임 t(기본, 폴더 이름에 글자 없음) · B = 양쪽 시점의 t−1 ·
+  C = 이전 시점 t + 이후 시점 t−1 · D = 이전 시점 t−1 · E = 프레임당 2회 계산(1차 B, 2차 양쪽 시점의 t; 1차 출력은 버림).
+  W=0에는 모드를 줄 수 없고(대조군), `--track-cams written`과 함께 쓸 수 없습니다. 이웃 토큰의 시간 위치 부호는 모든 모드에서
+  `|offset|−1` 행으로 같습니다. 사전 등록·결과는 [phase3-neighbourhood.md](phase3-neighbourhood.md).
 
 ```bash
 XVIEW=0 LOGTAG=xw0 ./runMVOptThree.sh Blocks              # SegMaskSam3XW0, closure
@@ -268,4 +273,14 @@ DOCKER_BUILDKIT=1 docker build -t scsam3 SCSam3/     # SCSam3/hf_cache/ 가 채�
 셸 프로파일에 남아 있으면 데모가 다른 모델로 돌고, `runMVSeg.py`는 플래그 없이 이 변수가 설정돼 있으면 **실행을 거부**합니다
 (설정은 명령줄에서만 받습니다). 파싱은 엄격합니다: 빈 값은 미설정, `4`·`1`/`true`/`on`·`0`/`false`/`off`만 허용, 그 외는 `ValueError`.
 `SCSAM3_TRIM_CACHED_OUTPUTS`와 달리 `"false"`가 on을 뜻하지 않습니다.
+
+## 10. 양측 모드(B·C·E)의 closure는 "max(채점)+W"가 아니라 의존 원뿔입니다
+
+이웃이 이후 시점에서도 오면 시점 v의 프레임 start+n은 시점 v+nW(E는 v+2nW)까지 의존합니다. 그래서 `--track-cams closure`는
+모드별로 `0..min(N−1, max(채점 인덱스)+W·(num_frame−1))`(B·C), `+2W·(num_frame−1)`(E)로 계산됩니다(`runMVSeg.closure_reach`).
+W=1이면 Welder·Dog·AlexaMeadeExhibit이 24세션(B·C)·44~41세션(E), FacePaint 29·46세션이라 Phase 2의 속도 이득은 대부분 사라집니다.
+`max(채점)+1+W`로 자르면 채점 시점의 출력이 세션 수에 따라 달라지는 **다른 모델**이 됩니다(CPU 하니스로 확인). 원뿔 == all은 Welder·Dog에서 실측 검증합니다.
+
+E 모드는 `runMVSeg.run_two_pass`만 사용합니다. 프레임 t의 1차 패스(모든 세션 `next()`) 뒤, 어떤 세션이든 t+1로 넘어가기 **전에**
+`recompute_frame` 요청을 한 번 보내야 합니다 — 넘어간 뒤에는 t의 특징 캐시가 비워져 `RuntimeError`가 납니다(조용히 틀리지 않고 크게 실패하도록 둔 것).
 

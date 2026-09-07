@@ -80,3 +80,57 @@ def test_env_parsing():
         assert xview_env_hygiene({XVIEW_HYGIENE_ENV: v}) is False
     with pytest.raises(ValueError):
         xview_env_hygiene({XVIEW_HYGIENE_ENV: "maybe"})
+
+
+# ------------------------------------------------------------- hop-by-hop forwarding (AST)
+HOPS = (  # (file, class or None, function) -> the downstream builder/constructor it calls
+    (os.path.join(PKG, "SCSam3Video.py"), "SCSam3Video", "__init__", "build_scsam3_video_predictor_newmem"),
+    (os.path.join(PKG, "SCSam3VideoPredictorNewMem.py"), "SCSam3VideoPredictorNewMem", "__init__",
+     "build_scsam3_video_model_newmem"),
+    (os.path.join(PKG, "build_scsam3.py"), None, "build_scsam3_video_model_newmem", "build_tracker_newmem"),
+    (os.path.join(PKG, "build_scsam3.py"), None, "build_tracker_newmem", "SCSam3TrackerPredictorNewMem"),
+)
+
+
+def _function_node(tree, cls_name, fn_name):
+    scope = tree.body if cls_name is None else next(
+        n for n in ast.walk(tree) if isinstance(n, ast.ClassDef) and n.name == cls_name).body
+    return next(n for n in scope if isinstance(n, ast.FunctionDef) and n.name == fn_name)
+
+
+def _callee(call):
+    f = call.func
+    return f.id if isinstance(f, ast.Name) else f.attr if isinstance(f, ast.Attribute) else None
+
+
+def _check_hop(fn, callee):
+    """The body of `fn` calls `callee` exactly once, and that call carries name=name for
+    every cross-view kwarg, `name` being a parameter of `fn` itself (no literal, no other
+    variable, not hidden in a ** splat)."""
+    params = {a.arg for a in fn.args.args + fn.args.kwonlyargs}
+    calls = [n for n in ast.walk(fn) if isinstance(n, ast.Call) and _callee(n) == callee]
+    assert len(calls) == 1, (fn.name, callee, len(calls))
+    forwarded = {k.arg: k.value for k in calls[0].keywords if k.arg is not None}
+    for name in NAMES:
+        assert name in params, (fn.name, name)
+        assert name in forwarded, (fn.name, callee, name)                     # dropped keyword
+        val = forwarded[name]
+        assert isinstance(val, ast.Name) and val.id == name, (fn.name, callee, name, ast.dump(val))
+
+
+def test_hops_forward_cross_view_kwargs_ast():
+    for path, cls_name, fn_name, callee in HOPS:
+        tree = ast.parse(open(path, encoding="utf-8").read())
+        _check_hop(_function_node(tree, cls_name, fn_name), callee)
+    # the checker is sensitive: a hop that drops a keyword, binds it to a literal or to
+    # another parameter, or hides it in a splat, fails
+    good = ("def build_tracker_newmem(a, cross_view_window=None, cross_view_hygiene=None, cross_view_mode=None):\n"
+            "    return SCSam3TrackerPredictorNewMem(a, cross_view_window=cross_view_window,\n"
+            "        cross_view_hygiene=cross_view_hygiene, cross_view_mode=cross_view_mode)\n")
+    _check_hop(_function_node(ast.parse(good), None, "build_tracker_newmem"), "SCSam3TrackerPredictorNewMem")
+    for bad in (good.replace(", cross_view_mode=cross_view_mode)", ")"),
+                good.replace("cross_view_mode=cross_view_mode)", "cross_view_mode=None)"),
+                good.replace("cross_view_hygiene=cross_view_hygiene", "cross_view_hygiene=cross_view_window"),
+                good.replace(", cross_view_mode=cross_view_mode)", ", **kw)")):
+        with pytest.raises(AssertionError):
+            _check_hop(_function_node(ast.parse(bad), None, "build_tracker_newmem"), "SCSam3TrackerPredictorNewMem")
