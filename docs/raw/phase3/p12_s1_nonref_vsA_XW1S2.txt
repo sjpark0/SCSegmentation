@@ -1,0 +1,122 @@
+warning: 45 entries of /home/sjpark/Documents/SCSegmentation/Data/MVSeg/jf_xw.json overridden by /home/sjpark/Documents/SCSegmentation/Data/MVSeg/jf_p4.json, e.g. AlexaMeadeExhibit/camera_0001/SegMaskSam3XW1
+common subset: 15 datasets
+
+====================================================================================================
+as-is  (missing exports scored as empty predictions)   -   all frames, 15 datasets
+====================================================================================================
+J&F
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskSam3XW1  SegMaskSam3XW1S2
+-------------------------------------------------------
+AlexaMeadeExhibit              0.8196            0.8203
+AlexaMeadeFacePaint            0.7034            0.7036
+Barn                           0.8618            0.8630
+Blocks                         0.6792            0.6793
+Breakfast                      0.7173            0.7168
+Carpark                        0.9395            0.9396
+CoffeeMartini                  0.7651            0.7652
+Dog                            0.9014            0.9011
+Fencing                        0.9365            0.9365
+FlameSteak                     0.6626            0.6626
+Frog                           0.9754            0.9760
+MATF                           0.5365            0.5370
+Painter                        0.8618            0.8619
+PoznanStreet                   0.8553            0.8555
+Welder                         0.8004            0.8010
+-------------------------------------------------------
+AVERAGE                        0.8011            0.8013
+
+J
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskSam3XW1  SegMaskSam3XW1S2
+-------------------------------------------------------
+AlexaMeadeExhibit              0.7507            0.7511
+AlexaMeadeFacePaint            0.6908            0.6912
+Barn                           0.8073            0.8081
+Blocks                         0.6624            0.6626
+Breakfast                      0.6684            0.6681
+Carpark                        0.8957            0.8960
+CoffeeMartini                  0.7289            0.7289
+Dog                            0.9037            0.9034
+Fencing                        0.8851            0.8844
+FlameSteak                     0.6275            0.6273
+Frog                           0.9742            0.9745
+MATF                           0.4974            0.4984
+Painter                        0.8372            0.8372
+PoznanStreet                   0.8089            0.8091
+Welder                         0.7543            0.7549
+-------------------------------------------------------
+AVERAGE                        0.7662            0.7663
+
+F
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskSam3XW1  SegMaskSam3XW1S2
+-------------------------------------------------------
+AlexaMeadeExhibit              0.8884            0.8895
+AlexaMeadeFacePaint            0.7159            0.7161
+Barn                           0.9164            0.9179
+Blocks                         0.6960            0.6961
+Breakfast                      0.7662            0.7655
+Carpark                        0.9832            0.9832
+CoffeeMartini                  0.8014            0.8015
+Dog                            0.8991            0.8988
+Fencing                        0.9879            0.9885
+FlameSteak                     0.6977            0.6979
+Frog                           0.9766            0.9776
+MATF                           0.5757            0.5756
+Painter                        0.8864            0.8865
+PoznanStreet                   0.9016            0.9019
+Welder                         0.8466            0.8472
+-------------------------------------------------------
+AVERAGE                        0.8359            0.8363
+
+====================================================================================================
+AVERAGE row only, for every combination
+====================================================================================================
+AVERAGE row only, for every combination
+aggregation=pooled | frames=per row | split=nonref | weights=none | window=1 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                                       SegMaskSam3XW1  SegMaskSam3XW1S2
+-----------------------------------------------------------------------
+J&F  all frames               as-is            0.8011            0.8013
+J&F  DAVIS (drop first/last)  as-is            0.8005            0.8008
+
+====================================================================================================
+cameras binned by nb = min(view_index, 1)
+====================================================================================================
+camera J&F by nb bin, delta = SegMaskSam3XW1S2 - SegMaskSam3XW1
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | as-is (missing objects scored as empty, the DAVIS convention)
+               cameras  SegMaskSam3XW1  SegMaskSam3XW1S2    delta J&F      delta J      delta F         wins         ties       losses  cluster CI lo  cluster CI hi
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nb=0                 2          0.7224            0.7224       0.0000       0.0000       0.0000            0            2            0         0.0000         0.0000
+nb>=1               28          0.8025            0.8027       0.0003       0.0002       0.0003           20            0            8         0.0000         0.0005
+
+====================================================================================================
+paired comparison: SegMaskSam3XW1S2 - SegMaskSam3XW1
+====================================================================================================
+paired: SegMaskSam3XW1S2 - SegMaskSam3XW1
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | bootstrap=random.Random(0), rng.choices(units, k=n) per resample, 10000 resamples, percentile CI with linear interpolation between order statistics | wilcoxon=exact over the 2^m sign assignments of the m non-tied deltas for m<=22, normal approximation above | as-is (missing objects scored as empty, the DAVIS convention)
+                     n         mean       median         wins         ties       losses       sign p   wilcoxon p      wilcoxon        CI lo        CI hi  cluster CI lo  cluster CI hi
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+dataset             15       0.0002       0.0002           12            0            3      0.03516      0.04126   exact, m=15       0.0000       0.0005              -              -
+camera              30       0.0002       0.0001           20            2            8       0.0357      0.01733  normal, m=28       0.0000       0.0005         0.0000         0.0004
+
+per-dataset delta: SegMaskSam3XW1S2 - SegMaskSam3XW1
+aggregation=pooled | frames=all | split=nonref | weights=none | window=1 | datasets=15 | as-is (missing objects scored as empty, the DAVIS convention)
+                       SegMaskSam3XW1  SegMaskSam3XW1S2        delta
+--------------------------------------------------------------------
+Breakfast                      0.7173            0.7168      -0.0005
+Dog                            0.9014            0.9011      -0.0003
+Fencing                        0.9365            0.9365      -0.0001
+FlameSteak                     0.6626            0.6626       0.0000
+Painter                        0.8618            0.8619       0.0001
+CoffeeMartini                  0.7651            0.7652       0.0001
+Blocks                         0.6792            0.6793       0.0001
+Carpark                        0.9395            0.9396       0.0002
+PoznanStreet                   0.8553            0.8555       0.0003
+AlexaMeadeFacePaint            0.7034            0.7036       0.0003
+MATF                           0.5365            0.5370       0.0005
+Frog                           0.9754            0.9760       0.0006
+Welder                         0.8004            0.8010       0.0006
+AlexaMeadeExhibit              0.8196            0.8203       0.0007
+Barn                           0.8618            0.8630       0.0012
+
