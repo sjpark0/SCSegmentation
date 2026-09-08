@@ -29,7 +29,7 @@ def clean_env(monkeypatch):
 
 def ns(**kw):
     d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
-             xview_mode=None)
+             xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None)
     d.update(kw)
     return argparse.Namespace(**d)
 
@@ -287,3 +287,104 @@ def test_parse_args_mode(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks"])
     assert mod.parse_args().xview_mode is None
     assert mod.XVIEW_MODES == ("A", "B", "C", "D", "E")
+
+
+# ------------------------------------------------- P12: --xview-gate/--xview-ptr/-tpos-shift
+# (flags to set on the namespace, folder/lineage suffix, the kwargs they add)
+KNOB_TABLE = [(dict(xview_gate=True), "G", dict(cross_view_gate=True)),
+              (dict(xview_ptr=True), "P", dict(cross_view_ptr=True)),
+              (dict(xview_gate=True, xview_ptr=True), "GP",
+               dict(cross_view_gate=True, cross_view_ptr=True)),
+              (dict(xview_tpos_shift=2), "S2", dict(cross_view_tpos_shift=2)),
+              (dict(xview_tpos_shift=4), "S4", dict(cross_view_tpos_shift=4)),
+              (dict(xview_gate=True, xview_ptr=True, xview_tpos_shift=2), "GPS2",
+               dict(cross_view_gate=True, cross_view_ptr=True, cross_view_tpos_shift=2))]
+
+
+@pytest.mark.parametrize("ds", sorted(CANONICAL_K))
+def test_knob_table(ds):
+    cam_names, written = cams(ds)
+    K = CANONICAL_K[ds]
+    for flags, suffix, kwargs in KNOB_TABLE:
+        r = mod.resolve_run(ns(xview_window=1, **flags), cam_names, written, num_frame=21)
+        assert r["out_name"] == f"SegMaskSam3XW1{suffix}", (ds, suffix)
+        assert r["lineage"] == f"XW1{suffix}", (ds, suffix)
+        assert r["xview_kwargs"] == dict(cross_view_window=1, cross_view_hygiene=True, **kwargs)
+        assert (r["track_mode"], r["track_idx"]) == ("closure", list(range(K)))   # cone unchanged
+        assert r["closure_reach"] == K and r["two_pass"] is False
+        assert (r["xview_gate"], r["xview_ptr"], r["xview_tpos_shift"]) == (
+            flags.get("xview_gate", False), flags.get("xview_ptr", False),
+            flags.get("xview_tpos_shift", None) or 0)
+        # an explicit --out still wins, and the mode letter goes before the knob suffix
+        assert mod.resolve_run(ns(xview_window=1, out="SegMaskSam3XWmine", **flags),
+                               cam_names, written, num_frame=21)["out_name"] == "SegMaskSam3XWmine"
+    r = mod.resolve_run(ns(xview_window=1, xview_mode="C", xview_gate=True, xview_ptr=True),
+                        cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW1CGP" and r["lineage"] == "XW1CGP"
+    assert r["xview_kwargs"] == dict(cross_view_window=1, cross_view_hygiene=True,
+                                     cross_view_mode="C", cross_view_gate=True, cross_view_ptr=True)
+    r = mod.resolve_run(ns(xview_window=1, xview_gate=True, xview_ptr=True, track_cams="all"),
+                        cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW1GPall" and r["lineage"] == "XW1GP"
+    r = mod.resolve_run(ns(xview_window=4, xview_tpos_shift=2), cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW4S2" and r["lineage"] == "XW4S2"
+    r = mod.resolve_run(ns(xview_window=2, xview_tpos_shift=4), cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW2S4"
+    # no knob: the P4 resolution, the three new keys at their neutral values
+    r = mod.resolve_run(ns(xview_window=1), cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW1"
+    assert (r["xview_gate"], r["xview_ptr"], r["xview_tpos_shift"]) == (False, False, 0)
+    r = mod.resolve_run(ns(), cam_names, written)
+    assert (r["xview_gate"], r["xview_ptr"], r["xview_tpos_shift"]) == (False, False, 0)
+
+
+def test_knob_refusals():
+    cam_names, written = cams("Blocks")
+    for flags, _, _ in KNOB_TABLE:
+        with pytest.raises(SystemExit):                       # knobs need an XW flag
+            mod.resolve_run(ns(**flags), cam_names, written, num_frame=21)
+        with pytest.raises(SystemExit):                       # W=0 has no neighbour token
+            mod.resolve_run(ns(xview_window=0, **flags), cam_names, written, num_frame=21)
+        for algo in ("OneStage", "OneStageNew"):              # MVOpt only
+            with pytest.raises(SystemExit):
+                mod.resolve_run(ns(algo=algo, xview_window=1, **flags), cam_names, written, num_frame=21)
+            with pytest.raises(SystemExit):
+                mod.resolve_run(ns(algo=algo, **flags), cam_names, written, num_frame=21)
+        with pytest.raises(SystemExit):                       # written renumbers neighbours
+            mod.resolve_run(ns(xview_window=1, track_cams="written", **flags), cam_names, written,
+                            num_frame=21)
+        with pytest.raises(SystemExit):                       # existing legacy-folder guard
+            mod.resolve_run(ns(xview_window=1, out="SegMaskSam3MVOpt", **flags), cam_names, written,
+                            num_frame=21)
+    for W, s in ((3, 4), (6, 1), (4, 3), (2, 5)):             # W + S > 6 (S=6 is argparse's job)
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=W, xview_tpos_shift=s), cam_names, written, num_frame=21)
+    for W, s in ((1, 5), (2, 4), (4, 2)):                     # the bound itself is allowed
+        assert mod.resolve_run(ns(xview_window=W, xview_tpos_shift=s), cam_names, written,
+                               num_frame=21)["lineage"] == f"XW{W}S{s}"
+    # a namespace without the three attributes (a legacy caller) resolves as before
+    legacy = argparse.Namespace(algo="MVOpt", xview_window=1, xview_hygiene=False,
+                                track_cams=None, out=None, xview_mode=None)
+    r = mod.resolve_run(legacy, cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW1" and r["lineage"] == "XW1"
+    assert (r["xview_gate"], r["xview_ptr"], r["xview_tpos_shift"]) == (False, False, 0)
+
+
+def test_parse_args_knobs(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks", "--xview-window", "1",
+                                      "--xview-gate", "--xview-ptr"])
+    a = mod.parse_args()
+    assert (a.xview_gate, a.xview_ptr, a.xview_tpos_shift) == (True, True, None)
+    for bad in ("0", "6", "-1"):
+        monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks", "--xview-window", "1",
+                                          "--xview-tpos-shift", bad])
+        with pytest.raises(SystemExit):
+            mod.parse_args()
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks", "--xview-window", "1",
+                                      "--xview-tpos-shift", "2"])
+    a = mod.parse_args()
+    assert a.xview_tpos_shift == 2 and a.xview_gate is False
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Blocks"])
+    a = mod.parse_args()
+    assert (a.xview_gate, a.xview_ptr, a.xview_tpos_shift) == (False, False, None)
+    assert mod.XVIEW_TPOS_SHIFTS == (1, 2, 3, 4, 5)

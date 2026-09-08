@@ -26,7 +26,7 @@ REPORT.md가 낸 제안 14개 중 **5개 완료(P1·P2·P3·P6 + G1), 4개 부�
 | P9 | 하나의 propagation 계약 | ⬜ | 5 | 벤치마크 숫자 불변. P5 재전파를 안전하게 |
 | P10 | seeding 응답 생략 | ⬜ | 5 | SCHEDULE H2. 시간만 절감(120~260초 → 수초) |
 | P11 | 뷰당 detector 잔재 축소 | ⬜ | 5 | 안전한 부분집합만 |
-| P12 | 이웃 토큰 조건화 ablation | ⬜ | 3 | 이웃 obj_ptr이 가장 유망. 사전 선언 기준으로 채택/기각 |
+| P12 | 이웃 토큰 조건화 ablation | 🔶 | 3 | 진행 중(09-08). 공간축 메모리를 시간축과 같은 조건으로: G 게이트·P 이웃 포인터·S 행 이동. 사전 등록 [phase3-conditioning.md](phase3-conditioning.md) |
 | P13 | 엔지니어링 위생 묶음 | 🔶 | 0·1·2·5 | 문서·형제 폴더 패치·`.dockerignore`·매니페스트·**CPU 테스트 62개** ✅. **dead API·배너 ⬜** |
 | P14 | 이벤트 구동 cross-view 재시딩 | 🔒 | 5 | P4·P5 결과 본 뒤 |
 | G1 | 토큰 폐기(0순위) | ✅ | — | 두 토큰 모두 외부 유출 없음 확인. 이미지는 토큰 없이 재빌드 |
@@ -122,7 +122,7 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 | `RepairSeeds()` — 퇴화 시드 감지·donor 재전파 | P5 | Welder 0.8437 → ~0.879, 헤드라인 +0.0023~0.0027 | **정량화됨** |
 | 양측 창 + 경계 클리핑 + t−1 fallback | P4 | Fencing ~+0.02 | **측정됨(09-08)**: C에서 Fencing +0.052(v0 +0.079), 15개 +0.0018 vs A, 비기준은 불변. 1차 기준 미달 |
 | `--reference count` | P8 | 모든 방법 동반 상승, 순위 불변 | 프로토콜 |
-| 이웃 obj_ptr 4토큰 | P12 | 기준: nonref +0.005 초과 & reference 무손실 | 진단 실험 |
+| 이웃 obj_ptr 4토큰 + 게이트 + 행 이동 | P12 | 기준: **이웃 받는 36대(기준 카메라 포함)에서 V−XW1의 클러스터 CI가 0 제외** & 기준 카메라 무손실 ([phase3-conditioning.md](phase3-conditioning.md) §1.3; REPORT의 옛 'nonref +0.005' 기준을 대체) | 진단 실험 |
 
 **선행**: P5 구현 전 `SCSam3VideoInference.py:1855-1870` refine 분기가 같은 tracker state에 cond frame을 추가하는지 로그로 확인 (심사자 이견 지점).
 
@@ -157,7 +157,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 7 | 양측 창 (P4) | `SegMaskSam3XW1{B,C,D,E}` | ✅ 09-08 | 3 — 규칙상 A 유지, C 채택은 결정 대기 |
 | 8 | seed 복구 (P5) | `SegMaskSeedRepair` | ⬜ | 3 |
 | 9 | reference 규칙 (P8) | `*_refcount` | ⬜ | 3 |
-| 10 | 이웃 토큰 (P12) | `SegMaskSam3X_<tag>` | ⬜ | 3 |
+| 10 | 이웃 토큰 (P12) | `SegMaskSam3XW1{G,P,GP,S2,S4}` | 🔶 09-08 | 3 |
 | 11 | 설정 매칭 (E6) | `SegMaskNew1_matched` | ⬜ | 4 |
 
 행 3·4가 나왔습니다. 이후 정확도 제안(P4·P5·P8·P12)은 **XW 계열 위에서, E1 엔드포인트로** 판정합니다.

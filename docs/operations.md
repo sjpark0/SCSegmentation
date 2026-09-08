@@ -106,8 +106,17 @@ Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMV
 - **거부되는 조합** (`sys.exit`): OneStage/OneStageNew에 `--xview-*`; MVOpt에 위생 없는 `--track-cams closure`(legacy는 wrap 때문에
   closure ≠ all); XW + `--track-cams written`(이웃이 카메라 인덱스로 정의됨); XW 출력을 기본 폴더(`SegMaskSam3MVOpt` 등)에;
   legacy 실행을 `SegMaskSam3XW*` 이름에; `SCSAM3_XVIEW_*` 환경변수만 있고 플래그 없음(함정 9).
-- 실행 시 모델이 실제로 든 값을 읽어 `cross-view     window W, hygiene H`로 찍고, 명령줄과 다르면 종료합니다.
-  매니페스트에 `lineage`, `xview_window`, `xview_hygiene`, `track_cams_requested`, `track_idx`, `n_sessions`가 기록됩니다.
+- **공간축 메모리 손잡이** (2026-09-08, P12): `--xview-gate`(이웃 메모리에도 자기 프레임과 같은 `eff_iou_score > 0.01` 검사 —
+  단 must-include 없음, 점수 키가 없으면 통과) · `--xview-ptr`(이웃의 `obj_ptr`을 자기 포인터 뒤에 추가) ·
+  `--xview-tpos-shift S`(이웃 토큰의 시간 위치 행을 S만큼 밀어 "덜 최근"으로; `1..5`, 경계 W+S ≤ 6).
+  폴더 이름 문법은 `SegMaskSam3XW{W}{모드}{G}{P}{S<s>}[all]`입니다(예: `SegMaskSam3XW1GP`, `SegMaskSam3XW1S2`).
+  거부: XW 플래그 없이 손잡이만 · W=0에 손잡이 · W+S > 6 · `--xview-tpos-shift 0`(argparse) · OneStage/OneStageNew에 손잡이.
+- 실행 시 모델이 실제로 든 값을 읽어 `cross-view     window W, hygiene H, mode M, gate G, ptr P, tpos-shift S`로 찍고,
+  명령줄과 다르면 종료합니다. 매니페스트에는 `lineage`, `xview_window`, `xview_hygiene`, `xview_mode`, `xview_gate`,
+  `xview_ptr`, `xview_tpos_shift`, `xview_gate_stats`(게이트 진단), `track_cams_requested`, `track_idx`, `n_sessions`가
+  **`provenance` 블록 아래에** 기록됩니다(최상위가 아닙니다).
+- `runMVOptThree.sh`의 `XGATE`·`XPTR`·`XSHIFT`는 **비어 있지 않기만 하면 켜집니다** — `XGATE=0`도 플래그를 켭니다
+  (`TRACK`과 같은 함정). `XSHIFT=0`은 `--xview-tpos-shift 0`을 만들어 argparse가 거부하므로 실행이 죽습니다.
 - **closure == all 보조정리**: 위생 on이면 시점 v는 시점 0..v만 읽으므로 closure와 all의 출력이 같습니다(실험 행 6이 실측 검증).
   nb=0 카메라는 W에 무관하게 입력이 같으므로 XW0 vs XW4에서 정확히 0이어야 하며, 0이 아니면 비결정성·누수 신호입니다.
 - **이웃 모드 `--xview-mode`** (2026-09-08, P4): A = 이전 시점의 프레임 t(기본, 폴더 이름에 글자 없음) · B = 양쪽 시점의 t−1 ·

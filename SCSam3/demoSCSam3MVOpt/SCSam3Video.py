@@ -11,7 +11,8 @@ import os
 from io_utils import load_video_frames, AsyncVideoFrameCPUToGPU
 from itertools import chain
 class SCSam3Video:
-    def __init__(self, device, cross_view_window=None, cross_view_hygiene=None, cross_view_mode=None):
+    def __init__(self, device, cross_view_window=None, cross_view_hygiene=None, cross_view_mode=None,
+                 cross_view_gate=None, cross_view_ptr=None, cross_view_tpos_shift=None):
         gpus_to_use = range(torch.cuda.device_count())
         self.predictor_spatial = build_scsam3_video_predictor(gpus_to_use=gpus_to_use)        
         self.predictor_spatial.model.fill_hole_area = 0
@@ -27,6 +28,9 @@ class SCSam3Video:
             cross_view_window=cross_view_window,
             cross_view_hygiene=cross_view_hygiene,
             cross_view_mode=cross_view_mode,
+            cross_view_gate=cross_view_gate,
+            cross_view_ptr=cross_view_ptr,
+            cross_view_tpos_shift=cross_view_tpos_shift,
         )
         self.predictor.model.fill_hole_area = 0
         

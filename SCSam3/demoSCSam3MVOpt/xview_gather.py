@@ -29,6 +29,11 @@ convention: t is the frame being computed, "tm1" is t-1 (t+1 when tracking in re
 the seed frame is found in cond_frame_outputs.  Under two-sided modes camera 0 DOES have
 neighbours, so the nb=0 sentinel of Phase 2 does not apply; use the A-vs-D index-0
 identity and closure==all instead (SPEC_P4 §6).
+
+Phase 3 / P12 adds three conditioning knobs on the neighbour tokens (G gate, P pointer,
+S row shift; `resolve_cross_view_knobs`, `gate_cross_view`); with all three at their
+defaults the tracker's code path is today's, statement for statement
+(docs/phase3-conditioning.md).
 """
 
 UNCHANGED = object()      # "leave the caller's selected_cond_outputs as it is"
@@ -88,6 +93,92 @@ def gather_mode_for(cross_view_mode, xview_pass=None):
             raise ValueError(f"xview_pass=2 is defined for mode E only, not {cross_view_mode!r}")
         return E_PASS2_GATHER
     return _MODE_GATHER[cross_view_mode]
+
+
+# Phase 3 / P12 neighbour-token conditioning knobs (docs/phase3-conditioning.md).  All
+# opt-in; (False, False, 0) is today's XW behaviour statement for statement.
+#   G  cross_view_gate        use a neighbour entry only if it passes frame_filter's
+#                             score test (eff_iou_score > mf_threshold); see `admits`
+#                             for the two deliberate differences
+#   P  cross_view_ptr         append the neighbours' object pointers after the own ones
+#   S  cross_view_tpos_shift  neighbour v-k uses maskmem_tpos_enc row k-1+s (and, with P,
+#                             pointer position k+s) instead of row k-1.  S only moves the
+#                             neighbour inside the non-cond rows: REPORT P12's other two
+#                             variants (put the neighbour on the cond row 6, or use a mean
+#                             of rows) are OUT OF SCOPE here and are not implemented.
+# Folder / lineage suffix: G, P, S<s> in that order after the mode letter (A: no letter).
+
+
+def resolve_cross_view_knobs(cross_view_gate, cross_view_ptr, cross_view_tpos_shift,
+                             window, hygiene, num_maskmem):
+    """(gate, ptr, shift) for the constructor; None -> (False, False, 0).  Raises early.
+
+    S bound: neighbour v-k adds maskmem_tpos_enc[k-1+s] and row num_maskmem-1 is the cond
+    row, so k-1+s <= num_maskmem-2 for every k <= W  <=>  W + s <= num_maskmem-1.
+    """
+    gate = False if cross_view_gate is None else bool(cross_view_gate)
+    ptr = False if cross_view_ptr is None else bool(cross_view_ptr)
+    shift = 0 if cross_view_tpos_shift is None else int(cross_view_tpos_shift)
+    if shift < 0:
+        raise ValueError(f"cross_view_tpos_shift={shift}: must be >= 0")
+    if window + shift > num_maskmem - 1:
+        raise ValueError(
+            f"cross_view_window={window} + cross_view_tpos_shift={shift} > {num_maskmem - 1}: "
+            f"neighbour v-{window} would use maskmem_tpos_enc row {window - 1 + shift}, "
+            f"but row {num_maskmem - 1} is the cond-frame row (W + s <= {num_maskmem - 1})")
+    if (gate or ptr or shift) and not hygiene:
+        raise ValueError("cross_view_gate / cross_view_ptr / cross_view_tpos_shift need "
+                         "cross_view_hygiene=True (XW lineage only)")
+    return gate, ptr, shift
+
+
+def admits(out, threshold):
+    """G's admission test for one stored neighbour output: eff_iou_score > threshold.
+
+    This is frame_filter's score test (sam3_tracker_base.py:548, strict >) with two
+    deliberate differences.  (i) No must-include: the temporal must-include (:554-555)
+    keeps the OWN track continuous, and a neighbour provides no such continuity.  (ii)
+    The no-key case is INVERTED: frame_filter SKIPS an entry that carries no
+    "eff_iou_score" (:540-544), this returns True and ADMITS it, because for a neighbour
+    "no key" means memory selection is off, or the entry is a seed cond entry reached
+    under a t-1 mode -- neither is evidence against the entry.
+    """
+    score = out.get("eff_iou_score", None)
+    return score is None or bool(score > threshold)
+
+
+def gate_cross_view(s_pos_and_prevs, threshold, apply):
+    """(entries, n_seen, n_fail).  n_seen = non-None entries, n_fail = those failing
+    `admits`.  apply=True (G on) returns only the admitted entries; apply=False returns the
+    input list unchanged (the counts are still taken, so a P-only run reports how many
+    no-object pointers it injected)."""
+    n_seen = n_fail = 0
+    kept = []
+    for s_pos, prev in s_pos_and_prevs:
+        if prev is None:
+            continue
+        n_seen += 1
+        if admits(prev, threshold):
+            kept.append((s_pos, prev))
+        else:
+            n_fail += 1
+    return (kept if apply else s_pos_and_prevs), n_seen, n_fail
+
+
+def new_xview_stats():
+    """Counters the tracker keeps while any knob is on; runMVSeg.xview_stats_summary reads
+    them.  per_view[spatial_idx][frame_idx] = (n_seen, n_fail), summed over the per-object
+    calls of that (session, frame)."""
+    return {"calls": 0, "nb_seen": 0, "nb_fail": 0, "per_view": {}}
+
+
+def record_xview(stats, spatial_idx, frame_idx, n_seen, n_fail):
+    stats["calls"] += 1
+    stats["nb_seen"] += n_seen
+    stats["nb_fail"] += n_fail
+    per = stats["per_view"].setdefault(spatial_idx, {})
+    seen, fail = per.get(frame_idx, (0, 0))
+    per[frame_idx] = (seen + n_seen, fail + n_fail)
 
 
 def _offsets(mode, window):

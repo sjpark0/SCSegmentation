@@ -39,6 +39,9 @@ class SCSam3VideoPredictorNewMem:
         cross_view_window=None,
         cross_view_hygiene=None,
         cross_view_mode=None,
+        cross_view_gate=None,
+        cross_view_ptr=None,
+        cross_view_tpos_shift=None,
     ):
         self.async_loading_frames = async_loading_frames
         self.video_loader_type = video_loader_type
@@ -56,6 +59,9 @@ class SCSam3VideoPredictorNewMem:
                 cross_view_window=cross_view_window,
                 cross_view_hygiene=cross_view_hygiene,
                 cross_view_mode=cross_view_mode,
+                cross_view_gate=cross_view_gate,
+                cross_view_ptr=cross_view_ptr,
+                cross_view_tpos_shift=cross_view_tpos_shift,
             )
             .cuda()
             .eval()

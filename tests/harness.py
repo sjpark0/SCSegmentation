@@ -20,7 +20,8 @@ GOLDEN_HW = 72            # 1008 / 14: the real memory grid, 5184 tokens per mem
 SMALL_HW = 8              # for the lockstep drives
 
 
-def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=None, xh=None, xm=None):
+def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=None, xh=None,
+                 xm=None, xg=None, xp=None, xs=None, mf=0.01):
     tr = M.SCSam3TrackerPredictorNewMem.__new__(M.SCSam3TrackerPredictorNewMem)
     torch.nn.Module.__init__(tr)
     tr.training = False
@@ -34,7 +35,7 @@ def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=N
     tr.memory_temporal_stride_for_eval = 1
     tr.use_memory_selection = use_sel
     tr.max_obj_ptrs_in_encoder = 16
-    tr.mf_threshold = 0.01
+    tr.mf_threshold = mf
     tr.cond_frame_spatial_embedding = None
     tr.cond_frame_obj_ptr_embedding = None
     torch.manual_seed(7)
@@ -56,16 +57,31 @@ def bare_tracker(num_maskmem=7, max_cond=4, keep_first=False, use_sel=True, xw=N
     # what __init__ would have done (the bare instance skipped it)
     tr.cross_view_window, tr.cross_view_hygiene = M.resolve_cross_view(xw, xh, num_maskmem)
     tr.cross_view_mode = M.resolve_cross_view_mode(xm, tr.cross_view_hygiene)
+    tr.cross_view_gate, tr.cross_view_ptr, tr.cross_view_tpos_shift = M.resolve_cross_view_knobs(
+        xg, xp, xs, tr.cross_view_window, tr.cross_view_hygiene, num_maskmem)
+    tr.xview_stats = M.new_xview_stats()
+    # record the rel_pos_list handed to _get_tpos_enc (pointer temporal positions)
+    tr._tpos_calls = []
+    _orig_tpos = tr._get_tpos_enc
+
+    def _rec_tpos(rel_pos_list, device, max_abs_pos=None, dummy=False):
+        tr._tpos_calls.append((list(rel_pos_list), max_abs_pos))
+        return _orig_tpos(rel_pos_list, device, max_abs_pos=max_abs_pos, dummy=dummy)
+    tr._get_tpos_enc = _rec_tpos
     return tr
 
 
 def mem_out(frame, view, hw=GOLDEN_HW, eff=1.0):
+    """One stored output; eff=None omits "eff_iou_score" (memory selection off, or the
+    consolidated seed cond entry, which never carries the key)."""
     val = float(1000 * view + frame)
-    return {"maskmem_features": torch.full((1, MEM, hw, hw), val),
-            "maskmem_pos_enc": [torch.zeros(1, MEM, hw, hw)],
-            "obj_ptr": torch.full((1, C), val),
-            "object_score_logits": torch.tensor([[10.0]]),
-            "eff_iou_score": torch.tensor([eff])}
+    out = {"maskmem_features": torch.full((1, MEM, hw, hw), val),
+           "maskmem_pos_enc": [torch.zeros(1, MEM, hw, hw)],
+           "obj_ptr": torch.full((1, C), val),
+           "object_score_logits": torch.tensor([[10.0]])}
+    if eff is not None:
+        out["eff_iou_score"] = torch.tensor(float(eff))      # 0-dim, like cal_mem_score
+    return out
 
 
 def output_dicts_lockstep(N, v, t, start=0, hw=GOLDEN_HW, all_hold_t=False):
@@ -88,6 +104,7 @@ def call(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, rev=False, xview_pass=None)
     feats = [torch.zeros(seq, 1, C)]
     pos = [torch.zeros(seq, 1, C)]
     tr.transformer.encoder.calls.clear()
+    tr._tpos_calls.clear()
     with torch.no_grad():          # obj_ptr_tpos_proj is a Linear: keep the record grad-free
         tr._prepare_memory_conditioned_features_multiple(
             frame_idx=t, spatial_idx=v, is_init_cond_frame=False,
@@ -108,7 +125,9 @@ def run(tr, ods, v, t, hw=GOLDEN_HW, num_frames=22, xview_pass=None, rev=False):
     tpos_rows = [int(ppos[i * seq, 0, 0].item()) for i in range(n_mem)]
     ptr_src = [int(prompt[n_mem * seq + k * per_ptr, 0, 0].item()) for k in range(nptr // per_ptr)]
     return dict(n_mem=n_mem, mem_src=mem_src, tpos_rows=tpos_rows, n_ptr_tokens=nptr,
-                ptr_src=ptr_src, prompt=prompt, ppos=ppos)
+                ptr_src=ptr_src, prompt=prompt, ppos=ppos,
+                ptr_pos=(tr._tpos_calls[-1][0] if tr._tpos_calls else []),
+                max_abs_pos=(tr._tpos_calls[-1][1] if tr._tpos_calls else None))
 
 
 # ------------------------------------------------------------- lockstep drive

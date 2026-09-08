@@ -8,8 +8,9 @@ from collections import OrderedDict
 import torch
 from sam3.model.sam3_tracker_base import concat_points, NO_OBJ_SCORE, Sam3TrackerBase
 from sam3.model.sam3_tracker_utils import fill_holes_in_mask_scores, select_closest_cond_frames
-from xview_gather import (gather_cross_view_memories, gather_mode_for, resolve_cross_view,
-                          resolve_cross_view_mode, UNCHANGED)
+from xview_gather import (gather_cross_view_memories, gather_mode_for, gate_cross_view,
+                          new_xview_stats, record_xview, resolve_cross_view,
+                          resolve_cross_view_knobs, resolve_cross_view_mode, UNCHANGED)
 from tqdm.auto import tqdm
 import cv2
 import os
@@ -47,6 +48,12 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         cross_view_hygiene=None,
         # Phase 3 / P4 neighbourhood variant "A".."E"; None -> "A" (the Phase 2 gather).
         cross_view_mode=None,
+        # Phase 3 / P12 conditioning knobs on the neighbour tokens: G gate, P pointer, S
+        # tpos row shift.  None -> (False, False, 0) = today's XW path, statement for
+        # statement (xview_gather.resolve_cross_view_knobs).
+        cross_view_gate=None,
+        cross_view_ptr=None,
+        cross_view_tpos_shift=None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -66,6 +73,12 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
         self.cross_view_window, self.cross_view_hygiene = resolve_cross_view(
             cross_view_window, cross_view_hygiene, self.num_maskmem)
         self.cross_view_mode = resolve_cross_view_mode(cross_view_mode, self.cross_view_hygiene)
+        self.cross_view_gate, self.cross_view_ptr, self.cross_view_tpos_shift = resolve_cross_view_knobs(
+            cross_view_gate, cross_view_ptr, cross_view_tpos_shift,
+            self.cross_view_window, self.cross_view_hygiene, self.num_maskmem)
+        # P12 counters (neighbour entries seen / failing admission per session and frame),
+        # filled only while a knob is on; runMVSeg reads them for the log and MANIFEST.json.
+        self.xview_stats = new_xview_stats()
 
     @torch.inference_mode()
     def init_state(
@@ -1336,6 +1349,19 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
             )
             if rebound is not UNCHANGED:
                 selected_cond_outputs = rebound
+            # P12 G (docs/phase3-conditioning.md): use a neighbour entry only if it passes
+            # frame_filter's score test for the own non-cond memories (eff_iou_score >
+            # mf_threshold, sam3_tracker_base.py:548), with two deliberate differences --
+            # no must-include for neighbours, and an entry WITHOUT the key is admitted
+            # (frame_filter skips such an entry; for a neighbour "no key" means memory
+            # selection is off, or the entry is a seed cond entry under a t-1 mode).  See
+            # xview_gather.admits.  The neighbour token loop below and the P block both
+            # read the gated list, so one decision covers both channels.  With every knob
+            # off this block does not run: today's XW path, statement for statement.
+            if self.cross_view_gate or self.cross_view_ptr or self.cross_view_tpos_shift:
+                s_pos_and_prevs, n_nb_seen, n_nb_fail = gate_cross_view(
+                    s_pos_and_prevs, self.mf_threshold, apply=self.cross_view_gate)
+                record_xview(self.xview_stats, spatial_idx, frame_idx, n_nb_seen, n_nb_fail)
             
             for t_pos, prev, is_selected_cond_frame in t_pos_and_prevs:
                 if prev is None:
@@ -1383,7 +1409,7 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
                 maskmem_enc = maskmem_enc.flatten(2).permute(2, 0, 1)
                 # Temporal positional encoding                
                 maskmem_enc = (
-                    maskmem_enc + self.maskmem_tpos_enc[abs(s_pos) - 1]
+                    maskmem_enc + self.maskmem_tpos_enc[abs(s_pos) - 1 + self.cross_view_tpos_shift]
                 )
                 to_cat_prompt_pos_embed.append(maskmem_enc)
 
@@ -1439,6 +1465,31 @@ class SCSam3TrackerPredictorNewMem(Sam3TrackerBase):
                 )
                 if out is not None:
                     pos_and_ptrs.append((t_diff, out["obj_ptr"], False))
+
+            # P12 P: the neighbours' object pointers for the gathered frame, appended AFTER
+            # the own pointers.  The own list keeps its cap (max_obj_ptrs_in_encoder bounds
+            # the own loop above and stays the tpos normaliser); the neighbours are extra
+            # tokens, as the neighbour memories are extra beyond num_maskmem.  The own list
+            # is 1 cond + <= 15 non-cond = <= 16 pointers with memory selection ON and OFF
+            # alike (frame_filter appends must_include AFTER its >= max_num-1 break, so
+            # len(valid_indices) reaches 16), so W=1 with P reaches <= 17 pointers = 68
+            # tokens on late frames: the nominal 16 is exceeded by one, by design, and
+            # harmlessly (the encoder has no cap; max_obj_ptrs_in_encoder only bounds the
+            # own loop and normalises the positions).  Temporal position = the alias the
+            # neighbour's memory token carries: v-k is "k frames ago" -> t_diff = k + S,
+            # positive in both tracking directions like the own non-cond t_diff.  The list
+            # is the G-gated one (None entries only when G is off).  Batch: the neighbour
+            # obj_ptr is [B, C] with the same B (one object per tracker state,
+            # SCSam3VideoInferenceNewMem.py:1058-1071), the assumption the neighbour memory
+            # loop already makes.  Nothing downstream changes: one stack, one _get_tpos_enc
+            # call, the 4-way split, num_obj_ptr_tokens = obj_ptrs.shape[0].
+            if self.cross_view_ptr:
+                for s_pos, prev in s_pos_and_prevs:
+                    if prev is None:
+                        continue
+                    pos_and_ptrs.append(
+                        (abs(s_pos) + self.cross_view_tpos_shift, prev["obj_ptr"].to(device), False)
+                    )
 
             # If we have at least one object pointer, add them to the across attention
             if len(pos_and_ptrs) > 0:

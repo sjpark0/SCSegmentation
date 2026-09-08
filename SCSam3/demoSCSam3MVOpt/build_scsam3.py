@@ -522,6 +522,7 @@ def build_tracker(
 def build_tracker_newmem(
     apply_temporal_disambiguation: bool, with_backbone: bool = False, compile_mode=None,
     cross_view_window=None, cross_view_hygiene=None, cross_view_mode=None,
+    cross_view_gate=None, cross_view_ptr=None, cross_view_tpos_shift=None,
 ) -> SCSam3TrackerPredictorNewMem:
     """
     Build the SAM3 Tracker module for video tracking.
@@ -577,6 +578,9 @@ def build_tracker_newmem(
         cross_view_window=cross_view_window,
         cross_view_hygiene=cross_view_hygiene,
         cross_view_mode=cross_view_mode,
+        cross_view_gate=cross_view_gate,
+        cross_view_ptr=cross_view_ptr,
+        cross_view_tpos_shift=cross_view_tpos_shift,
     )
 
     return model
@@ -899,6 +903,9 @@ def build_scsam3_video_model_newmem(
     cross_view_window=None,
     cross_view_hygiene=None,
     cross_view_mode=None,
+    cross_view_gate=None,
+    cross_view_ptr=None,
+    cross_view_tpos_shift=None,
 ) -> SCSam3VideoInferenceWithInstanceInteractivityNewMem:
     """
     Build SAM3 dense tracking model.
@@ -921,6 +928,9 @@ def build_scsam3_video_model_newmem(
         cross_view_window=cross_view_window,
         cross_view_hygiene=cross_view_hygiene,
         cross_view_mode=cross_view_mode,
+        cross_view_gate=cross_view_gate,
+        cross_view_ptr=cross_view_ptr,
+        cross_view_tpos_shift=cross_view_tpos_shift,
     )
 
     # Build Detector components

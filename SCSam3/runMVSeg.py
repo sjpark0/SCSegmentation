@@ -23,6 +23,7 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
     python runMVSeg.py Blocks --algo OneStage --out SegMaskSam3OneStage
     python runMVSeg.py Welder --algo MVOpt --xview-window 0   # -> SegMaskSam3XW0, closure
     python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-mode B   # -> SegMaskSam3XW1B, closure cone
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-gate --xview-ptr   # -> SegMaskSam3XW1GP
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -64,6 +65,14 @@ XVIEW_MODES = ("A", "B", "C", "D", "E")
 XVIEW_LEGACY_MODE = "A"
 XVIEW_TWO_PASS = ("E",)
 XVIEW_CLOSURE_GROWTH = {"A": 0, "B": 1, "C": 1, "D": 0, "E": 2}
+# Phase 3 / P12 conditioning knobs on the neighbour tokens (docs/phase3-conditioning.md):
+# G gate, P pointer, S tpos row shift.  Folder SegMaskSam3XW{W}{mode}{G}{P}{S<s>} (A has no
+# mode letter: XW1G, XW1P, XW1GP, XW1S2, XW1S4).  Bound: neighbour v-W adds temporal row
+# W-1+s <= 5 (row 6 is the cond row), so W + s <= XVIEW_MAX_WINDOW.  Shift 0 is "no knob":
+# the flag does not accept it (a shift-0 run would resolve to the bare XW{W} folder).  S
+# moves the neighbour inside the non-cond rows only; REPORT P12's cond-row (row 6) and
+# mean-of-rows variants are out of scope for this flag.
+XVIEW_TPOS_SHIFTS = tuple(range(1, XVIEW_MAX_WINDOW))      # 1..5
 
 
 def parse_args():
@@ -102,6 +111,20 @@ def parse_args():
                          "neighbours' pass-1 t. Folder SegMaskSam3XW{W}{mode}. Needs "
                          "--xview-window W >= 1. closure = the dependency cone "
                          "(A/D: max(scored)+1; B/C: +W per tracked frame; E: +2W).")
+    ap.add_argument("--xview-gate", action="store_true",
+                    help="P12 G: use a neighbour's memory token (and, with --xview-ptr, its "
+                         "pointer) only if the neighbour's output passes the score test "
+                         "frame_filter applies to the own memories (eff_iou_score > 0.01; "
+                         "an entry carrying no score is kept). Folder suffix G.")
+    ap.add_argument("--xview-ptr", action="store_true",
+                    help="P12 P: append the neighbours' object pointers (4 tokens each) after "
+                         "the own pointers, at the temporal position their memory token "
+                         "aliases (v-k -> k frames ago). Folder suffix P.")
+    ap.add_argument("--xview-tpos-shift", type=int, choices=XVIEW_TPOS_SHIFTS, metavar="S",
+                    default=None,
+                    help="P12 S: neighbour v-k uses temporal row k-1+S instead of k-1 (and "
+                         "pointer position k+S with --xview-ptr). 1..5, W + S <= 6. Folder "
+                         "suffix S<S>.")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -175,6 +198,13 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
     mode = getattr(args, "xview_mode", None)          # None -> "A" (the Phase 2 gather)
     if mode is not None and not xview_on:
         sys.exit("--xview-mode needs an XW flag (--xview-window W, or --xview-hygiene for W=4)")
+    gate = bool(getattr(args, "xview_gate", False))
+    ptr = bool(getattr(args, "xview_ptr", False))
+    shift = getattr(args, "xview_tpos_shift", None) or 0     # None / 0 -> no S knob
+    knobs_on = gate or ptr or bool(shift)
+    if knobs_on and not xview_on:
+        sys.exit("--xview-gate/--xview-ptr/--xview-tpos-shift need an XW flag "
+                 "(--xview-window W, or --xview-hygiene for W=4)")
     if xview_on and args.algo not in XVIEW_ALGOS:
         sys.exit(f"--xview-window/--xview-hygiene are wired into {XVIEW_ALGOS} only "
                  f"(OneStage has no cross-view memory, OneStageNew is frozen)")
@@ -188,6 +218,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
     xview_kwargs = {}
     lineage = "legacy"
     mode_eff = XVIEW_LEGACY_MODE
+    knob_suffix = ""
     if xview_on:
         window = 4 if args.xview_window is None else args.xview_window
         xview_kwargs = dict(cross_view_window=window, cross_view_hygiene=True)
@@ -197,7 +228,21 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
         if mode_eff != XVIEW_LEGACY_MODE and window == 0:
             sys.exit(f"--xview-mode {mode_eff} with --xview-window 0 reads no neighbour; W=0 is "
                      "the control XW0 (drop --xview-mode)")
-        lineage = f"XW{window}" + ("" if mode_eff == XVIEW_LEGACY_MODE else mode_eff)
+        if knobs_on and window == 0:
+            sys.exit("--xview-gate/--xview-ptr/--xview-tpos-shift act on neighbour tokens and "
+                     "--xview-window 0 has none (W=0 is the control XW0)")
+        if shift and window + shift > XVIEW_MAX_WINDOW:
+            sys.exit(f"--xview-window {window} + --xview-tpos-shift {shift} > {XVIEW_MAX_WINDOW}: "
+                     f"neighbour v-{window} would use temporal row {window - 1 + shift}, but row "
+                     f"{XVIEW_MAX_WINDOW} is the cond-frame row (W + S <= {XVIEW_MAX_WINDOW})")
+        if gate:                                      # only a given knob reaches the tracker
+            xview_kwargs["cross_view_gate"] = True
+        if ptr:
+            xview_kwargs["cross_view_ptr"] = True
+        if shift:
+            xview_kwargs["cross_view_tpos_shift"] = shift
+        knob_suffix = ("G" if gate else "") + ("P" if ptr else "") + (f"S{shift}" if shift else "")
+        lineage = f"XW{window}" + ("" if mode_eff == XVIEW_LEGACY_MODE else mode_eff) + knob_suffix
 
     if args.track_cams is not None:
         track_mode = args.track_cams
@@ -232,7 +277,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
         # closure is the XW default and keeps the bare name; an `all` run is a
         # different session set (experiment row 6 compares the two), so it gets its own
         out_name = (f"{XVIEW_OUT_PREFIX}{window}" + ("" if mode_eff == XVIEW_LEGACY_MODE else mode_eff)
-                    + ("all" if track_mode == "all" else ""))
+                    + knob_suffix + ("all" if track_mode == "all" else ""))
     elif track_mode == "closure":            # OneStage only: the guard above excludes the rest
         out_name = ONESTAGE_CLOSURE_OUT
     else:
@@ -249,7 +294,8 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
                 two_pass=bool(xview_on and mode_eff in XVIEW_TWO_PASS),
-                closure_reach=(len(track_idx) if track_mode == "closure" else None))
+                closure_reach=(len(track_idx) if track_mode == "closure" else None),
+                xview_gate=gate, xview_ptr=ptr, xview_tpos_shift=shift)
 
 
 def build_runner(algo):
@@ -444,6 +490,28 @@ def run_two_pass(sc, start_frame, num_frame, cam_names, written_cams, out_dir, c
         print(f"  frame {frame_idx} written", flush=True)
 
 
+def xview_stats_summary(stats, gate):
+    """JSON-clean summary of the tracker's P12 counters (xview_gather.new_xview_stats):
+    for the log line and MANIFEST.json (under "provenance").  None when nothing was
+    recorded (no knob on).  A cell is one (session, frame); its counts are summed over
+    the per-object calls."""
+    if not stats or not stats.get("calls"):
+        return None
+    per_view, cells, cells_fail = {}, 0, 0
+    for v in sorted(stats["per_view"]):
+        frames = stats["per_view"][v]
+        frames_fail = sorted((t, f) for t, (_, f) in frames.items() if f)
+        cells += len(frames)
+        cells_fail += len(frames_fail)
+        per_view[str(v)] = {"seen": sum(s for s, _ in frames.values()),
+                            "fail": sum(f for _, f in frames.values()),
+                            "frames_fail": [[int(t), int(f)] for t, f in frames_fail]}
+    return {"gate": bool(gate), "calls": int(stats["calls"]),
+            "nb_seen": int(stats["nb_seen"]), "nb_fail": int(stats["nb_fail"]),
+            "nb_dropped": int(stats["nb_fail"]) if gate else 0,
+            "cells": cells, "cells_fail": cells_fail, "per_view": per_view}
+
+
 def main():
     args = parse_args()
     c = load_config(args.config, args.dataset)
@@ -496,13 +564,18 @@ def main():
     eff_window = getattr(tracker, "cross_view_window", None)
     eff_hygiene = getattr(tracker, "cross_view_hygiene", None)
     eff_mode = getattr(tracker, "cross_view_mode", None)
+    eff_gate = getattr(tracker, "cross_view_gate", None)
+    eff_ptr = getattr(tracker, "cross_view_ptr", None)
+    eff_shift = getattr(tracker, "cross_view_tpos_shift", None)
+    got = (eff_window, eff_hygiene, eff_mode, eff_gate, eff_ptr, eff_shift)
     if args.algo in XVIEW_ALGOS:
         want = ((run["xview_window"] if run["xview_on"] else 4), run["xview_on"],
-                (run["xview_mode_eff"] if run["xview_on"] else XVIEW_LEGACY_MODE))
-        if (eff_window, eff_hygiene, eff_mode) != want:
-            sys.exit(f"tracker holds cross_view=({eff_window}, {eff_hygiene}, {eff_mode}) but the "
-                     f"command line asked for {want}")
-    print(f"cross-view     window {eff_window}, hygiene {eff_hygiene}, mode {eff_mode}", flush=True)
+                (run["xview_mode_eff"] if run["xview_on"] else XVIEW_LEGACY_MODE),
+                run["xview_gate"], run["xview_ptr"], run["xview_tpos_shift"])
+        if got != want:
+            sys.exit(f"tracker holds cross_view={got} but the command line asked for {want}")
+    print(f"cross-view     window {eff_window}, hygiene {eff_hygiene}, mode {eff_mode}, "
+          f"gate {eff_gate}, ptr {eff_ptr}, tpos-shift {eff_shift}", flush=True)
     sc.LoadCameraFolders(video_root, cam_names, c["start_frame"], track_idx)
     print(f"sessions ready ({sc.numImage} cameras loaded, "
           f"{len(track_idx)} tracked [{track_mode}], "
@@ -555,6 +628,13 @@ def main():
                                 mask.squeeze().astype(np.uint8) * 255)
             print(f"  frame {response['frame_index']} written", flush=True)
 
+    # P12 counters (filled only while a knob is on): one summary line, and the manifest.
+    xstats = xview_stats_summary(getattr(tracker, "xview_stats", None), eff_gate)
+    if xstats is not None:
+        print(f"cross-view     neighbour entries seen {xstats['nb_seen']}, failing admission "
+              f"{xstats['nb_fail']} (dropped {xstats['nb_dropped']}), cells with a failure "
+              f"{xstats['cells_fail']}/{xstats['cells']}", flush=True)
+
     print(f"done -> {out_dir}", flush=True)
 
     # Provenance manifest, <out_dir>/MANIFEST.json (ROADMAP Phase 1, REPORT.md
@@ -590,7 +670,9 @@ def main():
                    "track_idx": run["track_idx"], "n_sessions": len(run["track_idx"]),
                    "scored_view_idx": run["scored_idx"],
                    "xview_mode": eff_mode, "two_pass": run["two_pass"],
-                   "closure_reach": run["closure_reach"]})
+                   "closure_reach": run["closure_reach"],
+                   "xview_gate": eff_gate, "xview_ptr": eff_ptr, "xview_tpos_shift": eff_shift,
+                   "xview_gate_stats": xstats})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
         print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)
