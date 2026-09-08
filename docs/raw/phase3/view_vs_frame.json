@@ -1,0 +1,137 @@
+{
+ "AlexaMeadeExhibit": {
+  "n": 39,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 0.9743589743589743,
+  "ratio_median": 262.8117528478786,
+  "views": 3
+ },
+ "Carpark": {
+  "n": 104,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 15.159682316334983,
+  "views": 8
+ },
+ "Blocks": {
+  "n": 117,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 32.05450059606091,
+  "views": 9
+ },
+ "Breakfast": {
+  "n": 117,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 48.88603221513457,
+  "views": 9
+ },
+ "Barn": {
+  "n": 130,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 50.24761201409079,
+  "views": 10
+ },
+ "AlexaMeadeFacePaint": {
+  "n": 104,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 0.9326923076923077,
+  "ratio_median": 104.6342871664246,
+  "views": 8
+ },
+ "Dog": {
+  "n": 39,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 257.2135624464336,
+  "views": 3
+ },
+ "Fencing": {
+  "n": 117,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 0.905982905982906,
+  "ratio_median": 9.969747329364699,
+  "views": 9
+ },
+ "Frog": {
+  "n": 117,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 2.5336529080215535,
+  "views": 9
+ },
+ "MATF": {
+  "n": 117,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 33.78304663694433,
+  "views": 9
+ },
+ "PoznanStreet": {
+  "n": 104,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 4.987809726252117,
+  "views": 8
+ },
+ "Welder": {
+  "n": 39,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 0.9487179487179487,
+  "ratio_median": 60.82581348966649,
+  "views": 3
+ },
+ "Painter": {
+  "n": 195,
+  "k_median": 8,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 11.39674966252013,
+  "views": 15
+ },
+ "CoffeeMartini": {
+  "n": 182,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 1.0,
+  "ratio_median": 76.56862490806597,
+  "views": 14
+ },
+ "FlameSteak": {
+  "n": 208,
+  "k_median": 8.0,
+  "k_q1": 8,
+  "k_q3": 8,
+  "k_frac_at_max": 0.9759615384615384,
+  "ratio_median": 55.10990773239159,
+  "views": 16
+ }
+}
