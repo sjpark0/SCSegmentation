@@ -22,7 +22,7 @@ REPORT.md가 낸 제안 14개 중 **5개 완료(P1·P2·P3·P6 + G1), 4개 부�
 | P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
 | P7 | spatial predictor 은퇴 + autocast 정리 + fp16 프레임 | 🔶 | — | 은퇴·autocast ✅(S6). **fp16 ❌** — 출력 변경 확인, fp32(S5)로 대체 |
-| P8 | reference 규칙(객체 수) + ceiling 열 | ✅ | 1 → 3 | **MUVOD의 c_ini로 대체됐습니다.** 자체 규칙(max-id·객체 수)은 17개 중 14개에서 벤치마크가 쓰는 카메라와 다릅니다. `--ref-cam muvod`가 장면별 c_ini로 시딩합니다 ([muvod-protocol.md](muvod-protocol.md)). ceiling 열은 내부 진단으로만 남깁니다 |
+| P8 | reference 규칙(객체 수) + ceiling 열 | ✅ | 1 → 3 | **MUVOD의 c_ini로 대체됐습니다.** 자체 규칙(max-id·객체 수)은 17개 중 15개에서 벤치마크가 쓰는 카메라와 다릅니다. `--ref-cam muvod`가 장면별 c_ini로 시딩합니다 ([muvod-protocol.md](muvod-protocol.md)). ceiling 열은 내부 진단으로만 남깁니다 |
 | P9 | 하나의 propagation 계약 | ⬜ | 5 | 벤치마크 숫자 불변. P5 재전파를 안전하게 |
 | P10 | seeding 응답 생략 | ⬜ | 5 | SCHEDULE H2. 시간만 절감(120~260초 → 수초) |
 | P11 | 뷰당 detector 잔재 축소 | ⬜ | 5 | 안전한 부분집합만 |
@@ -194,7 +194,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 열린 항목: P4의 C 모드(이후 시점도 t−1로 봄)는 기준 카메라를 회복했으나 GPS4와 함께 돌려 본 적이 없습니다(한 스윕 약 50분).
 
 **2026-09-09 단서.** 이 구성은 자체 기준 카메라 규칙으로 고른 것이고, MUVOD의 c_ini는 17개 중
-14개에서 다른 카메라입니다. 절제 실험의 **차이**는 그대로 유효하지만, 대외 수치는 c_ini에서 다시
+15개에서 다른 카메라입니다. 절제 실험의 **차이**는 그대로 유효하지만, 대외 수치는 c_ini에서 다시
 돌린 `SegMaskSam3XW1GPS4M`과 `SegMaskSam3XW0M`으로 냅니다.
 
 ## 갱신 이력

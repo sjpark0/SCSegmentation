@@ -110,8 +110,23 @@ Dog 장면 자체의 좌표에서 중심에 조금 더 가까운 **camera_0002**
 ## 3. 우리가 쓰던 기준 카메라와 무엇이 다른가
 
 기존 러너는 `pick_reference`로 **첫 프레임의 객체 번호 최댓값이 가장 큰 카메라**를 골랐고, 동점이면
-`cam_list`의 첫 항목이 이겼습니다. 이 규칙은 17개 장면 중 **14개에서 c_ini와 다른 카메라**를 고릅니다.
+`cam_list`의 첫 항목이 이겼습니다. 이 규칙은 17개 장면 중 **15개에서 c_ini와 다른 카메라**를 고릅니다 (같은 것은 AlexaMeadeExhibit과 Welder 둘뿐입니다).
 동점이 잦아 사실상 "번호가 가장 작은 카메라", 즉 리그 가장자리를 고르는 일이 많았습니다.
+
+| 장면 | `pick_reference` | c_ini | | 장면 | `pick_reference` | c_ini |
+|---|---|---|---|---|---|---|
+| AlexaMeadeExhibit | camera_0001 | camera_0001 | 같음 | Fencing | v0 | v4 | 다름 |
+| AlexaMeadeFacePaint | camera_0008 | camera_0007 | 다름 | FlameSteak | cam10 | cam16 | 다름 |
+| Barn | v0 | v7 | 다름 | Frog | v4 | v7 | 다름 |
+| Blocks | cam9 | cam4 | 다름 | MATF | S1_CAM_1 | S1_CAM_4 | 다름 |
+| Breakfast | v5 | v7 | 다름 | MartialArts | v5 | v9 | 다름 |
+| CBABasketball | v06 | v20 | 다름 | Painter | v15 | v6 | 다름 |
+| Carpark | v0 | v4 | 다름 | PoznanStreet | v0 | v4 | 다름 |
+| CoffeeMartini | cam02 | cam16 | 다름 | Welder | camera_0001 | camera_0001 | 같음 |
+| Dog | camera_0003 | camera_0002 | 다름 | | | | |
+
+**기준 카메라는 채점 옵션이 아니라 실행 자체를 바꿉니다.** 정답 마스크를 어느 카메라에 주고 시작하느냐가
+바뀌므로, 예전 폴더를 다시 채점하는 것으로는 대체할 수 없고 다시 돌려야 합니다.
 
 그래서 기준 카메라를 실행 시점에 지정할 수 있게 했습니다.
 

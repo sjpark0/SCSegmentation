@@ -4,6 +4,11 @@
 
 # 실험 — MVSeg J&F
 
+> **2026-09-09 MUVOD 프로토콜.** 이 데이터셋은 MUVOD 벤치마크(arXiv:2507.07519)가 배포한 것이고 그 논문에 기존 방법의 J&F가 실려 있습니다.
+> **외부와 견주는 수치는 이제 전부 `eval/report_jf.py --muvod`로 냅니다** — 카메라별 객체 평균 → 세 카메라 평균 → 장면 평균, 기준 카메라는 장면별 c_ini,
+> basic(참조 프레임에 보이는 객체만)과 complete(전부) 두 가지. 자세한 규약과 c_ini 확정 근거는 [muvod-protocol.md](muvod-protocol.md)입니다.
+> 아래의 자체 규약 표는 **내부 절제 실험을 서로 비교할 때만** 씁니다.
+>
 > **2026-09-07 Phase 1.** 채점기·집계기가 저장소의 [`eval/`](../eval/)로 옮겨져 v2가 됐습니다(프레임별 점수, 짝지은 통계, ref/nonref, nb 구간, 면적 가중, ceiling, `--paper`).
 > 정본 원시 점수는 `Data/MVSeg/jf_v2.json`(9개 방법 × 15개, 저장본과 396/396 항목 동일), 논문 표는 `docs/raw/paper_tables.md`,
 > 판독과 엔드포인트 제안은 [phase1-measurement.md](phase1-measurement.md)입니다. 아래 표의 숫자는 그대로 유효합니다.
@@ -117,6 +122,22 @@ python3 eval/report_jf.py --methods $M --datasets AlexaMeadeFacePaint Barn Block
 python3 eval/report_jf.py --paper docs/raw/paper_tables.md
 ```
 
+MUVOD 프로토콜 비교 (2026-09-09 이후, 대외 수치는 이쪽입니다):
+
+```bash
+# c_ini에서 돌린 폴더를 채점 (컨테이너)
+docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD scsam3 \
+  python eval/eval_jf.py --methods SegMaskSam3XW1GPS4M SegMaskSam3XW0M \
+      --out /host$PWD/Data/MVSeg/jf_muvod.json
+
+# 논문 Table III/IV 모양의 비교표 (basic + complete + 장면별 객체 집합)
+python3 eval/report_jf.py --raw jf_muvod.json --muvod
+
+# c_ini가 논문 표와 어긋나지 않는지 재확인
+docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD scsam3 \
+  python eval/muvod_census.py
+```
+
 원시 점수를 다시 만들려면 (컨테이너, CPU만, 약 3분):
 
 ```bash
@@ -163,6 +184,9 @@ docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host/$PWD scsam3 \
 | `SegMaskSam3XW4all` | 3 | closure == all 검증 (Welder·Dog·Blocks, XW4와 diff 0) |
 | `SegMaskSam3XW1{B,C,D,E}` | 15 | P4 이웃 방향 절제(W=1): B 양쪽 t−1, C 이전 t·이후 t−1, D 이전 t−1, E 2회 계산 — [phase3-neighbourhood.md](phase3-neighbourhood.md) |
 | `SegMaskSam3XW1{B,C,E}all`, `SegMaskSam3XW1E_rerun` | 2·1 | 원뿔 closure == all(Welder·Dog)·E 결정성 검증 부산물 (diff 0) |
+| `SegMaskSam3XW1{G,P,GP,S2,S4}` 등 | 15 | P12 이웃 조건화 절제 — [phase3-conditioning.md](phase3-conditioning.md) |
+| `SegMaskSam3XW1GPS4` | 15 | **채택 구성**(2026-09-08). 자체 기준 카메라 규칙으로 돌린 것 |
+| `SegMaskSam3XW1GPS4M` `SegMaskSam3XW0M` | 17 | **MUVOD 프로토콜 정본**(2026-09-09). 접미사 `M` = 장면별 c_ini에서 시딩. 대외 수치는 이 둘로 냅니다 — [muvod-protocol.md](muvod-protocol.md) |
 | `SegMask*_SA3D` `SegMask*_SAM2` | 9 | 타 방법 비교군 |
 | `SegMaskSam3OneStage_recheck` | 15 | 검증 부산물 — 메모리 수정 전후 대조용. **채점된 적 없음** |
 | `SegMaskSam3ForSam2New` | 1 | ForSam2New 시험 실행 (CoffeeMartini). 채점된 적 없음 |
