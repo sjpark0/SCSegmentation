@@ -42,6 +42,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
 | [experiments.md](experiments.md) | J&F 평가 방법과 전체 결과 |
 | [phase1-measurement.md](phase1-measurement.md) | **Phase 1 결과** — 재현 확인, 짝지은 통계, ref/nonref, nb 구간, 면적 가중, ceiling, 퇴화 시드, 엔드포인트 제안 |
+| [phase3-conditioning.md](phase3-conditioning.md) | **Phase 3 / P12 사전 등록** — 공간축 메모리를 시간축과 같은 조건으로(게이트·포인터·행 이동); 결과는 실행 후 |
 | [phase3-neighbourhood.md](phase3-neighbourhood.md) | **Phase 3 / P4 결과** — 이웃 메모리 방향·프레임 절제(A~E): 사전 등록, 감시값, 1차 미달·2차 통과, C 채택 결정 입력 |
 | [phase2-control.md](phase2-control.md) | **Phase 2 결과** — XW 계열, XW0 ≡ OneStage, closure == all, E1 판정(미달), C2 효과, W 곡선, 계열 결정 입력 |
 | [operations.md](operations.md) | 실행 방법, 러너 옵션, 자원 한계, Docker |
