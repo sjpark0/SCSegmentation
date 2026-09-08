@@ -125,6 +125,15 @@ def parse_args():
                     help="P12 S: neighbour v-k uses temporal row k-1+S instead of k-1 (and "
                          "pointer position k+S with --xview-ptr). 1..5, W + S <= 6. Folder "
                          "suffix S<S>.")
+    ap.add_argument("--ref-cam", default=None, metavar="C",
+                    help="seed from this camera instead of the pick_reference rule "
+                         "(the annotated camera with the largest object id at start_frame, "
+                         "ties going to the first entry of cam_list). C is a camera number "
+                         "from cam_list, 'center' for the middle entry of sorted(cam_list), "
+                         "or 'muvod' for the dataset's c_ini in MVSeg.json (MUVOD's initial "
+                         "camera, read off the published rig geometry). An auto-named output "
+                         "folder gains a suffix -- M for muvod, R<rank> otherwise -- so two "
+                         "references never share a folder.")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -149,6 +158,7 @@ def load_config(path, name):
         "perms": perms,
         "prefix": d["prefix"],
         "prefix1": d["prefix1"],
+        "c_ini": d.get("c_ini"),
     }
 
 
@@ -164,15 +174,54 @@ def pick_reference(ds_dir, c, cv2, np):
     """
     best_cam, best_n = None, -1
     for cam in c["cam_list"]:
-        p = os.path.join(ds_dir, "Mask", cam_name(cam, c["prefix"], c["prefix1"]),
-                         f"{c['start_frame']:06d}.png")
-        img = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
-        if img is None:
-            sys.exit(f"missing ground truth: {p}")
-        n = int(np.max(img))
+        n = max_object_id(ds_dir, c, cam, cv2, np)
         if n > best_n:
             best_cam, best_n = cam, n
     return best_cam, best_n
+
+
+def max_object_id(ds_dir, c, cam, cv2, np):
+    """Largest object id in one camera's ground truth at start_frame.  Objects 1..n
+    are the ones the run prompts, so this is the count the reference frame implies."""
+    p = os.path.join(ds_dir, "Mask", cam_name(cam, c["prefix"], c["prefix1"]),
+                     f"{c['start_frame']:06d}.png")
+    img = cv2.imread(p, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        sys.exit(f"missing ground truth: {p}")
+    return int(np.max(img))
+
+
+def resolve_ref_cam(spec, cam_list, c_ini=None):
+    """--ref-cam -> (camera number, folder suffix).  (None, None) when the flag is
+    absent, which means main() falls back to pick_reference.  Pure: no image reads, so
+    resolve_run can name the folder before the ground truth is opened.
+
+    muvod  the dataset's c_ini from MVSeg.json -- MUVOD's initial camera, read off the
+           published rig geometry per scene (docs/muvod-protocol.md).  Suffix M, the
+           same for every scene, so one method name spans the benchmark.
+    center the middle entry of sorted(cam_list).  Suffix R<rank>.
+    <n>    that camera number.  Suffix R<rank>.
+    """
+    if spec is None:
+        return None, None
+    ordered = sorted(cam_list)
+    if spec == "muvod":
+        if c_ini is None:
+            sys.exit("--ref-cam muvod needs a \"c_ini\" entry for this dataset in MVSeg.json")
+        if c_ini not in ordered:
+            sys.exit(f"c_ini {c_ini} is not in this dataset's cam_list {ordered}")
+        return c_ini, "M"
+    if spec == "center":
+        cam = ordered[(len(ordered) - 1) // 2]     # 3 cameras -> the middle one
+    else:
+        try:
+            cam = int(spec)
+        except ValueError:
+            sys.exit("--ref-cam takes a camera number from cam_list, 'center' or "
+                     f"'muvod', not {spec!r}")
+        if cam not in ordered:
+            sys.exit(f"--ref-cam {cam} is not in this dataset's cam_list {ordered}")
+    return cam, f"R{ordered.index(cam)}"
 
 
 def closure_reach(mode, window, max_scored, n_cams, num_frame):
@@ -189,7 +238,7 @@ def closure_reach(mode, window, max_scored, n_cams, num_frame):
     return min(n_cams, max_scored + 1 + growth * window * (num_frame - 1))
 
 
-def resolve_run(args, cam_names, written_cams, num_frame=None):
+def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
     """Everything main() decides from the flags: output folder, track mode, session
     list and the tracker kwargs.  Legacy invocations resolve exactly as before this
     function existed; every new combination is explicit or refused."""
@@ -282,6 +331,10 @@ def resolve_run(args, cam_names, written_cams, num_frame=None):
         out_name = ONESTAGE_CLOSURE_OUT
     else:
         out_name = DEFAULT_OUT[args.algo]
+    if not args.out and ref_suffix:
+        # a different seed camera is a different run: never let it land on the folder
+        # the default reference wrote
+        out_name += ref_suffix
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -520,7 +573,9 @@ def main():
     video_root = os.path.join(ds_dir, "Video")
     cam_names = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["perms"]]
     written_cams = [cam_name(x, c["prefix"], c["prefix1"]) for x in c["cam_list"]]
-    run = resolve_run(args, cam_names, written_cams, num_frame=c["num_frame"])
+    forced_ref, ref_suffix = resolve_ref_cam(args.ref_cam, c["cam_list"], c.get("c_ini"))
+    run = resolve_run(args, cam_names, written_cams, num_frame=c["num_frame"],
+                      ref_suffix=ref_suffix)
     out_name = run["out_name"]
 
     missing = [n for n in cam_names if not os.path.isdir(os.path.join(video_root, n))]
@@ -530,7 +585,13 @@ def main():
     import cv2
     import numpy as np
 
-    ref_cam, n_obj = pick_reference(ds_dir, c, cv2, np)
+    if forced_ref is None:
+        ref_cam, n_obj = pick_reference(ds_dir, c, cv2, np)
+        ref_rule = "maxid"
+    else:
+        ref_cam = forced_ref
+        n_obj = max_object_id(ds_dir, c, ref_cam, cv2, np)
+        ref_rule = args.ref_cam if args.ref_cam in ("center", "muvod") else "explicit"
     ref_index = c["perms"].index(ref_cam)
 
     print(f"dataset        {args.dataset}  ({ds_dir})")
@@ -541,7 +602,7 @@ def main():
     print(f"frames         {c['start_frame']} .. "
           f"{c['start_frame'] + c['num_frame'] - 1}  ({c['num_frame']})")
     print(f"reference      {cam_name(ref_cam, c['prefix'], c['prefix1'])} "
-          f"(view index {ref_index}), {n_obj} objects prompted", flush=True)
+          f"(view index {ref_index}), {n_obj} objects prompted, rule {ref_rule}", flush=True)
     print(f"cross-view     lineage {run['lineage']}, track {run['track_mode']} "
           f"({len(run['track_idx'])} sessions)", flush=True)
 
@@ -662,6 +723,8 @@ def main():
                    "reference": cam_name(ref_cam, c["prefix"], c["prefix1"]),
                    "reference_view_index": ref_index,
                    "n_objects_prompted": n_obj,
+                   "reference_rule": ref_rule,
+                   "reference_suffix": ref_suffix,
                    "start_frame": c["start_frame"], "num_frame": c["num_frame"],
                    "device": device,
                    "lineage": run["lineage"],

@@ -25,7 +25,9 @@ for byte and adds, per (dataset, camera, method) entry:
                        this camera's GT at start_frame ("seed ids"), and the
                        reference camera under the max-id rule (what
                        runMVSeg.pick_reference does) and under the object-count
-                       rule (REPORT.md P8), with the seed ids of each.
+                       rule (REPORT.md P8), and under MUVOD's c_ini (the
+                       config's "c_ini", the annotated camera nearest the rig
+                       centre), with the seed ids of each.
 
 The old top-level `result` keys (J_all, F_all, J_inner, F_inner, missing_files)
 are unchanged, so the 2026-09-03 report_jf.py still reads v2 files.  A method
@@ -55,7 +57,7 @@ DEFAULT_METHODS = ["SegMask", "SegMask1", "SegMaskNew", "SegMaskNew1",
                    "SegMaskNew2", "SegMaskNew3"]
 ROOT = DEFAULT_ROOT                 # replaced by --root before the pool forks
 BOUND_TH = 0.008
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3          # v3 adds meta.ref.muvod (MUVOD c_ini)
 
 
 # ----------------------------------------------------------------- DAVIS core
@@ -172,6 +174,13 @@ def dataset_meta(dataset, ds_dir, config):
     # first camera with the largest max id wins.  Same tie rule for the count.
     ref_maxid = max(order, key=lambda n: (max_id[n], -order.index(n)))
     ref_count = max(order, key=lambda n: (len(seed_ids[n]), -order.index(n)))
+    # MUVOD's c_ini: "an initial camera positioned near the center of the rig".  The
+    # paper never names it, so MVSeg.json carries one per scene, read off the published
+    # rig geometry (docs/muvod-protocol.md).  Without that entry, fall back to the
+    # middle annotated camera by number, which is the rig centre on a line or a plane.
+    ordered_cams = sorted(d["cam_list"])
+    c_ini = d.get("c_ini", ordered_cams[(len(ordered_cams) - 1) // 2])
+    muvod_cam = cam_name(c_ini, d["prefix"], d["prefix1"])
     return {
         "start_frame": start,
         "num_frame": d["num_frame"],
@@ -186,6 +195,10 @@ def dataset_meta(dataset, ds_dir, config):
             "count": {"cam": ref_count, "view_index": perms.index(
                 d["cam_list"][order.index(ref_count)]),
                 "seed_ids": seed_ids[ref_count], "n_ids": len(seed_ids[ref_count])},
+            "muvod": {"cam": muvod_cam, "view_index": perms.index(
+                d["cam_list"][order.index(muvod_cam)]),
+                "seed_ids": seed_ids[muvod_cam], "max_id": max_id[muvod_cam],
+                "from_config": "c_ini" in d},
         },
     }
 

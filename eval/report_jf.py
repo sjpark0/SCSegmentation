@@ -5,6 +5,7 @@
     python3 report_jf.py --raw jf_raw.json jf_sam3_onestage.json   several files, pooled
     python3 report_jf.py --methods SegMaskNew1 SegMaskSam3MVOpt    a subset, in that order
     python3 report_jf.py --paired SegMaskSam3OneStage SegMaskSam3MVOpt --split nonref
+    python3 report_jf.py --muvod --methods SegMaskSam3XW1GPS4M  MUVOD J&F^3 comparison
     python3 report_jf.py --paper docs/raw/paper_tables.md      every table the paper needs
 
 Raw files are looked up as given, then under Data/MVSeg, then next to this
@@ -115,6 +116,36 @@ PAPER_PAIRS = [("SegMaskSam3OneStage", "SegMaskSam3MVOpt"),
                ("SegMaskNew1", "SegMaskSam3MVOpt"),
                ("SegMaskNew1", "SegMaskSam3OneStage")]
 
+# --------------------------------------------------------------- MUVOD
+# The benchmark our data comes from: Ashkani Chenarlogh et al., "MUVOD: A Novel
+# Multi-view Video Object Segmentation Dataset and A Benchmark for 3D Segmentation",
+# arXiv:2507.07519.  Its baseline is XMem applied both spatially and temporally.
+# Tables III (basic) and IV (complete), J&F^3 in percent, in the paper's row order.
+MUVOD_ORDER = ["Painter", "Breakfast", "Barn", "Frog", "Carpark", "PoznanStreet",
+               "Fencing", "CBABasketball", "MartialArts", "Blocks", "MATF",
+               "FlameSteak", "CoffeeMartini", "AlexaMeadeExhibit",
+               "AlexaMeadeFacePaint", "Dog", "Welder"]
+MUVOD_BASELINE = {
+    "basic": {"Painter": 82.2, "Breakfast": 68.8, "Barn": 77.3, "Frog": 92.3,
+              "Carpark": 85.3, "PoznanStreet": 80.2, "Fencing": 85.7,
+              "CBABasketball": 66.4, "MartialArts": 83.7, "Blocks": 80.5, "MATF": 69.1,
+              "FlameSteak": 84.8, "CoffeeMartini": 84.3, "AlexaMeadeExhibit": 82.8,
+              "AlexaMeadeFacePaint": 64.9, "Dog": 75.5, "Welder": 85.2},
+    "complete": {"Painter": 76.1, "Breakfast": 64.1, "Barn": 77.3, "Frog": 92.3,
+                 "Carpark": 85.3, "PoznanStreet": 80.2, "Fencing": 85.7,
+                 "CBABasketball": 65.6, "MartialArts": 83.7, "Blocks": 73.2,
+                 "MATF": 59.3, "FlameSteak": 70.6, "CoffeeMartini": 76.7,
+                 "AlexaMeadeExhibit": 82.8, "AlexaMeadeFacePaint": 60.4, "Dog": 67.2,
+                 "Welder": 85.2},
+}
+MUVOD_GLOBAL = {"basic": 79.4, "complete": 75.6}
+MUVOD_COL = "MUVOD XMem"
+# The protocol itself: score the three annotated cameras, average the cameras into a
+# scene score, average the scenes.  "basic" keeps only the objects visible in c_ini's
+# reference frame; "complete" keeps every labelled object.
+MUVOD_CFG = dict(agg="sequence", variant="all", split="all", weighted=False,
+                 ref_rule="muvod")
+
 
 # ----------------------------------------------------------------------------
 # loading
@@ -181,11 +212,26 @@ class Store:
                      f"per_frame): {len(old)} entries lack them, e.g. {d}/{c}/{m}. "
                      f"Re-run eval/eval_jf.py or point --raw at jf_v2.json.")
 
-    def ref_cam(self, d, rule="maxid"):
+    def ref_entry(self, d, rule):
         for cam in self.cams[d]:
             if (d, cam) in self.gt:
-                return self.gt[(d, cam)]["meta"]["ref"][rule]["cam"]
+                ref = self.gt[(d, cam)]["meta"]["ref"]
+                if rule not in ref:
+                    sys.exit(f"{d}: this raw file has no '{rule}' reference rule "
+                             f"(it has {', '.join(sorted(ref))}). Re-run "
+                             f"eval/eval_jf.py to get schema 3.")
+                return ref[rule]
         sys.exit(f"{d}: no version 2 entry to read the reference camera from")
+
+    def ref_cam(self, d, rule="maxid"):
+        return self.ref_entry(d, rule)["cam"]
+
+    def object_filter(self, d, cfg):
+        """The object ids a table may score, or None for 'every object'.  MUVOD's
+        basic evaluation keeps only the objects visible in c_ini's reference frame."""
+        if cfg.objects == "all":
+            return None
+        return frozenset(self.ref_entry(d, cfg.ref_rule)["seed_ids"])
 
     def view_index(self, d, cam):
         return self.gt[(d, cam)]["meta"]["view_index"]
@@ -240,6 +286,11 @@ class Cfg:
     weighted: bool = False
     window: int = 4
     nb_mode: str = "lower"      # lower = min(v, W); both = min(v, W) + min(N-1-v, W)
+    objects: str = "all"        # all = every object in the camera's GT (MUVOD
+                                # "complete"); basic = only those in c_ini's reference
+                                # frame (MUVOD "basic")
+    ref_rule: str = "maxid"     # which camera counts as the reference: maxid (the
+                                # runner's own rule), count, or muvod (the config c_ini)
 
     def replace(self, **kw):
         """A copy with some fields changed; an unknown field is a TypeError."""
@@ -252,6 +303,10 @@ class Cfg:
                  window=self.window, datasets=n_datasets)
         if self.nb_mode != "lower":
             f["nb_mode"] = self.nb_mode         # the default keeps every existing statement line
+        if self.objects != "all":
+            f["objects"] = self.objects
+        if self.ref_rule != "maxid":
+            f["reference"] = self.ref_rule
         f.update(override)
         conv = ("exported only (objects with no output file dropped)" if exported
                 else "as-is (missing objects scored as empty, the DAVIS convention)")
@@ -280,8 +335,11 @@ def ceiling_pairs(store, d, cam, rule, cfg):
     if e is None:
         return None
     seeds = set(e["meta"]["ref"][rule]["seed_ids"])
+    keep = store.object_filter(d, cfg)
     out = []
     for i, o in enumerate(e["objects"]):
+        if keep is not None and o not in keep:
+            continue
         row = e["result"]["per_frame"]["gt_area"][i]
         sel = [row[f] for f in frame_idx(cfg.variant, len(row))]
         j = 1.0 if o in seeds else sum(1 for a in sel if a == 0) / len(sel)
@@ -300,8 +358,10 @@ def pairs_for(store, d, cam, m, cfg, absent=None):
     r = e["result"]
     w = area_weights(e, cfg.variant) if cfg.weighted else [None] * len(e["objects"])
     skip = absent.get(f"{d}|{cam}|{m}", set()) if absent else set()
+    keep = store.object_filter(d, cfg)
     return [(r[f"J_{cfg.variant}"][i], r[f"F_{cfg.variant}"][i], w[i])
-            for i, o in enumerate(e["objects"]) if o not in skip]
+            for i, o in enumerate(e["objects"])
+            if o not in skip and (keep is None or o in keep)]
 
 
 def combine(pairs, weighted):
@@ -320,11 +380,11 @@ def jf(j, f):
 
 
 def select_cams(store, d, cfg):
-    """The dataset's cameras after --split (reference = max-id rule)."""
+    """The dataset's cameras after --split, reference under cfg.ref_rule."""
     cams = store.cams[d]
     if cfg.split == "all":
         return cams
-    ref = store.ref_cam(d, "maxid")
+    ref = store.ref_cam(d, cfg.ref_rule)
     return [c for c in cams if (c == ref) == (cfg.split == "ref")]
 
 
@@ -787,6 +847,74 @@ def default_items(store, methods, datasets, cfg, args):
     return items
 
 
+def muvod_table(store, methods, datasets, cfg, setting, key=""):
+    """MUVOD Table III/IV shape: one row per scene, J&F^3 in percent, our methods
+    beside the published XMem baseline, and a Global row of unweighted scene means."""
+    ds, _ = score_all(store, methods, datasets, cfg)
+    pub = MUVOD_BASELINE[setting]
+    cols = list(methods) + [MUVOD_COL] + [f"{m} - {MUVOD_COL}" for m in methods]
+    order = [d for d in MUVOD_ORDER if d in datasets] + \
+            [d for d in datasets if d not in MUVOD_ORDER]
+    rows = []
+    for d in order:
+        ours = [100 * ds[(d, m)][0] if (d, m) in ds else None for m in methods]
+        base = pub.get(d)
+        rows.append((d, ours + [base] +
+                     [None if (o is None or base is None) else o - base for o in ours]))
+    # Global: the mean over the scenes in the table, so our column and the baseline
+    # column are averaged over exactly the same scenes.  The paper's own global is
+    # over all 17 and is printed beside it whenever the table is short.
+    def col_mean(i):
+        vals = [r[1][i] for r in rows if r[1][i] is not None]
+        return mean(vals) if vals else None
+    foot = [("Global (%d scenes)" % len(rows), [col_mean(i) for i in range(len(cols))])]
+    if len(rows) != len(MUVOD_ORDER):
+        foot.append(("MUVOD global (17 scenes)",
+                     [None] * len(methods) + [MUVOD_GLOBAL[setting]] + [None] * len(methods)))
+    st = cfg.statement(len(rows), objects=setting,
+                       protocol="MUVOD J&F^3 (per-camera score, averaged over the "
+                                "three annotated cameras, then over scenes)")
+    return Table(f"{key}muvod-{setting}", f"MUVOD {setting} evaluation, J&F^3 (%)",
+                 st, cols, rows, foot, fmt={c: ".1f" for c in cols})
+
+
+def muvod_items(store, methods, datasets, cfg, args):
+    """The MUVOD comparison: the basic table (the paper's headline), the complete
+    table, and the per-scene object counts each object set rests on."""
+    datasets, note = subset_note(store, methods, datasets, args.common)
+    items = [note,
+             P("Baseline column: XMem applied spatially and temporally, as reported in "
+               "arXiv:2507.07519 Tables III and IV.  c_ini per scene comes from "
+               "MVSeg.json; see docs/muvod-protocol.md for how each one was fixed."),
+             H("basic evaluation - only the objects visible in c_ini's reference frame")]
+    if not datasets:
+        return items + [P("no dataset has a result for every selected method")]
+    items.append(muvod_table(store, methods, datasets, cfg.replace(objects="basic"),
+                             "basic"))
+    items.append(H("complete evaluation - every labelled object"))
+    items.append(muvod_table(store, methods, datasets, cfg.replace(objects="all"),
+                             "complete"))
+    items.append(H("what each object set contains"))
+    rows = []
+    for d in [x for x in MUVOD_ORDER if x in datasets] + \
+            [x for x in datasets if x not in MUVOD_ORDER]:
+        ref = store.ref_entry(d, cfg.ref_rule)
+        cams = select_cams(store, d, cfg)
+        allobj = sorted({o for c in cams for o in store.gt[(d, c)]["objects"]})
+        basic = set(ref["seed_ids"])
+        rows.append((d, [ref["cam"], len(basic), len(allobj),
+                         "yes" if basic >= set(allobj) else "no",
+                         "yes" if MUVOD_BASELINE["basic"].get(d) ==
+                                  MUVOD_BASELINE["complete"].get(d) else "no"]))
+    items.append(Table("muvod-objects", "object sets per scene",
+                       "c_ini and the two object sets; the last two columns must agree, "
+                       "because MUVOD's basic and complete scores are equal exactly when "
+                       "c_ini's reference frame already holds every labelled object",
+                       ["c_ini", "basic objects", "all objects",
+                        "basic == all (ours)", "basic == complete (MUVOD)"], rows))
+    return items
+
+
 def paper_items(store, methods, datasets, window, args):
     """Every table the paper needs, in the order of the specification (D11)."""
     datasets, note = subset_note(store, methods, datasets, args.common)
@@ -893,12 +1021,40 @@ def main():
                     help="paired statistics of B - A at dataset and camera level")
     ap.add_argument("--ceiling", choices=("maxid", "count", "both"),
                     help="add reachable-score ceiling columns under this rule")
+    ap.add_argument("--objects", choices=("all", "basic"), default="all",
+                    help="which objects go into the means: all of the camera's ground "
+                         "truth (MUVOD's complete evaluation) or only those visible in "
+                         "the reference frame (MUVOD's basic evaluation)")
+    ap.add_argument("--ref-rule", choices=("maxid", "count", "muvod"), default="maxid",
+                    help="which camera counts as the reference for --split and "
+                         "--objects basic: the runner's max-id rule, the object-count "
+                         "rule, or MUVOD's c_ini from MVSeg.json")
+    ap.add_argument("--muvod", action="store_true",
+                    help="the MUVOD comparison: J&F^3 per scene against the published "
+                         "XMem baseline, basic and complete. Fixes the protocol "
+                         "(--aggregation sequence, --ref-rule muvod, all frames) and "
+                         "refuses flags that would change it")
     ap.add_argument("--paper", metavar="OUT.md",
                     help="write every paper table to this markdown file (its "
                          "settings are fixed: the reading flags are refused)")
     ap.add_argument("--dump-json", metavar="PATH",
                     help="also write every printed table to this JSON file")
     args = ap.parse_args()
+
+    if args.muvod:
+        if args.paper:
+            sys.exit("--muvod and --paper each fix their own settings; run them separately")
+        ignored = [flag for flag, on in (
+            ("--aggregation", args.aggregation != "pooled"),
+            ("--frames", args.frames != "all"),
+            ("--split", args.split != "all"),
+            ("--objects", args.objects != "all"),
+            ("--ref-rule", args.ref_rule != "maxid"),
+            ("--area-weighted", args.area_weighted),
+            ("--exported-only", args.exported_only)) if on]
+        if ignored:
+            sys.exit("--muvod fixes the protocol and would ignore: "
+                     f"{', '.join(ignored)}; drop them or run without --muvod")
 
     if args.paper:
         ignored = [flag for flag, on in (
@@ -923,16 +1079,24 @@ def main():
     methods = args.methods or (PAPER_METHODS if args.paper else store.methods)
     datasets = [d for d in store.datasets if not args.datasets or d in args.datasets]
     cfg = Cfg(args.aggregation, args.frames, args.split, args.area_weighted, args.window,
-              args.nb_mode)
+              args.nb_mode, args.objects, args.ref_rule)
+    if args.muvod:
+        cfg = cfg.replace(**MUVOD_CFG)
     for feature, on in (("--split ref|nonref", args.split != "all"),
                         ("--area-weighted", args.area_weighted),
                         ("--bin-by-nb", args.bin_by_nb),
                         ("--ceiling", args.ceiling is not None),
+                        ("--objects basic", args.objects != "all"),
+                        ("--ref-rule", args.ref_rule != "maxid"),
+                        ("--muvod", args.muvod),
                         ("--paper", args.paper is not None)):
         if on:
             store.require_v2(feature, methods)
 
-    if args.paper:
+    if args.muvod:
+        items = muvod_items(store, methods, datasets, cfg, args)
+        print(render_text(items))
+    elif args.paper:
         items = paper_items(store, methods, datasets, args.window, args)
         text = "\n".join(["# Paper tables", "",
                           f"generated by `eval/report_jf.py --paper` from "

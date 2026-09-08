@@ -18,7 +18,7 @@ CONFIG = os.path.join(REPO, "SCSam3", "demo", "MVSeg.json")
 CANONICAL_K = {"AlexaMeadeExhibit": 4, "AlexaMeadeFacePaint": 9, "Barn": 11, "Blocks": 10,
                "Breakfast": 10, "Carpark": 9, "CoffeeMartini": 15, "Dog": 4, "Fencing": 10,
                "FlameSteak": 17, "Frog": 10, "MATF": 10, "Painter": 16, "PoznanStreet": 9,
-               "Welder": 4}
+               "Welder": 4, "MartialArts": 14, "CBABasketball": 25}
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +29,8 @@ def clean_env(monkeypatch):
 
 def ns(**kw):
     d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
-             xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None)
+             xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None,
+             ref_cam=None)
     d.update(kw)
     return argparse.Namespace(**d)
 
@@ -198,7 +199,8 @@ MODE_REACH = {"AlexaMeadeExhibit": (45, 4, 24, 44), "AlexaMeadeFacePaint": (46, 
               "Carpark": (9, 9, 9, 9), "CoffeeMartini": (18, 15, 18, 18), "Dog": (41, 4, 24, 41),
               "Fencing": (10, 10, 10, 10), "FlameSteak": (21, 17, 21, 21), "Frog": (13, 10, 13, 13),
               "MATF": (10, 10, 10, 10), "Painter": (16, 16, 16, 16), "PoznanStreet": (9, 9, 9, 9),
-              "Welder": (46, 4, 24, 44)}
+              "Welder": (46, 4, 24, 44),
+              "MartialArts": (15, 14, 15, 15), "CBABasketball": (30, 25, 30, 30)}
 
 
 @pytest.mark.parametrize("ds", sorted(MODE_REACH))
@@ -388,3 +390,93 @@ def test_parse_args_knobs(monkeypatch):
     a = mod.parse_args()
     assert (a.xview_gate, a.xview_ptr, a.xview_tpos_shift) == (False, False, None)
     assert mod.XVIEW_TPOS_SHIFTS == (1, 2, 3, 4, 5)
+
+
+# ---------------------------------------------------- MUVOD: --ref-cam / resolve_ref_cam
+# MUVOD picks "an initial camera c_ini positioned near the center of the rig"; our own
+# rule (pick_reference: largest object id at start_frame, ties to the first cam_list
+# entry) picks a different camera in 14 of the 17 scenes, so the seed camera has to be
+# selectable and the two must never share an output folder.
+
+def test_resolve_ref_cam():
+    assert mod.resolve_ref_cam(None, [5, 9, 13]) == (None, None)
+    # 'center' = middle of the sorted list, whatever order cam_list is written in
+    assert mod.resolve_ref_cam("center", [5, 9, 13]) == (9, "R1")
+    assert mod.resolve_ref_cam("center", [13, 5, 9]) == (9, "R1")
+    assert mod.resolve_ref_cam("center", [0, 4, 9]) == (4, "R1")
+    # even count: the lower middle, documented on the flag
+    assert mod.resolve_ref_cam("center", [0, 1, 2, 3]) == (1, "R1")
+    assert mod.resolve_ref_cam("center", [7]) == (7, "R0")
+    # explicit numbers keep their rank in the sorted list
+    assert mod.resolve_ref_cam("5", [5, 9, 13]) == (5, "R0")
+    assert mod.resolve_ref_cam("13", [5, 9, 13]) == (13, "R2")
+    # muvod reads c_ini and always names the folder the same way, so one method name
+    # spans the benchmark even though c_ini sits at a different rank per scene
+    assert mod.resolve_ref_cam("muvod", [5, 9, 13], 9) == (9, "M")
+    assert mod.resolve_ref_cam("muvod", [1, 3, 4], 1) == (1, "M")
+    with pytest.raises(SystemExit):
+        mod.resolve_ref_cam("muvod", [5, 9, 13], None)    # no c_ini in the config
+    with pytest.raises(SystemExit):
+        mod.resolve_ref_cam("muvod", [5, 9, 13], 8)       # c_ini not annotated
+    with pytest.raises(SystemExit):
+        mod.resolve_ref_cam("8", [5, 9, 13])              # not annotated
+    with pytest.raises(SystemExit):
+        mod.resolve_ref_cam("middle", [5, 9, 13])         # not a number, not a keyword
+
+
+# c_ini per scene, from the published rig geometry (docs/muvod-protocol.md).  Three of
+# these are forced by MUVOD's own tables: where its basic and complete scores are equal,
+# c_ini's reference frame must hold every labelled object, and only one camera does.
+C_INI = {"AlexaMeadeExhibit": 1, "AlexaMeadeFacePaint": 7, "Barn": 7, "Blocks": 4,
+         "Breakfast": 7, "CBABasketball": 20, "Carpark": 4, "Dog": 2, "Fencing": 4,
+         "Frog": 7, "MATF": 4, "MartialArts": 9, "Painter": 6, "PoznanStreet": 4,
+         "Welder": 1, "CoffeeMartini": 16, "FlameSteak": 16}
+
+
+@pytest.mark.parametrize("ds", sorted(C_INI))
+def test_c_ini_in_config(ds):
+    c = mod.load_config(CONFIG, ds)
+    assert c["c_ini"] == C_INI[ds]
+    assert c["c_ini"] in c["cam_list"]
+    cam, suffix = mod.resolve_ref_cam("muvod", c["cam_list"], c["c_ini"])
+    assert (cam, suffix) == (C_INI[ds], "M")
+
+
+@pytest.mark.parametrize("ds", sorted(CANONICAL_K))
+def test_three_annotated_cameras(ds):
+    assert len(mod.load_config(CONFIG, ds)["cam_list"]) == 3   # MUVOD scores c_ini + 2
+
+
+def test_ref_suffix():
+    cam_names, written = cams("MartialArts")
+    base = mod.resolve_run(ns(xview_window=1, xview_gate=True, xview_ptr=True,
+                              xview_tpos_shift=4), cam_names, written, num_frame=21)
+    assert base["out_name"] == "SegMaskSam3XW1GPS4"
+    for suffix in ("M", "R0", "R2"):
+        r = mod.resolve_run(ns(xview_window=1, xview_gate=True, xview_ptr=True,
+                               xview_tpos_shift=4), cam_names, written, num_frame=21,
+                            ref_suffix=suffix)
+        assert r["out_name"] == "SegMaskSam3XW1GPS4" + suffix
+        # everything else about the run is untouched by the seed camera
+        assert {k: v for k, v in r.items() if k != "out_name"} == \
+               {k: v for k, v in base.items() if k != "out_name"}
+    # the control lineage and the legacy names take the suffix too
+    r = mod.resolve_run(ns(xview_window=0), cam_names, written, num_frame=21, ref_suffix="M")
+    assert r["out_name"] == "SegMaskSam3XW0M"
+    r = mod.resolve_run(ns(algo="OneStage"), cam_names, written, ref_suffix="M")
+    assert r["out_name"] == "SegMaskSam3OneStageM"
+    # an explicit --out is the user's own name and is never rewritten
+    r = mod.resolve_run(ns(xview_window=1, out="Whatever"), cam_names, written,
+                        num_frame=21, ref_suffix="M")
+    assert r["out_name"] == "Whatever"
+
+
+def test_parse_args_ref_cam(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "MartialArts"])
+    assert mod.parse_args().ref_cam is None
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "MartialArts", "--ref-cam", "center"])
+    assert mod.parse_args().ref_cam == "center"
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "MartialArts", "--ref-cam", "9"])
+    assert mod.parse_args().ref_cam == "9"
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "MartialArts", "--ref-cam", "muvod"])
+    assert mod.parse_args().ref_cam == "muvod"

@@ -18,7 +18,7 @@ for ds in "$@"; do
 		python runMVSeg.py "${ds}" --algo "${ALGO:-MVOpt}" ${OUT:+--out "${OUT}"} \
 			${XVIEW:+--xview-window "${XVIEW}"} ${XMODE:+--xview-mode "${XMODE}"} \
 			${XGATE:+--xview-gate} ${XPTR:+--xview-ptr} ${XSHIFT:+--xview-tpos-shift "${XSHIFT}"} \
-			${TRACK:+--track-cams "${TRACK}"} --overwrite \
+			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))
