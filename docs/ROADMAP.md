@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-09-08 (P12 절제 완료) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md)
+**최종 갱신**: 2026-09-09 (MUVOD 프로토콜 채택) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md) · **[muvod-protocol.md](muvod-protocol.md)**
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -17,12 +17,12 @@ REPORT.md가 낸 제안 14개 중 **5개 완료(P1·P2·P3·P6 + G1), 4개 부�
 |---|---|---|---|---|
 | P1 | seed/프레임 마스크 고정 해제 | ✅ | — | S1·S2·S3·S7로 반영. (d) 트림은 env-gated, `propagation_full` 가드는 이 패키지에서 발동 안 함 |
 | P2 | 패키지 내 window ablation + 위생 3건 + closure | ✅ | 2 | XW 계열(커밋 44e5199). XW0 ≡ OneStage 바이트 동일, closure == all 실측, W 곡선은 W=1에서 포화 ([phase2-control.md](phase2-control.md)) |
-| P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07, [phase1-measurement.md](phase1-measurement.md) §5) |
+| P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07). **외부 비교 수치는 2026-09-09부터 MUVOD 프로토콜(`--muvod`)로 냅니다** ([muvod-protocol.md](muvod-protocol.md)) — 자체 규약은 내부 절제 비교 전용 |
 | P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | 🔶 | 3 | 모드 A~E 구현·절제 완료(09-08). 1차 기준 통과 모드 없음 → 규칙상 A 유지; C는 Fencing v0 +0.079·헤드라인 0.8468. **채택 여부 사용자 결정** ([phase3-neighbourhood.md](phase3-neighbourhood.md) §5) |
 | P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
 | P7 | spatial predictor 은퇴 + autocast 정리 + fp16 프레임 | 🔶 | — | 은퇴·autocast ✅(S6). **fp16 ❌** — 출력 변경 확인, fp32(S5)로 대체 |
-| P8 | reference 규칙(객체 수) + ceiling 열 | 🔶 | 1(ceiling ✅) → 3(규칙 ⬜) | ceiling 0.9375(max-id) → 0.9594(객체 수). Blocks +0.128 / MATF +0.087 / FacePaint +0.061 재현 |
+| P8 | reference 규칙(객체 수) + ceiling 열 | ✅ | 1 → 3 | **MUVOD의 c_ini로 대체됐습니다.** 자체 규칙(max-id·객체 수)은 17개 중 14개에서 벤치마크가 쓰는 카메라와 다릅니다. `--ref-cam muvod`가 장면별 c_ini로 시딩합니다 ([muvod-protocol.md](muvod-protocol.md)). ceiling 열은 내부 진단으로만 남깁니다 |
 | P9 | 하나의 propagation 계약 | ⬜ | 5 | 벤치마크 숫자 불변. P5 재전파를 안전하게 |
 | P10 | seeding 응답 생략 | ⬜ | 5 | SCHEDULE H2. 시간만 절감(120~260초 → 수초) |
 | P11 | 뷰당 detector 잔재 축소 | ⬜ | 5 | 안전한 부분집합만 |
@@ -128,12 +128,20 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 
 ### Phase 4 — 공정한 비교 (1~2주) · 실험 행 11
 
-| 할 일 | 기대 |
-|---|---|
-| SAM 2 `apply_postprocessing=False`, `non_overlap_masks=True` 재실행 | F +0.006이 후처리 몫일 수 있음 |
-| 인용 중인 SAM 2 열(`SegMaskNew1`)의 스크립트·설정 특정, 재현 | 재현 실험은 `New3`를 재현했음 |
-| SAM 3 `fill_hole_area` ∈ {0, 8, 16} | 배너에 값 출력 |
-| 기준 시점 3개로 강제해 분산 | 논문의 오차 막대 |
+**2026-09-09 재정의.** 이 단계의 목적은 원래 "우리 안에서 공정한 비교"였는데, 데이터셋 출처인
+MUVOD가 이미 기존 방법의 J&F를 싣고 있으므로 **외부 기준선과의 비교가 본선**이 됩니다.
+
+| 할 일 | 상태 | 기대 |
+|---|---|---|
+| MUVOD 프로토콜 구현 (`--muvod`, 장면별 c_ini, basic/complete) | ✅ 2026-09-09 | 논문 Table III/IV와 같은 모양의 표 |
+| 빠진 두 장면 설치·등록 (MartialArts, CBABasketball) | ✅ 2026-09-09 | 17개 장면 전부 |
+| 채택 구성과 대조군을 c_ini에서 17개 장면 재실행 | 🔶 진행 중 | `SegMaskSam3XW1GPS4M` / `SegMaskSam3XW0M` |
+| MUVOD XMem 기준선(basic 79.4 / complete 75.6)과 비교 | ⬜ | 프로젝트 최초의 외부 비교 |
+| Dog의 c_ini 감도 확인 (camera_0002 대 camera_0004) | ⬜ | 유일하게 남은 c_ini 모호성 |
+| SAM 2 `apply_postprocessing=False`, `non_overlap_masks=True` 재실행 | ⬜ | F +0.006이 후처리 몫일 수 있음 |
+| 인용 중인 SAM 2 열(`SegMaskNew1`)의 스크립트·설정 특정, 재현 | ❌ 불가 | 커밋된 어떤 상태에서도 재현되지 않음. `New3`는 정확히 재현됨 |
+| SAM 3 `fill_hole_area` ∈ {0, 8, 16} | ❌ 무의미 | 항상 비활성이었음 (REPORT E6 정정) |
+| 기준 시점 3개로 강제해 분산 | ⬜ | 논문의 오차 막대 |
 
 ### Phase 5 — 부채 (여유 시간) · P9 · P10 · P11 · P13 나머지 · P14
 
@@ -185,6 +193,10 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 
 열린 항목: P4의 C 모드(이후 시점도 t−1로 봄)는 기준 카메라를 회복했으나 GPS4와 함께 돌려 본 적이 없습니다(한 스윕 약 50분).
 
+**2026-09-09 단서.** 이 구성은 자체 기준 카메라 규칙으로 고른 것이고, MUVOD의 c_ini는 17개 중
+14개에서 다른 카메라입니다. 절제 실험의 **차이**는 그대로 유효하지만, 대외 수치는 c_ini에서 다시
+돌린 `SegMaskSam3XW1GPS4M`과 `SegMaskSam3XW0M`으로 냅니다.
+
 ## 갱신 이력
 
 | 일자 | 내용 |
@@ -198,4 +210,5 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 2026-09-08 | **구성 확정: GPS4** (`--xview-window 1 --xview-gate --xview-ptr --xview-tpos-shift 4`). 계열 XW 확정, 모드 A 유지(P4의 C는 채택 안 함), 손잡이 셋 채택. E0의 SAM 3 열을 `SegMaskSam3XW1GPS4`로 갱신(사후 계열 변경 명시). C + GPS4 조합은 열린 항목 |
 | 2026-09-08 | **P12 조합·곡선 완료** (사전 등록 0955845 → GPU 75회). 꼬리표 곡선 s=0..5: +0.0000/+0.0001/+0.0002/+0.0004/**+0.00043**/+0.0003 — **s=4 최적, s=5에서 하락**(단조 아님). 조합 GPS4 +0.00053(가산 예측 +0.00085, 중복 예측 +0.00042 중 중복 쪽), 게이트 기여는 조합 안에서도 +0.0001. 데이터셋별 최적 s(2~5)와 영상 측정 비율의 상관 r=−0.19 → **적응 규칙 근거 없음, 상수 s=4**. 권장 GPS4(또는 최소 변경 S4), 채택은 사용자 결정 |
 | 2026-09-08 | **P12 절제 완료** (사전 등록 011fa86 → 구현 a72d462 → GPU 81회). 감시값 전부 통과. G 미달, P·GP·S2·S4 CI 통과하나 크기 +0.0002~0.0004(실용 기준의 1/10)이고 상위 셋 동률 → **규칙상 손잡이 없음 유지**. 게이트는 이웃 토큰 26%를 버려도 Δ+0.0001; **정보를 더하지 않는 S4가 포인터 채널 P와 동등** — 공간축 채널이 내용으로 기여하지 않는다는 증거. 채택 여부는 사용자 결정 |
+| 2026-09-09 | **MUVOD 프로토콜 채택** (커밋 26aa7ac). 데이터셋 출처 벤치마크(arXiv:2507.07519)에 기존 방법 J&F가 있으므로 외부 비교는 그쪽 방식으로 갑니다. 논문이 밝히지 않은 장면별 c_ini를 세 증거로 확정 — 배포본 리그 형상, 원본 데이터셋 카메라 좌표(구글 반구 리그는 `camera_0001`이 극점, 메타 2행 리그는 `cam16`이 중앙 — 둘 다 "가운데 번호" 추측과 다름), 그리고 논문 표 자체의 제약(basic = complete인 장면은 c_ini가 모든 객체를 담아야 함 → 세 장면에서 카메라 유일 결정). `eval/muvod_census.py` 대조 결과 **17개 장면 전부 논문 표와 일치**. `--ref-cam`·`--muvod` 구현, 빠진 두 장면 설치, 테스트 135 → 188개 |
 | 2026-09-08 | **P4 절제 완료** (사전 등록 2847fd2 → 구현 e1bba33 → GPU 80회). 모드 A~E, 감시값 전부 통과. 1차 기준(비기준 CI>0) 통과 모드 없음 → **규칙상 A 유지**. B·C·E는 S1(Fencing v0 ≥0.85) 통과, C·E 헤드라인 0.8468(+0.0018 vs A), E는 C 대비 이득 없음. C 채택 여부는 사용자 결정 |
