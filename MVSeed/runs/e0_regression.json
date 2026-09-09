@@ -1,0 +1,170 @@
+{
+ "schema": "MVSeed seed_regression readings",
+ "schema_version": 1,
+ "generated_at": "2026-09-10T08:01:38+09:00",
+ "inputs": {
+  "seeds": {
+   "path": "MVSeed/runs/e0_index.json",
+   "sha256": "74da41b3006f6dcd9e8f079a7f1773f38450c45d0acfa6eb6a01ad6713c07b2e",
+   "run": "MVSeed_e0_index"
+  },
+  "jf": {
+   "path": "Data/MVSeg/jf_e4.json",
+   "sha256": "bb7dec47404102759c53317e5430c992d8b7e7400e2dca48bda00afb2ddc1ad9",
+   "method": "SegMaskSam3XW1CGPS4M"
+  },
+  "config": {
+   "path": "SCSam3/demo/MVSeg.json",
+   "sha256": "79b4e003aa9996025d8a1ff0f344e380657609c7403f0f7924f9250e706d629c"
+  }
+ },
+ "population": {
+  "definition": "non-reference camera, GT present at the seed frame, MUVOD basic objects (score_seeds.py rows)",
+  "n": 664,
+  "n_reference": 398,
+  "n_gt_empty": 132,
+  "n_unmatched": 128
+ },
+ "seeds_equal_frame0": false,
+ "diff": {
+  "nonref": {
+   "n": 664,
+   "mean_raw_J": 0.842631613843726,
+   "mean_frame0_J": 0.8361245578484635,
+   "delta_mean": -0.006507055995262465,
+   "delta_median": -0.0011283703540277412,
+   "n_abs_delta_gt_0.05": 20,
+   "n_identical": 6,
+   "n_new_fail_at_frame0": 4,
+   "n_recovered_at_frame0": 0,
+   "n_raw_fail": 41,
+   "n_frame0_fail": 45,
+   "n_raw_in_boundary": 32
+  },
+  "ref": {
+   "n": 398,
+   "mean_raw_J": 0.9699854387678558,
+   "mean_frame0_J": 0.9510930198351298,
+   "delta_mean": -0.018892418932726085,
+   "delta_median": -0.008944937356843874,
+   "n_abs_delta_gt_0.05": 37,
+   "n_identical": 0,
+   "n_new_fail_at_frame0": 1,
+   "n_recovered_at_frame0": 0,
+   "n_raw_fail": 0,
+   "n_frame0_fail": 1,
+   "n_raw_in_boundary": 0
+  }
+ },
+ "fit": {
+  "frames1_20_on_raw": {
+   "n": 664,
+   "slope": 1.0114434898002491,
+   "intercept": -0.01942747084308305,
+   "r2": 0.9216133732398272
+  },
+  "frames1_20_on_frame0": {
+   "n": 664,
+   "slope": 0.963660762749084,
+   "intercept": 0.02710636010954015,
+   "r2": 0.9330441953563547
+  },
+  "headroom_ref": [
+   0.964,
+   0.027,
+   0.933
+  ],
+  "reproduces_headroom": true
+ },
+ "F0": {
+  "n": 41,
+  "kind": {
+   "misplaced": 38,
+   "empty": 3
+  },
+  "size_bin": {
+   "<2000": 22,
+   "2000-10000": 13,
+   ">=10000": 6
+  },
+  "rig": {
+   "hemisphere": 12,
+   "pinhole": 29
+  },
+  "pinhole_ge2000": 16,
+  "view_distance": {
+   "2": 11,
+   "3": 10,
+   "4": 6,
+   "5": 2,
+   "6": 7,
+   "7": 1,
+   "12": 1,
+   "14": 2,
+   "15": 1
+  },
+  "scene": {
+   "AlexaMeadeExhibit": 8,
+   "Barn": 3,
+   "Blocks": 4,
+   "Breakfast": 6,
+   "CBABasketball": 2,
+   "CoffeeMartini": 2,
+   "Fencing": 1,
+   "FlameSteak": 5,
+   "MATF": 3,
+   "MartialArts": 1,
+   "Painter": 1,
+   "PoznanStreet": 1,
+   "Welder": 4
+  }
+ },
+ "N0": {
+  "n": 623,
+  "kind": {
+   "ok": 623
+  },
+  "size_bin": {
+   "<2000": 37,
+   "2000-10000": 125,
+   ">=10000": 461
+  },
+  "rig": {
+   "hemisphere": 110,
+   "pinhole": 513
+  },
+  "pinhole_ge2000": 480,
+  "view_distance": {
+   "1": 16,
+   "2": 102,
+   "3": 96,
+   "4": 156,
+   "5": 54,
+   "6": 70,
+   "7": 29,
+   "9": 24,
+   "12": 42,
+   "14": 15,
+   "15": 19
+  },
+  "scene": {
+   "AlexaMeadeExhibit": 52,
+   "AlexaMeadeFacePaint": 18,
+   "Barn": 57,
+   "Blocks": 25,
+   "Breakfast": 45,
+   "CBABasketball": 33,
+   "Carpark": 44,
+   "CoffeeMartini": 75,
+   "Dog": 13,
+   "Fencing": 15,
+   "FlameSteak": 59,
+   "Frog": 10,
+   "MATF": 28,
+   "MartialArts": 30,
+   "Painter": 47,
+   "PoznanStreet": 45,
+   "Welder": 27
+  }
+ }
+}
