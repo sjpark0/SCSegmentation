@@ -240,11 +240,15 @@ def census_camera(job):
 
 
 # ----------------------------------------------------------------- scoring
-def load_scores(root, methods):
-    """(dataset, camera, method, obj) -> (J_all, F_all) from the jf files."""
+def load_scores(root, methods, jf=None):
+    """(dataset, camera, method, obj) -> (J_all, F_all) from the jf files.
+
+    `jf` overrides the lookup for every method the table does not name, which is how
+    lineages added after this table was written (the XW folders, the MUVOD `M` folders)
+    get their scores without editing the table each time."""
     scores, files = {}, {}
     for m in methods:
-        name = JF_FILES.get(m, JF_DEFAULT_FILE)
+        name = JF_FILES.get(m, jf or JF_DEFAULT_FILE)
         files[m] = name
         path = os.path.join(root, name)
         if not os.path.exists(path):
@@ -935,6 +939,13 @@ def main():
                     help="MVSeg.json the runner used (cameras, start frame)")
     ap.add_argument("--out-json", default=DEFAULT_OUT_JSON)
     ap.add_argument("--out-md", default=DEFAULT_OUT_MD)
+    ap.add_argument("--jf", default=None, metavar="FILE",
+                    help="score file for methods the built-in table does not name "
+                         "(default jf_raw.json); e.g. jf_muvod.json for the M lineage")
+    ap.add_argument("--ref-rule", choices=("maxid", "count", "muvod"), default="maxid",
+                    help="which camera counts as the reference: the runner's max-id rule "
+                         "(default, what the 2026-09-07 census used), the object-count "
+                         "rule, or MUVOD's c_ini from MVSeg.json")
     ap.add_argument("--misaligned-iou", type=float, default=DEFAULT_MISALIGNED_IOU,
                     help="seed IoU below which a non-tiny seed is misaligned")
     ap.add_argument("--jobs", type=int, default=0,
@@ -958,7 +969,7 @@ def main():
         if sorted(cams) != scored:
             print(f"warning: {folder}: Mask/ cameras {scored} != cam_list {cams}",
                   file=sys.stderr)
-        ref = meta["ref"]["maxid"]
+        ref = meta["ref"][args.ref_rule]
         ref_gt = read_gray(os.path.join(ds_dir, "Mask", ref["cam"],
                                         f"{meta['start_frame']:06d}.png"))
         ids, counts = np.unique(ref_gt, return_counts=True)
@@ -981,7 +992,7 @@ def main():
     print(f"{len(datasets)} datasets, {len(jobs)} cameras, methods {args.methods}",
           flush=True)
 
-    scores, jf_files = load_scores(root, args.methods)
+    scores, jf_files = load_scores(root, args.methods, args.jf)
 
     rows, objects = [], {}
     with Pool(min(args.jobs or os.cpu_count(), len(jobs))) as pool:

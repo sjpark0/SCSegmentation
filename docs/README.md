@@ -40,6 +40,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [investigations-closed.md](investigations-closed.md) | 종결된 조사 13건 — 재조사 금지 목록 |
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
+| **[phase5-seed-repair-prep.md](phase5-seed-repair-prep.md)** | **P5 준비 (2026-09-09)** — c_ini 기준 시드 재집계(퇴화 15개), REPORT 감지 규칙의 오탐 90% 확인과 정정, 남은 결정 |
 | **[muvod-comparison.md](muvod-comparison.md)** | **MUVOD 벤치마크 비교 결과 (2026-09-09)** — 공개 기준선 대비 basic +10.5 / complete +9.6, 17개 중 16개 우세, 공정성 대조와 Welder 진단 |
 | **[muvod-protocol.md](muvod-protocol.md)** | **MUVOD 평가 프로토콜 채택 (2026-09-09)** — 대외 수치의 채점 규약, 장면별 c_ini를 확정한 근거, 우리 기존 기준 카메라와의 차이 |
 | [experiments.md](experiments.md) | J&F 평가 방법과 전체 결과 |
