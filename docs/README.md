@@ -40,6 +40,8 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [investigations-closed.md](investigations-closed.md) | 종결된 조사 13건 — 재조사 금지 목록 |
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
+| **[xview-recovery.md](xview-recovery.md)** | **E3 결과 (2026-09-09)** — 이웃 읽기는 가려졌거나 뒤늦게 들어온 객체를 되찾는다: 갈림 구간 3/3 회복, 새 유실 0, 시드에 무관하게 재현. 사건이 셋뿐이라 "지지·검정력 부족". D1 마무리 |
+| [xview-recovery-prereg.md](xview-recovery-prereg.md) | E3 사전 등록 — 사건·되찾음·판정 정의, 검증 데이터 읽기 전 커밋 |
 | **[phase5-seed-repair.md](phase5-seed-repair.md)** | **Phase 3 / P5 결과 (2026-09-09) — 기각.** 17장면 Δ +0.000, Blocks −1.01; 잘못 놓인 복구 시드가 옆 시점 메모리와 같은 카메라 겹침 경쟁을 타고 다른 객체를 지움. Welder는 +2.06이나 규칙상 채택 안 함 |
 | [phase5-seed-repair-prereg.md](phase5-seed-repair-prereg.md) | P5 사전 등록 — 규칙·엔드포인트·판정·감시값, 스모크 뒤 수정 이력 §8 |
 | **[phase5-seed-repair-prep.md](phase5-seed-repair-prep.md)** | **P5 준비 (2026-09-09)** — c_ini 기준 시드 재집계(퇴화 15개), REPORT 감지 규칙의 오탐 90% 확인과 정정, 남은 결정 |
