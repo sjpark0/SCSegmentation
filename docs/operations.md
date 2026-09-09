@@ -121,9 +121,19 @@ Frog 점수가 `jf_sam3_mvopt_all.json`과 일치). `waitAndRunMVSeg.sh`·`runMV
   자동 폴더 이름에 접미사가 붙습니다 — `muvod`는 **M**, 나머지는 `R<순위>`. 장면마다 c_ini의 순위가 달라도 M은 하나로
   유지되므로 벤치마크 전체를 한 method 이름으로 채점할 수 있습니다. 플래그가 없으면 예전 `pick_reference` 규칙 그대로이고
   출력도 예전 그대로입니다. `runMVOptThree.sh`는 `XREF`로 넘깁니다.
+- **시드 복구 `--repair-seeds`** (2026-09-09, P5): 시점 전파가 만든 첫 프레임 마스크 중 비정상적으로 작은
+  (시점, 객체) 쌍을 **정답 없이** 찾아, 옆 시점 마스크를 두 번째 조건 프레임으로 넣고 **새 시점 세션**에서
+  다시 전파해 그 쌍만 바꿔 넣습니다. 규칙·판정은 [phase5-seed-repair-prereg.md](phase5-seed-repair-prereg.md)
+  §1에 고정돼 있고 `demoSCSam3MVOpt/seed_repair.py`(torch 없음)가 감지·donor 선택을, 러너의
+  `RepairSeeds()`가 세션 작업을 맡습니다. 폴더 접미사 **Rp**(예: `SegMaskSam3XW1GPS4MRp`). 시점 전파가 있는
+  패키지(MVOpt·OneStageNew)에서만 받고 OneStage는 거부합니다. 실행 로그에 `seed repair    round N: ...`와
+  쌍별 `전 px <- donor -> 후 px` 줄이 찍히고, 매니페스트 `provenance.seed_repair`에 전부 남습니다.
+  **순서가 중요합니다** — `PropagateAcrossViews()` 뒤, `RetireSpatialPredictor()` 앞. 뒤에 두면 에러 없이
+  조용히 아무것도 고치지 않습니다(테스트가 고정). `runMVOptThree.sh`는 `XREPAIR`로 넘깁니다.
 - `runMVOptThree.sh`의 `XGATE`·`XPTR`·`XSHIFT`는 **비어 있지 않기만 하면 켜집니다** — `XGATE=0`도 플래그를 켭니다
   (`TRACK`과 같은 함정). `XSHIFT=0`은 `--xview-tpos-shift 0`을 만들어 argparse가 거부하므로 실행이 죽습니다.
   `XREF`는 값이 그대로 `--ref-cam`에 들어가므로 오타가 나면 실행이 죽습니다(무시되지 않습니다).
+  `XREPAIR`도 `XGATE`처럼 비어 있지 않기만 하면 켜집니다 — `XREPAIR=0`도 복구를 켭니다.
 - **closure == all 보조정리**: 위생 on이면 시점 v는 시점 0..v만 읽으므로 closure와 all의 출력이 같습니다(실험 행 6이 실측 검증).
   nb=0 카메라는 W에 무관하게 입력이 같으므로 XW0 vs XW4에서 정확히 0이어야 하며, 0이 아니면 비결정성·누수 신호입니다.
 - **이웃 모드 `--xview-mode`** (2026-09-08, P4): A = 이전 시점의 프레임 t(기본, 폴더 이름에 글자 없음) · B = 양쪽 시점의 t−1 ·

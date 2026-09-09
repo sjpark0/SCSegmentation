@@ -30,7 +30,7 @@ def clean_env(monkeypatch):
 def ns(**kw):
     d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
              xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None,
-             ref_cam=None)
+             ref_cam=None, repair_seeds=False)
     d.update(kw)
     return argparse.Namespace(**d)
 

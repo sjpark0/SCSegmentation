@@ -134,6 +134,12 @@ def parse_args():
                          "camera, read off the published rig geometry). An auto-named output "
                          "folder gains a suffix -- M for muvod, R<rank> otherwise -- so two "
                          "references never share a folder.")
+    ap.add_argument("--repair-seeds", action="store_true",
+                    help="P5: after the cross-view pass, detect degenerate first-frame seeds "
+                         "without ground truth and re-propagate each from a donor view in a "
+                         "fresh spatial session (docs/phase5-seed-repair-prereg.md). Only "
+                         "the flagged (view, obj) seeds change. Folder suffix Rp. Needs a "
+                         "package with a cross-view pass (MVOpt/OneStageNew).")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -335,6 +341,12 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         # a different seed camera is a different run: never let it land on the folder
         # the default reference wrote
         out_name += ref_suffix
+    repair = bool(getattr(args, "repair_seeds", False))
+    if repair and args.algo not in NEEDS_ALL_VIEWS:
+        sys.exit(f"--repair-seeds needs a package with a cross-view pass "
+                 f"({', '.join(NEEDS_ALL_VIEWS)}), not {args.algo}")
+    if not args.out and repair:
+        out_name += "Rp"
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -342,7 +354,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         sys.exit(f"refusing to write a legacy run into {out_name}: folder names starting "
                  f"with {XVIEW_OUT_PREFIX} are the XW lineage (pass --xview-window, or "
                  "another --out)")
-    return dict(out_name=out_name, track_mode=track_mode, track_idx=track_idx,
+    return dict(out_name=out_name, repair_seeds=repair, track_mode=track_mode, track_idx=track_idx,
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
@@ -393,6 +405,7 @@ def build_runner(algo):
             one decoded frame each.
             """
             self.track_views = list(track_idx)
+            self.start_frame = start_frame          # RepairSeeds re-opens the same frames
             track_set = set(self.track_views)
             for i, name in enumerate(cam_names):
                 folder = os.path.join(video_root, name)
@@ -454,6 +467,100 @@ def build_runner(algo):
                     obj_id: (out["out_binary_masks"][i] > 0.0)
                     for i, obj_id in enumerate(out["out_obj_ids"].tolist())
                 }
+
+        def RepairSeeds(self, ref_index, ref_gt, n_obj, max_rounds=None):
+            """P5 (docs/phase5-seed-repair-prereg.md section 1).
+
+            Detect degenerate cross-view seeds without ground truth, re-propagate each
+            from a donor view in a fresh spatial session, and replace only the flagged
+            (view, obj) entries of masks_spatial.  Must run after PropagateAcrossViews
+            and before RetireSpatialPredictor (tests/test_seed_repair_prereq.py pins the
+            order: after retirement this would silently repair nothing).
+            """
+            import seed_repair
+            rounds = seed_repair.MAX_ROUNDS if max_rounds is None else max_rounds
+            ref_areas = {obj: int((ref_gt == obj).sum()) for obj in range(1, n_obj + 1)}
+            # Amendment (prereg section 8): only the tracked views are examined -- their
+            # seeds are the only ones TrackForward consumes -- and only tracked views
+            # other than the reference may donate.  On a 46-camera hemisphere the far
+            # views hold blobs and blanks that poison any per-view statistic.
+            views = sorted(self.track_views)
+            donors = [v for v in views if v != ref_index]
+            stats = {"params": dict(min_px=seed_repair.MIN_PX, rel_frac=seed_repair.REL_FRAC,
+                                    donor_lo=seed_repair.DONOR_LO, donor_hi=seed_repair.DONOR_HI,
+                                    window=seed_repair.WINDOW, fallback=seed_repair.FALLBACK,
+                                    max_rounds=rounds),
+                     "ref_view": ref_index, "ref_areas": ref_areas,
+                     "views": views, "donors": donors, "n_obj": n_obj, "rounds": []}
+            used = {}
+            for rnd in range(1, rounds + 1):
+                areas = self._seed_areas()
+                repairs, unrep = seed_repair.plan(areas, ref_areas, ref_index, views=views,
+                                                  donors=donors, used=used)
+                rec = {"round": rnd, "flagged": len(repairs) + len(unrep),
+                       "repairs": seed_repair.as_records(repairs),
+                       "unrepairable": seed_repair.as_records(unrep), "after": []}
+                stats["rounds"].append(rec)
+                if not repairs:
+                    break
+                new = self._repropagate(ref_index, ref_gt, n_obj, repairs)
+                for r in repairs:
+                    mask = new.get(r.view, {}).get(r.obj)
+                    if mask is None:
+                        rec["after"].append(dict(view=r.view, obj=r.obj, area=None))
+                        continue
+                    self.masks_spatial[r.view][r.obj] = mask
+                    rec["after"].append(dict(view=r.view, obj=r.obj,
+                                             area=int(mask.sum().item())))
+                    used.setdefault((r.view, r.obj), set()).add(r.donor)
+            stats["used_donors"] = [dict(view=v, obj=o, donors=sorted(d))
+                                    for (v, o), d in sorted(used.items())]
+            return stats
+
+        def _seed_areas(self):
+            return {view: {obj: int(m.sum().item()) for obj, m in masks.items()}
+                    for view, masks in self.masks_spatial.items()}
+
+        def _repropagate(self, ref_index, ref_gt, n_obj, repairs):
+            """One fresh spatial session for this round.  EVERY object is prompted at
+            the reference exactly as in PropagateAcrossViews (so the per-frame overlap
+            competition is the one TrackForward will see -- a session holding only the
+            flagged objects let a repaired seed grab another object's pixels), plus the
+            donor seed of each flagged object as a second conditioning frame.  Both
+            directions, implicit start.  Returns {view: {obj: mask}} for every yielded
+            view; the caller commits only the flagged pairs."""
+            frames = [self.images[i][self.start_frame] for i in range(self.numImage)]
+            response = self.spatial.handle_request(
+                request=dict(type="start_session", images=frames,
+                             orig_height=self.video_height, orig_width=self.video_width))
+            sid = response["session_id"]
+            self.spatial.handle_request(request=dict(type="reset_session", session_id=sid))
+            try:
+                for obj in range(1, n_obj + 1):          # same set as AddReferenceMask
+                    self.spatial.handle_request(request=dict(
+                        type="add_prompt", session_id=sid, frame_index=ref_index,
+                        mask=torch.tensor((ref_gt == obj).astype("float32"),
+                                          dtype=torch.float32),
+                        obj_id=obj))
+                for donor, obj in sorted({(r.donor, r.obj) for r in repairs}):
+                    self.spatial.handle_request(request=dict(
+                        type="add_prompt", session_id=sid, frame_index=donor,
+                        mask=torch.tensor(self.masks_spatial[donor][obj],
+                                          dtype=torch.float32),
+                        obj_id=obj))
+                request = dict(type="propagate_in_video", session_id=sid,
+                               propagation_direction="both")
+                if not SPATIAL_START_IMPLICIT:
+                    request["start_frame_index"] = ref_index
+                out = {}
+                for response in self.spatial.handle_stream_request(request=request):
+                    o = response["outputs"]
+                    out[response["frame_index"]] = {
+                        obj_id: (o["out_binary_masks"][i] > 0.0)
+                        for i, obj_id in enumerate(o["out_obj_ids"].tolist())}
+                return out
+            finally:
+                self.spatial.handle_request(request=dict(type="close_session", session_id=sid))
 
         def TrackForward(self, start_frame, num_frame):
             """Seed each view with its propagated mask, then track forward only.
@@ -605,6 +712,8 @@ def main():
           f"(view index {ref_index}), {n_obj} objects prompted, rule {ref_rule}", flush=True)
     print(f"cross-view     lineage {run['lineage']}, track {run['track_mode']} "
           f"({len(run['track_idx'])} sessions)", flush=True)
+    print(f"seed repair    {'on (Rp, max 2 rounds)' if run['repair_seeds'] else 'off'}",
+          flush=True)
 
     out_dir = os.path.join(ds_dir, out_name)
     if not args.overwrite and os.path.isdir(out_dir) and os.listdir(out_dir):
@@ -651,6 +760,22 @@ def main():
 
     sc.PropagateAcrossViews(ref_index)
     print(f"cross-view     done, {len(sc.masks_spatial)} views have masks", flush=True)
+
+    # P5.  Before RetireSpatialPredictor: the repair re-opens the spatial model.
+    repair_stats = None
+    if run["repair_seeds"]:
+        repair_stats = sc.RepairSeeds(ref_index, ref_gt, n_obj)
+        for rec in repair_stats["rounds"]:
+            print(f"seed repair    round {rec['round']}: {rec['flagged']} flagged, "
+                  f"{len(rec['repairs'])} repaired, {len(rec['unrepairable'])} unrepairable",
+                  flush=True)
+            for r, a in zip(rec["repairs"], rec["after"]):
+                print(f"               view {r['view']} obj {r['obj']}: {r['area']} px "
+                      f"(T={r['threshold']:.0f}) <- donor view {r['donor']} "
+                      f"({r['donor_area']} px) -> {a['area']} px", flush=True)
+            for u in rec["unrepairable"]:
+                print(f"               view {u['view']} obj {u['obj']}: {u['area']} px "
+                      f"(T={u['threshold']:.0f}) no donor", flush=True)
 
     # The cross-view model is dead weight from here on: ~3.2 GiB of parameters,
     # the N-view pseudo-video, its feature cache and its per-view tracker
@@ -735,7 +860,8 @@ def main():
                    "xview_mode": eff_mode, "two_pass": run["two_pass"],
                    "closure_reach": run["closure_reach"],
                    "xview_gate": eff_gate, "xview_ptr": eff_ptr, "xview_tpos_shift": eff_shift,
-                   "xview_gate_stats": xstats})
+                   "xview_gate_stats": xstats,
+                   "seed_repair": repair_stats})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
         print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)

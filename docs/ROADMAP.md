@@ -180,7 +180,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 5 | W ∈ {1,2,6} 곡선 (6개 데이터셋) | `SegMaskSam3XW{1,2,6}` | ✅ 09-07 | W=1 포화 |
 | 6 | closure = all 검증 | `SegMaskSam3XW4all` | ✅ 09-07 | Welder·Dog·Blocks diff 0 |
 | 7 | 양측 창 (P4) | `SegMaskSam3XW1{B,C,D,E}` | ✅ 09-08 | 3 — 규칙상 A 유지, C 채택은 결정 대기 |
-| 8 | seed 복구 (P5) | `SegMaskSeedRepair` | ⬜ **다음 본선** | 3 |
+| 8 | seed 복구 (P5) | `SegMaskSam3XW1GPS4MRp` | 🔶 사전 등록 1a4bba8 → 구현 → 실행 중 | 3 — [phase5-seed-repair-prereg.md](phase5-seed-repair-prereg.md) |
 | 9 | reference 규칙 (P8) | ~~`*_refcount`~~ | ✅ 09-09 | MUVOD의 c_ini로 대체 — `--ref-cam muvod`, 접미사 `M` |
 | 10 | 이웃 토큰 (P12) | `SegMaskSam3XW1{G,P,GP,S1..S5,PS4,GPS4}` | ✅ 09-08 | 3 |
 | 11 | 설정 매칭 (E6) | `SegMaskSam2Matched` | 보류 09-09 | 4 — MUVOD 기준선 확보로 SAM 2 비교군의 필요가 사라짐. 계획은 [sam2-port-spec.md](sam2-port-spec.md)에 보존 |
