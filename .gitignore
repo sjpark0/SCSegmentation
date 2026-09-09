@@ -187,3 +187,7 @@ SCSam3/sam3/
 # 디렉터리 자체는 남겨야 Dockerfile 의 COPY 가 실패하지 않습니다.
 SCSam3/hf_cache/*
 !SCSam3/hf_cache/.gitkeep
+
+# 마운트 스크립트 — 내부 호스트 주소와 자격증명이 들어 있어 저장소에 넣지 않습니다.
+# 로컬 파일은 그대로 두고 추적만 끕니다 (2026-09-09).
+mount_*.sh
