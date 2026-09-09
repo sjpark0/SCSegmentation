@@ -30,7 +30,7 @@ def clean_env(monkeypatch):
 def ns(**kw):
     d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
              xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None,
-             ref_cam=None, repair_seeds=False)
+             ref_cam=None, repair_seeds=False, seeds_from=None)
     d.update(kw)
     return argparse.Namespace(**d)
 
@@ -480,3 +480,95 @@ def test_parse_args_ref_cam(monkeypatch):
     assert mod.parse_args().ref_cam == "9"
     monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "MartialArts", "--ref-cam", "muvod"])
     assert mod.parse_args().ref_cam == "muvod"
+
+
+# ------------------------------------------------- stage-1 supply: --seeds-from (S1-E7)
+# (folder, suffix): the suffix goes where Rp goes, after the reference suffix, so a
+# treatment run never lands on the control folder (SegMaskSam3XW0M etc.).
+SEED_TABLE = [("MVSeed_control", "Sdcontrol"), ("MVSeed_vote_v1", "Sdvote_v1"),
+              ("MVSeed_gs-lift.2", "Sdgs-lift.2")]
+
+
+@pytest.mark.parametrize("ds", sorted(CANONICAL_K))
+def test_seeds_from_suffix_table(ds):
+    cam_names, written = cams(ds)
+    K = CANONICAL_K[ds]
+    for folder, suffix in SEED_TABLE:
+        for flags, base_name, ref in ((dict(xview_window=0), "SegMaskSam3XW0M", "M"),
+                                      (dict(xview_window=1, xview_mode="C", xview_gate=True,
+                                            xview_ptr=True, xview_tpos_shift=4),
+                                       "SegMaskSam3XW1CGPS4M", "M"),
+                                      (dict(xview_window=1), "SegMaskSam3XW1", None),
+                                      (dict(), "SegMaskSam3MVOpt", None)):
+            base = mod.resolve_run(ns(**flags), cam_names, written, num_frame=21, ref_suffix=ref)
+            assert base["out_name"] == base_name and base["seeds_from"] is None
+            r = mod.resolve_run(ns(seeds_from=folder, **flags), cam_names, written, num_frame=21,
+                                ref_suffix=ref)
+            assert r["out_name"] == base_name + suffix, (ds, folder, flags)
+            assert r["seeds_from"] == folder and r["repair_seeds"] is False
+            # the seed folder changes nothing else about the run (sessions, kwargs, lineage)
+            assert {k: v for k, v in r.items() if k not in ("out_name", "seeds_from")} == \
+                   {k: v for k, v in base.items() if k not in ("out_name", "seeds_from")}
+        r = mod.resolve_run(ns(xview_window=0, seeds_from=folder), cam_names, written, num_frame=21)
+        assert r["track_idx"] == list(range(K)) and r["out_name"] == "SegMaskSam3XW0" + suffix
+        # --track-cams all keeps its own marker, then the seed marker
+        r = mod.resolve_run(ns(xview_window=0, track_cams="all", seeds_from=folder), cam_names,
+                            written, num_frame=21, ref_suffix="M")
+        assert r["out_name"] == "SegMaskSam3XW0allM" + suffix
+        # an explicit --out is kept as long as it carries the marker
+        r = mod.resolve_run(ns(xview_window=0, out="SegMaskSam3XWmine" + suffix, seeds_from=folder),
+                            cam_names, written, num_frame=21, ref_suffix="M")
+        assert r["out_name"] == "SegMaskSam3XWmine" + suffix
+        r = mod.resolve_run(ns(xview_window=0, out=f"Scratch{suffix}x", seeds_from=folder),
+                            cam_names, written, num_frame=21)
+        assert r["out_name"] == f"Scratch{suffix}x"
+
+
+def test_seeds_from_refusals():
+    cam_names, written = cams("Fencing")
+    for bad in ("SegMaskSam3XW0M", "mvseed_control", "MVSeed_", "MVSeed", "MVSeed_a/b",
+                "MVSeed_a b", "../MVSeed_control"):                    # folder-name rule
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, seeds_from=bad), cam_names, written, num_frame=21)
+    with pytest.raises(SystemExit):                                   # excludes --repair-seeds
+        mod.resolve_run(ns(xview_window=0, seeds_from="MVSeed_control", repair_seeds=True),
+                        cam_names, written, num_frame=21)
+    for algo in ("OneStage", "OneStageNew"):                          # MVOpt only
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(algo=algo, seeds_from="MVSeed_control"), cam_names, written)
+    # an explicit --out without the marker could be a control folder: refused
+    for out in ("SegMaskSam3XW0M", "SegMaskSam3XW0", "SegMaskSam3MVOpt", "Whatever",
+                "SegMaskSam3XW0MSdvote", "SegMaskSam3XW0MSd"):
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, out=out, seeds_from="MVSeed_control"), cam_names,
+                            written, num_frame=21, ref_suffix="M")
+    # the existing guards still apply after the suffix logic
+    with pytest.raises(SystemExit):
+        mod.resolve_run(ns(xview_window=0, seeds_from="MVSeed_control", track_cams="written"),
+                        cam_names, written, num_frame=21)
+    # a namespace without the attribute (a legacy caller) resolves as before
+    legacy = argparse.Namespace(algo="MVOpt", xview_window=0, xview_hygiene=False,
+                                track_cams=None, out=None, xview_mode=None)
+    r = mod.resolve_run(legacy, cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW0" and r["seeds_from"] is None
+    assert mod.SEEDS_FROM_ALGOS == ("MVOpt",)
+
+
+def test_seeds_from_module_is_the_package_copy():
+    sf = mod.seeds_from_module()
+    assert sf is mod.seeds_from_module()                              # loaded once
+    assert os.path.abspath(sf.__file__) == os.path.join(REPO, "SCSam3", "demoSCSam3MVOpt",
+                                                          "seeds_from.py")
+    assert sf.folder_suffix("MVSeed_control") == "Sdcontrol"
+
+
+def test_parse_args_seeds_from(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing"])
+    assert mod.parse_args().seeds_from is None
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--xview-window", "0",
+                                      "--ref-cam", "muvod", "--seeds-from", "MVSeed_control"])
+    a = mod.parse_args()
+    assert (a.seeds_from, a.xview_window, a.ref_cam, a.repair_seeds) == ("MVSeed_control", 0, "muvod", False)
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--seeds-from"])
+    with pytest.raises(SystemExit):
+        mod.parse_args()

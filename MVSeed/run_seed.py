@@ -7,13 +7,23 @@ prompt the reference position with the ground truth, propagate both directions -
 the temporal stage removed.  Every other `--order` reorders that pseudo-video and maps
 the result back, so the two are comparable frame for frame.
 
-Writes only to Data/MVSeg/<scene>/<--out>/<camera>/<start_frame>/<obj>.png, and refuses
-any name that does not start with MVSeed_ (MVSeed/README.md rule R2).
+Writes a PNG for EVERY view, not only the three annotated cameras, to
+Data/MVSeg/<scene>/<--out>/<camera>/<start_frame>/<obj>.png, and refuses any --out that
+does not start with MVSeed_ (MVSeed/README.md rule R2).  Every view because the folder
+is what the mainline `--seeds-from` hook will load in place of its own stage 1
+(docs/stage1-plan.md section 6), and that needs a seed for each tracked view;
+score_seeds.py reads just the annotated three.  SEED_MANIFEST.json beside the PNGs says
+what was written (`written_views`, per-view `coverage`) next to what is scored
+(`scored_views`), so a consumer can check coverage without listing the folder;
+build_manifest() is pure so that schema is tested without torch.
 
     docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \
       --user $(id -u):$(id -g) -v /:/host -w /host$PWD \
       -e HF_HOME=/host$PWD/SCSam3/hf_cache -e HF_HUB_OFFLINE=1 scsam3 \
       python MVSeed/run_seed.py Fencing --order index --out MVSeed_control
+    # then, on the annotated cameras only:
+    docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD scsam3 \
+      python MVSeed/score_seeds.py --runs MVSeed_control
 
 HF_HOME is required when running as yourself: the weights live in the image at
 /root/.cache/huggingface (mode 700, root-owned), so a --user run cannot read them and
@@ -31,6 +41,7 @@ DATA = os.path.join(REPO, "Data", "MVSeg")
 CONFIG = os.path.join(REPO, "SCSam3", "demo", "MVSeg.json")
 OUT_PREFIX = "MVSeed_"
 ORDERS = ("index", "reverse", "ref_outward")
+GENERATOR = "video"     # the pseudo-video arm (G0/G1 in stage1-plan section 3)
 
 
 def cam_name(c, prefix, prefix1):
@@ -57,6 +68,32 @@ def view_order(order, n, ref_idx):
                 seq.append(hi); hi += 1
         return seq
     raise ValueError(order)
+
+
+def build_manifest(dataset, order, sequence, cams, ref_idx, start_frame, n_objects,
+                   scored, areas, argv):
+    """SEED_MANIFEST.json as a dict.  Pure (plain ints, strs, lists) so it is testable
+    without torch, and so every generator writes the same schema.
+
+    `areas` is {camera: {obj_id: pixel count}} for the views a PNG was written for, in
+    view-index order; `written_views` and `coverage` are derived from it rather than
+    from `cams` so the manifest never claims a PNG that is not on disk.  `coverage`
+    lists, per view, the objects that have a PNG there.  An empty mask still counts:
+    it is the generator's statement that the object is absent from that view, and
+    `areas` (0) tells it apart from a real one.  This generator gives every view every
+    prompted object; the per-view generators of stage1-plan section 6 may not, and the
+    mainline `--seeds-from` hook reads `coverage` to refuse a folder that does not
+    cover the annotated cameras.
+    """
+    sequence = list(sequence)
+    return {"dataset": dataset, "generator": GENERATOR,
+            "order": order, "sequence": sequence,
+            "reference": cams[ref_idx], "reference_view_index": ref_idx,
+            "prompt_position": sequence.index(ref_idx), "start_frame": start_frame,
+            "n_views": len(cams), "n_objects": n_objects,
+            "written_views": list(areas), "scored_views": list(scored),
+            "coverage": {cam: sorted(int(o) for o in per) for cam, per in areas.items()},
+            "areas": areas, "argv": list(argv)}
 
 
 def main():
@@ -89,13 +126,13 @@ def main():
     order = view_order(args.order, len(cams), ref_idx)
     assert sorted(order) == list(range(len(cams)))
     out_dir = os.path.join(ds_dir, args.out)
-    written = [cam_name(x, d["prefix"], d["prefix1"]) for x in d["cam_list"]]
+    scored = [cam_name(x, d["prefix"], d["prefix1"]) for x in d["cam_list"]]
 
     print(f"dataset        {args.dataset}  ({ds_dir})")
     print(f"views          {len(cams)}  frame {start}")
     print(f"reference      {ref_cam} (view index {ref_idx})")
     print(f"order          {args.order}: {order[:8]}{' ...' if len(order) > 8 else ''}")
-    print(f"output         {out_dir}  (cameras {written})")
+    print(f"output         {out_dir}  (all {len(cams)} views; scored {scored})")
     if args.dry_run:
         return
     if os.path.isdir(out_dir) and not args.overwrite:
@@ -153,25 +190,21 @@ def main():
             for i, obj_id in enumerate(o["out_obj_ids"].tolist())}
     print(f"propagated     {len(masks)} views have masks", flush=True)
 
+    # every view to disk, in view-index order (the scored three are a subset)
     areas = {}
     for v, per in sorted(masks.items()):
         areas[cams[v]] = {int(o): int(m.sum().item()) for o, m in per.items()}
-        if cams[v] not in written:
-            continue
         folder = os.path.join(out_dir, cams[v], str(start))
         os.makedirs(folder, exist_ok=True)
         for obj_id, m in per.items():
             a = m.cpu().numpy() if hasattr(m, "cpu") else np.asarray(m)
             cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
                         a.squeeze().astype(np.uint8) * 255)
+    manifest = build_manifest(args.dataset, args.order, order, cams, ref_idx, start, n_obj,
+                              scored, areas, sys.argv)
     with open(os.path.join(out_dir, "SEED_MANIFEST.json"), "w") as f:
-        json.dump({"dataset": args.dataset, "order": args.order, "sequence": order,
-                   "reference": ref_cam, "reference_view_index": ref_idx,
-                   "prompt_position": pos_of_view[ref_idx], "start_frame": start,
-                   "n_views": len(cams), "n_objects": n_obj,
-                   "written_cameras": written, "areas": areas,
-                   "argv": sys.argv}, f, indent=1)
-    print(f"done -> {out_dir}", flush=True)
+        json.dump(manifest, f, indent=1)
+    print(f"done -> {out_dir}  ({len(areas)} views written)", flush=True)
 
 
 if __name__ == "__main__":

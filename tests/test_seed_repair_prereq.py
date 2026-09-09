@@ -102,6 +102,13 @@ def test_repair_must_run_before_the_spatial_model_is_retired():
         assert prop < repair < retire, (
             "RepairSeeds() 는 PropagateAcrossViews() 뒤, RetireSpatialPredictor() 앞이어야 "
             f"합니다 (지금 {prop} < {repair} < {retire} 가 아님)")
+    # 1단계 공급(--seeds-from, docs/stage1-plan.md §3·§6)도 같은 자리입니다: 전파 뒤에
+    # 시드를 바꿔 끼워야 record_seed 와 TrackForward 가 그것을 읽습니다
+    if "LoadSeedsFrom(" in s:
+        load = line_of("sc.LoadSeedsFrom(")
+        assert prop < load < retire, (
+            "LoadSeedsFrom() 은 PropagateAcrossViews() 뒤, RetireSpatialPredictor() 앞이어야 "
+            f"합니다 (지금 {prop} < {load} < {retire} 가 아님)")
 
 
 def test_spatial_start_stays_implicit():

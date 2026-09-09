@@ -7,6 +7,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGDIR="${ROOT}/SCSam3/logs/${LOGTAG:-mvopt}-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "${LOGDIR}"
 echo "logs -> ${LOGDIR}"
+# SEEDS=MVSeed_<tag> seeds the run from that folder (--seeds-from, stage-1 supply):
+#   XVIEW=0 XREF=muvod SEEDS=MVSeed_control ./runMVOptThree.sh Fencing   # -> SegMaskSam3XW0MSdcontrol
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
@@ -18,7 +20,8 @@ for ds in "$@"; do
 		python runMVSeg.py "${ds}" --algo "${ALGO:-MVOpt}" ${OUT:+--out "${OUT}"} \
 			${XVIEW:+--xview-window "${XVIEW}"} ${XMODE:+--xview-mode "${XMODE}"} \
 			${XGATE:+--xview-gate} ${XPTR:+--xview-ptr} ${XSHIFT:+--xview-tpos-shift "${XSHIFT}"} \
-			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} ${XREPAIR:+--repair-seeds} --overwrite \
+			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} ${XREPAIR:+--repair-seeds} \
+			${SEEDS:+--seeds-from "${SEEDS}"} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))

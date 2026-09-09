@@ -24,6 +24,8 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
     python runMVSeg.py Welder --algo MVOpt --xview-window 0   # -> SegMaskSam3XW0, closure
     python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-mode B   # -> SegMaskSam3XW1B, closure cone
     python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-gate --xview-ptr   # -> SegMaskSam3XW1GP
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --seeds-from MVSeed_control
+                                                                  # -> SegMaskSam3XW0MSdcontrol, stage-1 supply
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -73,6 +75,27 @@ XVIEW_CLOSURE_GROWTH = {"A": 0, "B": 1, "C": 1, "D": 0, "E": 2}
 # moves the neighbour inside the non-cond rows only; REPORT P12's cond-row (row 6) and
 # mean-of-rows variants are out of scope for this flag.
 XVIEW_TPOS_SHIFTS = tuple(range(1, XVIEW_MAX_WINDOW))      # 1..5
+# Stage-1 supply (docs/stage1-plan.md section 3 "2단계 공급", section 6): --seeds-from swaps
+# the cross-view seeds for the PNGs of a <scene>/MVSeed_<tag>/ folder in the slot P5 uses.
+# MVOpt only: it is the development target and the package that carries seeds_from.py
+# (the frozen packages gain no files).  Folder suffix Sd<tag>, in the Rp position.
+SEEDS_FROM_ALGOS = ("MVOpt",)
+_SEEDS_FROM = None
+
+
+def seeds_from_module():
+    """demoSCSam3MVOpt/seeds_from.py, loaded by path.  resolve_run needs its folder rule
+    before build_runner has put any package on sys.path, and SCSam3/ itself must never
+    go there (it shadows the installed sam3, see build_runner)."""
+    global _SEEDS_FROM
+    if _SEEDS_FROM is None:
+        import importlib.util
+        path = os.path.join(HERE, ALGOS["MVOpt"], "seeds_from.py")
+        spec = importlib.util.spec_from_file_location("seeds_from", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _SEEDS_FROM = mod
+    return _SEEDS_FROM
 
 
 def parse_args():
@@ -140,6 +163,14 @@ def parse_args():
                          "fresh spatial session (docs/phase5-seed-repair-prereg.md). Only "
                          "the flagged (view, obj) seeds change. Folder suffix Rp. Needs a "
                          "package with a cross-view pass (MVOpt/OneStageNew).")
+    ap.add_argument("--seeds-from", default=None, metavar="MVSeed_TAG",
+                    help="stage-1 supply (docs/stage1-plan.md section 3): after the cross-view "
+                         "pass, replace the seed of every tracked (view, obj) that has a PNG "
+                         "<dataset>/MVSeed_TAG/<cam>/<start_frame>/<obj>.png; the rest keep "
+                         "their G0 seed. The folder name must start with MVSeed_ and its "
+                         "SEED_MANIFEST.json, when present, must cover every scored camera. "
+                         "Folder suffix Sd<TAG>; an explicit --out must carry it too. Excludes "
+                         "--repair-seeds. MVOpt only.")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -385,6 +416,24 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                  f"({', '.join(NEEDS_ALL_VIEWS)}), not {args.algo}")
     if not args.out and repair:
         out_name += "Rp"
+    seeds_from = getattr(args, "seeds_from", None)
+    if seeds_from is not None:
+        if repair:
+            sys.exit("--seeds-from and --repair-seeds both rewrite the first-frame seeds and "
+                     "are different treatments: pass one of them")
+        if args.algo not in SEEDS_FROM_ALGOS:
+            sys.exit(f"--seeds-from is wired into {SEEDS_FROM_ALGOS} only, not {args.algo}")
+        try:
+            seed_suffix = seeds_from_module().folder_suffix(seeds_from)
+        except ValueError as exc:
+            sys.exit(f"--seeds-from: {exc}")
+        # Rp position: the treatment must never land on the folder its control wrote,
+        # so even a user-chosen --out has to carry the marker
+        if not args.out:
+            out_name += seed_suffix
+        elif seed_suffix not in out_name:
+            sys.exit(f"refusing to write a --seeds-from run into {out_name}: the name must "
+                     f"carry {seed_suffix} (a control folder has no seed marker)")
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -392,7 +441,8 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         sys.exit(f"refusing to write a legacy run into {out_name}: folder names starting "
                  f"with {XVIEW_OUT_PREFIX} are the XW lineage (pass --xview-window, or "
                  "another --out)")
-    return dict(out_name=out_name, repair_seeds=repair, track_mode=track_mode, track_idx=track_idx,
+    return dict(out_name=out_name, repair_seeds=repair, seeds_from=seeds_from,
+                track_mode=track_mode, track_idx=track_idx,
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
@@ -558,6 +608,28 @@ def build_runner(algo):
             stats["used_donors"] = [dict(view=v, obj=o, donors=sorted(d))
                                     for (v, o), d in sorted(used.items())]
             return stats
+
+        def LoadSeedsFrom(self, folder, start_frame, cam_names, track_idx):
+            """Stage-1 supply (docs/stage1-plan.md section 3 "2단계 공급").
+
+            Replace the seed of every tracked (view, obj) that has a PNG in the MVSeed_
+            folder; the rest keep the G0 seed PropagateAcrossViews just produced, so
+            obj_ids and the fallback come from the model as always.  Same slot as
+            RepairSeeds -- after PropagateAcrossViews, before RetireSpatialPredictor,
+            pinned by tests/test_seed_repair_prereq.py -- not because the spatial model
+            is needed (it is not) but because record_seed and TrackForward read
+            masks_spatial right after, and one slot keeps "seed" meaning one thing.
+            The PNGs come back as the bool (H, W) arrays the pass leaves behind, so
+            nothing downstream sees a different type.
+            """
+            import cv2
+            sf = seeds_from_module()
+            report = sf.apply_seed_folder(
+                self.masks_spatial, folder, start_frame, cam_names, track_idx, self.obj_ids,
+                shape=(self.video_height, self.video_width),
+                read_png=lambda p: cv2.imread(p, cv2.IMREAD_GRAYSCALE))
+            report.update(sf.folder_provenance(folder))
+            return report
 
         def _seed_areas(self):
             return {view: {obj: int(m.sum().item()) for obj, m in masks.items()}
@@ -756,6 +828,17 @@ def main():
     if missing:
         sys.exit(f"missing camera folders under {video_root}: {missing}")
 
+    # --seeds-from: refuse a bad folder here, before a model is loaded (pure file checks)
+    seed_dir, seed_pre = None, None
+    if run["seeds_from"]:
+        seed_dir = os.path.join(ds_dir, run["seeds_from"])
+        try:
+            seed_pre = seeds_from_module().preflight(
+                seed_dir, c["start_frame"], cam_names, written_cams,
+                expect={"dataset": args.dataset, "start_frame": c["start_frame"]})
+        except ValueError as exc:
+            sys.exit(f"--seeds-from {run['seeds_from']}: {exc}")
+
     import cv2
     import numpy as np
 
@@ -781,6 +864,14 @@ def main():
           f"({len(run['track_idx'])} sessions)", flush=True)
     print(f"seed repair    {'on (Rp, max 2 rounds)' if run['repair_seeds'] else 'off'}",
           flush=True)
+    if seed_pre is not None:
+        n_png = sum(len(p) for p in seed_pre["pngs"].values())
+        cover = ("manifest covers " + ", ".join(seed_pre["written"]) if seed_pre["written"]
+                 else "no manifest")
+        print(f"seeds from     {seed_dir}  ({n_png} PNG in {len(seed_pre['pngs'])} cameras, "
+              f"{cover})", flush=True)
+        if seed_pre["warning"]:
+            print(f"               warning: {seed_pre['warning']}", flush=True)
 
     out_dir = os.path.join(ds_dir, out_name)
     if not args.overwrite and os.path.isdir(out_dir) and os.listdir(out_dir):
@@ -845,6 +936,21 @@ def main():
             for u in rec["unrepairable"]:
                 print(f"               view {u['view']} obj {u['obj']}: {u['area']} px "
                       f"(T={u['threshold']:.0f}) no donor", flush=True)
+
+    # Stage-1 supply, same slot (docs/stage1-plan.md section 3): masks_spatial must be
+    # final before record_seed and TrackForward.  Excludes --repair-seeds (resolve_run).
+    seeds_stats = None
+    if run["seeds_from"]:
+        try:
+            seeds_stats = sc.LoadSeedsFrom(seed_dir, c["start_frame"], cam_names, track_idx)
+        except ValueError as exc:
+            sys.exit(f"--seeds-from {run['seeds_from']}: {exc}")
+        print(f"seeds from     {seeds_stats['replaced']} (view, obj) seeds replaced in views "
+              f"{sorted(int(v) for v in seeds_stats['replaced_views'])}, "
+              f"{sum(len(o) for o in seeds_stats['changed_views'].values())} differ from G0 "
+              f"({seeds_stats['added']} added, {seeds_stats['emptied']} emptied); "
+              f"{len(seeds_stats['untracked_views'])} untracked views skipped; "
+              f"png digest {seeds_stats['png_digest'][:12]}", flush=True)
 
     # The cross-view model is dead weight from here on: ~3.2 GiB of parameters,
     # the N-view pseudo-video, its feature cache and its per-view tracker
@@ -942,6 +1048,7 @@ def main():
                    "xview_gate": eff_gate, "xview_ptr": eff_ptr, "xview_tpos_shift": eff_shift,
                    "xview_gate_stats": xstats,
                    "seed_repair": repair_stats,
+                   "seeds_from": seeds_stats,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
