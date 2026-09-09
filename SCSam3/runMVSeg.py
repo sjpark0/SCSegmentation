@@ -505,6 +505,11 @@ def build_runner(algo):
                     break
                 new = self._repropagate(ref_index, ref_gt, n_obj, repairs)
                 for r in repairs:
+                    # a donor counts as tried whether or not the session produced a
+                    # mask for the pair (prereg 1.3 step 5: "a donor not yet used");
+                    # otherwise round 2 repeats round 1 for pairs the model will not
+                    # output at that view at all
+                    used.setdefault((r.view, r.obj), set()).add(r.donor)
                     mask = new.get(r.view, {}).get(r.obj)
                     if mask is None:
                         rec["after"].append(dict(view=r.view, obj=r.obj, area=None))
@@ -512,7 +517,6 @@ def build_runner(algo):
                     self.masks_spatial[r.view][r.obj] = mask
                     rec["after"].append(dict(view=r.view, obj=r.obj,
                                              area=int(mask.sum().item())))
-                    used.setdefault((r.view, r.obj), set()).add(r.donor)
             stats["used_donors"] = [dict(view=v, obj=o, donors=sorted(d))
                                     for (v, o), d in sorted(used.items())]
             return stats
