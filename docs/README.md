@@ -47,6 +47,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [phase3-conditioning.md](phase3-conditioning.md) | **Phase 3 / P12 결과** — 공간축 메모리 공정화(게이트·이웃 포인터·행 이동): 네 변형이 CI 통과하나 동률·미소, 정보 없는 S4가 포인터와 동등 |
 | [phase3-neighbourhood.md](phase3-neighbourhood.md) | **Phase 3 / P4 결과** — 이웃 메모리 방향·프레임 절제(A~E): 사전 등록, 감시값, 1차 미달·2차 통과, C 채택 결정 입력 |
 | [phase2-control.md](phase2-control.md) | **Phase 2 결과** — XW 계열, XW0 ≡ OneStage, closure == all, E1 판정(미달), C2 효과, W 곡선, 계열 결정 입력 |
+| [sam2-port-spec.md](sam2-port-spec.md) | **SAM 2 실험 사양서 (보류)** — A 설정 매칭 재실행 / B XW 이식. MUVOD 기준선 확보로 착수 보류, 담긴 측정 결과는 유효 |
 | [sam2-baseline.md](sam2-baseline.md) | **SAM 2 기준선 조사** — 인용 열은 재현 불가, `New3`가 재현 가능; `fill_hole_area`는 무효였음; E6 정정 |
 | [operations.md](operations.md) | 실행 방법, 러너 옵션, 자원 한계, Docker |
 | [open-items.md](open-items.md) | 미해결 항목 |
