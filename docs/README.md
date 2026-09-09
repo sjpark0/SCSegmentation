@@ -40,6 +40,8 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | [investigations-closed.md](investigations-closed.md) | 종결된 조사 13건 — 재조사 금지 목록 |
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
+| **[phase3-direction-cini.md](phase3-direction-cini.md)** | **E4 결과 (2026-09-09) — 채택.** 중앙 기준 카메라에서는 양방향 읽기(모드 C)가 이웃 없던 카메라 9대를 +0.0138 올리고(CI 0 제외) 17장면 +0.22점. 헤드라인 90.0, 기준선 대비 +10.7 |
+| [phase3-direction-cini-prereg.md](phase3-direction-cini-prereg.md) | E4 사전 등록 — P4가 조건부였던 이유, 판정 (a)(b)와 감시값 |
 | **[xview-recovery.md](xview-recovery.md)** | **E3 결과 (2026-09-09)** — 이웃 읽기는 가려졌거나 뒤늦게 들어온 객체를 되찾는다: 갈림 구간 3/3 회복, 새 유실 0, 시드에 무관하게 재현. 사건이 셋뿐이라 "지지·검정력 부족". D1 마무리 |
 | [xview-recovery-prereg.md](xview-recovery-prereg.md) | E3 사전 등록 — 사건·되찾음·판정 정의, 검증 데이터 읽기 전 커밋 |
 | **[phase5-seed-repair.md](phase5-seed-repair.md)** | **Phase 3 / P5 결과 (2026-09-09) — 기각.** 17장면 Δ +0.000, Blocks −1.01; 잘못 놓인 복구 시드가 옆 시점 메모리와 같은 카메라 겹침 경쟁을 타고 다른 객체를 지움. Welder는 +2.06이나 규칙상 채택 안 함 |
