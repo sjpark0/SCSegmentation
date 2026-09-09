@@ -1,0 +1,465 @@
+{
+ "muvod-basic": {
+  "name": "MUVOD basic evaluation, J&F^3 (%)",
+  "statement": "aggregation=sequence | frames=all | split=all | weights=none | window=4 | datasets=17 | objects=basic | reference=muvod | protocol=MUVOD J&F^3 (per-camera score, averaged over the three annotated cameras, then over scenes) | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3XW0M",
+   "SegMaskSam3XW1GPS4M",
+   "MUVOD XMem",
+   "SegMaskSam3XW0M - MUVOD XMem",
+   "SegMaskSam3XW1GPS4M - MUVOD XMem"
+  ],
+  "rows": [
+   {
+    "label": "Painter",
+    "SegMaskSam3XW0M": 91.6194227778394,
+    "SegMaskSam3XW1GPS4M": 91.8149948324876,
+    "MUVOD XMem": 82.2,
+    "SegMaskSam3XW0M - MUVOD XMem": 9.4194227778394,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.614994832487596
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3XW0M": 84.92249217838413,
+    "SegMaskSam3XW1GPS4M": 85.08781009505078,
+    "MUVOD XMem": 68.8,
+    "SegMaskSam3XW0M - MUVOD XMem": 16.122492178384135,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 16.287810095050787
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3XW0M": 88.73551568835221,
+    "SegMaskSam3XW1GPS4M": 88.70207159720424,
+    "MUVOD XMem": 77.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 11.435515688352211,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 11.402071597204241
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3XW0M": 97.57614527901603,
+    "SegMaskSam3XW1GPS4M": 97.72707096339732,
+    "MUVOD XMem": 92.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 5.276145279016035,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 5.427070963397327
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3XW0M": 94.24021419279849,
+    "SegMaskSam3XW1GPS4M": 94.21193212483448,
+    "MUVOD XMem": 85.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.940214192798493,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 8.911932124834479
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3XW0M": 88.69140841660338,
+    "SegMaskSam3XW1GPS4M": 89.75350801100385,
+    "MUVOD XMem": 80.2,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.491408416603377,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.553508011003842
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3XW0M": 87.68046728322268,
+    "SegMaskSam3XW1GPS4M": 90.33477764947358,
+    "MUVOD XMem": 85.7,
+    "SegMaskSam3XW0M - MUVOD XMem": 1.98046728322268,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 4.634777649473577
+   },
+   {
+    "label": "CBABasketball",
+    "SegMaskSam3XW0M": 88.59528686068957,
+    "SegMaskSam3XW1GPS4M": 88.6765446019309,
+    "MUVOD XMem": 66.4,
+    "SegMaskSam3XW0M - MUVOD XMem": 22.195286860689563,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 22.276544601930894
+   },
+   {
+    "label": "MartialArts",
+    "SegMaskSam3XW0M": 93.55260820968503,
+    "SegMaskSam3XW1GPS4M": 93.58979967611913,
+    "MUVOD XMem": 83.7,
+    "SegMaskSam3XW0M - MUVOD XMem": 9.85260820968503,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.889799676119125
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3XW0M": 87.70887636172634,
+    "SegMaskSam3XW1GPS4M": 88.4515075880437,
+    "MUVOD XMem": 80.5,
+    "SegMaskSam3XW0M - MUVOD XMem": 7.20887636172634,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 7.951507588043697
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3XW0M": 82.51677694525964,
+    "SegMaskSam3XW1GPS4M": 82.5119655183355,
+    "MUVOD XMem": 69.1,
+    "SegMaskSam3XW0M - MUVOD XMem": 13.416776945259642,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 13.411965518335506
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3XW0M": 91.42019991340888,
+    "SegMaskSam3XW1GPS4M": 91.45730633852781,
+    "MUVOD XMem": 84.8,
+    "SegMaskSam3XW0M - MUVOD XMem": 6.620199913408882,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 6.6573063385278175
+   },
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3XW0M": 93.74566618934219,
+    "SegMaskSam3XW1GPS4M": 93.74771864272384,
+    "MUVOD XMem": 84.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 9.445666189342191,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.447718642723842
+   },
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3XW0M": 85.8564036373354,
+    "SegMaskSam3XW1GPS4M": 85.91540310646835,
+    "MUVOD XMem": 82.8,
+    "SegMaskSam3XW0M - MUVOD XMem": 3.056403637335407,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 3.1154031064683494
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3XW0M": 92.62770669787658,
+    "SegMaskSam3XW1GPS4M": 92.56613416551166,
+    "MUVOD XMem": 64.9,
+    "SegMaskSam3XW0M - MUVOD XMem": 27.72770669787657,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 27.66613416551165
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3XW0M": 88.34396032580476,
+    "SegMaskSam3XW1GPS4M": 88.33919112851319,
+    "MUVOD XMem": 75.5,
+    "SegMaskSam3XW0M - MUVOD XMem": 12.843960325804758,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 12.839191128513193
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3XW0M": 83.99106848513735,
+    "SegMaskSam3XW1GPS4M": 83.9838768794905,
+    "MUVOD XMem": 85.2,
+    "SegMaskSam3XW0M - MUVOD XMem": -1.2089315148626554,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": -1.2161231205095078
+   },
+   {
+    "label": "Global (17 scenes)",
+    "SegMaskSam3XW0M": 89.5190717319107,
+    "SegMaskSam3XW1GPS4M": 89.81597723053626,
+    "MUVOD XMem": 79.3529411764706,
+    "SegMaskSam3XW0M - MUVOD XMem": 10.16613055544012,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 10.463036054065672
+   }
+  ]
+ },
+ "muvod-complete": {
+  "name": "MUVOD complete evaluation, J&F^3 (%)",
+  "statement": "aggregation=sequence | frames=all | split=all | weights=none | window=4 | datasets=17 | reference=muvod | objects=complete | protocol=MUVOD J&F^3 (per-camera score, averaged over the three annotated cameras, then over scenes) | as-is (missing objects scored as empty, the DAVIS convention)",
+  "columns": [
+   "SegMaskSam3XW0M",
+   "SegMaskSam3XW1GPS4M",
+   "MUVOD XMem",
+   "SegMaskSam3XW0M - MUVOD XMem",
+   "SegMaskSam3XW1GPS4M - MUVOD XMem"
+  ],
+  "rows": [
+   {
+    "label": "Painter",
+    "SegMaskSam3XW0M": 84.99147099060347,
+    "SegMaskSam3XW1GPS4M": 85.16342666499916,
+    "MUVOD XMem": 76.1,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.89147099060348,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.06342666499917
+   },
+   {
+    "label": "Breakfast",
+    "SegMaskSam3XW0M": 80.0977862534839,
+    "SegMaskSam3XW1GPS4M": 80.24879726799425,
+    "MUVOD XMem": 64.1,
+    "SegMaskSam3XW0M - MUVOD XMem": 15.997786253483909,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 16.148797267994254
+   },
+   {
+    "label": "Barn",
+    "SegMaskSam3XW0M": 88.73551568835221,
+    "SegMaskSam3XW1GPS4M": 88.70207159720424,
+    "MUVOD XMem": 77.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 11.435515688352211,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 11.402071597204241
+   },
+   {
+    "label": "Frog",
+    "SegMaskSam3XW0M": 97.57614527901603,
+    "SegMaskSam3XW1GPS4M": 97.72707096339732,
+    "MUVOD XMem": 92.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 5.276145279016035,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 5.427070963397327
+   },
+   {
+    "label": "Carpark",
+    "SegMaskSam3XW0M": 94.24021419279849,
+    "SegMaskSam3XW1GPS4M": 94.21193212483448,
+    "MUVOD XMem": 85.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.940214192798493,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 8.911932124834479
+   },
+   {
+    "label": "PoznanStreet",
+    "SegMaskSam3XW0M": 88.69140841660338,
+    "SegMaskSam3XW1GPS4M": 89.75350801100385,
+    "MUVOD XMem": 80.2,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.491408416603377,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.553508011003842
+   },
+   {
+    "label": "Fencing",
+    "SegMaskSam3XW0M": 87.68046728322268,
+    "SegMaskSam3XW1GPS4M": 90.33477764947358,
+    "MUVOD XMem": 85.7,
+    "SegMaskSam3XW0M - MUVOD XMem": 1.98046728322268,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 4.634777649473577
+   },
+   {
+    "label": "CBABasketball",
+    "SegMaskSam3XW0M": 87.0615152608884,
+    "SegMaskSam3XW1GPS4M": 87.13580117258614,
+    "MUVOD XMem": 65.6,
+    "SegMaskSam3XW0M - MUVOD XMem": 21.461515260888405,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 21.535801172586147
+   },
+   {
+    "label": "MartialArts",
+    "SegMaskSam3XW0M": 93.55260820968503,
+    "SegMaskSam3XW1GPS4M": 93.58979967611913,
+    "MUVOD XMem": 83.7,
+    "SegMaskSam3XW0M - MUVOD XMem": 9.85260820968503,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.889799676119125
+   },
+   {
+    "label": "Blocks",
+    "SegMaskSam3XW0M": 78.78502688975172,
+    "SegMaskSam3XW1GPS4M": 79.48332575419404,
+    "MUVOD XMem": 73.2,
+    "SegMaskSam3XW0M - MUVOD XMem": 5.585026889751717,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 6.283325754194038
+   },
+   {
+    "label": "MATF",
+    "SegMaskSam3XW0M": 70.5907410559743,
+    "SegMaskSam3XW1GPS4M": 70.58600527490627,
+    "MUVOD XMem": 59.3,
+    "SegMaskSam3XW0M - MUVOD XMem": 11.290741055974308,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 11.286005274906273
+   },
+   {
+    "label": "FlameSteak",
+    "SegMaskSam3XW0M": 75.74759205117225,
+    "SegMaskSam3XW1GPS4M": 75.77655783655594,
+    "MUVOD XMem": 70.6,
+    "SegMaskSam3XW0M - MUVOD XMem": 5.1475920511722535,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 5.1765578365559435
+   },
+   {
+    "label": "CoffeeMartini",
+    "SegMaskSam3XW0M": 84.75464309330026,
+    "SegMaskSam3XW1GPS4M": 84.75650113186379,
+    "MUVOD XMem": 76.7,
+    "SegMaskSam3XW0M - MUVOD XMem": 8.054643093300257,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 8.056501131863783
+   },
+   {
+    "label": "AlexaMeadeExhibit",
+    "SegMaskSam3XW0M": 85.8564036373354,
+    "SegMaskSam3XW1GPS4M": 85.91540310646835,
+    "MUVOD XMem": 82.8,
+    "SegMaskSam3XW0M - MUVOD XMem": 3.056403637335407,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 3.1154031064683494
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "SegMaskSam3XW0M": 84.04889085623348,
+    "SegMaskSam3XW1GPS4M": 83.9920300217523,
+    "MUVOD XMem": 60.4,
+    "SegMaskSam3XW0M - MUVOD XMem": 23.648890856233486,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 23.5920300217523
+   },
+   {
+    "label": "Dog",
+    "SegMaskSam3XW0M": 77.8906092083949,
+    "SegMaskSam3XW1GPS4M": 77.88855486247117,
+    "MUVOD XMem": 67.2,
+    "SegMaskSam3XW0M - MUVOD XMem": 10.690609208394903,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 10.688554862471165
+   },
+   {
+    "label": "Welder",
+    "SegMaskSam3XW0M": 83.99106848513735,
+    "SegMaskSam3XW1GPS4M": 83.9838768794905,
+    "MUVOD XMem": 85.2,
+    "SegMaskSam3XW0M - MUVOD XMem": -1.2089315148626554,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": -1.2161231205095078
+   },
+   {
+    "label": "Global (17 scenes)",
+    "SegMaskSam3XW0M": 84.95835922658549,
+    "SegMaskSam3XW1GPS4M": 85.24996705854791,
+    "MUVOD XMem": 75.62941176470588,
+    "SegMaskSam3XW0M - MUVOD XMem": 9.328947461879606,
+    "SegMaskSam3XW1GPS4M - MUVOD XMem": 9.620555293842031
+   }
+  ]
+ },
+ "muvod-objects": {
+  "name": "object sets per scene",
+  "statement": "c_ini and the two object sets; the last two columns must agree, because MUVOD's basic and complete scores are equal exactly when c_ini's reference frame already holds every labelled object",
+  "columns": [
+   "c_ini",
+   "basic objects",
+   "all objects",
+   "basic == all (ours)",
+   "basic == complete (MUVOD)"
+  ],
+  "rows": [
+   {
+    "label": "Painter",
+    "c_ini": "v6",
+    "basic objects": 24,
+    "all objects": 27,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "Breakfast",
+    "c_ini": "v7",
+    "basic objects": 27,
+    "all objects": 30,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "Barn",
+    "c_ini": "v7",
+    "basic objects": 30,
+    "all objects": 30,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "Frog",
+    "c_ini": "v7",
+    "basic objects": 5,
+    "all objects": 5,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "Carpark",
+    "c_ini": "v4",
+    "basic objects": 22,
+    "all objects": 22,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "PoznanStreet",
+    "c_ini": "v4",
+    "basic objects": 24,
+    "all objects": 24,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "Fencing",
+    "c_ini": "v4",
+    "basic objects": 8,
+    "all objects": 8,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "CBABasketball",
+    "c_ini": "v20",
+    "basic objects": 22,
+    "all objects": 23,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "MartialArts",
+    "c_ini": "v9",
+    "basic objects": 19,
+    "all objects": 19,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "Blocks",
+    "c_ini": "cam4",
+    "basic objects": 16,
+    "all objects": 22,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "MATF",
+    "c_ini": "S1_CAM_4",
+    "basic objects": 33,
+    "all objects": 44,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "FlameSteak",
+    "c_ini": "cam16",
+    "basic objects": 50,
+    "all objects": 68,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "CoffeeMartini",
+    "c_ini": "cam16",
+    "basic objects": 50,
+    "all objects": 65,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "AlexaMeadeExhibit",
+    "c_ini": "camera_0001",
+    "basic objects": 33,
+    "all objects": 33,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   },
+   {
+    "label": "AlexaMeadeFacePaint",
+    "c_ini": "camera_0007",
+    "basic objects": 12,
+    "all objects": 14,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "Dog",
+    "c_ini": "camera_0002",
+    "basic objects": 7,
+    "all objects": 9,
+    "basic == all (ours)": "no",
+    "basic == complete (MUVOD)": "no"
+   },
+   {
+    "label": "Welder",
+    "c_ini": "camera_0001",
+    "basic objects": 16,
+    "all objects": 16,
+    "basic == all (ours)": "yes",
+    "basic == complete (MUVOD)": "yes"
+   }
+  ]
+ }
+}
