@@ -37,6 +37,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 
 | 문서 | 내용 |
 |---|---|
+| **[mvimage-seg-survey.md](mvimage-seg-survey.md)** | **다중시점 이미지 객체분리 최신동향 (2023–2026, 2026-09-10)** — 한 순간의 N장 사진에서 한 뷰의 마스크를 다른 뷰로 옮기는 문제. 검증 출처 352편, 7가족(3D 표현 최적화·기하 투영·뷰=비디오·대응 매칭·학습된 대응·기하 기초 모델·프롬프트·기억), 벤치마크 12종, **적용 가능성 총표(바로/개조/불가)**, 빈칸(보정 없음+학습 없음+환경 객체+어안 리그를 동시에 만족하는 방법·프로토콜 없음) |
 | **[mvvos-algorithm-analysis.md](mvvos-algorithm-analysis.md)** | **알고리즘 분석 보고서 (2026-09-09)** — 뷰=프레임 가정의 세 위반(격자 정렬 위치 부호·시간 행·자기 확신 기억, 파일:줄), 실패 해부의 검산(면적 단조, SAM 2가 반구 실패 13쌍 중 10쌍 처리, 쌍별 오라클 +0.78, 이득 봉투 +2.07), 문헌 지형 7가족, 설계 3안과 반박, 권고 설계 **SeedVote**(동결 전파기 여러 개의 시드 후보를 위치 기준으로 검증·선택)와 실험 순서 E0~E9 |
 | [investigations-closed.md](investigations-closed.md) | 종결된 조사 13건 — 재조사 금지 목록 |
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |

@@ -167,6 +167,8 @@
 
 ## 4. 알고리즘 지형
 
+> 2026-09-10: 이 절은 설계용으로 걸러진 목록입니다. 한 순간의 다중시점 객체분리 전체 지형(2023~2026, 검증 출처 352편)은 [mvimage-seg-survey.md](mvimage-seg-survey.md)를 보십시오.
+
 | 가족 | 대표(출처) | 입력 가정 | 시점 간 일치 기제 | 학습 | 우리 규약 적합성 |
 |---|---|---|---|---|---|
 | ① 뷰를 비디오로 보고 추적기로 ID 잇기 | Gaussian Grouping (https://arxiv.org/abs/2312.00732), SA4D (https://arxiv.org/abs/2407.04504), Consistent Instance Field (https://arxiv.org/abs/2512.14126), SAGOnline (https://arxiv.org/abs/2508.08219), FlashSplat (https://arxiv.org/abs/2409.08270) | 대개 보정+3DGS/NeRF; 추적기 자체는 RGB만 | DEVA/SAM2 전파 — **우리 1단계와 동일** | 추적기 동결(3D 필드는 장면별 최적화) | 추적기 부분만 우리와 같음. 저자들도 상한이 추적기 정확도라 인정; SA4D는 "비디오 간 ID 충돌로 다중시점 활용 불가"를 한계로 명기 |
