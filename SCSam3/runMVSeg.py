@@ -533,6 +533,19 @@ def build_runner(algo):
             donor seed of each flagged object as a second conditioning frame.  Both
             directions, implicit start.  Returns {view: {obj: mask}} for every yielded
             view; the caller commits only the flagged pairs."""
+            # The pass-1 session is dead weight by now: masks_spatial holds fresh bool
+            # tensors, not views into its state.  Close it BEFORE opening the repair
+            # session -- two N-view sessions side by side doubled host RAM and got the
+            # 17-scene sweep killed on AlexaMeadeExhibit (45 views).  RetireSpatial-
+            # Predictor tolerates the None it finds afterwards.
+            old_sid = getattr(self, "session_id_statial", None)
+            if old_sid is not None:
+                self.spatial.handle_request(request=dict(type="close_session",
+                                                         session_id=old_sid))
+                self.session_id_statial = None
+                import gc
+                gc.collect()
+                torch.cuda.empty_cache()
             frames = [self.images[i][self.start_frame] for i in range(self.numImage)]
             response = self.spatial.handle_request(
                 request=dict(type="start_session", images=frames,
