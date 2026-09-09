@@ -130,12 +130,18 @@ OneStage 비교는 패키지·요청 형태·세션 수가 달라 대조군이 �
 
 | 할 일 | P | 기대값 | 근거 성격 |
 |---|---|---|---|
-| `RepairSeeds()` — 퇴화 시드 감지·donor 재전파 | P5 | Welder 0.8437 → ~0.879, 헤드라인 +0.0023~0.0027 | **정량화됨** |
+| `RepairSeeds()` — 퇴화 시드 감지·donor 재전파 | P5 | **c_ini·17장면 기준 재집계(09-09): 퇴화 15개, 복구 목표 +0.0111, 상한 +0.0118.** Welder의 유일한 패배 원인 둘이 여기 있습니다 | **정량화됨** — 단 REPORT의 감지 규칙은 오탐 90%라 정정 필요 ([phase5-seed-repair-prep.md](phase5-seed-repair-prep.md)) |
 | 양측 창 + 경계 클리핑 + t−1 fallback | P4 | Fencing ~+0.02 | **측정됨(09-08)**: C에서 Fencing +0.052(v0 +0.079), 15개 +0.0018 vs A, 비기준은 불변. 1차 기준 미달 |
 | `--reference count` | P8 | 모든 방법 동반 상승, 순위 불변 | 프로토콜 |
 | 이웃 obj_ptr 4토큰 + 게이트 + 행 이동 | P12 | 기준: **이웃 받는 36대(기준 카메라 포함)에서 V−XW1의 클러스터 CI가 0 제외** & 기준 카메라 무손실 ([phase3-conditioning.md](phase3-conditioning.md) §1.3; REPORT의 옛 'nonref +0.005' 기준을 대체) | 진단 실험 |
 
-**선행**: P5 구현 전 `SCSam3VideoInference.py:1855-1870` refine 분기가 같은 tracker state에 cond frame을 추가하는지 로그로 확인 (심사자 이견 지점).
+**선행**: ✅ **2026-09-09 종결** ([phase5-seed-repair-prep.md](phase5-seed-repair-prep.md) §5).
+refine 분기는 `use_stateless_refinement`가 저장소 어디에서도 켜지지 않아 **죽은 코드**이고, 살아 있는
+경로는 `obj_id`로 기존 tracker state를 재사용합니다 — 새 state가 생기지 않습니다. 인용 줄 번호는
+밀려 있었고 실제 지점은 `:1700-1712`(죽음)와 `:1763-1772`(재사용)입니다. 로그 대신 테스트
+7개로 고정했습니다(`tests/test_seed_repair_prereq.py`). 함께 명문화한 **순서 제약**: `RepairSeeds()`는
+`PropagateAcrossViews()` 뒤, `RetireSpatialPredictor()` 앞 — 뒤에 두면 에러 없이 조용히 아무것도
+고치지 않습니다.
 
 ### Phase 4 — 공정한 비교 (1~2주) · 실험 행 11
 
