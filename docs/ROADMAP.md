@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-09-09 (P5 준비 완료 — 다음은 사전 등록, 결정 D2 대기) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md) · **[muvod-protocol.md](muvod-protocol.md)**
+**최종 갱신**: 2026-09-09 (P5 기각 — 사전 등록 판정) · 갱신 이력은 문서 끝. 결과: [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md) · **[muvod-protocol.md](muvod-protocol.md)**
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -30,7 +30,7 @@ REPORT.md가 낸 제안 14개 중 **7개 완료(P1·P2·P3·P6·P8·P12 + G1), 3
 | P2 | 패키지 내 window ablation + 위생 3건 + closure | ✅ | 2 | XW 계열(커밋 44e5199). XW0 ≡ OneStage 바이트 동일, closure == all 실측, W 곡선은 W=1에서 포화 ([phase2-control.md](phase2-control.md)) |
 | P3 | 주장을 담을 수 있는 평가 프로토콜 | ✅ | 1 | `eval/report_jf.py` v2 (`--paired --split --bin-by-nb --area-weighted --aggregation --ceiling --paper`). 엔드포인트 E0/E1/E2 **확정** (2026-09-07). **외부 비교 수치는 2026-09-09부터 MUVOD 프로토콜(`--muvod`)로 냅니다** ([muvod-protocol.md](muvod-protocol.md)) — 자체 규약은 내부 절제 비교 전용 |
 | P4 | cross-view gather 재작성(양측 창·클리핑·t−1 fallback) | 🔶 | 3 | 모드 A~E 구현·절제 완료(09-08). 1차 기준 통과 모드 없음 → 규칙상 A 유지; C는 Fencing v0 +0.079·헤드라인 0.8468. **채택 여부 사용자 결정** ([phase3-neighbourhood.md](phase3-neighbourhood.md) §5) |
-| P5 | seed 품질 검사와 복구 | 🔶 | 1(진단 ✅) → 3(복구 ⬜) | 진단 완료: 퇴화 시드 SAM 3 20개, 상한 +0.015, donor 가능분 +0.009, Welder +0.040 ([raw/seed_census.md](raw/seed_census.md)) |
+| P5 | seed 품질 검사와 복구 | ❌ | 1 → 3 | **기각 (2026-09-09, 사전 등록 판정)** — 17장면 Δ +0.000, CI [−0.0023, +0.0032], Blocks −1.01로 방어선 위반. 시드는 표적 하나에서만 제자리에 놓였고(Welder obj 8, 시드 프레임 J 0.94), 잘못 놓인 복구 시드가 교차시점 메모리·겹침 경쟁을 타고 다른 객체를 지움. Welder 자체는 +2.06으로 XMem을 앞서게 되나 규칙상 채택 안 함 ([phase5-seed-repair.md](phase5-seed-repair.md)) |
 | P6 | non-overlap int64 승격 제거 | ✅ | — | S4 |
 | P7 | spatial predictor 은퇴 + autocast 정리 + fp16 프레임 | 🔶 | — | 은퇴·autocast ✅(S6). **fp16 ❌** — 출력 변경 확인, fp32(S5)로 대체 |
 | P8 | reference 규칙(객체 수) + ceiling 열 | ✅ | 1 → 3 | **MUVOD의 c_ini로 대체됐습니다.** 자체 규칙(max-id·객체 수)은 17개 중 15개에서 벤치마크가 쓰는 카메라와 다릅니다. `--ref-cam muvod`가 장면별 c_ini로 시딩합니다 ([muvod-protocol.md](muvod-protocol.md)). ceiling 열은 내부 진단으로만 남깁니다 |
@@ -180,7 +180,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 5 | W ∈ {1,2,6} 곡선 (6개 데이터셋) | `SegMaskSam3XW{1,2,6}` | ✅ 09-07 | W=1 포화 |
 | 6 | closure = all 검증 | `SegMaskSam3XW4all` | ✅ 09-07 | Welder·Dog·Blocks diff 0 |
 | 7 | 양측 창 (P4) | `SegMaskSam3XW1{B,C,D,E}` | ✅ 09-08 | 3 — 규칙상 A 유지, C 채택은 결정 대기 |
-| 8 | seed 복구 (P5) | `SegMaskSam3XW1GPS4MRp` | 🔶 등록 1a4bba8 → 스모크 → 수정 4097c1f → 구현 0fe1d0f → **17장면 스윕 중** | 3 — [phase5-seed-repair-prereg.md](phase5-seed-repair-prereg.md) §8 |
+| 8 | seed 복구 (P5) | `SegMaskSam3XW1GPS4MRp` | ❌ 09-09 기각 | 3 — 등록 판정 (a)(b) 실패, (c) 통과. [phase5-seed-repair.md](phase5-seed-repair.md) |
 | 9 | reference 규칙 (P8) | ~~`*_refcount`~~ | ✅ 09-09 | MUVOD의 c_ini로 대체 — `--ref-cam muvod`, 접미사 `M` |
 | 10 | 이웃 토큰 (P12) | `SegMaskSam3XW1{G,P,GP,S1..S5,PS4,GPS4}` | ✅ 09-08 | 3 |
 | 11 | 설정 매칭 (E6) | `SegMaskSam2Matched` | 보류 09-09 | 4 — MUVOD 기준선 확보로 SAM 2 비교군의 필요가 사라짐. 계획은 [sam2-port-spec.md](sam2-port-spec.md)에 보존 |
@@ -227,6 +227,7 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 | 2026-09-08 | **구성 확정: GPS4** (`--xview-window 1 --xview-gate --xview-ptr --xview-tpos-shift 4`). 계열 XW 확정, 모드 A 유지(P4의 C는 채택 안 함), 손잡이 셋 채택. E0의 SAM 3 열을 `SegMaskSam3XW1GPS4`로 갱신(사후 계열 변경 명시). C + GPS4 조합은 열린 항목 |
 | 2026-09-08 | **P12 조합·곡선 완료** (사전 등록 0955845 → GPU 75회). 꼬리표 곡선 s=0..5: +0.0000/+0.0001/+0.0002/+0.0004/**+0.00043**/+0.0003 — **s=4 최적, s=5에서 하락**(단조 아님). 조합 GPS4 +0.00053(가산 예측 +0.00085, 중복 예측 +0.00042 중 중복 쪽), 게이트 기여는 조합 안에서도 +0.0001. 데이터셋별 최적 s(2~5)와 영상 측정 비율의 상관 r=−0.19 → **적응 규칙 근거 없음, 상수 s=4**. 권장 GPS4(또는 최소 변경 S4), 채택은 사용자 결정 |
 | 2026-09-08 | **P12 절제 완료** (사전 등록 011fa86 → 구현 a72d462 → GPU 81회). 감시값 전부 통과. G 미달, P·GP·S2·S4 CI 통과하나 크기 +0.0002~0.0004(실용 기준의 1/10)이고 상위 셋 동률 → **규칙상 손잡이 없음 유지**. 게이트는 이웃 토큰 26%를 버려도 Δ+0.0001; **정보를 더하지 않는 S4가 포인터 채널 P와 동등** — 공간축 채널이 내용으로 기여하지 않는다는 증거. 채택 여부는 사용자 결정 |
+| 2026-09-09 | **P5 기각 — 사전 등록 판정.** 17장면 스윕 완료(하네스 메모리 감시에 세 번 죽어 전경 배치로 마무리; 세션 닫기 수정은 Dog 바이트 동일로 출력 중립 확인). MUVOD basic Δ **+0.000**, 7승 3무 7패, 클러스터 CI [−0.0023, +0.0032], Blocks **−1.01**(방어선 −0.5 위반), Welder **+2.06**(86.0, XMem 85.2를 앞섬). (a) obj 8 J_all 0.49(시드 프레임 0.94), obj 14 0.04 → 실패. (b) 실패. (c) Fencing 바이트 동일 → 통과. S2 9/14(시점 전파 시드는 임계값 이상인데 시간 추적기가 프레임 0에서 무너뜨리는 경우를 면적 규칙이 놓침). **손실 경로**: 채점 안 되는 시점에 잘못 놓인 큰 복구 시드가 옆 카메라의 다른 객체를 지움(Blocks cam9 obj 10 −0.87, CBABasketball v06 obj 11 −0.43) — 교차시점 채널이 해를 옮긴다는 첫 직접 증거. 직접 복구된 13쌍은 평균 +0.033이나 이웃 피해 5쌍 합계 −1.875가 압도 |
 | 2026-09-09 | **P5 등록·구현·스윕 착수.** 사전 등록(1a4bba8) → Welder 스모크가 결함 둘을 드러냄(먼 시점의 쓰레기 시드가 시점별 중앙값 임계값을 무너뜨려 736쌍 중 378쌍 플래그; 플래그 객체만 넣은 복구 세션에서 시드가 다른 객체 자리를 차지) → 스윕 전에 수정 이력 §8 커밋(4097c1f: 검사 범위를 추적 세션으로, 임계값을 객체별 프롬프트 기준 0.10으로, donor 크기 범위 [0.25x, 4x], donor 후보를 추적 시점으로, 복구 세션에 모든 객체) → 구현(0fe1d0f, 테스트 217개) → 재스모크: 플래그 3, **obj 8은 시드 프레임 J 0.936으로 복구되나 추적이 깜빡여 J_all 0.49, obj 14는 donor에서 전파 안 됨(0.0007)**. 등록 판정 (a)는 실패 확정, 1차 엔드포인트 (b)·감시값 (c)를 위해 17장면 스윕 진행 중 |
 | 2026-09-09 | **P5 준비 완료** (커밋 e2b8aec·550fdf0·bfa0ec4·0fe94bc, GPU 0회). ① 소실 위험 봉합 — SAM 2 사양서 987줄이 임시 디렉터리에만 있어 저장소로 옮기고([sam2-port-spec.md](sam2-port-spec.md)), 미기록이던 SMB 자격증명 교체 항목을 open-items 0번·operations 함정 11로 기록. ② 논문 배관 — `--paper` 열을 채택 계보로(`SegMaskNew3`/`XW0`/`XW1GPS4`), `PAPER_PAIRS` 상수를 메서드에서 유도해 짝 통계가 조용히 `nan`이 되던 결함 제거, E6 정정(`fill_hole_area`는 처음부터 무효). ③ 시드 진단을 c_ini·17장면으로 재집계 — 퇴화 20→**15개**, 복구 목표 +0.0111, **퇴화 전부의 프롬프트가 건강**(최소 181 px). **REPORT의 감지 규칙은 오탐 90%**(139쌍 중 진짜 14개)이고 최대 오탐 부류는 프롬프트를 못 받은 객체 73개 — 그대로 구현하면 없는 객체에 마스크를 주입합니다. ④ 선행 확인 종결 — refine 분기는 죽은 코드임을 테스트로 고정하고 순서 제약(복구는 시점 모델 폐기 **앞**)을 명문화. 테스트 188→**196개**. 남은 결정: D2(misaligned 임계값). D3는 c_ini에서 해소 |
 | 2026-09-09 | **MUVOD 비교 완료 — 우위의 분해.** 대조군 `SegMaskSam3XW0M`까지 17개 장면을 돌려 세 갈래로 갈랐습니다: MUVOD XMem 79.4 → 우리 XW0 **89.5**(+10.2, 같은 2단계 구조에서 기초 모델만 교체) → 채택 구성 **89.8**(+0.3, 추적 중 시점 결합). 논문이 기준선을 "XMem을 공간축·시간축 양쪽에 적용한 2단계"라 적고 그 한계를 "다중시점 정보로 4D 장면을 이해하지 못함"이라 밝히므로 **XW0과 구조가 같습니다**. 즉 **우위의 97%가 SAM 3와 2단계 구조의 몫**입니다. 시점 결합의 순효과는 이 프로토콜에서 장면 단위 +0.0029, 클러스터 CI [+0.0004, +0.0065], Wilcoxon p=0.027로 **CI가 처음으로 0을 제외**했으나, 처치·기준 카메라·장면 수가 모두 다른 **사전 등록되지 않은 탐색적 읽기**이고 효과가 세 장면에 몰려 있어 주장으로 쓰려면 재등록·재확인이 필요합니다. 이웃 없는 카메라 9대는 정확히 0 (감시값 통과). Dog의 c_ini 감도는 88.3 대 91.9로 채택 쪽이 보수적 |
