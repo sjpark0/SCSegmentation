@@ -3,8 +3,8 @@
 
     python3 report_jf.py                                       everything in jf_v2.json
     python3 report_jf.py --raw jf_raw.json jf_sam3_onestage.json   several files, pooled
-    python3 report_jf.py --methods SegMaskNew1 SegMaskSam3MVOpt    a subset, in that order
-    python3 report_jf.py --paired SegMaskSam3OneStage SegMaskSam3MVOpt --split nonref
+    python3 report_jf.py --methods SegMaskNew3 SegMaskSam3XW1GPS4   a subset, in that order
+    python3 report_jf.py --paired SegMaskSam3XW0 SegMaskSam3XW1GPS4 --split nonref
     python3 report_jf.py --muvod --methods SegMaskSam3XW1GPS4M  MUVOD J&F^3 comparison
     python3 report_jf.py --paper docs/raw/paper_tables.md      every table the paper needs
 
@@ -106,15 +106,29 @@ EXACT_MAX_N = 22            # exact Wilcoxon up to this many non-tied pairs
 CEIL = "ceiling:"           # prefix of the ceiling pseudo-methods
 METRIC_INDEX = {"J&F": 0, "J": 1, "F": 2}
 
-PAPER_METHODS = ["SegMaskNew1", "SegMaskSam3OneStage", "SegMaskSam3MVOpt"]
+# The internal comparison (--paper) runs at the *old* reference camera, because the
+# SAM 2 folders exist only there; the external comparison against MUVOD runs at c_ini
+# and lives in --muvod.  SAM 2 column is New3, not the published New1: New1 is not
+# reproducible from any committed state and New3 is reproduced byte for byte
+# (docs/sam2-baseline.md).  The 15-scene average moves by 0.0001.
+PAPER_METHODS = ["SegMaskNew3", "SegMaskSam3XW0", "SegMaskSam3XW1GPS4"]
 # The 12 datasets the original OneStageNew run completed; passed explicitly so
 # the subset does not depend on which columns happen to be in the file.
 PAPER_SUBSET12 = ["AlexaMeadeFacePaint", "Barn", "Blocks", "Breakfast", "Carpark",
                   "Dog", "Fencing", "Frog", "MATF", "Painter", "PoznanStreet",
                   "Welder"]
-PAPER_PAIRS = [("SegMaskSam3OneStage", "SegMaskSam3MVOpt"),
-               ("SegMaskNew1", "SegMaskSam3MVOpt"),
-               ("SegMaskNew1", "SegMaskSam3OneStage")]
+
+
+def paper_pairs(methods):
+    """The three paired comparisons --paper reports, derived from the column order
+    [external baseline, control, adopted]: control vs adopted (the mechanism), baseline
+    vs adopted (the headline), baseline vs control (what the baseline is really beating).
+    Deriving them means --methods stays consistent on its own; a hardcoded list silently
+    produced `nan` columns whenever the two disagreed."""
+    if len(methods) != 3:
+        return [(a, b) for i, a in enumerate(methods) for b in methods[i + 1:]]
+    base, control, adopted = methods
+    return [(control, adopted), (base, adopted), (base, control)]
 
 # --------------------------------------------------------------- MUVOD
 # The benchmark our data comes from: Ashkani Chenarlogh et al., "MUVOD: A Novel
@@ -943,14 +957,15 @@ def paper_items(store, methods, datasets, window, args):
                                    key=f"3 {split} {k}")
 
     items.append(H(f"4. Camera J&F by nb = min(view_index, {window})"))
-    for pair in PAPER_PAIRS[:2]:
+    pairs = paper_pairs(list(methods))
+    for pair in pairs[:2]:
         for label, dsl, k in sets:
             items.append(P(f"**{pair[1]} - {pair[0]}, {label}**"))
             items.append(nb_table(store, methods, dsl, base, pair,
                                   key=f"4 {k}{pair[1]}-{pair[0]} "))
 
     items.append(H("5. Paired statistics"))
-    for a, b in PAPER_PAIRS:
+    for a, b in pairs:
         for label, dsl, k in sets:
             items.append(P(f"**{b} - {a}, {label}**"))
             items += paired_tables(store, a, b, dsl, base, key=f"5 {k}{b}-{a} ")

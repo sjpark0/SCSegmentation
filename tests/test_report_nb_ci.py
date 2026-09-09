@@ -93,18 +93,57 @@ def normalise(text):
     return "\n".join(out)
 
 
-def test_paper_tables_columns_only(rj, tmp_path):
+# 2026-09-09: the paper's column set changed on purpose.  The SAM 2 column moved from
+# the unreproducible SegMaskNew1 to SegMaskNew3, and the SAM 3 columns became the
+# adopted XW lineage (docs/sam2-baseline.md, ROADMAP "채택된 구성").  So the two things
+# this used to check in one test are now separate: the stored file must still be
+# reproducible from the committed scorer, and the scoring core must not have drifted
+# from what produced the published numbers.
+PAPER_RAW = os.path.join(REPO, "Data", "MVSeg", "jf_paper.json")
+# report_jf.py prints the raw file name it was given into the header, and the stored
+# documents were generated with the short name, so the tests must pass the short name.
+PAPER_RAW_NAME = "jf_paper.json"
+RAW_NAME = "jf_v2.json"
+OLD_PAPER_METHODS = ["SegMaskNew1", "SegMaskSam3OneStage", "SegMaskSam3MVOpt"]
+
+
+def run_paper(tmp_path, raw, methods=()):
+    out = tmp_path / "paper.md"
+    cmd = [sys.executable, os.path.join(REPO, "eval", "report_jf.py"),
+           "--raw", raw, "--paper", str(out)]
+    if methods:
+        cmd += ["--methods", *methods]
+    subprocess.run(cmd, check=True, cwd=REPO,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return out.read_text()
+
+
+def test_paper_tables_are_reproducible(rj, tmp_path):
+    """docs/raw/paper_tables.md is exactly what the committed scorer writes today."""
     if not os.path.isfile(PAPER):
         pytest.skip(f"{PAPER} not present")
-    out = tmp_path / "paper.md"
-    subprocess.run([sys.executable, os.path.join(REPO, "eval", "report_jf.py"), "--paper", str(out)],
-                   check=True, cwd=REPO, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    fresh, stored = out.read_text(), open(PAPER, encoding="utf-8").read()
+    if not os.path.isfile(PAPER_RAW):
+        pytest.skip(f"{PAPER_RAW} not present (score the adopted lineage first)")
+    fresh = run_paper(tmp_path, PAPER_RAW_NAME)
     assert "| cluster CI lo | cluster CI hi |" in fresh
-    assert fresh == stored, "docs/raw/paper_tables.md is out of date: rerun --paper"
-    # the numbers must still be the ones published before the nb-bin CI columns
-    # existed (frozen from commit 5353d07); only the added columns may differ
+    assert fresh == open(PAPER, encoding="utf-8").read(), \
+        "docs/raw/paper_tables.md is out of date: rerun --paper --raw jf_paper.json"
+    mod = load_report_jf()
+    assert mod.PAPER_METHODS == ["SegMaskNew3", "SegMaskSam3XW0", "SegMaskSam3XW1GPS4"]
+    for col in mod.PAPER_METHODS:
+        assert f"| {col} |" in fresh or f" {col} |" in fresh
+
+
+def test_scoring_core_has_not_drifted(rj, tmp_path):
+    """The old column set still reproduces the numbers frozen at commit 5353d07.
+
+    This is the drift guard: the paper's columns changed, but J and F themselves must
+    not have.  Only the nb-table CI columns and the bootstrap statement field may
+    differ, which is what normalise() removes."""
     snapshot = os.path.join(REPO, "tests", "data", "paper_tables_5353d07.md")
+    if not os.path.isfile(snapshot):
+        pytest.skip(f"{snapshot} not present")
+    fresh = run_paper(tmp_path, RAW_NAME, OLD_PAPER_METHODS)
     assert normalise(fresh) == normalise(open(snapshot, encoding="utf-8").read())
     # the normaliser only removes what it claims: 4 nb tables x (header + rule + 5 rows)
     n_stripped = sum(1 for a, b in zip(fresh.split("\n"), normalise(fresh).split("\n")) if a != b)

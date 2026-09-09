@@ -143,7 +143,7 @@ diff -rq -x MANIFEST.json ../Data/MVSeg/Blocks/SegMaskSam3MVOpt ../Data/MVSeg/Bl
 
 ### 테스트 (CPU, 컨테이너)
 
-`tests/`에 pytest 62개가 있습니다 — 수집 함수 등가(무작위 20,000 구성), 실제 메서드 golden, closure 보조정리, 러너 해석표(15개 데이터셋),
+`tests/`에 pytest 188개가 있습니다 — 수집 함수 등가(무작위 20,000 구성), 실제 메서드 golden, closure 보조정리, MUVOD 프로토콜(객체 필터·집계·가드), 러너 해석표(17개 데이터셋),
 집계기 CI 열, 메모리 불변식 S1~S7. 실제 트래커는 CPU에서 생성되지 않으므로(`PositionEmbeddingSine`이 cuda 할당) bare-instance 하니스를 씁니다.
 
 ```bash

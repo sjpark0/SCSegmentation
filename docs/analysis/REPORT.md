@@ -114,7 +114,10 @@
 
 **E5. 타이밍 비교는 세션 수 비교.** Welder OneStage 3세션 vs OneStageNew 46세션. tqdm으로 분리하면 temporal 35 s/63 = 0.56 s vs 427 s/966 = 0.44 s per view-frame; cross-view pass 16 s vs 15 s. "2-3× 느림"은 cross-view memory 비용이 아니라 "46뷰 vs 3뷰"입니다.
 
-**E6. SAM 2 vs SAM 3 설정 불일치.** SAM 2는 `fill_hole_area=8`(SCSam2/demo/build_sam.py:130, low-res 256²에서 적용 = full-res ~250 px)이고 SAM 3는 `SCSam3Video.py:17, 20`에서 0으로 강제(builder 기본 16, build_scsam3.py:936); SAM 3는 non-overlap을 출력에 적용하고 SAM 2는 `non_overlap_masks=False`; low-res 288 vs 256. F +0.006 차이는 이 변수들과 같은 크기입니다. 등록 객체 22 vs 15는 로그 규칙 차이(SAM 2는 zero-mask id도 카운트)일 뿐 점수 무관.
+**E6. SAM 2 vs SAM 3 설정 불일치.** — **2026-09-09 정정: 아래 세 변수 중 `fill_hole_area`는 처음부터
+무효였습니다.** `scsam2` 이미지에 CUDA 확장 `sam2._C`가 없어 `fill_holes_in_mask_scores`가 실행된 적이
+없습니다([sam2-baseline.md](../sam2-baseline.md)). 따라서 남는 교란은 **출력 겹침 제거 하나**(사후에
+객체별 점수만으로 적용 가능)와 **맞출 수 없는 저해상도 288 대 256**입니다. 원문: SAM 2는 `fill_hole_area=8`(SCSam2/demo/build_sam.py:130, low-res 256²에서 적용 = full-res ~250 px)이고 SAM 3는 `SCSam3Video.py:17, 20`에서 0으로 강제(builder 기본 16, build_scsam3.py:936); SAM 3는 non-overlap을 출력에 적용하고 SAM 2는 `non_overlap_masks=False`; low-res 288 vs 256. F +0.006 차이는 이 변수들과 같은 크기입니다. 등록 객체 22 vs 15는 로그 규칙 차이(SAM 2는 zero-mask id도 카운트)일 뿐 점수 무관.
 
 **E7. 빠진 ablation.** window 크기(:1253 리터럴, 생성자 인자 없음; maskmem_tpos_enc 7행이라 W≤6만 가능), 패키지 내 on/off, 양측 창(lockstep 때문에 현재 구조로는 불가능), 뷰 순서/링, reference 선택, seed 모달리티(텍스트는 C7로 불가), horizon(21프레임, num_maskmem=7이면 steady state는 7프레임부터), scored 카메라는 GT로 고정(변경 불가).
 
@@ -230,7 +233,7 @@ CPU-only pytest(request 키, parse_action_history ref=N−1, processing_order 21
 | 8 | seed 복구 (P5) | OneStageNew / closure / 4, `--repair-seeds` | SegMaskSeedRepair | Welder, Blocks, MATF, PoznanStreet, Painter + 대조 Carpark, Frog | spatial pass 실패의 기여 | Welder cam4 obj 8/14 J ≥0.8; 대조군 ±0.001 |
 | 9 | reference 규칙 (P8) | 세 방법 모두 `--reference count` | *_refcount | Blocks, MATF, PoznanStreet, Painter, FacePaint | 도달 불가 zero의 기여 | 구조적 zero 203→63 등 재현; 세 방법 J ≥+0.03 동반 상승, 순위 불변 |
 | 10 | 이웃 토큰 조건화 (P12) | OneStageNew / closure / 4, gate/tpos/ptr 그리드 | SegMaskSam3X_<tag> | Fencing, PoznanStreet, Welder, Blocks | 내용 vs 위치 코드 | 어떤 변형이든 nonref에서 +0.005 초과 & reference 무손실 |
-| 11 | 설정 매칭 (E6) | SAM 2 `apply_postprocessing=False`, `non_overlap_masks=True` | SegMaskNew1_matched | 12 | F +0.006의 후처리 몫 | SAM2 vs OneStage F 차이 재계산 |
+| 11 | 설정 매칭 (E6) | SAM 2 `apply_postprocessing=False`, `non_overlap_masks=True` | SegMaskSam2Matched | 12 | F +0.006의 후처리 몫 | SAM2 vs OneStage F 차이 재계산 |
 
 보고할 표: (a) 15-dataset `--common` 헤드라인(행 0/1/3/4), (b) nonref-only 및 nb 구간별(행 3 vs 4 vs 7), (c) per-object 산점(Fencing v0/v9, PoznanStreet v8, Welder cam4)으로 "어디서 이득이 나는가", (d) per-view-frame 타이밍(행 2 vs 4), (e) ceiling 열(행 9). 순서는 표 번호대로: 행 3-4가 나오기 전에는 어떤 정확도 제안도 판정할 수 없습니다.
 
