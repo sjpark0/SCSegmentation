@@ -37,6 +37,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 
 | 문서 | 내용 |
 |---|---|
+| **[mvvos-algorithm-analysis.md](mvvos-algorithm-analysis.md)** | **알고리즘 분석 보고서 (2026-09-09)** — 뷰=프레임 가정의 세 위반(격자 정렬 위치 부호·시간 행·자기 확신 기억, 파일:줄), 실패 해부의 검산(면적 단조, SAM 2가 반구 실패 13쌍 중 10쌍 처리, 쌍별 오라클 +0.78, 이득 봉투 +2.07), 문헌 지형 7가족, 설계 3안과 반박, 권고 설계 **SeedVote**(동결 전파기 여러 개의 시드 후보를 위치 기준으로 검증·선택)와 실험 순서 E0~E9 |
 | [investigations-closed.md](investigations-closed.md) | 종결된 조사 13건 — 재조사 금지 목록 |
 | [memory-optimization.md](memory-optimization.md) | 메모리 수정 7종의 내용·근거·동등성 증거 |
 | [mvopt-audit.md](mvopt-audit.md) | 그 7종의 반증 검증 결과와 잔여 위험 |
