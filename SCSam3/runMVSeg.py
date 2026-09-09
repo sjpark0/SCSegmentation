@@ -197,6 +197,44 @@ def max_object_id(ds_dir, c, cam, cv2, np):
     return int(np.max(img))
 
 
+class ViewAreas:
+    """Per-view mask areas, recorded for later analysis.  Purely additive: nothing here
+    is read back by the run, so the masks written to disk are unchanged.
+
+    Motivated by 2026-09-09: the harm P5 propagated came from views that are NOT scored
+    (Blocks cam8, CBABasketball v05), whose masks are therefore never written.  Any
+    future "is this neighbour healthy" test needs their trajectories, and re-running the
+    whole benchmark to get them costs a GPU sweep.  Recording the areas costs kilobytes.
+
+      seed[view][obj]           area of the cross-view pass's first-frame mask (every
+                                loaded view, not just the scored ones)
+      tracked[view][frame][obj] area during temporal tracking, for every tracked view
+    """
+
+    def __init__(self):
+        self.seed = {}
+        self.tracked = {}
+
+    def record_seed(self, masks_spatial):
+        self.seed = {int(v): {int(o): int(m.sum().item()) for o, m in masks.items()}
+                     for v, masks in masks_spatial.items()}
+
+    def record_frame(self, view, frame_idx, obj_ids, masks):
+        """masks: iterable aligned with obj_ids; each a bool tensor/array."""
+        per = self.tracked.setdefault(int(view), {}).setdefault(int(frame_idx), {})
+        for obj_id, m in zip(obj_ids, masks):
+            n = m.sum()
+            per[int(obj_id)] = int(n.item() if hasattr(n, "item") else n)
+
+    def as_record(self):
+        return {"seed": {str(v): {str(o): a for o, a in d.items()}
+                         for v, d in sorted(self.seed.items())},
+                "tracked": {str(v): {str(f): {str(o): a for o, a in objs.items()}
+                                     for f, objs in sorted(fr.items())}
+                            for v, fr in sorted(self.tracked.items())},
+                "n_views_seed": len(self.seed), "n_views_tracked": len(self.tracked)}
+
+
 def resolve_ref_cam(spec, cam_list, c_ini=None):
     """--ref-cam -> (camera number, folder suffix).  (None, None) when the flag is
     absent, which means main() falls back to pick_reference.  Pure: no image reads, so
@@ -634,13 +672,20 @@ def build_runner(algo):
     return MVSegVideo, torch
 
 
-def run_two_pass(sc, start_frame, num_frame, cam_names, written_cams, out_dir, cv2, np):
+def run_two_pass(sc, start_frame, num_frame, cam_names, written_cams, out_dir, cv2, np,
+                 areas=None):
     """XW mode E write loop.  Pass 1 = one next() per session in camera order (exactly the
     lockstep of main's loop; those outputs are provisional and are dropped).  Pass 2 =
     one recompute request for the frame, issued after every session yielded it and
     before any session is advanced (the tracker needs feature_cache[t], which the
     next() for t+1 pops).  The seed frame is prompted, never recomputed: its pass-1
-    response is written as is.  The PNG writing mirrors main's loop line for line."""
+    response is written as is.  The PNG writing mirrors main's loop line for line.
+
+    `areas` (instrumentation only) records the PASS-1 areas of every session: pass 2 is
+    requested for the scored sessions alone (`output_for=scored_j`), so the unscored
+    views have no pass-2 output to record.  Mode E's `view_areas.tracked` therefore holds
+    provisional pass-1 areas, unlike every other mode; `two_pass` in the same manifest
+    says which one you are reading."""
     scored_j = [j for j, view in enumerate(sc.track_views) if cam_names[view] in written_cams]
     for _ in range(num_frame):
         frame_idx, seed_outputs = None, {}
@@ -649,6 +694,11 @@ def run_two_pass(sc, start_frame, num_frame, cam_names, written_cams, out_dir, c
             if frame_idx is None:
                 frame_idx = response["frame_index"]
             assert response["frame_index"] == frame_idx, (j, response["frame_index"], frame_idx)
+            if areas is not None:
+                o1 = response["outputs"]
+                areas.record_frame(sc.track_views[j], frame_idx, o1["out_obj_ids"].tolist(),
+                                   [o1["out_binary_masks"][i] > 0.0
+                                    for i in range(len(o1["out_obj_ids"]))])
             if frame_idx == start_frame and j in scored_j:
                 seed_outputs[j] = response["outputs"]
         if frame_idx == start_frame:
@@ -778,6 +828,8 @@ def main():
     sc.PropagateAcrossViews(ref_index)
     print(f"cross-view     done, {len(sc.masks_spatial)} views have masks", flush=True)
 
+    areas = ViewAreas()
+
     # P5.  Before RetireSpatialPredictor: the repair re-opens the spatial model.
     repair_stats = None
     if run["repair_seeds"]:
@@ -805,6 +857,11 @@ def main():
     # of weights that never change during inference, so they are recomputed
     # bit-for-bit.  Once here, not per frame: inside a frame the whole live
     # weight set is cached anyway, so per-frame clearing lowers no peak.
+    # Instrumentation only (2026-09-09): the seeds every loaded view starts from,
+    # including the views nobody scores.  Read after any repair, so it reflects what
+    # TrackForward actually consumes.
+    areas.record_seed(sc.masks_spatial)
+
     if hasattr(sc, "RetireSpatialPredictor"):
         sc.RetireSpatialPredictor()
         torch.clear_autocast_cache()
@@ -813,15 +870,21 @@ def main():
     sc.TrackForward(c["start_frame"], c["num_frame"])
 
     if run["two_pass"]:
-        run_two_pass(sc, c["start_frame"], c["num_frame"], cam_names, written_cams, out_dir, cv2, np)
+        run_two_pass(sc, c["start_frame"], c["num_frame"], cam_names, written_cams, out_dir,
+                     cv2, np, areas=areas)
     else:
         for _ in range(c["num_frame"]):
             for j, view in enumerate(sc.track_views):
                 response = next(sc.tracking_result[j])
+                out = response["outputs"]
+                # instrumentation: every tracked view, scored or not
+                areas.record_frame(view, response["frame_index"],
+                                   out["out_obj_ids"].tolist(),
+                                   [out["out_binary_masks"][i] > 0.0
+                                    for i in range(len(out["out_obj_ids"]))])
                 if cam_names[view] not in written_cams:
                     continue
                 frame_idx = response["frame_index"]
-                out = response["outputs"]
                 folder = os.path.join(out_dir, cam_names[view], f"{frame_idx:d}")
                 os.makedirs(folder, exist_ok=True)
                 for i, obj_id in enumerate(out["out_obj_ids"].tolist()):
@@ -878,7 +941,8 @@ def main():
                    "closure_reach": run["closure_reach"],
                    "xview_gate": eff_gate, "xview_ptr": eff_ptr, "xview_tpos_shift": eff_shift,
                    "xview_gate_stats": xstats,
-                   "seed_repair": repair_stats})
+                   "seed_repair": repair_stats,
+                   "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
         print(f"manifest not written ({type(exc).__name__}: {exc})", flush=True)
