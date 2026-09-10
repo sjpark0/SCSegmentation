@@ -4,8 +4,10 @@
 #   MVSeed/geo/dense_depth.sh <scene> [<scene> ...]
 #
 # Requires MVSeed/cache/<scene>/pose/sparse/0 (colmap_first_frames.sh).  Undistorts every registered
-# image (max side MAX_SIZE, default 1600) so the neighbour images are available as stereo sources, then
-# restricts stereo/patch-match.cfg to the annotated cameras, so only those get a depth map.  Writes
+# image (max side MAX_SIZE, default 1600), then runs patch-match twice: once WITHOUT geometric
+# consistency over every image (an image's geometric pass reads its neighbours' photometric depth, so
+# those must exist first), and once WITH geometric consistency over a patch-match.cfg restricted to the
+# annotated cameras -- COLMAP skips depth maps that already exist, so only three are refined.  Writes
 # MVSeed/cache/<scene>/pose/dense/{images,sparse,txt,stereo/depth_maps}, and dense/summary.json.
 # Idempotent: a scene with dense/summary.json is skipped.  Log: dense/dense.log
 set -uo pipefail
@@ -26,8 +28,10 @@ for scene in "$@"; do
       rm -rf dense; mkdir -p dense
       colmap image_undistorter --image_path images --input_path sparse/0 \
         --output_path dense --output_type COLMAP --max_image_size "$MAX_SIZE" > /dev/null
-      colmap model_converter --input_path dense/sparse --output_path dense/txt --output_type TXT > /dev/null 2>&1 \
-        || { mkdir -p dense/txt && colmap model_converter --input_path dense/sparse --output_path dense/txt --output_type TXT > /dev/null; }
+      mkdir -p dense/txt
+      colmap model_converter --input_path dense/sparse --output_path dense/txt --output_type TXT > /dev/null
+      colmap patch_match_stereo --workspace_path dense --workspace_format COLMAP \
+        --PatchMatchStereo.geom_consistency false --PatchMatchStereo.max_image_size "$MAX_SIZE" 2>&1 | tail -1
       python - <<PY
 import os
 cams = set(os.environ["CAMS"].split())

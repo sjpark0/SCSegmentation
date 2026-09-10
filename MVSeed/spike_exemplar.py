@@ -898,12 +898,13 @@ def print_summary(summary, variant="e2_0"):
         for v in spec["exemplars"]:
             if v == "box":
                 continue
-            for which in ("slot", "same"):
+            for i, which in enumerate(("same", "slot")):
                 pr = s[f"paired_{which}_{v}_vs_box"]
                 a, b = pr["fill_lt_0.5"], pr["fill_ge_0.5"]
+                box_key, arm_key = f"hits_{which}", f"hits_{arm_keys(v)[i]}"      # 0 -> same_<v>, 1 -> slot_<v>
                 print(f"      {which}_{v} - box: d med {pr['all']['d_median']:+.3f} up {pr['all']['n_up']} down {pr['all']['n_down']}"
-                      f" | fill<0.5 n{a['n']} d med {a['d_median']} hits box {a[f'hits_{which}']}->{a[f'hits_{arm_keys(v)[0] if which == 'same' else arm_keys(v)[1]}']}"
-                      f" | fill>=0.5 n{b['n']} d med {b['d_median']} hits box {b[f'hits_{which}']}->{b[f'hits_{arm_keys(v)[0] if which == 'same' else arm_keys(v)[1]}']}")
+                      f" | fill<0.5 n{a['n']} d med {a['d_median']} hits box {a[box_key]}->{a[arm_key]}"
+                      f" | fill>=0.5 n{b['n']} d med {b['d_median']} hits box {b[box_key]}->{b[arm_key]}")
     ref = summary.get("box_vs_e2_0_reference")
     if ref:
         print(f"\nbox arms vs E2-0 stored pairs: {ref['n_equal']}/{ref['n_compared']} identical, "
