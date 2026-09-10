@@ -46,14 +46,20 @@ def test_camera_models_and_distortion_roundtrip():
 def test_read_model_txt(tmp_path):
     (tmp_path / "cameras.txt").write_text(
         "# comment\n1 SIMPLE_RADIAL 1920 1088 1090.5 960 544 -0.0021\n2 PINHOLE 1600 905 907.8 907.9 800 452.5\n")
+    # image 2 has NO observations, so COLMAP writes an empty POINTS2D line: parity must survive it
     (tmp_path / "images.txt").write_text(
         "# comment\n1 1 0 0 0 0.5 -0.25 3 1 v0.jpg\n100.5 200.5 7 101.5 201.5 -1\n"
-        "2 0.7071 0 0.7071 0 1 2 3 2 v1.jpg\n\n")
+        "2 0.7071 0 0.7071 0 1 2 3 2 v1.jpg\n\n"
+        "3 1 0 0 0 4 5 6 1 v2.jpg\n1.5 2.5 9\n")
     cams, imgs = ci.read_model_txt(str(tmp_path))
     assert set(cams) == {1, 2} and cams[1].model == "SIMPLE_RADIAL" and cams[2].fy == 907.9
-    assert set(imgs) == {"v0.jpg", "v1.jpg"}
+    assert set(imgs) == {"v0.jpg", "v1.jpg", "v2.jpg"}
     assert imgs["v0.jpg"].tvec == [0.5, -0.25, 3] and imgs["v0.jpg"].camera_id == 1
+    assert imgs["v2.jpg"].tvec == [4, 5, 6]          # would be mis-parsed if the blank line desynced
     assert np.allclose(np.asarray(imgs["v0.jpg"].R), np.eye(3))
+    (tmp_path / "odd.txt").write_text("1 1 0 0 0 0 0 0 1 a.jpg\n")
+    with pytest.raises(AssertionError):
+        ci.read_images_txt(str(tmp_path / "odd.txt"))
 
 
 def test_read_colmap_array(tmp_path):
@@ -135,7 +141,11 @@ def test_occlusion_test_drops_hidden_samples():
     dref_occ[:, :] = 1.0                                                # the surface is hidden in the reference
     back = warp.backward_warp(m, cam, ref, dref_occ, cam, tgt, dtgt)
     assert not back.any()
-    behind = ci.Image(3, [1, 0, 0, 0], [0, 0, 10.0], 1, "b.jpg")        # target points land behind camera 1
+    # the reference sits 10 units BEHIND the surface, so every target point has z_ref < 0 there
+    behind = ci.Image(3, [1, 0, 0, 0], [0, 0, -10.0], 1, "b.jpg")
+    pts, _ = warp.unproject(cam, dtgt)
+    in_ref = warp.transfer(pts, *warp.pose_matrices(tgt), *warp.pose_matrices(behind))
+    assert (warp.project(cam, in_ref)[2] < 0).all()                     # the fixture really is behind
     assert not warp.backward_warp(m, cam, behind, dref, cam, tgt, dtgt).any()
 
 

@@ -13,7 +13,7 @@ the target camera, or no depth map exists -- are kept in the population with an 
 
     docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD 3dgs \\
         python MVSeed/geo/e4a_project.py [--scenes A,B] [--save-masks]
-    python MVSeed/geo/e4a_project.py --summary-only        # re-summarise the part files
+    ... same container, --summary-only            # re-summarise the part files (needs numpy: container only)
 """
 import argparse
 import importlib.util
@@ -141,7 +141,9 @@ def run_scene(scene, cfg, census, log, save_masks=None):
                 else:
                     m = np.zeros((h, w), bool)
                 rec[f"px_{arm}"] = int(m.sum())
-                rec[f"J_{arm}"] = round(warp.iou(m, g), 4) if g.any() else None
+                j = warp.iou(m, g) if g.any() else None
+                rec[f"J_{arm}"] = round(j, 4) if j is not None else None
+                rec[f"pass_{arm}"] = bool(j is not None and j > J_PASS)      # decided on the exact IoU
                 if arm == VERDICT_ARM:
                     c = warp.centre_offset(m, g) if g.any() else None
                     rec["centre_offset"] = round(c, 3) if c is not None else None
@@ -159,7 +161,7 @@ def run_scene(scene, cfg, census, log, save_masks=None):
 # ------------------------------------------------------------------ summary (pure)
 def _group(rows, arm=VERDICT_ARM):
     ok = [r for r in rows if r[f"J_{arm}"] is not None]
-    hit = [r for r in ok if r[f"J_{arm}"] > J_PASS]
+    hit = [r for r in ok if r[f"pass_{arm}"]]
     g = {"n": len(rows), "measured": len(ok), "pass": len(hit),
          "pass_rate": gate._rate(len(hit), len(rows)),
          "J_median": gate._median([r[f"J_{arm}"] for r in ok]),
@@ -169,9 +171,8 @@ def _group(rows, arm=VERDICT_ARM):
          "tgt_depth_frac_median": gate._median([r["tgt_depth_frac"] for r in rows
                                                 if r.get("tgt_depth_frac") is not None])}
     for a in ARMS:
-        vals = [r[f"J_{a}"] for r in rows if r[f"J_{a}"] is not None]
-        g[f"pass_{a}"] = sum(1 for v in vals if v > J_PASS)
-        g[f"J_median_{a}"] = gate._median(vals)
+        g[f"pass_{a}"] = sum(1 for r in rows if r[f"pass_{a}"])
+        g[f"J_median_{a}"] = gate._median([r[f"J_{a}"] for r in rows if r[f"J_{a}"] is not None])
     return g
 
 
@@ -182,6 +183,7 @@ def summarize(rows):
          "f0_ge2k_pinhole": _group([r for r in f0 if r["gt_px"] >= 2000 and r["rig"] == "pinhole"]),
          "f0_ge2k": _group([r for r in f0 if r["gt_px"] >= 2000]),
          "f0_lt2k": _group([r for r in f0 if r["gt_px"] < 2000]),
+         "f0_hemisphere": _group([r for r in f0 if r["rig"] == "hemisphere"]),
          "f0": _group(f0),
          "n0": _group([r for r in rows if r["set"] == "N0"]),
          "n0_by_size": {b: _group([r for r in rows if r["set"] == "N0" and r["size_bin"] == b])
@@ -190,9 +192,14 @@ def summarize(rows):
                       for sc in sorted({r["scene"] for r in gt})}}
     empty = [r for r in rows if r["set"] == "gt_empty"]
     av = [r for r in empty if r["available"]]
-    s["gt_empty"] = {"n": len(empty), "available": len(av),
-                     "halluc": sum(r[f"px_{VERDICT_ARM}"] > 0 for r in av),
-                     "halluc_rate": gate._rate(sum(r[f"px_{VERDICT_ARM}"] > 0 for r in av), len(av))}
+    hal = sum(r[f"px_{VERDICT_ARM}"] > 0 for r in empty)     # unavailable rows project nothing -> no hallucination
+    s["gt_empty"] = {"n": len(empty), "available": len(av), "halluc": hal,
+                     "halluc_rate": gate._rate(hal, len(empty)),          # registered denominator: all 132 rows
+                     "halluc_rate_available": gate._rate(hal, len(av))}
+    counts = {"f0_ge2k_pinhole": s["f0_ge2k_pinhole"]["n"], "f0_ge2k": s["f0_ge2k"]["n"],
+              "f0_lt2k": s["f0_lt2k"]["n"], "n0": s["n0"]["n"], "gt_empty": s["gt_empty"]["n"]}
+    registered = {"f0_ge2k_pinhole": GATE_N, "f0_ge2k": 19, "f0_lt2k": 22, "n0": 623, "gt_empty": 132}
+    s["denominators"] = {"registered": registered, "measured": counts, "match": counts == registered}
     g = s["f0_ge2k_pinhole"]
     passed = g["pass"] >= GATE_MIN and g["n"] == GATE_N
     s["gates"] = {"gate_projection": {"pass": bool(passed), "arm": VERDICT_ARM, "value": g["pass"],
@@ -266,13 +273,15 @@ def print_summary(s):
         print(f"  {name:20s} n={g['n']:3d} avail {g['available']:3d}  pass {g['pass']:3d} ({g['pass_rate']})  "
               f"back {g['pass_back']:3d} fwd {g['pass_fwd']:3d}  J med {g['J_median']}  "
               f"centre {g['centre_offset_median']}  tgt-depth {g['tgt_depth_frac_median']}")
-    print(f"\n[S1-E4a projection] rows {s['n_rows']}  missing scenes {s.get('missing_scenes')}")
-    for k in ("f0_ge2k_pinhole", "f0_ge2k", "f0_lt2k", "f0", "n0"):
+    print(f"\n[S1-E4a projection] rows {s['n_rows']}  missing scenes {s.get('missing_scenes')}  "
+          f"denominators match: {s['denominators']['match']} {s['denominators']['measured']}")
+    for k in ("f0_ge2k_pinhole", "f0_ge2k", "f0_lt2k", "f0_hemisphere", "f0", "n0"):
         line(k, s[k])
     for k, g in s["n0_by_size"].items():
         line(f"n0 {k}", g)
     e = s["gt_empty"]
-    print(f"  gt_empty             n={e['n']:3d} avail {e['available']:3d}  halluc {e['halluc']} ({e['halluc_rate']})")
+    print(f"  gt_empty             n={e['n']:3d} avail {e['available']:3d}  halluc {e['halluc']} "
+          f"({e['halluc_rate']} of 132; {e['halluc_rate_available']} of the available)")
     for k, g in sorted(s["by_scene"].items()):
         line(f"scene {k}", g)
     for k, v in s["gates"].items():

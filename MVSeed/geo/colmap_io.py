@@ -108,17 +108,21 @@ def read_cameras_txt(path):
 
 
 def read_images_txt(path):
-    """`images.txt` -> {name: Image}.  Only the pose lines are read (the 2D point lines are skipped)."""
-    out, expect_pose = {}, True
-    for line in open(path):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if expect_pose:
-            f = line.split()
-            im = Image(f[0], f[1:5], f[5:8], f[8], " ".join(f[9:]))
-            out[im.name] = im
-        expect_pose = not expect_pose
+    """`images.txt` -> {name: Image}.  Only the pose lines are read.
+
+    COLMAP writes exactly two lines per image and the second (POINTS2D) line is EMPTY when the image
+    has no observations, so the parser must keep strict two-line parity instead of skipping blanks.
+    """
+    body = [ln.strip() for ln in open(path) if not ln.lstrip().startswith("#")]
+    while body and not body[-1]:
+        body.pop()                                   # trailing newlines at end of file
+    assert len(body) % 2 == 0, f"{path}: {len(body)} non-comment lines, expected an even count"
+    out = {}
+    for i in range(0, len(body), 2):
+        f = body[i].split()
+        assert len(f) >= 10, f"{path} line {i}: not a pose line ({body[i][:40]!r})"
+        im = Image(f[0], f[1:5], f[5:8], f[8], " ".join(f[9:]))
+        out[im.name] = im
     return out
 
 

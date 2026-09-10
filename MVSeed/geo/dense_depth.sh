@@ -9,7 +9,8 @@
 # those must exist first), and once WITH geometric consistency over a patch-match.cfg restricted to the
 # annotated cameras -- COLMAP skips depth maps that already exist, so only three are refined.  Writes
 # MVSeed/cache/<scene>/pose/dense/{images,sparse,txt,stereo/depth_maps}, and dense/summary.json.
-# Idempotent: a scene with dense/summary.json is skipped.  Log: dense/dense.log
+# Idempotent: a scene is skipped only when dense/summary.json records a SUCCESSFUL run (rc 0 and one
+# depth map per annotated camera that COLMAP registered), so a failed scene is retried.  Log: dense/dense.log
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO"
@@ -17,14 +18,18 @@ MAX_SIZE="${MAX_SIZE:-1600}"
 for scene in "$@"; do
   work="MVSeed/cache/$scene/pose"
   [ -d "$work/sparse/0" ] || { echo "== $scene: no sparse model, skipping"; continue; }
-  [ -f "$work/dense/summary.json" ] && { echo "== $scene: dense done, skipping"; continue; }
+  if python3 -c "
+import json,sys
+try: s=json.load(open('$work/dense/summary.json'))
+except Exception: sys.exit(1)
+sys.exit(0 if s.get('ok') else 1)" 2>/dev/null; then echo "== $scene: dense done, skipping"; continue; fi
   cams=$(python3 -c "import json;print(' '.join(json.load(open('docs/raw/muvod_object_sets.json'))['$scene']['cameras']))")
   echo "== $scene: dense for [$cams] max_size $MAX_SIZE $(date +%H:%M:%S)"
   t0=$(date +%s)
   docker run --rm --gpus all --shm-size=16g --memory=60g --memory-swap=60g \
     --user "$(id -u):$(id -g)" -v /:/host -w "/host$REPO/$work" \
     -e CAMS="$cams" -e MAX_SIZE="$MAX_SIZE" 3dgs bash -c '
-      set -e
+      set -eo pipefail
       rm -rf dense; mkdir -p dense
       colmap image_undistorter --image_path images --input_path sparse/0 \
         --output_path dense --output_type COLMAP --max_image_size "$MAX_SIZE" > /dev/null
@@ -50,15 +55,20 @@ PY
         --PatchMatchStereo.geom_consistency true --PatchMatchStereo.max_image_size "$MAX_SIZE" 2>&1 | tail -2
       ls dense/stereo/depth_maps/*.geometric.bin | wc -l
     ' > "$work/dense.log" 2>&1
-  rc=$?
+  rc=${PIPESTATUS[0]}
   mkdir -p "$work/dense"
   python3 - "$work" "$MAX_SIZE" "$((`date +%s` - t0))" "$rc" "$cams" <<'PY'
 import glob, json, os, sys
 work, mx, secs, rc, cams = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5].split()
 maps = sorted(os.path.basename(p) for p in glob.glob(f"{work}/dense/stereo/depth_maps/*.geometric.bin"))
-s = dict(max_image_size=mx, rc=rc, seconds=secs, cameras=cams, depth_maps=maps, n_depth_maps=len(maps))
+# a camera COLMAP never registered has no undistorted image and can never get a depth map
+reg = {os.path.splitext(f)[0] for f in os.listdir(f"{work}/dense/images")} if os.path.isdir(f"{work}/dense/images") else set()
+want = [c for c in cams if c in reg]
+ok = rc == 0 and len(maps) == len(want) and len(maps) > 0
+s = dict(max_image_size=mx, rc=rc, ok=ok, seconds=secs, cameras=cams, registered_cameras=sorted(want),
+         depth_maps=maps, n_depth_maps=len(maps))
 json.dump(s, open(f"{work}/dense/summary.json", "w"), indent=1)
-print(f"   -> {len(maps)} depth maps of {len(cams)} cameras, {secs}s, rc {rc}")
+print(f"   -> {len(maps)} depth maps of {len(want)}/{len(cams)} registered cameras, {secs}s, rc {rc}, ok {ok}")
 PY
   mv "$work/dense.log" "$work/dense/dense.log" 2>/dev/null || true
 done
