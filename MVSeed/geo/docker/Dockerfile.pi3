@@ -1,0 +1,22 @@
+# S1-E4b: pointmap geometry provider (pi^3 / Pi3X), inference only.
+#   docker build -f MVSeed/geo/docker/Dockerfile.pi3 -t scgeo:pi3 MVSeed/geo/docker
+# Code BSD 3-Clause; weights CC BY-NC 4.0 (research use only, which is our use).
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir numpy==1.26.4 pillow opencv-python-headless plyfile \
+    huggingface_hub safetensors einops
+
+ARG PI3_REF=main
+RUN git clone https://github.com/yyfz/Pi3.git /opt/Pi3 && cd /opt/Pi3 && git checkout "$PI3_REF" \
+    && git rev-parse HEAD > /opt/Pi3_COMMIT
+ENV PYTHONPATH=/opt/Pi3
+
+# bake the weights in so the container can run fully offline
+ENV HF_HOME=/opt/hf
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download('yyfz233/Pi3X'); snapshot_download('yyfz233/Pi3')"
+ENV HF_HUB_OFFLINE=1
+WORKDIR /work
