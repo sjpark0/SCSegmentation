@@ -217,7 +217,7 @@ def run_scene(scene, cfg, census, log, save_masks=None, pixel_limit=PIXEL_LIMIT)
                 if arm == e4a.VERDICT_ARM:
                     c = warp.centre_offset(m, g) if g.any() else None
                     rec["centre_offset"] = round(c, 3) if c is not None else None
-                    if save_masks and g.any():
+                    if save_masks:
                         import cv2
                         p = os.path.join(save_masks, scene, tgt, f"{obj}.png")
                         os.makedirs(os.path.dirname(p), exist_ok=True)

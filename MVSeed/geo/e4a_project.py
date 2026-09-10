@@ -147,11 +147,11 @@ def run_scene(scene, cfg, census, log, save_masks=None):
                 if arm == VERDICT_ARM:
                     c = warp.centre_offset(m, g) if g.any() else None
                     rec["centre_offset"] = round(c, 3) if c is not None else None
-                    if save_masks and g.any():
+                    if save_masks:
                         import cv2
-                        d = os.path.join(save_masks, scene, tgt, str(obj))
+                        d = os.path.join(save_masks, scene, tgt, f"{obj}.png")
                         os.makedirs(os.path.dirname(d), exist_ok=True)
-                        cv2.imwrite(d + ".png", (m * 255).astype("uint8"))
+                        cv2.imwrite(d, (m * 255).astype("uint8"))
             rows.append(rec)
         log(f"  {scene:16s} {ref_cam}->{tgt:12s} {'ok ' if pair_ok else 'N/A'} "
             + " ".join(f"{o}:{rows[-len(objects) + i]['J_union']}" for i, o in enumerate(objects[:6])) + " ...")
