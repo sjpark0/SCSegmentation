@@ -44,10 +44,27 @@ smallest view_distance (ties: camera name, object id); the 5 scenes ranked by th
 view_distance (ties: scene name).  A supplementary pinhole-only set (next 5 pinhole scenes by
 the same rule, registered scenes excluded) is run and reported but does not enter the verdict.
 
+S1-E2-0' (docs/stage1-E2-0b-prereg.md, --variant e2_0b): the exemplar token is built from the
+ground-truth MASK instead of its box.  Only the appearance part of the box token changes -- the
+7x7 ROI-align over the feature grid (`_encode_boxes`, geometry_encoders.py 641-665) -- via a
+second instance-level shadow, `geometry_encoder._encode_boxes`:
+  mask     ROI-align(feats*m) / ROI-align(m): per-bin mean of the features inside the mask;
+           bins with coverage < FILL_MIN take the object's coverage-weighted mean feature
+           (registered arm; m == 1 everywhere reproduces the box token exactly -- self-test)
+  mask0    ROI-align(feats*m) without normalisation ("zero outside the mask", exploratory)
+  maskimg  the whole feature grid zeroed outside the mask before the encoder, so pooling AND
+           the three cross-attention layers see object cells only (exploratory)
+m is the c_ini ground-truth mask area-averaged down to the feature grid (frames are plainly
+resized to 1008x1008, so a full-frame resize matches).  Box coordinates, CLS and the
+cross-attention context are unchanged.  Per pair every exemplar variant gets its own
+same-image (criterion 1) and slot-injection (criterion 2) measurement; the verdict of
+variant e2_0b is taken on `mask` alone.
+
     docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \\
       --user $(id -u):$(id -g) -v /:/host -w /host$PWD \\
       -e HF_HOME=/host$PWD/SCSam3/hf_cache -e HF_HUB_OFFLINE=1 scsam3 \\
       python MVSeed/spike_exemplar.py --set registered          # then --set all
+    python MVSeed/spike_exemplar.py --variant e2_0b --set all   # S1-E2-0' (mask exemplar)
     python MVSeed/spike_exemplar.py --dry-run                   # selection only, no torch
 """
 import argparse
@@ -73,6 +90,14 @@ IOU_CROSS = 0.5     # criterion 2: cross-view candidate IoU >= 0.5
 KILL_SAME = 0.8     # criterion 1 rate below this -> discard
 KILL_CROSS = 0.7    # criterion 2 rate below this -> discard
 ARMS = ("same", "slot", "replace", "base")
+FILL_MIN = 0.05     # `mask` arm: ROI bins with mask coverage below this take the object-mean feature
+VARIANTS = {
+    # exemplar variants measured (each -> same_<v> and slot_<v>), extra arms, verdict arm, output
+    "e2_0": dict(exemplars=("box",), extra=("replace",), verdict="box",
+                 out="e2_0_spike.json", parts="e2_0_spike_parts", prereg="docs/stage1-E2-0-prereg.md"),
+    "e2_0b": dict(exemplars=("box", "mask", "mask0", "maskimg"), extra=(), verdict="mask",
+                  out="e2_0b_spike.json", parts="e2_0b_spike_parts", prereg="docs/stage1-E2-0b-prereg.md"),
+}
 
 
 def cam_name(c, d):
@@ -119,52 +144,108 @@ def select_pairs(n0_pairs, f0_pairs, cfg, per_scene=PER_SCENE, n_scenes=N_SCENES
     return rows(registered, "registered") + rows(supplementary, "pinhole_supp")
 
 
-def summarize(records, thresholds):
+def arm_keys(variant):
+    """Exemplar variant -> (same-image arm key, slot-injection arm key).  E2-0 keys stay unchanged."""
+    return ("same", "slot") if variant == "box" else (f"same_{variant}", f"slot_{variant}")
+
+
+def _c1(arms):
+    return {"n": len(arms),
+            "hits": sum(a["cand_best_iou"] > IOU_SAME for a in arms),
+            "rate": _rate(sum(a["cand_best_iou"] > IOU_SAME for a in arms), len(arms)),
+            "any_query_hits": sum(a["all_best_iou"] > IOU_SAME for a in arms),
+            "n_cand_median": _median([a["n_cand"] for a in arms]),
+            "cand_best_iou_median": _median([a["cand_best_iou"] for a in arms])}
+
+
+def _c2(arms, with_dlogit):
+    hits = [a for a in arms if a["cand_best_iou"] >= IOU_CROSS]
+    c = {"n": len(arms), "hits": len(hits), "rate": _rate(len(hits), len(arms)),
+         "rank_of_hit_median": _median([a["cand_best_rank"] for a in hits]),
+         "rank_of_hit_list": sorted(a["cand_best_rank"] for a in hits),
+         "n_cand_median": _median([a["n_cand"] for a in arms]),
+         "n_cand_list": [a["n_cand"] for a in arms],
+         "any_query_hits": sum(a["all_best_iou"] >= IOU_CROSS for a in arms),
+         "top1_is_hit": sum(a["cand_top1_iou"] >= IOU_CROSS for a in arms),
+         "cand_best_iou_median": _median([a["cand_best_iou"] for a in arms])}
+    if with_dlogit:
+        c["max_abs_dlogit_vs_base_min"] = min(a["max_abs_dlogit_vs_base"] for a in arms)
+    return c
+
+
+def _paired(rs, key_a, key_b, fill_key="fill_ratio", tol=0.05):
+    """Pair-level comparison of arm key_a against arm key_b (cand_best_iou), split by box fill ratio."""
+    def block(rows):
+        d = [r["arms"][key_a]["cand_best_iou"] - r["arms"][key_b]["cand_best_iou"] for r in rows]
+        return {"n": len(rows), "d_median": _median(d),
+                "n_up": sum(x > tol for x in d), "n_down": sum(x < -tol for x in d),
+                f"hits_{key_b}": sum(r["arms"][key_b]["cand_best_iou"] >= IOU_CROSS for r in rows),
+                f"hits_{key_a}": sum(r["arms"][key_a]["cand_best_iou"] >= IOU_CROSS for r in rows),
+                "d_list": [round(x, 4) for x in d]}
+    out = {"all": block(rs)}
+    lo = [r for r in rs if r.get(fill_key) is not None and r[fill_key] < 0.5]
+    hi = [r for r in rs if r.get(fill_key) is not None and r[fill_key] >= 0.5]
+    out["fill_lt_0.5"] = block(lo)
+    out["fill_ge_0.5"] = block(hi)
+    return out
+
+
+def compare_with_reference(records, reference, arms=("same", "slot", "base")):
+    """Determinism check: the recomputed box arms against E2-0's stored pairs (same scene/cam/obj)."""
+    ref = {(r["scene"], r["cam"], r["obj"]): r for r in reference}
+    n = n_eq = 0
+    max_diff = 0.0
+    for r in records:
+        q = ref.get((r["scene"], r["cam"], r["obj"]))
+        if q is None:
+            continue
+        n += 1
+        diff = max(abs(r["arms"][a]["cand_best_iou"] - q["arms"][a]["cand_best_iou"]) for a in arms)
+        same_n = all(r["arms"][a]["n_cand"] == q["arms"][a]["n_cand"] for a in arms)
+        max_diff = max(max_diff, diff)
+        n_eq += int(diff == 0.0 and same_n)
+    return {"n_compared": n, "n_equal": n_eq, "max_abs_diff_cand_best_iou": round(max_diff, 4), "arms": list(arms)}
+
+
+def summarize(records, thresholds, variant="e2_0", reference=None):
     """Rates for the verdict and the tables.  Pure (plain dicts in, plain dicts out)."""
+    spec = VARIANTS[variant]
     out = {}
     for tag in ("registered", "pinhole_supp"):
         rs = [r for r in records if r["set"] == tag]
         if not rs:
             continue
         s = {"n_pairs": len(rs)}
-        same = [r["arms"]["same"] for r in rs]
-        s["c1_same_image"] = {
-            "n": len(same),
-            "hits": sum(a["cand_best_iou"] > IOU_SAME for a in same),
-            "rate": _rate(sum(a["cand_best_iou"] > IOU_SAME for a in same), len(same)),
-            "any_query_hits": sum(a["all_best_iou"] > IOU_SAME for a in same),
-            "n_cand_median": _median([a["n_cand"] for a in same]),
-        }
-        for arm in ("slot", "replace", "base"):
-            arms = [r["arms"][arm] for r in rs]
-            hits = [a for a in arms if a["cand_best_iou"] >= IOU_CROSS]
-            s[f"c2_{arm}"] = {
-                "n": len(arms),
-                "hits": len(hits),
-                "rate": _rate(len(hits), len(arms)),
-                "rank_of_hit_median": _median([a["cand_best_rank"] for a in hits]),
-                "rank_of_hit_list": sorted(a["cand_best_rank"] for a in hits),
-                "n_cand_median": _median([a["n_cand"] for a in arms]),
-                "n_cand_list": [a["n_cand"] for a in arms],
-                "any_query_hits": sum(a["all_best_iou"] >= IOU_CROSS for a in arms),
-                "top1_is_hit": sum(a["cand_top1_iou"] >= IOU_CROSS for a in arms),
-                "cand_best_iou_median": _median([a["cand_best_iou"] for a in arms]),
-            }
-            if arm != "base":
-                s[f"c2_{arm}"]["max_abs_dlogit_vs_base_min"] = min(
-                    a["max_abs_dlogit_vs_base"] for a in arms)
+        for v in spec["exemplars"]:
+            sk, lk = arm_keys(v)
+            s["c1_same_image" if v == "box" else f"c1_{sk}"] = _c1([r["arms"][sk] for r in rs])
+        slot_arms = [arm_keys(v)[1] for v in spec["exemplars"]] + list(spec["extra"]) + ["base"]
+        for arm in slot_arms:
+            s[f"c2_{arm}"] = _c2([r["arms"][arm] for r in rs], with_dlogit=(arm != "base"))
+        for v in spec["exemplars"]:
+            if v != "box":
+                s[f"paired_slot_{v}_vs_box"] = _paired(rs, arm_keys(v)[1], "slot")
+                s[f"paired_same_{v}_vs_box"] = _paired(rs, arm_keys(v)[0], "same")
+        fills = [r["fill_ratio"] for r in rs if r.get("fill_ratio") is not None]
+        if fills:
+            s["fill_ratio_median"] = _median(fills)
         out[tag] = s
     reg = out.get("registered")
     if reg:
-        c1, c2 = reg["c1_same_image"]["rate"], reg["c2_slot"]["rate"]
+        vk = spec["verdict"]
+        sk, lk = arm_keys(vk)
+        c1 = reg["c1_same_image" if vk == "box" else f"c1_{sk}"]["rate"]
+        c2 = reg[f"c2_{lk}"]["rate"]
         if c1 < KILL_SAME:
-            verdict = "discard: criterion 1 (same-image exemplar) below 0.8"
+            verdict = f"discard: criterion 1 (same-image exemplar, arm {vk}) below {KILL_SAME}"
         elif c2 < KILL_CROSS:
-            verdict = "discard: criterion 2 (cross-view slot injection) below 0.7"
+            verdict = f"discard: criterion 2 (cross-view slot injection, arm {vk}) below {KILL_CROSS}"
         else:
-            verdict = "pass: proceed to S1-E2"
-        out["verdict"] = {"criterion_1_rate": c1, "criterion_2_rate": c2, "kill_rules": {
-            "c1_min": KILL_SAME, "c2_min": KILL_CROSS}, "verdict": verdict}
+            verdict = f"pass: proceed to S1-E2 with the {vk} exemplar"
+        out["verdict"] = {"arm": vk, "criterion_1_rate": c1, "criterion_2_rate": c2,
+                          "kill_rules": {"c1_min": KILL_SAME, "c2_min": KILL_CROSS}, "verdict": verdict}
+    if reference is not None:
+        out["box_vs_e2_0_reference"] = compare_with_reference(records, reference)
     out["thresholds"] = thresholds
     return out
 
@@ -190,6 +271,12 @@ class ExemplarInjector:
     mode None      pass-through; the geometry-encoder hook records its output in `captured`
     mode "slot"    `_encode_prompt` receives the stored exemplar as visual_prompt_embed/mask
     mode "replace" the geometry encoder's output is replaced by the stored exemplar
+
+    Exemplar variants (S1-E2-0', docs/stage1-E2-0b-prereg.md) act only while `capturing`:
+    "box"      untouched package path
+    "mask"     `_encode_boxes` pools the features inside the c_ini mask only (masked_roi_pool, normalised)
+    "mask0"    `_encode_boxes` pools feats * m without normalisation
+    "maskimg"  a forward pre-hook zeroes the last-level feature grid outside the mask
     """
 
     def __init__(self, detector):
@@ -198,9 +285,18 @@ class ExemplarInjector:
         self.embed = None
         self.mask = None
         self.captured = None
+        self.exemplar = "box"
+        self.capturing = False
+        self.gt = None                  # c_ini ground-truth mask, bool [H0, W0], for the mask variants
+        self._grid_cache = {}
+        self.selftest = None            # max |mask(m=1) - box| token difference, set on the first mask capture
         self._orig_encode_prompt = detector._encode_prompt          # bound Sam3Image method
         detector._encode_prompt = self._encode_prompt                # shadows it on the instance
-        self._hook = detector.geometry_encoder.register_forward_hook(self._geo_hook)
+        geo = detector.geometry_encoder
+        self._orig_encode_boxes = geo._encode_boxes                  # bound SequenceGeometryEncoder method
+        geo._encode_boxes = self._encode_boxes                       # shadows it on the instance
+        self._hook = geo.register_forward_hook(self._geo_hook)
+        self._pre = geo.register_forward_pre_hook(self._geo_pre_hook, with_kwargs=True)
 
     def _encode_prompt(self, backbone_out, find_input, geometric_prompt,
                        visual_prompt_embed=None, visual_prompt_mask=None,
@@ -220,13 +316,124 @@ class ExemplarInjector:
         self.captured = output          # (geo_feats [seq, bs, C], geo_masks [bs, seq])
         return None
 
+    def grid_mask(self, H, W, device, dtype):
+        key = (H, W)
+        if key not in self._grid_cache:
+            self._grid_cache[key] = feat_mask_from_gt(self.gt, H, W)
+        return self._grid_cache[key].to(device=device, dtype=dtype)
+
+    def _geo_pre_hook(self, module, args, kwargs):
+        """maskimg: the last-level feature grid [H*W, B, C] is zeroed outside the mask (new tensors only)."""
+        if not (self.capturing and self.exemplar == "maskimg"):
+            return None
+        assert not args, "the package calls the geometry encoder with keyword arguments"
+        feats = list(kwargs["img_feats"])
+        H, W = kwargs["img_sizes"][-1]
+        f = feats[-1]
+        assert f.shape[0] == H * W and f.shape[1] == 1
+        m = self.grid_mask(H, W, f.device, f.dtype).reshape(H * W, 1, 1)
+        feats[-1] = f * m
+        kwargs = dict(kwargs)
+        kwargs["img_feats"] = feats
+        return (args, kwargs)
+
+    def _encode_boxes(self, boxes, boxes_mask, boxes_labels, img_feats):
+        if not (self.capturing and self.exemplar in ("mask", "mask0")):
+            return self._orig_encode_boxes(boxes, boxes_mask, boxes_labels, img_feats)
+        import torch
+        enc = self.detector.geometry_encoder
+        H, W = img_feats.shape[-2:]
+        m = self.grid_mask(H, W, img_feats.device, img_feats.dtype)
+        if self.selftest is None and self.exemplar == "mask":
+            ref, _ = self._orig_encode_boxes(boxes, boxes_mask, boxes_labels, img_feats)
+            got, _ = masked_encode_boxes(enc, boxes, boxes_mask, boxes_labels, img_feats,
+                                         torch.ones_like(m), normalize=True, fill_min=FILL_MIN)
+            self.selftest = float((got - ref).abs().max())
+            assert torch.allclose(got, ref, atol=1e-5, rtol=1e-4), f"mask(m=1) != box token: {self.selftest}"
+        return masked_encode_boxes(enc, boxes, boxes_mask, boxes_labels, img_feats, m,
+                                   normalize=(self.exemplar == "mask"), fill_min=FILL_MIN)
+
+    def begin_capture(self, exemplar, gt=None):
+        assert exemplar in ("box", "mask", "mask0", "maskimg"), exemplar
+        self.exemplar, self.capturing, self.mode = exemplar, True, None
+        if gt is not None and gt is not self.gt:
+            self.gt, self._grid_cache = gt, {}
+
+    def end_capture(self):
+        self.capturing = False
+        self.exemplar = "box"
+
     def store(self):
         feats, masks = self.captured
         self.embed, self.mask = feats.detach().clone(), masks.detach().clone()
 
     def remove(self):
         self._hook.remove()
+        self._pre.remove()
         del self.detector._encode_prompt
+        del self.detector.geometry_encoder._encode_boxes
+
+
+def feat_mask_from_gt(gt_bool, H, W):
+    """Coverage of the ground-truth mask on the H x W feature grid (area average), float [1, 1, H, W].
+
+    The package resizes every frame to image_size x image_size with a plain cv2.resize (no
+    padding, no aspect preservation), so an area resize of the full-frame mask is consistent.
+    """
+    import torch
+    import torch.nn.functional as F
+    g = gt_bool.float()[None, None]
+    return F.interpolate(g, size=(int(H), int(W)), mode="area")
+
+
+def masked_roi_pool(img_feats, m, rois, roi_size, normalize, fill_min):
+    """ROI-align of the features inside the mask.
+
+    img_feats [B, C, H, W], m [B, 1, H, W] coverage in [0, 1], rois: list of B tensors [n_b, 4] (xyxy, grid px).
+    normalize=True : per-bin mean over the mask, ROI-align(feats*m) / ROI-align(m); bins whose coverage is
+                     below fill_min take the object's coverage-weighted mean feature (so the 7x7 grid the
+                     projection conv sees is object appearance everywhere, at the box token's magnitude)
+    normalize=False: ROI-align(feats*m) as is (the naive "zero outside the mask")
+    Same roi_align defaults as the package (spatial_scale 1, sampling_ratio -1, aligned False).
+    m == 1 everywhere reproduces torchvision.ops.roi_align(img_feats, rois, roi_size) exactly.
+    """
+    import torch
+    import torchvision
+    num = torchvision.ops.roi_align(img_feats * m, rois, roi_size)            # [sum n_b, C, r, r]
+    if not normalize:
+        return num
+    den = torchvision.ops.roi_align(m, rois, roi_size)                        # [sum n_b, 1, r, r]
+    pooled = num / den.clamp(min=1e-6)
+    fill = (img_feats * m).sum((2, 3)) / m.sum((2, 3)).clamp(min=1e-6)        # [B, C]
+    counts = [int(r.shape[0]) for r in rois]
+    fill = torch.cat([fill[b:b + 1].expand(n, -1) for b, n in enumerate(counts)], 0)[:, :, None, None]
+    return torch.where(den < fill_min, fill.expand_as(pooled), pooled)
+
+
+def masked_encode_boxes(enc, boxes, boxes_mask, boxes_labels, img_feats, m, normalize, fill_min):
+    """`SequenceGeometryEncoder._encode_boxes` (geometry_encoders.py 632-681) with the ROI pooling
+    replaced by masked_roi_pool; direct projection, box position encoding and label embedding unchanged."""
+    import torch
+    from sam3.model.box_ops import box_cxcywh_to_xyxy
+    assert enc.boxes_direct_project is not None and enc.boxes_pool_project is not None \
+        and enc.boxes_pos_enc_project is not None, "the shipped encoder has all three box paths"
+    n_boxes, bs = boxes.shape[:2]
+    boxes_embed = enc.boxes_direct_project(boxes)
+    H, W = img_feats.shape[-2:]
+    boxes_xyxy = box_cxcywh_to_xyxy(boxes)
+    scale = torch.tensor([W, H, W, H], dtype=boxes_xyxy.dtype, device=boxes_xyxy.device).view(1, 1, 4)
+    rois = (boxes_xyxy * scale).float().transpose(0, 1).unbind(0)
+    assert tuple(m.shape) == (img_feats.shape[0], 1, H, W), (tuple(m.shape), tuple(img_feats.shape))
+    sampled = masked_roi_pool(img_feats, m.to(img_feats.dtype), rois, enc.roi_size, normalize, fill_min)
+    assert list(sampled.shape) == [bs * n_boxes, enc.d_model, enc.roi_size, enc.roi_size]
+    proj = enc.boxes_pool_project(sampled).view(bs, n_boxes, enc.d_model).transpose(0, 1)
+    boxes_embed = boxes_embed + proj
+    cx, cy, w, h = boxes.unbind(-1)
+    pe = enc.pos_enc.encode_boxes(cx.flatten(), cy.flatten(), w.flatten(), h.flatten())
+    pe = pe.view(boxes.shape[0], boxes.shape[1], pe.shape[-1])
+    boxes_embed = boxes_embed + enc.boxes_pos_enc_project(pe)
+    type_embed = enc.label_embed(boxes_labels.long())
+    return type_embed + boxes_embed, boxes_mask
 
 
 def box_prompt_from_mask(gt, device):
@@ -297,7 +504,8 @@ def score_detections(out, gt_bool, model, chunk=25):
     return rec, probs
 
 
-def run_scene(model, inj, scene, rows, cfg, data_root, log):
+def run_scene(model, inj, scene, rows, cfg, data_root, log, variant="e2_0"):
+    spec = VARIANTS[variant]
     import cv2
     import numpy as np
     import torch
@@ -344,37 +552,47 @@ def run_scene(model, inj, scene, rows, cfg, data_root, log):
         gt_tgt = gts[cam] == obj
         assert int(gt_tgt.sum()) == r["gt_px"], (scene, cam, obj, int(gt_tgt.sum()), r["gt_px"])
         prompt, box = box_prompt_from_mask(gt_ref, device)
-        # (1) c_ini box -> c_ini detections; the geometry-encoder hook captures the exemplar
-        inj.mode = None
-        out = detector.forward_grounding(bo_ref if bo_ref is not None else fresh(),
-                                         ib.find_inputs[0], None, prompt)
-        bo_ref = out["prev_encoder_out"]["backbone_out"]
-        inj.store()
-        same, _ = score_detections(out, gt_ref, model)
-        shapes = {"geo_feats": list(inj.embed.shape), "geo_masks": list(inj.mask.shape),
-                  "txt_tokens": int(text_outputs["language_features"].shape[0])}
-        # (2) exemplar -> other view
-        arms = {"same": same}
+        fill = int(gt_ref.sum()) / float((box[2] - box[0]) * (box[3] - box[1]))
         empty = state["constants"]["empty_geometric_prompt"]
         base, base_p = score_detections(base_out[cam], gt_tgt, model)
-        arms["base"] = base
-        for mode in ("slot", "replace"):
-            inj.mode = mode
-            out2 = detector.forward_grounding(bo_cache[cam], ib.find_inputs[cam_idx[cam]], None, empty)
-            rec, p2 = score_detections(out2, gt_tgt, model)
-            rec["max_abs_dlogit_vs_base"] = round(float(
-                (out2["pred_logits"][0, :, 0] - base_out[cam]["pred_logits"][0, :, 0]).abs().max()), 4)
-            arms[mode] = rec
-            del out2
-        inj.mode = None
+        arms, shapes = {"base": base}, None
+        for v in spec["exemplars"]:
+            sk, lk = arm_keys(v)
+            # (1) c_ini exemplar -> c_ini detections; the geometry-encoder hook captures the exemplar token
+            inj.begin_capture(v, gt_ref)
+            out = detector.forward_grounding(bo_ref if bo_ref is not None else fresh(),
+                                             ib.find_inputs[0], None, prompt)
+            bo_ref = out["prev_encoder_out"]["backbone_out"]
+            inj.store()
+            inj.end_capture()
+            arms[sk], _ = score_detections(out, gt_ref, model)
+            if shapes is None:
+                shapes = {"geo_feats": list(inj.embed.shape), "geo_masks": list(inj.mask.shape),
+                          "txt_tokens": int(text_outputs["language_features"].shape[0])}
+            del out
+            # (2) exemplar -> other view
+            for mode in ("slot",) + (tuple(spec["extra"]) if v == "box" else ()):
+                inj.mode = mode
+                out2 = detector.forward_grounding(bo_cache[cam], ib.find_inputs[cam_idx[cam]], None, empty)
+                rec, p2 = score_detections(out2, gt_tgt, model)
+                rec["max_abs_dlogit_vs_base"] = round(float(
+                    (out2["pred_logits"][0, :, 0] - base_out[cam]["pred_logits"][0, :, 0]).abs().max()), 4)
+                arms[lk if mode == "slot" else mode] = rec
+                del out2
+            inj.mode = None
         rec = dict(r)
         rec.update({"ref_cam": ref_cam, "ref_gt_px": int(gt_ref.sum()), "exemplar_box_xyxy": box,
-                    "orig_hw": list(hw), "prompt_shapes": shapes, "arms": arms})
+                    "fill_ratio": round(fill, 4), "orig_hw": list(hw), "prompt_shapes": shapes,
+                    "selftest_mask_eq_box_maxdiff": inj.selftest, "arms": arms})
         results.append(rec)
-        log(f"  {scene:20s} obj {obj:3d} {ref_cam}->{cam}  same {same['cand_best_iou']:.3f}/{same['n_cand']:2d}  "
-            f"slot {arms['slot']['cand_best_iou']:.3f} r{arms['slot']['cand_best_rank']}/{arms['slot']['n_cand']:2d}  "
-            f"repl {arms['replace']['cand_best_iou']:.3f} r{arms['replace']['cand_best_rank']}/{arms['replace']['n_cand']:2d}  "
-            f"base {base['cand_best_iou']:.3f}/{base['n_cand']:2d}  dlogit {arms['slot']['max_abs_dlogit_vs_base']:.2f}")
+        parts = []
+        for v in spec["exemplars"]:
+            sk, lk = arm_keys(v)
+            parts.append(f"{v} {arms[sk]['cand_best_iou']:.2f}/{arms[lk]['cand_best_iou']:.2f}"
+                         f"r{arms[lk]['cand_best_rank']}")
+        log(f"  {scene:20s} obj {obj:3d} {ref_cam}->{cam} fill {fill:.2f}  " + "  ".join(parts)
+            + (f"  repl {arms['replace']['cand_best_iou']:.2f}" if "replace" in arms else "")
+            + f"  base {base['cand_best_iou']:.2f}/{base['n_cand']}")
     del base_out, bo_cache, bo_ref, state, frames, gts
     torch.cuda.empty_cache()
     return results
@@ -384,13 +602,18 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--set", choices=("registered", "pinhole_supp", "all"), default="all")
     ap.add_argument("--scenes", default="", help="comma-separated subset (debug)")
-    ap.add_argument("--out", default=OUT)
-    ap.add_argument("--parts-dir", default=os.path.join(REPO, "MVSeed", "runs", "e2_0_spike_parts"))
+    ap.add_argument("--variant", choices=sorted(VARIANTS), default="e2_0",
+                    help="e2_0 = box exemplar (S1-E2-0); e2_0b = box + mask exemplars (S1-E2-0')")
+    ap.add_argument("--out", default=None, help="default MVSeed/runs/<variant out>")
+    ap.add_argument("--parts-dir", default=None)
     ap.add_argument("--data-root", default=DATA)
     ap.add_argument("--config", default=CONFIG)
     ap.add_argument("--overwrite", action="store_true", help="recompute scenes that have a part file")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+    spec = VARIANTS[args.variant]
+    args.out = args.out or os.path.join(REPO, "MVSeed", "runs", spec["out"])
+    args.parts_dir = args.parts_dir or os.path.join(REPO, "MVSeed", "runs", spec["parts"])
 
     cfg = json.load(open(args.config, encoding="utf-8"))
     n0, f0 = json.load(open(N0)), json.load(open(F0))
@@ -434,17 +657,23 @@ def main():
                     records += got
                     continue
             t1 = time.time()
-            res = run_scene(model, inj, s, rs, cfg, args.data_root, log)
+            res = run_scene(model, inj, s, rs, cfg, args.data_root, log, variant=args.variant)
             json.dump(res, open(part, "w"), indent=1)
             log(f"  {s}: {len(res)} pairs in {time.time() - t1:.0f}s")
             records += res
     inj.remove()
+    if args.variant != "e2_0" and inj.selftest is not None:
+        print(f"self-test mask(m=1) vs box token: max |diff| = {inj.selftest:.2e}", flush=True)
 
     thresholds = {"score_threshold_detection": model.score_threshold_detection,
                   "det_nms_thresh": model.det_nms_thresh, "iou_same": IOU_SAME, "iou_cross": IOU_CROSS,
                   "min_gt_px": MIN_GT_PX, "text_id": "TEXT_ID_FOR_VISUAL ('visual')",
-                  "autocast": "none (detector path in the mainline runs without autocast)"}
-    summary = summarize(records, thresholds)
+                  "autocast": "none (detector path in the mainline runs without autocast)",
+                  "fill_min": FILL_MIN}
+    reference = None
+    if args.variant != "e2_0" and os.path.exists(OUT):
+        reference = json.load(open(OUT))["pairs"]
+    summary = summarize(records, thresholds, variant=args.variant, reference=reference)
     try:
         head = subprocess.check_output(["git", "-C", REPO, "rev-parse", "HEAD"], text=True).strip()
     except Exception:
@@ -456,34 +685,57 @@ def main():
            "selection_rule": "N0 (no F0), gt_px>=2000, other annotated cam; per scene 4 smallest view_distance "
                              "(tie cam,obj); 5 scenes by smallest view_distance (tie scene name); "
                              "pinhole_supp = next 5 pinhole scenes",
+           "variant": args.variant, "prereg": spec["prereg"],
            "arms": {"same": "c_ini GT box as geometric prompt -> c_ini detections",
                     "slot": "c_ini geo_feats injected as visual_prompt_embed on the other view (registered)",
                     "replace": "c_ini geo_feats replace the other view's geometry-encoder output (exploratory)",
-                    "base": "other view with no exemplar (control)"},
+                    "base": "other view with no exemplar (control)",
+                    "same_mask/slot_mask": "exemplar token pooled inside the c_ini mask (normalised, object-mean fill)",
+                    "same_mask0/slot_mask0": "feats*m pooled without normalisation",
+                    "same_maskimg/slot_maskimg": "feature grid zeroed outside the mask before the encoder"},
+           "selftest_mask_eq_box_maxdiff": inj.selftest,
            "summary": summary, "pairs": records}
     json.dump(doc, open(args.out, "w"), indent=1)
-    print_summary(summary)
+    print_summary(summary, args.variant)
     print(f"wrote {args.out}  ({len(records)} pairs, {time.time() - t0:.0f}s)")
 
 
-def print_summary(summary):
+def print_summary(summary, variant="e2_0"):
+    spec = VARIANTS[variant]
     for tag in ("registered", "pinhole_supp"):
         s = summary.get(tag)
         if not s:
             continue
-        c1 = s["c1_same_image"]
-        print(f"\n[{tag}] n={s['n_pairs']}")
-        print(f"  (1) same-image  IoU>{IOU_SAME}: {c1['hits']}/{c1['n']} = {c1['rate']}  "
-              f"(any of 200 queries: {c1['any_query_hits']}; candidates median {c1['n_cand_median']})")
-        for arm in ("slot", "replace", "base"):
+        print(f"\n[{tag}] n={s['n_pairs']}  fill_ratio median {s.get('fill_ratio_median')}")
+        for v in spec["exemplars"]:
+            sk, _ = arm_keys(v)
+            c1 = s["c1_same_image" if v == "box" else f"c1_{sk}"]
+            print(f"  (1) same-image {v:8s} IoU>{IOU_SAME}: {c1['hits']}/{c1['n']} = {c1['rate']}  "
+                  f"(any of 200 queries: {c1['any_query_hits']}; candidates median {c1['n_cand_median']}; "
+                  f"best IoU median {c1['cand_best_iou_median']})")
+        slot_arms = [arm_keys(v)[1] for v in spec["exemplars"]] + list(spec["extra"]) + ["base"]
+        for arm in slot_arms:
             c = s[f"c2_{arm}"]
             extra = f"  dlogit_min {c['max_abs_dlogit_vs_base_min']}" if arm != "base" else ""
-            print(f"  (2) {arm:8s} IoU>={IOU_CROSS}: {c['hits']}/{c['n']} = {c['rate']}  rank med {c['rank_of_hit_median']} "
+            print(f"  (2) {arm:12s} IoU>={IOU_CROSS}: {c['hits']}/{c['n']} = {c['rate']}  rank med {c['rank_of_hit_median']} "
                   f"{c['rank_of_hit_list']}  n_cand med {c['n_cand_median']}  top1-hit {c['top1_is_hit']}  "
-                  f"any-query {c['any_query_hits']}{extra}")
+                  f"any-query {c['any_query_hits']}  best IoU med {c['cand_best_iou_median']}{extra}")
+        for v in spec["exemplars"]:
+            if v == "box":
+                continue
+            for which in ("slot", "same"):
+                pr = s[f"paired_{which}_{v}_vs_box"]
+                a, b = pr["fill_lt_0.5"], pr["fill_ge_0.5"]
+                print(f"      {which}_{v} - box: d med {pr['all']['d_median']:+.3f} up {pr['all']['n_up']} down {pr['all']['n_down']}"
+                      f" | fill<0.5 n{a['n']} d med {a['d_median']} hits box {a[f'hits_{which}']}->{a[f'hits_{arm_keys(v)[0] if which == 'same' else arm_keys(v)[1]}']}"
+                      f" | fill>=0.5 n{b['n']} d med {b['d_median']} hits box {b[f'hits_{which}']}->{b[f'hits_{arm_keys(v)[0] if which == 'same' else arm_keys(v)[1]}']}")
+    ref = summary.get("box_vs_e2_0_reference")
+    if ref:
+        print(f"\nbox arms vs E2-0 stored pairs: {ref['n_equal']}/{ref['n_compared']} identical, "
+              f"max |diff| cand_best_iou {ref['max_abs_diff_cand_best_iou']}")
     v = summary.get("verdict")
     if v:
-        print(f"\nverdict: (1)={v['criterion_1_rate']}  (2 slot)={v['criterion_2_rate']}  -> {v['verdict']}")
+        print(f"\nverdict (arm {v['arm']}): (1)={v['criterion_1_rate']}  (2)={v['criterion_2_rate']}  -> {v['verdict']}")
 
 
 if __name__ == "__main__":
