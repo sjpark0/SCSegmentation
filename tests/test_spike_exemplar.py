@@ -144,3 +144,97 @@ def test_masked_encode_boxes_matches_reference_with_full_mask():
     m[:, :, 5:7, 5:7] = 1.0
     got_m, _ = spike.masked_encode_boxes(enc, boxes, None, labels, feats, m, True, 0.05)
     assert not torch.allclose(got_m, ref, atol=1e-3)
+
+
+# ----------------------------------------------------------------------------- S1-E2-0'' (points / negatives)
+def _rec_c(i, box_same, box_slot, pts_same, pts_slot, neg_same, neg_slot, fill=0.5, tag="registered"):
+    arms = {"same": _arm(box_same), "slot": _arm(box_slot), "base": _arm(0.0, n_cand=0)}
+    for v, a, b in (("pts", pts_same, pts_slot), ("neg", neg_same, neg_slot), ("ptsonly", pts_same, pts_slot),
+                    ("negnc", neg_same, neg_slot), ("negall", neg_same, neg_slot), ("ptsneg", neg_same, neg_slot)):
+        arms[f"same_{v}"], arms[f"slot_{v}"] = _arm(a), _arm(b)
+    return {"set": tag, "scene": f"S{i}", "cam": "c", "obj": i, "fill_ratio": fill, "arms": arms}
+
+
+def test_summarize_e2_0c_verdict_per_arm_and_adoption_rule():
+    # box: c1 4/4, c2 3/4 (0.75).  pts: c1 4/4, c2 4/4, no pair worse -> adopt.
+    # neg: c1 3/4 (below box) although c2 4/4 -> not adopted.
+    recs = [_rec_c(1, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9),
+            _rec_c(2, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9),
+            _rec_c(3, 0.9, 0.2, 0.9, 0.8, 0.9, 0.8),
+            _rec_c(4, 0.9, 0.9, 0.9, 0.9, 0.5, 0.9)]
+    s = spike.summarize(recs, {}, variant="e2_0c")
+    v = s["verdicts"]
+    assert set(v) == {"pts", "neg"} and s["verdict"] is v["pts"]
+    assert v["pts"]["verdict"].startswith("pass") and v["pts"]["adopt_over_box"] is True
+    assert v["neg"]["verdict"].startswith("discard: criterion 1") and v["neg"]["adopt_over_box"] is False
+    assert s["registered"]["c2_slot_pts"]["hits"] == 4 and s["registered"]["c1_same_neg"]["hits"] == 3
+    # a pair-level loss (median d < 0) blocks adoption even when the rates pass
+    recs2 = [_rec_c(i, 0.9, 0.9, 0.9, 0.8, 0.9, 0.9) for i in range(4)]
+    s2 = spike.summarize(recs2, {}, variant="e2_0c")
+    assert s2["verdicts"]["pts"]["verdict"].startswith("pass") and s2["verdicts"]["pts"]["adopt_over_box"] is False
+
+
+def test_negative_boxes_modes_and_order():
+    gt = torch.zeros(100, 100, dtype=torch.long)
+    gt[:, :] = 9                     # floor: its box contains everything
+    gt[40:60, 40:60] = 1             # target
+    gt[50:70, 55:80] = 2             # partial overlap with the target box
+    gt[10:15, 10:15] = 3             # far away, no overlap
+    gt[45:48, 45:48] = 4             # inside the target box (small)
+    box = spike.tight_box_xyxy(gt == 1)
+    assert box == (40, 40, 60, 60)
+    ov = spike.negative_boxes(gt, 1, box, mode="overlap")
+    ids = [v for v, _ in ov]
+    assert ids[0] == 9 and set(ids) == {9, 2, 4}          # largest intersection first; 3 excluded
+    part = spike.negative_boxes(gt, 1, box, mode="partial")
+    assert [v for v, _ in part] == [2, 4]                 # the containing floor is skipped
+    allb = spike.negative_boxes(gt, 1, box, mode="all", max_neg=2)
+    assert len(allb) == 2 and allb[0][0] == 4             # nearest centre first, capped
+    tiny = spike.negative_boxes(gt, 1, box, mode="overlap", min_overlap=0.5)
+    assert [v for v, _ in tiny] == [9, 2]                 # 4 (9 px) is below 50% of the box area
+
+
+def test_interior_points_are_inside_and_spread():
+    cv2 = pytest.importorskip("cv2")
+    gt = torch.zeros(60, 80, dtype=torch.bool)
+    gt[10:50, 20:70] = True
+    pts = spike.interior_points(gt, k=8, interior_px=3)
+    assert pts.shape == (8, 2)
+    for x, y in pts:
+        assert gt[y, x] and 13 <= y <= 46 and 23 <= x <= 66      # inside and >= 3 px from the boundary
+    assert len({(int(x), int(y)) for x, y in pts}) == 8            # distinct
+    xs, ys = pts[:, 0], pts[:, 1]
+    assert xs.max() - xs.min() > 30 and ys.max() - ys.min() > 20   # spread over the rectangle
+    small = torch.zeros(20, 20, dtype=torch.bool); small[5:8, 5:8] = True
+    p2 = spike.interior_points(small, k=8, interior_px=3)         # interior too thin -> whole mask, <= 9 px
+    assert 1 <= len(p2) <= 8 and all(small[y, x] for x, y in p2)
+
+
+def test_exemplar_prompt_formats():
+    pytest.importorskip("cv2")
+    try:
+        from sam3.model.geometry_encoders import Prompt  # noqa: F401
+    except ImportError:
+        pytest.skip("sam3 not importable")
+    gt = torch.zeros(100, 100, dtype=torch.long)
+    gt[:, :] = 9; gt[40:60, 40:60] = 1; gt[50:70, 55:80] = 2
+    for variant, n_box, labels, n_pts in (("box", 1, [1], 0), ("pts", 1, [1], 8), ("ptsonly", 0, [], 8),
+                                          ("neg", 3, [1, 0, 0], 0), ("negnc", 2, [1, 0], 0), ("negall", 3, [1, 0, 0], 0),
+                                          ("ptsneg", 3, [1, 0, 0], 8)):
+        pr, meta = spike.exemplar_prompt(variant, gt, 1, "cpu")
+        if n_box:
+            assert list(pr.box_embeddings.shape) == [n_box, 1, 4] and pr.box_labels[:, 0].tolist() == labels
+            assert pr.box_mask.shape == (1, n_box) and not pr.box_mask.any()
+            assert (pr.box_embeddings >= 0).all() and (pr.box_embeddings <= 1).all()
+        else:
+            assert pr.box_embeddings is None or pr.box_embeddings.shape[0] == 0
+        if n_pts:
+            assert list(pr.point_embeddings.shape) == [n_pts, 1, 2] and pr.point_labels.shape == (n_pts, 1)
+            assert (pr.point_labels == 1).all() and (pr.point_embeddings >= 0).all() and (pr.point_embeddings <= 1).all()
+        else:
+            assert pr.point_embeddings is None or pr.point_embeddings.shape[0] == 0
+        assert meta["box"] == [40, 40, 60, 60]
+    # the positive box of `box` equals E2-0's box_prompt_from_mask
+    pr_box, _ = spike.exemplar_prompt("box", gt, 1, "cpu")
+    pr_ref, box = spike.box_prompt_from_mask(gt == 1, "cpu")
+    assert torch.allclose(pr_box.box_embeddings, pr_ref.box_embeddings) and box == [40, 40, 60, 60]

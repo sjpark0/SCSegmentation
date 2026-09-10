@@ -60,11 +60,22 @@ cross-attention context are unchanged.  Per pair every exemplar variant gets its
 same-image (criterion 1) and slot-injection (criterion 2) measurement; the verdict of
 variant e2_0b is taken on `mask` alone.
 
+S1-E2-0'' (docs/stage1-E2-0c-prereg.md, --variant e2_0c): mask information through the prompt paths the
+shipped weights were trained with, no encoder change -- `exemplar_prompt` builds, per variant, a geometric
+prompt of positive/negative boxes and positive points (Prompt(box_embeddings, box_labels, point_embeddings,
+point_labels); labels 1 = positive, 0 = negative, exactly the package's `add_prompt` format):
+  pts      positive box + K_POINTS positive points inside the mask (farthest-point sampling on the interior)
+  neg      positive box + negative boxes = other c_ini objects whose tight box overlaps the target box
+  ptsonly / negall / ptsneg   exploratory (points without the box; all other objects as negatives; both)
+The verdict of variant e2_0c is taken per registered arm (pts, neg) with the E2-0 kill rules plus an
+adoption rule against the box arm (summarize()).
+
     docker run --rm --gpus all --shm-size=32g --memory=90g --memory-swap=90g \\
       --user $(id -u):$(id -g) -v /:/host -w /host$PWD \\
       -e HF_HOME=/host$PWD/SCSam3/hf_cache -e HF_HUB_OFFLINE=1 scsam3 \\
       python MVSeed/spike_exemplar.py --set registered          # then --set all
     python MVSeed/spike_exemplar.py --variant e2_0b --set all   # S1-E2-0' (mask exemplar)
+    python MVSeed/spike_exemplar.py --variant e2_0c --set all   # S1-E2-0'' (points / negatives)
     python MVSeed/spike_exemplar.py --dry-run                   # selection only, no torch
 """
 import argparse
@@ -97,7 +108,17 @@ VARIANTS = {
                  out="e2_0_spike.json", parts="e2_0_spike_parts", prereg="docs/stage1-E2-0-prereg.md"),
     "e2_0b": dict(exemplars=("box", "mask", "mask0", "maskimg"), extra=(), verdict="mask",
                   out="e2_0b_spike.json", parts="e2_0b_spike_parts", prereg="docs/stage1-E2-0b-prereg.md"),
+    # S1-E2-0'' (docs/stage1-E2-0c-prereg.md): mask information through the shipped prompt paths --
+    # positive points inside the mask, negative box exemplars on the other c_ini objects
+    "e2_0c": dict(exemplars=("box", "pts", "neg", "ptsonly", "negnc", "negall", "ptsneg"), extra=(), verdict=("pts", "neg"),
+                  out="e2_0c_spike.json", parts="e2_0c_spike_parts", prereg="docs/stage1-E2-0c-prereg.md"),
 }
+K_POINTS = 8        # `pts`: positive points inside the mask (farthest-point sampling on the interior)
+INTERIOR_PX = 3     # `pts`: interior = distance to the mask boundary >= this many original-resolution pixels
+MAX_NEG = 8         # `neg`/`negall`: at most this many negative boxes
+NEG_MIN_OVERLAP = 0.01   # `neg`: another object's tight box counts when its intersection with the target box >= 1% of the target box
+MASK_EXEMPLARS = ("mask", "mask0", "maskimg")
+PROMPT_EXEMPLARS = ("box", "pts", "neg", "ptsonly", "negnc", "negall", "ptsneg")
 
 
 def cam_name(c, d):
@@ -232,18 +253,31 @@ def summarize(records, thresholds, variant="e2_0", reference=None):
         out[tag] = s
     reg = out.get("registered")
     if reg:
-        vk = spec["verdict"]
-        sk, lk = arm_keys(vk)
-        c1 = reg["c1_same_image" if vk == "box" else f"c1_{sk}"]["rate"]
-        c2 = reg[f"c2_{lk}"]["rate"]
-        if c1 < KILL_SAME:
-            verdict = f"discard: criterion 1 (same-image exemplar, arm {vk}) below {KILL_SAME}"
-        elif c2 < KILL_CROSS:
-            verdict = f"discard: criterion 2 (cross-view slot injection, arm {vk}) below {KILL_CROSS}"
-        else:
-            verdict = f"pass: proceed to S1-E2 with the {vk} exemplar"
-        out["verdict"] = {"arm": vk, "criterion_1_rate": c1, "criterion_2_rate": c2,
-                          "kill_rules": {"c1_min": KILL_SAME, "c2_min": KILL_CROSS}, "verdict": verdict}
+        arms = spec["verdict"] if isinstance(spec["verdict"], tuple) else (spec["verdict"],)
+        out["verdicts"] = {}
+        for vk in arms:
+            sk, lk = arm_keys(vk)
+            c1k = "c1_same_image" if vk == "box" else f"c1_{sk}"
+            c1, c2 = reg[c1k]["rate"], reg[f"c2_{lk}"]["rate"]
+            if c1 < KILL_SAME:
+                verdict = f"discard: criterion 1 (same-image exemplar, arm {vk}) below {KILL_SAME}"
+            elif c2 < KILL_CROSS:
+                verdict = f"discard: criterion 2 (cross-view slot injection, arm {vk}) below {KILL_CROSS}"
+            else:
+                verdict = f"pass: proceed to S1-E2 with the {vk} exemplar"
+            v = {"arm": vk, "criterion_1_rate": c1, "criterion_2_rate": c2,
+                 "kill_rules": {"c1_min": KILL_SAME, "c2_min": KILL_CROSS}, "verdict": verdict}
+            if vk != "box" and "box" in spec["exemplars"]:
+                # adoption over the box exemplar (docs/stage1-E2-0c-prereg.md section 3): no loss on (1),
+                # (2) >= 0.7, paired (2) hits >= box hits and paired median difference >= 0
+                pr = reg[f"paired_slot_{vk}_vs_box"]["all"]
+                adopt = (reg[c1k]["hits"] >= reg["c1_same_image"]["hits"] and c2 >= KILL_CROSS
+                         and pr[f"hits_slot_{vk}"] >= pr["hits_slot"] and pr["d_median"] >= 0)
+                v["adopt_over_box"] = bool(adopt)
+                v["adopt_rule"] = ("c1 hits >= box c1 hits and c2 >= 0.7 and paired c2 hits >= box and "
+                                   "paired median d(cand_best_iou) >= 0")
+            out["verdicts"][vk] = v
+        out["verdict"] = out["verdicts"][arms[0]]
     if reference is not None:
         out["box_vs_e2_0_reference"] = compare_with_reference(records, reference)
     out["thresholds"] = thresholds
@@ -354,7 +388,7 @@ class ExemplarInjector:
                                    normalize=(self.exemplar == "mask"), fill_min=FILL_MIN)
 
     def begin_capture(self, exemplar, gt=None):
-        assert exemplar in ("box", "mask", "mask0", "maskimg"), exemplar
+        assert exemplar in MASK_EXEMPLARS + PROMPT_EXEMPLARS, exemplar
         self.exemplar, self.capturing, self.mode = exemplar, True, None
         if gt is not None and gt is not self.gt:
             self.gt, self._grid_cache = gt, {}
@@ -453,6 +487,115 @@ def box_prompt_from_mask(gt, device):
         box_labels=torch.ones(1, 1, dtype=torch.long, device=device),
         point_embeddings=None, point_mask=None, point_labels=None)
     return prompt, [int(x0), int(y0), int(x1), int(y1)]
+
+
+def tight_box_xyxy(mask):
+    ys, xs = mask.nonzero(as_tuple=True)
+    return int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1
+
+
+def interior_points(gt, k=K_POINTS, interior_px=INTERIOR_PX):
+    """K positive points inside the mask: farthest-point sampling over the interior (distance to the
+    boundary >= interior_px, computed on the original-resolution mask), seeded at the deepest pixel.
+    Falls back to the whole mask when the interior has fewer than k pixels.  Returns (k', 2) xy pixels."""
+    import cv2
+    import numpy as np
+    import torch
+    m = gt.detach().cpu().numpy().astype(np.uint8)
+    dt = cv2.distanceTransform(m, cv2.DIST_L2, 3)
+    cand = np.argwhere(dt >= interior_px) if (dt >= interior_px).sum() >= k else np.argwhere(m > 0)
+    if len(cand) == 0:
+        return np.zeros((0, 2), dtype=np.int64)
+    if len(cand) > 20000:                       # deterministic stride subsample (row-major order)
+        cand = cand[:: int(np.ceil(len(cand) / 20000))]
+    pts = torch.from_numpy(cand.astype(np.float32))              # (n, 2) as (y, x)
+    depth = torch.from_numpy(dt[cand[:, 0], cand[:, 1]])
+    chosen = [int(depth.argmax())]
+    dmin = ((pts - pts[chosen[0]]) ** 2).sum(1)
+    while len(chosen) < min(k, len(pts)):
+        nxt = int(dmin.argmax())
+        chosen.append(nxt)
+        dmin = torch.minimum(dmin, ((pts - pts[nxt]) ** 2).sum(1))
+    yx = cand[chosen]
+    return yx[:, ::-1].copy()                                     # (k', 2) as (x, y)
+
+
+def negative_boxes(gt_all, obj, box, max_neg=MAX_NEG, min_overlap=NEG_MIN_OVERLAP, mode="overlap"):
+    """Other labelled objects of the same c_ini frame as negative exemplar boxes (xyxy pixels).
+    mode "overlap": tight boxes intersecting the target box by >= min_overlap of the target box area,
+                    largest intersection first, at most max_neg.
+    mode "partial": as "overlap" but boxes that contain the whole target box (floor, wall, table) are skipped.
+    mode "all"    : every other object, nearest box centre first, at most max_neg."""
+    import torch
+    x0, y0, x1, y1 = box
+    barea = float((x1 - x0) * (y1 - y0))
+    cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
+    cands = []
+    for v in torch.unique(gt_all).tolist():
+        v = int(v)
+        if v in (0, obj):
+            continue
+        ob = tight_box_xyxy(gt_all == v)
+        ix = max(0, min(x1, ob[2]) - max(x0, ob[0]))
+        iy = max(0, min(y1, ob[3]) - max(y0, ob[1]))
+        inter = float(ix * iy)
+        dist = ((ob[0] + ob[2]) / 2.0 - cx) ** 2 + ((ob[1] + ob[3]) / 2.0 - cy) ** 2
+        contains = ob[0] <= x0 and ob[1] <= y0 and ob[2] >= x1 and ob[3] >= y1
+        if mode in ("overlap", "partial"):
+            if inter >= min_overlap * barea and not (mode == "partial" and contains):
+                cands.append((-inter, v, ob))
+        else:
+            cands.append((dist, v, ob))
+    cands.sort(key=lambda t: (t[0], t[1]))
+    return [(v, list(ob)) for _, v, ob in cands[:max_neg]]
+
+
+def exemplar_prompt(variant, gt_all, obj, device):
+    """The geometric prompt of one exemplar variant for target `obj` in the c_ini frame.
+
+    box     : positive tight box                                   (E2-0)
+    pts     : positive box + K positive interior points
+    ptsonly : K positive interior points, no box                   (exploratory)
+    neg     : positive box + negative boxes of the other objects overlapping it
+    negnc   : as neg, but negatives whose box contains the target box are skipped     (exploratory)
+    negall  : positive box + negative boxes of all other objects (nearest first, <= MAX_NEG) (exploratory)
+    ptsneg  : positive box + interior points + overlapping negatives (exploratory)
+    Returns (Prompt, meta) with meta = {"box": xyxy, "points": [[x, y], ...], "negatives": [[id, xyxy], ...]}.
+    """
+    import torch
+    from sam3.model.box_ops import box_xywh_to_cxcywh
+    from sam3.model.geometry_encoders import Prompt
+    gt = gt_all == obj
+    H, W = gt.shape
+    box = tight_box_xyxy(gt)
+    boxes, labels = [], []
+    if variant != "ptsonly":
+        boxes.append(box); labels.append(1)
+    negs = []
+    if variant in ("neg", "ptsneg"):
+        negs = negative_boxes(gt_all, obj, box, mode="overlap")
+    elif variant == "negnc":
+        negs = negative_boxes(gt_all, obj, box, mode="partial")
+    elif variant == "negall":
+        negs = negative_boxes(gt_all, obj, box, mode="all")
+    for _, nb in negs:
+        boxes.append(nb); labels.append(0)
+    pts = interior_points(gt) if variant in ("pts", "ptsonly", "ptsneg") else None
+    kw = {}
+    if boxes:
+        xywh = torch.tensor([[b[0] / W, b[1] / H, (b[2] - b[0]) / W, (b[3] - b[1]) / H] for b in boxes], dtype=torch.float32)
+        kw["box_embeddings"] = box_xywh_to_cxcywh(xywh)[:, None, :].to(device)            # (n, bs=1, 4)
+        kw["box_mask"] = torch.zeros(1, len(boxes), dtype=torch.bool, device=device)         # nothing padded
+        kw["box_labels"] = torch.tensor(labels, dtype=torch.long, device=device)[:, None]    # (n, bs)
+    if pts is not None and len(pts):
+        xy = torch.tensor([[float(x) / W, float(y) / H] for x, y in pts], dtype=torch.float32)  # normalised [0, 1]
+        kw["point_embeddings"] = xy[:, None, :].to(device)                                    # (k, bs, 2)
+        kw["point_mask"] = torch.zeros(1, len(pts), dtype=torch.bool, device=device)
+        kw["point_labels"] = torch.ones(len(pts), 1, dtype=torch.long, device=device)
+    assert kw, variant
+    meta = {"box": list(box), "points": [[int(x), int(y)] for x, y in (pts if pts is not None else [])],
+            "negatives": [[v, ob] for v, ob in negs]}
+    return Prompt(**kw), meta
 
 
 def score_detections(out, gt_bool, model, chunk=25):
@@ -555,13 +698,20 @@ def run_scene(model, inj, scene, rows, cfg, data_root, log, variant="e2_0"):
         fill = int(gt_ref.sum()) / float((box[2] - box[0]) * (box[3] - box[1]))
         empty = state["constants"]["empty_geometric_prompt"]
         base, base_p = score_detections(base_out[cam], gt_tgt, model)
-        arms, shapes = {"base": base}, None
+        arms, shapes, prompts = {"base": base}, None, {}
         for v in spec["exemplars"]:
             sk, lk = arm_keys(v)
+            if v in PROMPT_EXEMPLARS and v != "box":
+                vprompt, meta = exemplar_prompt(v, gts[ref_cam], obj, device)
+                assert meta["box"] == box or v == "ptsonly"
+                prompts[v] = {"n_points": len(meta["points"]), "points": meta["points"],
+                              "negatives": meta["negatives"], "n_neg": len(meta["negatives"])}
+            else:
+                vprompt = prompt
             # (1) c_ini exemplar -> c_ini detections; the geometry-encoder hook captures the exemplar token
             inj.begin_capture(v, gt_ref)
             out = detector.forward_grounding(bo_ref if bo_ref is not None else fresh(),
-                                             ib.find_inputs[0], None, prompt)
+                                             ib.find_inputs[0], None, vprompt)
             bo_ref = out["prev_encoder_out"]["backbone_out"]
             inj.store()
             inj.end_capture()
@@ -569,6 +719,8 @@ def run_scene(model, inj, scene, rows, cfg, data_root, log, variant="e2_0"):
             if shapes is None:
                 shapes = {"geo_feats": list(inj.embed.shape), "geo_masks": list(inj.mask.shape),
                           "txt_tokens": int(text_outputs["language_features"].shape[0])}
+            if v in prompts:
+                prompts[v]["geo_feats"] = list(inj.embed.shape)
             del out
             # (2) exemplar -> other view
             for mode in ("slot",) + (tuple(spec["extra"]) if v == "box" else ()):
@@ -583,7 +735,7 @@ def run_scene(model, inj, scene, rows, cfg, data_root, log, variant="e2_0"):
         rec = dict(r)
         rec.update({"ref_cam": ref_cam, "ref_gt_px": int(gt_ref.sum()), "exemplar_box_xyxy": box,
                     "fill_ratio": round(fill, 4), "orig_hw": list(hw), "prompt_shapes": shapes,
-                    "selftest_mask_eq_box_maxdiff": inj.selftest, "arms": arms})
+                    "selftest_mask_eq_box_maxdiff": inj.selftest, "prompts": prompts, "arms": arms})
         results.append(rec)
         parts = []
         for v in spec["exemplars"]:
@@ -692,7 +844,13 @@ def main():
                     "base": "other view with no exemplar (control)",
                     "same_mask/slot_mask": "exemplar token pooled inside the c_ini mask (normalised, object-mean fill)",
                     "same_mask0/slot_mask0": "feats*m pooled without normalisation",
-                    "same_maskimg/slot_maskimg": "feature grid zeroed outside the mask before the encoder"},
+                    "same_maskimg/slot_maskimg": "feature grid zeroed outside the mask before the encoder",
+                    "same_pts/slot_pts": f"positive box + {K_POINTS} positive interior points (farthest-point, interior >= {INTERIOR_PX} px)",
+                    "same_ptsonly/slot_ptsonly": "interior points only, no box (exploratory)",
+                    "same_neg/slot_neg": f"positive box + negative tight boxes of other c_ini objects overlapping it (>= {NEG_MIN_OVERLAP:g} of box area, <= {MAX_NEG})",
+                    "same_negnc/slot_negnc": "as neg, skipping negatives whose box contains the target box (exploratory)",
+                    "same_negall/slot_negall": f"positive box + negative boxes of all other objects (nearest first, <= {MAX_NEG}) (exploratory)",
+                    "same_ptsneg/slot_ptsneg": "box + interior points + overlapping negatives (exploratory)"},
            "selftest_mask_eq_box_maxdiff": inj.selftest,
            "summary": summary, "pairs": records}
     json.dump(doc, open(args.out, "w"), indent=1)
@@ -733,9 +891,10 @@ def print_summary(summary, variant="e2_0"):
     if ref:
         print(f"\nbox arms vs E2-0 stored pairs: {ref['n_equal']}/{ref['n_compared']} identical, "
               f"max |diff| cand_best_iou {ref['max_abs_diff_cand_best_iou']}")
-    v = summary.get("verdict")
-    if v:
-        print(f"\nverdict (arm {v['arm']}): (1)={v['criterion_1_rate']}  (2)={v['criterion_2_rate']}  -> {v['verdict']}")
+    for v in (summary.get("verdicts") or {"_": summary.get("verdict")}).values():
+        if v:
+            extra = f"  adopt_over_box={v['adopt_over_box']}" if "adopt_over_box" in v else ""
+            print(f"\nverdict (arm {v['arm']}): (1)={v['criterion_1_rate']}  (2)={v['criterion_2_rate']}  -> {v['verdict']}{extra}")
 
 
 if __name__ == "__main__":
