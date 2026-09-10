@@ -26,6 +26,18 @@
 
 장면별 Δ(Cr10k+v2): AlexaMeadeExhibit +4.11, Blocks +2.94, Breakfast +2.63, MATF +2.17, Fencing +2.07, Barn +1.03, CoffeeMartini +0.85, FlameSteak +0.66, PoznanStreet +0.63, Welder +0.31, Carpark +0.26, MartialArts +0.19, Painter +0.11, Dog·Frog·AlexaMeadeFacePaint 0, CBABasketball −0.10.
 
+### 1.1 헤드라인(모드 C) 위의 조립 추정 (사용자 요청, 2026-09-10)
+
+같은 크롭 결과·같은 게이트 v2 판정을 `SegMaskSam3XW1CGPS4MFs`(현재 헤드라인 + 프레임 0 시드)에 얹은 조립 폴더 `SegMaskSam3XW1CGPS4MFsCr10kG2`(278쌍 교체·71쌍 되돌림, `Data/MVSeg/jf_r1_headline.json`):
+
+| 구성 | basic | complete |
+|---|---|---|
+| XW1CGPS4M (헤드라인) | 90.034 | 85.5 |
+| + 프레임 0 시드 | 90.064 | 85.5 |
+| **+ 크롭 추적(Cr10k, 게이트 v2)** | **91.015** | **86.4** |
+
+17장면 Δ +0.981, CI [+0.446, +1.613], **16↑/0↓**(Frog 0). 채점 방식은 동일하고 예측 마스크만 바뀐 것입니다. 모드 C에서는 이웃 기억을 통한 상호작용(크롭 결과 → 이웃, 이웃 → 크롭 세션)이 이 조립에 없으므로 **추정**이며, 실제 실행은 [stage2-R2-prereg.md](stage2-R2-prereg.md)로 등록해 진행합니다.
+
 ## 2. 쌍 수준 (게이트 v1 기준; v2는 줌 규칙으로 일부가 대조군으로 돌아감)
 
 | 구간 | n | 프레임 1~20 J 전 → 후 | ΔJ_all | ↑/↓ |
