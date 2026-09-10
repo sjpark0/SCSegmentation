@@ -27,7 +27,10 @@ for scene in "$@"; do
       colmap image_undistorter --image_path pose/images --input_path pose/sparse/0         --output_path undist --output_type COLMAP > /dev/null
       mkdir -p undist/sparse/0 && mv undist/sparse/*.bin undist/sparse/0/
     ' >> "$work/undistort.log" 2>&1 || { echo "   undistort failed"; continue; }
-    # this fork of the 3DGS reader also wants the LLFF poses_bounds.npy, produced by its own converter
+  fi
+  # this fork of the 3DGS reader also wants the LLFF poses_bounds.npy; checked on its own so a
+  # workspace left over from an earlier attempt still gets it
+  if [ ! -f "$work/undist/poses_bounds.npy" ]; then
     docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host$GS" 3dgs       python imgs2poses.py "/host$REPO/$work/undist" >> "$work/undistort.log" 2>&1       || { echo "   imgs2poses failed"; continue; }
   fi
   n=$(ls "$work/undist/images" | wc -l)

@@ -90,33 +90,45 @@ def run_scene(scene, cfg, census, log):
         hw = (h, w)
     model = run_scene.model
     tap = run_scene.tap
-    state = model.init_state(frames, hw[0], hw[1])
-    next_id = [1000]
 
-    def pointer(frame_idx, mask):
-        """The object pointer SAM 3 makes from one binary mask, under a fresh object id."""
-        if mask.sum() == 0:
-            return None
-        tap.last = None
-        next_id[0] += 1
-        model.add_tracker_new_mask(inference_state=state, frame_idx=frame_idx, obj_id=next_id[0],
-                                   mask=torch.tensor(mask, dtype=torch.float32))
-        return tap.last
+    def pointers(frame, masks):
+        """Object pointers for one camera: a single-frame session, one fresh object id per mask.
 
+        A session per camera keeps the object count at the mainline's (one per labelled object).  One
+        session holding all three cameras reached about a hundred objects and the tracker's Triton
+        connected-components kernel then failed with "invalid argument" on the large hemisphere frames.
+        """
+        state = model.init_state([frame], hw[0], hw[1])
+        out, next_id = {}, 1000
+        for key, m in masks.items():
+            if m.sum() == 0:
+                out[key] = None
+                continue
+            tap.last = None
+            next_id += 1
+            model.add_tracker_new_mask(inference_state=state, frame_idx=0, obj_id=next_id,
+                                       mask=torch.tensor(m, dtype=torch.float32))
+            out[key] = tap.last
+        del state
+        torch.cuda.empty_cache()
+        return out
+
+    ref_ptr = pointers(frames[0], {o: gts[ref] == o for o in objects})
     rows = []
-    for obj in objects:
-        ref_ptr = pointer(0, gts[ref] == obj)
-        for i, cam in enumerate(cams[1:], start=1):
+    for i, cam in enumerate(cams[1:], start=1):
+        seeds = {}
+        for obj in objects:
             sp = os.path.join(ds_dir, SEEDS, cam, str(start), f"{obj}.png")
             m = cv2.imread(sp, cv2.IMREAD_GRAYSCALE)
-            seed = (m > 127) if m is not None else np.zeros(hw, bool)
-            ptr = pointer(i, seed)
+            seeds[obj] = (m > 127) if m is not None else np.zeros(hw, bool)
+        ptr = pointers(frames[i], seeds)
+        for obj in objects:
             rows.append(dict(scene=scene, cam=cam, obj=obj, ref_cam=ref,
-                             gt_px=int((gts[cam] == obj).sum()), seed_px=int(seed.sum()),
+                             gt_px=int((gts[cam] == obj).sum()), seed_px=int(seeds[obj].sum()),
                              ref_gt_px=int((gts[ref] == obj).sum()),
                              rig="hemisphere" if scene in gate.HEMISPHERE else "pinhole",
-                             signals=dict(S4_cos=cosine(ref_ptr, ptr))))
-    del state, frames, gts
+                             signals=dict(S4_cos=cosine(ref_ptr[obj], ptr[obj]))))
+    del frames, gts
     torch.cuda.empty_cache()
     got = [r["signals"]["S4_cos"] for r in rows if r["signals"]["S4_cos"] is not None]
     log(f"  {scene:16s} {len(rows)} rows, cos median "
@@ -167,6 +179,9 @@ def main():
         from build_scsam3 import build_scsam3_video_model
         run_scene.model = build_scsam3_video_model()
         run_scene.model.eval()
+        # the mainline turns hole filling off (SCSam3Video.py 18, 35) while the raw builder defaults to
+        # 16; leaving it on runs a Triton connected-components kernel that fails on the 2560x1920 frames
+        run_scene.model.fill_hole_area = 0
         run_scene.tap = PointerTap(run_scene.model.tracker)
         with torch.inference_mode():
             for s in scenes:
