@@ -330,3 +330,7 @@ E 모드는 `runMVSeg.run_two_pass`만 사용합니다. 프레임 t의 1차 패�
 - 같은 성격의 파일(자격증명·내부 주소가 든 셸 스크립트)을 새로 만들 때는 `.gitignore`를
   먼저 확인하십시오. 커밋 훅(`docs/tools/pre-commit-secrets.sh`)은 **토큰 모양 문자열만**
   잡습니다. 평문 비밀번호는 잡지 못합니다 — 함정 8의 훅이 이걸 놓친 이유입니다.
+
+## 함정 12 (2026-09-10) — 모드 C 큰 장면 + 크롭 추적은 한 호출 600초를 넘김
+
+하네스 배경 태스크는 메모리 감시에 죽지만 **컨테이너는 완주**합니다(CoffeeMartini에서 확인: 래퍼가 죽어도 MANIFEST·21프레임 정상). 600초를 넘길 장면(CoffeeMartini·FlameSteak·반구 3장면)은 `setsid nohup <드라이버>.sh > log &`로 하네스 밖에서 한 장면씩 순서대로 돌리고(앞 컨테이너 종료를 `docker ps`로 기다림) 로그를 Monitor로 지켜보십시오. 완주는 `MANIFEST.json`의 `crop_small`·프레임 폴더 수로 확인.
