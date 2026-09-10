@@ -115,7 +115,7 @@ def depth_agreement(pi3_depth, cam_pi3, scene, camname):
                 rel_err_p90=round(float(np.percentile(rel, 90)), 4))
 
 
-def run_pi3(scene, cfg, census, log):
+def run_pi3(scene, cfg, census, log, pixel_limit=PIXEL_LIMIT):
     """Pi3X over every camera of a scene -> {cam: dict(und, img, depth, conf, orig)} for the annotated three."""
     import cv2
     import numpy as np
@@ -131,7 +131,7 @@ def run_pi3(scene, cfg, census, log):
     for c in cams:
         im = cv2.cvtColor(cv2.imread(os.path.join(vdir, c, f"{start:06d}.jpg")), cv2.COLOR_BGR2RGB)
         hw0 = im.shape[:2]
-        w, h = target_size(hw0[1], hw0[0])
+        w, h = target_size(hw0[1], hw0[0], pixel_limit)
         imgs.append(cv2.resize(im, (w, h), interpolation=cv2.INTER_AREA))
     t = torch.from_numpy(np.stack(imgs)).permute(0, 3, 1, 2).float()[None] / 255.0
     model = run_pi3.model
@@ -164,7 +164,7 @@ def run_pi3(scene, cfg, census, log):
     return out
 
 
-def run_scene(scene, cfg, census, log, save_masks=None):
+def run_scene(scene, cfg, census, log, save_masks=None, pixel_limit=PIXEL_LIMIT):
     """Same measurement as e4a_project.run_scene, with the Pi3 geometry substituted."""
     import numpy as np
     ref_cam = census[scene]["c_ini"]
@@ -173,7 +173,7 @@ def run_scene(scene, cfg, census, log, save_masks=None):
     objects = [int(o) for o in census[scene]["seed_ids_c_ini"]]
     gts = {c: e4a.gt_mask(scene, cfg, c) for c in cams}
     h, w = gts[ref_cam].shape
-    have = run_pi3(scene, cfg, census, log)
+    have = run_pi3(scene, cfg, census, log, pixel_limit)
     maps = {c: e4a.camera_maps(have[c], h, w) for c in have}
     rows = []
     ref_ok = ref_cam in have
@@ -234,6 +234,8 @@ def main():
     ap.add_argument("--save-masks", default=None)
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--summary-only", action="store_true")
+    ap.add_argument("--pixel-limit", type=int, default=PIXEL_LIMIT,
+                    help="registered value is 255000; a larger value is a post-hoc diagnostic, not the arm")
     args = ap.parse_args()
     cfg = json.load(open(e4a.CONFIG, encoding="utf-8"))
     census = json.load(open(e4a.CENSUS))
@@ -255,7 +257,7 @@ def main():
                 log(f"  {s}: complete part exists, skipping")
                 continue
             t1 = time.time()
-            res = run_scene(s, cfg, census, log, args.save_masks)
+            res = run_scene(s, cfg, census, log, args.save_masks, args.pixel_limit)
             order = {k: i for i, k in enumerate(keys)}
             res.sort(key=lambda r: order[(r["cam"], r["obj"])])
             json.dump(res, open(part + ".tmp", "w"), indent=1)
@@ -281,7 +283,7 @@ def main():
            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "git_head": head,
            "generated_by": "MVSeed/geo/e4b_project.py", "argv": sys.argv,
            "prereg": "docs/stage1-E4b-prereg.md",
-           "rules": {"model": MODEL_ID, "pixel_limit": PIXEL_LIMIT, "patch": PATCH, "conf_min": CONF_MIN,
+           "rules": {"model": MODEL_ID, "pixel_limit": args.pixel_limit, "registered_pixel_limit": PIXEL_LIMIT, "patch": PATCH, "conf_min": CONF_MIN,
                      "arms": list(e4a.ARMS), "verdict_arm": e4a.VERDICT_ARM, "j_pass": e4a.J_PASS,
                      "occ_tol": warp.OCC_TOL, "close_kernel": warp.CLOSE_KERNEL,
                      "gate": f"F0 & pinhole & gt_px>=2000: J_union > {e4a.J_PASS} for >= {e4a.GATE_MIN} of {e4a.GATE_N}"},
