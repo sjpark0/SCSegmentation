@@ -26,6 +26,8 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
     python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-gate --xview-ptr   # -> SegMaskSam3XW1GP
     python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --seeds-from MVSeed_control
                                                                   # -> SegMaskSam3XW0MSdcontrol, stage-1 supply
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --frame0-seed
+                                                                  # -> SegMaskSam3XW0MFs, seed written as frame 0
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -80,6 +82,12 @@ XVIEW_TPOS_SHIFTS = tuple(range(1, XVIEW_MAX_WINDOW))      # 1..5
 # MVOpt only: it is the development target and the package that carries seeds_from.py
 # (the frozen packages gain no files).  Folder suffix Sd<tag>, in the Rp position.
 SEEDS_FROM_ALGOS = ("MVOpt",)
+# Frame-0 seed write (docs/stage1-E0.md section 3, section 6 item 3): the start_frame PNG
+# is the tracker's re-prediction of the seed, a second 288-grid round trip that caps
+# frame-0 J at 0.951 whatever the seed was.  --frame0-seed writes the seed itself
+# (masks_spatial after --seeds-from) for that one frame; tracker state and every later
+# frame are untouched.  Folder suffix Fs, after Sd<tag>.  The rule is seeds_from.select_frame0.
+FRAME0_SUFFIX = "Fs"
 _SEEDS_FROM = None
 
 
@@ -171,6 +179,14 @@ def parse_args():
                          "SEED_MANIFEST.json, when present, must cover every scored camera. "
                          "Folder suffix Sd<TAG>; an explicit --out must carry it too. Excludes "
                          "--repair-seeds. MVOpt only.")
+    ap.add_argument("--frame0-seed", action="store_true",
+                    help="write the seed itself (masks_spatial, after --seeds-from) as the "
+                         "start_frame PNG of every scored view instead of the tracker's "
+                         "re-prediction of it (a second 288-grid round trip, docs/stage1-E0.md "
+                         "section 3). An object the seed lacks keeps the tracker output; the "
+                         "tracker state and every later frame are unchanged. Folder suffix Fs "
+                         "(after Sd<TAG>); an explicit --out must carry it too. Excludes "
+                         "--xview-mode E (its seed frame is written by the two-pass loop).")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -434,6 +450,19 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         elif seed_suffix not in out_name:
             sys.exit(f"refusing to write a --seeds-from run into {out_name}: the name must "
                      f"carry {seed_suffix} (a control folder has no seed marker)")
+    two_pass = bool(xview_on and mode_eff in XVIEW_TWO_PASS)
+    frame0_seed = bool(getattr(args, "frame0_seed", False))
+    if frame0_seed:
+        if two_pass:
+            sys.exit(f"--frame0-seed and --xview-mode {mode_eff} do not combine: the two-pass "
+                     "loop writes its own seed frame (run_two_pass)")
+        # after Sd<tag>, same rule: a frame-0 seed run must never land on the folder its
+        # control (the tracker's re-prediction) wrote, so an explicit --out carries Fs too
+        if not args.out:
+            out_name += FRAME0_SUFFIX
+        elif FRAME0_SUFFIX not in out_name:
+            sys.exit(f"refusing to write a --frame0-seed run into {out_name}: the name must "
+                     f"carry {FRAME0_SUFFIX} (a control folder has no frame-0 marker)")
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -446,7 +475,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
-                two_pass=bool(xview_on and mode_eff in XVIEW_TWO_PASS),
+                two_pass=two_pass, frame0_seed=frame0_seed,
                 closure_reach=(len(track_idx) if track_mode == "closure" else None),
                 xview_gate=gate, xview_ptr=ptr, xview_tpos_shift=shift)
 
@@ -864,6 +893,8 @@ def main():
           f"({len(run['track_idx'])} sessions)", flush=True)
     print(f"seed repair    {'on (Rp, max 2 rounds)' if run['repair_seeds'] else 'off'}",
           flush=True)
+    print(f"frame0 seed    {'on (Fs: start_frame PNG = the seed, not its re-prediction)' if run['frame0_seed'] else 'off'}",
+          flush=True)
     if seed_pre is not None:
         n_png = sum(len(p) for p in seed_pre["pngs"].values())
         cover = ("manifest covers " + ", ".join(seed_pre["written"]) if seed_pre["written"]
@@ -975,30 +1006,44 @@ def main():
 
     sc.TrackForward(c["start_frame"], c["num_frame"])
 
+    frame0_stats = None
     if run["two_pass"]:
         run_two_pass(sc, c["start_frame"], c["num_frame"], cam_names, written_cams, out_dir,
                      cv2, np, areas=areas)
     else:
+        # --frame0-seed: {view: {obj: "seed" | "tracker"}} for the manifest; None when off
+        frame0_sources = {} if run["frame0_seed"] else None
         for _ in range(c["num_frame"]):
             for j, view in enumerate(sc.track_views):
                 response = next(sc.tracking_result[j])
                 out = response["outputs"]
-                # instrumentation: every tracked view, scored or not
-                areas.record_frame(view, response["frame_index"],
-                                   out["out_obj_ids"].tolist(),
-                                   [out["out_binary_masks"][i] > 0.0
-                                    for i in range(len(out["out_obj_ids"]))])
+                obj_ids = out["out_obj_ids"].tolist()
+                masks = [out["out_binary_masks"][i] > 0.0 for i in range(len(obj_ids))]
+                # instrumentation: every tracked view, scored or not, always the tracker's
+                # own output (the frame-0 seed swap below is a write-time substitution)
+                areas.record_frame(view, response["frame_index"], obj_ids, masks)
                 if cam_names[view] not in written_cams:
                     continue
                 frame_idx = response["frame_index"]
+                if frame0_sources is not None and frame_idx == c["start_frame"]:
+                    picked = seeds_from_module().select_frame0(
+                        sc.masks_spatial.get(view), obj_ids, masks)
+                    masks = [m for m, _ in picked]
+                    frame0_sources[view] = {o: src for o, (_, src) in zip(obj_ids, picked)}
                 folder = os.path.join(out_dir, cam_names[view], f"{frame_idx:d}")
                 os.makedirs(folder, exist_ok=True)
-                for i, obj_id in enumerate(out["out_obj_ids"].tolist()):
-                    mask = (out["out_binary_masks"][i] > 0.0)
+                for obj_id, mask in zip(obj_ids, masks):
                     mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
                     cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
                                 mask.squeeze().astype(np.uint8) * 255)
             print(f"  frame {response['frame_index']} written", flush=True)
+        if frame0_sources is not None:
+            frame0_stats = seeds_from_module().frame0_provenance(frame0_sources)
+            fell_back = {v: d["tracker_objs"] for v, d in frame0_stats["views"].items()
+                         if d["tracker_objs"]}
+            print(f"frame0 seed    {frame0_stats['seed']} (view, obj) PNGs written from the seed "
+                  f"in {frame0_stats['n_views']} views, {frame0_stats['tracker']} from the "
+                  f"tracker (no seed){': ' + str(fell_back) if fell_back else ''}", flush=True)
 
     # P12 counters (filled only while a knob is on): one summary line, and the manifest.
     xstats = xview_stats_summary(getattr(tracker, "xview_stats", None), eff_gate)
@@ -1049,6 +1094,7 @@ def main():
                    "xview_gate_stats": xstats,
                    "seed_repair": repair_stats,
                    "seeds_from": seeds_stats,
+                   "frame0_seed": run["frame0_seed"], "frame0_seed_stats": frame0_stats,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run

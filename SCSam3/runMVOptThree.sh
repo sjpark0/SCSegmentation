@@ -9,6 +9,9 @@ mkdir -p "${LOGDIR}"
 echo "logs -> ${LOGDIR}"
 # SEEDS=MVSeed_<tag> seeds the run from that folder (--seeds-from, stage-1 supply):
 #   XVIEW=0 XREF=muvod SEEDS=MVSeed_control ./runMVOptThree.sh Fencing   # -> SegMaskSam3XW0MSdcontrol
+# F0SEED=1 writes the seed itself as the start_frame PNG instead of the tracker's
+# re-prediction of it (--frame0-seed, docs/stage1-E0.md section 3; folder suffix Fs, after Sd<tag>):
+#   XVIEW=0 XREF=muvod SEEDS=MVSeed_control F0SEED=1 ./runMVOptThree.sh Fencing   # -> SegMaskSam3XW0MSdcontrolFs
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
@@ -21,7 +24,7 @@ for ds in "$@"; do
 			${XVIEW:+--xview-window "${XVIEW}"} ${XMODE:+--xview-mode "${XMODE}"} \
 			${XGATE:+--xview-gate} ${XPTR:+--xview-ptr} ${XSHIFT:+--xview-tpos-shift "${XSHIFT}"} \
 			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} ${XREPAIR:+--repair-seeds} \
-			${SEEDS:+--seeds-from "${SEEDS}"} --overwrite \
+			${SEEDS:+--seeds-from "${SEEDS}"} ${F0SEED:+--frame0-seed} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))

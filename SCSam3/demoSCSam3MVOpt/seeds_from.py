@@ -23,6 +23,13 @@ that needs no model lives here.
   provenance     sha256 of the manifest bytes and a digest over the PNGs built exactly as
                  eval/manifest.py's content_digest (sorted (relative path, sha256) pairs),
                  so a MANIFEST.json can say which seed bytes a run consumed
+
+Frame-0 seed write (--frame0-seed, folder suffix Fs).  docs/stage1-E0.md section 3: the
+start_frame PNG the runner writes is the tracker's re-prediction of the seed, a second
+288-grid round trip that caps frame-0 J at 0.951 (0.82 below 2,000 px) whatever the seed
+was.  select_frame0 is the runner's rule for that one frame: the seed itself
+(masks_spatial[view][obj], after --seeds-from) where the view has one, the tracker's own
+output otherwise.  The tracker state is untouched, so every later frame is what it was.
 """
 import hashlib
 import json
@@ -31,6 +38,8 @@ import re
 
 PREFIX = "MVSeed_"
 SUFFIX = "Sd"
+FRAME0_SUFFIX = "Fs"            # --frame0-seed output-folder suffix, after Sd<tag>
+FRAME0_SOURCES = ("seed", "tracker")
 MANIFEST = "SEED_MANIFEST.json"
 THRESHOLD = 127                 # PNG value > 127 -> foreground (eval_jf.py reads masks so)
 TAG_RE = re.compile(r"[A-Za-z0-9._-]+")
@@ -270,3 +279,61 @@ def apply_seed_folder(masks_spatial, folder, start_frame, cam_names, track_idx, 
             "replaced_views": {str(v): objs for v, objs in sorted(replaced.items())},
             "changed_views": {str(v): objs for v, objs in sorted(changed.items())},
             "added": added, "emptied": emptied, "untracked_views": sorted(untracked)}
+
+
+# ------------------------------------------------------------------ frame 0
+def select_frame0(seed_masks_for_view, obj_ids, tracker_masks):
+    """--frame0-seed: what the runner writes for one view at start_frame.
+
+    seed_masks_for_view  masks_spatial[view] -- {obj: bool (H, W) mask} as TrackForward
+                         consumed it (after --seeds-from); {} or None for a view without
+    obj_ids              the tracker's out_obj_ids for the frame, in output order
+    tracker_masks        the tracker's bool masks, aligned with obj_ids
+
+    Returns [(mask, source), ...] aligned with obj_ids: the seed with source "seed" when
+    the view holds one for that object, else the tracker mask with source "tracker".  The
+    masks are handed back as they are (no copy, no type change); order is preserved; an
+    object the seed lacks is not invented.  ValueError when the two lists disagree.
+    """
+    obj_ids = list(obj_ids)
+    tracker_masks = list(tracker_masks)
+    if len(obj_ids) != len(tracker_masks):
+        raise ValueError(f"select_frame0: {len(obj_ids)} object ids but "
+                         f"{len(tracker_masks)} tracker masks")
+    seeds = seed_masks_for_view or {}
+    out = []
+    for obj, mask in zip(obj_ids, tracker_masks):
+        seed = seeds.get(obj)
+        if seed is None:
+            out.append((mask, "tracker"))
+        else:
+            out.append((seed, "seed"))
+    return out
+
+
+def frame0_provenance(sources):
+    """What MANIFEST.json records under provenance.frame0_seed_stats.
+
+    sources  {view: {obj: source}} -- the source select_frame0 chose for every written
+             (view, obj) at start_frame
+
+    Returns (str keys, ints and lists only) the per-view seed substitution counts and the
+    objects that fell back to the tracker, plus the totals:
+      views   {view: {"seed": n, "tracker": n, "tracker_objs": [obj, ...]}}
+      seed / tracker / n_views  totals
+    """
+    views = {}
+    n_seed = n_tracker = 0
+    for view in sorted(sources):
+        per = sources[view]
+        bad = sorted(str(src) for src in per.values() if src not in FRAME0_SOURCES)
+        if bad:
+            raise ValueError(f"frame0_provenance: view {view} has sources {bad}, "
+                             f"not one of {FRAME0_SOURCES}")
+        seed_objs = sorted(int(o) for o, src in per.items() if src == "seed")
+        trk_objs = sorted(int(o) for o, src in per.items() if src == "tracker")
+        views[str(view)] = {"seed": len(seed_objs), "tracker": len(trk_objs),
+                            "tracker_objs": trk_objs}
+        n_seed += len(seed_objs)
+        n_tracker += len(trk_objs)
+    return {"n_views": len(views), "seed": n_seed, "tracker": n_tracker, "views": views}

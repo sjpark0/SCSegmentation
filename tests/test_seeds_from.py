@@ -326,3 +326,60 @@ def test_folder_provenance(tmp_path):
     assert p["folder"] == "MVSeed_vote"
     assert p["manifest_sha256"] == hashlib.sha256(data).hexdigest()
     assert p["png_digest"] == sf.png_digest(str(folder))[0]   # the manifest is not hashed in
+
+
+# ------------------------------------------------------------------ frame 0 (--frame0-seed)
+def test_select_frame0_takes_the_seed_when_present_else_the_tracker():
+    seeds = {1: np.ones((H, W), bool), 3: np.zeros((H, W), bool)}
+    trk = [img(0) > 127, img(255) > 127, img(255) > 127]
+    got = sf.select_frame0(seeds, [3, 2, 1], trk)
+    assert [src for _, src in got] == ["seed", "tracker", "seed"]   # obj 2 has no seed
+    assert got[0][0] is seeds[3] and got[1][0] is trk[1] and got[2][0] is seeds[1]
+    assert len(got) == 3 and all(isinstance(t, tuple) and len(t) == 2 for t in got)
+    # the seed is handed back as is: no copy, no type change, an empty seed still wins
+    assert got[0][0] is seeds[3] and not got[0][0].any()
+    # every object seeded -> every source "seed"; none seeded -> every source "tracker"
+    got = sf.select_frame0({o: seeds[1] for o in (1, 2, 3)}, [1, 2, 3], trk)
+    assert [src for _, src in got] == ["seed"] * 3 and all(m is seeds[1] for m, _ in got)
+    for none in ({}, None):
+        got = sf.select_frame0(none, [1, 2, 3], trk)
+        assert [src for _, src in got] == ["tracker"] * 3
+        assert all(m is t for (m, _), t in zip(got, trk))
+    # a seed keyed by an object the tracker did not output is not invented
+    got = sf.select_frame0({7: seeds[1]}, [1], trk[:1])
+    assert got == [(trk[0], "tracker")]
+    assert sf.select_frame0(seeds, [], []) == []
+
+
+def test_select_frame0_preserves_the_tracker_order():
+    seeds = {o: np.full((H, W), o, np.uint8) > 0 for o in (1, 2, 3)}
+    for o in seeds:
+        seeds[o][0, 0] = False
+    trk = [img(0) > 127] * 3
+    for order in ([1, 2, 3], [3, 1, 2], [2, 3, 1]):
+        got = sf.select_frame0(seeds, order, trk)
+        assert [m is seeds[o] for (m, _), o in zip(got, order)] == [True] * 3
+    # a tuple of ids and a generator of masks are accepted (out_obj_ids.tolist() is a list)
+    got = sf.select_frame0(seeds, (1, 2), (m for m in trk[:2]))
+    assert [src for _, src in got] == ["seed", "seed"]
+
+
+def test_select_frame0_refuses_misaligned_inputs():
+    with pytest.raises(ValueError):
+        sf.select_frame0({}, [1, 2], [img(0) > 127])
+    with pytest.raises(ValueError):
+        sf.select_frame0({}, [1], [])
+
+
+def test_frame0_provenance_counts_per_view():
+    rec = sf.frame0_provenance({2: {1: "seed", 2: "tracker", 3: "seed"}, 0: {1: "tracker"},
+                                1: {1: "seed"}})
+    assert rec == {"n_views": 3, "seed": 3, "tracker": 2,
+                   "views": {"0": {"seed": 0, "tracker": 1, "tracker_objs": [1]},
+                             "1": {"seed": 1, "tracker": 0, "tracker_objs": []},
+                             "2": {"seed": 2, "tracker": 1, "tracker_objs": [2]}}}
+    assert list(rec["views"]) == ["0", "1", "2"]                     # sorted by view
+    assert sf.frame0_provenance({}) == {"n_views": 0, "seed": 0, "tracker": 0, "views": {}}
+    with pytest.raises(ValueError):
+        sf.frame0_provenance({0: {1: "gt"}})
+    assert sf.FRAME0_SUFFIX == "Fs" and sf.FRAME0_SOURCES == ("seed", "tracker")
