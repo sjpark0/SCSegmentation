@@ -110,13 +110,14 @@ def _counts(rows, name):
     return sum(flagged(r, name) for r in rows)
 
 
-def matched_threshold(pos, neg, name, target_fp):
+def matched_threshold(pos, neg, name, target_fp, low=None):
     """Score threshold whose false-positive count on `neg` is <= target_fp, and the hits it gives.
 
-    IoU signals flag LOW values, centre signals flag HIGH ones; both are swept over the observed
+    IoU-like signals flag LOW values, centre signals flag HIGH ones; both are swept over the observed
     scores so the comparison is at a matched false-positive count, not a matched threshold.
+    `low` overrides the direction for a signal this module does not own (S1-E5b's S4_cos).
     """
-    low = name in LOW_IS_FLAGGED
+    low = (name in LOW_IS_FLAGGED) if low is None else low
     def score(r):
         v = r["signals"][name]
         if v is None:
