@@ -73,6 +73,16 @@ IMAGE_SIZE = 1008                    # model input side; zoom = IMAGE_SIZE / win
 THRESHOLD = 127                      # seed PNG value > 127 is foreground (seeds_from.THRESHOLD)
 DEFAULT_MIN_SIDE = 256
 DEFAULT_SCALE = 4.0
+# Gate (S2-R1'/R1", docs/stage2-R1b-prereg.md, stage2-R1c-prereg.md; crop_guard.py) --
+# decided without ground truth, per (camera, object), after the crop session has run:
+#   v1  IoU(crop mask at frame start+1, seed) < GATE_TAU      -> jumped to another object
+#   v2  v1, or IMAGE_SIZE / side < GATE_ZOOM_MIN               -> no resolution gain
+#       or frames on a window edge (not an image edge) >= GATE_BORDER_MAX -> rides the edge
+# A reverted pair keeps the mainline masks.  runMVSeg --crop-gate takes one of GATES.
+GATES = ("none", "v1", "v2")
+GATE_TAU = 0.05
+GATE_ZOOM_MIN = 1.2
+GATE_BORDER_MAX = 10
 SUFFIX_RE = re.compile(r"[A-Za-z0-9]+")
 PNG_SIG = b"\x89PNG\r\n\x1a\n"
 PROMPT_GT, PROMPT_SEED = "gt", "seed"
@@ -135,6 +145,35 @@ def crop_window(box, H, W, scale=DEFAULT_SCALE, min_side=DEFAULT_MIN_SIDE):
 
 def is_target(area, max_area):
     return 0 < area < max_area
+
+
+def gate_verdict(gate, iou_f1, zoom, frames_touching, tau=GATE_TAU, zoom_min=GATE_ZOOM_MIN,
+                 border_max=GATE_BORDER_MAX):
+    """(kept, why) for one crop-tracked pair.  none keeps every pair; v1 reverts when
+    iou_f1 < tau; v2 also when zoom < zoom_min or frames_touching >= border_max.  `why`
+    is the first rule that fires ("iou", "zoom", "border"; crop_guard.guard_scene's
+    order) or None when the pair is kept."""
+    if gate not in GATES:
+        raise ValueError(f"gate must be one of {GATES}, got {gate!r}")
+    if gate == "none":
+        return True, None
+    if iou_f1 < tau:
+        return False, "iou"
+    if gate == "v2":
+        if zoom < zoom_min:
+            return False, "zoom"
+        if frames_touching >= border_max:
+            return False, "border"
+    return True, None
+
+
+def mask_iou(a, b):
+    """IoU of two bool arrays; two empty masks count as 1.0 (crop_guard.iou)."""
+    import numpy as np
+    a = np.asarray(a).astype(bool)
+    b = np.asarray(b).astype(bool)
+    u = int((a | b).sum())
+    return float((a & b).sum() / u) if u else 1.0
 
 
 def prompt_source(cam, obj, c_ini_cam, ds_dir, seeds, start_frame):
@@ -271,37 +310,31 @@ def foreground(img, lo, hi):
 
 
 # ------------------------------------------------------------------ targets (pure, reader injected)
-def select_targets(cams, objs, c_ini_cam, ds_dir, seeds, start_frame, max_area,
-                   scale=DEFAULT_SCALE, min_side=DEFAULT_MIN_SIDE, read=read_gray_png):
-    """Every (cam, obj) with 0 < prompt area < max_area, with its window.
+def select_targets_from(cams, objs, prompt, max_area, scale=DEFAULT_SCALE,
+                        min_side=DEFAULT_MIN_SIDE):
+    """Every (cam, obj) with 0 < prompt area < max_area, with its window, from prompts
+    handed in: prompt(cam, obj) -> (img, lo, hi, kind) or None when the pair has no
+    prompt.  `img` is a 2-D array or GrayRows, lo <= value <= hi is foreground, kind is
+    PROMPT_GT / PROMPT_SEED.
 
     Returns (targets, skipped, (H, W)).  A target: {cam, obj, prompt ("gt"/"seed"),
     seed_px, box, crop [x0, y0], side, zoom}.  skipped lists the other pairs with a reason
-    (missing: no prompt PNG; empty: area 0; large: area >= max_area).  `read` maps a path
-    to a 2-D array or GrayRows; a PNG is read once even when many objects share it (the
-    ground truth of c_ini).  H, W come from the first PNG read; a PNG of another size is
-    refused."""
-    cache = {}
-
-    def get(path):
-        if path not in cache:
-            cache[path] = read(path) if os.path.isfile(path) else None
-        return cache[path]
-
+    (missing: no prompt; empty: area 0; large: area >= max_area).  H, W come from the
+    first prompt seen; a prompt of another size is refused."""
     H = W = None
     targets, skipped = [], []
     for cam in cams:
         for obj in objs:
-            path, lo, hi, kind = prompt_source(cam, obj, c_ini_cam, ds_dir, seeds, start_frame)
-            img = get(path)
-            if img is None:
+            got = prompt(cam, obj)
+            if got is None:
                 skipped.append({"cam": cam, "obj": obj, "reason": "missing", "seed_px": 0})
                 continue
+            img, lo, hi, kind = got
             h, w = int(img.shape[0]), int(img.shape[1])
             if H is None:
                 H, W = h, w
             elif (h, w) != (H, W):
-                raise ValueError(f"{path}: {w}x{h} but the scene is {W}x{H}")
+                raise ValueError(f"{cam} obj {obj}: prompt is {w}x{h} but the scene is {W}x{H}")
             area, box = area_and_box(img, lo, hi)
             if not is_target(area, max_area):
                 skipped.append({"cam": cam, "obj": obj, "seed_px": area,
@@ -312,6 +345,26 @@ def select_targets(cams, objs, c_ini_cam, ds_dir, seeds, start_frame, max_area,
                             "box": list(box), "crop": [cx0, cy0], "side": s,
                             "zoom": round(IMAGE_SIZE / s, 4)})
     return targets, skipped, (H, W)
+
+
+def select_targets(cams, objs, c_ini_cam, ds_dir, seeds, start_frame, max_area,
+                   scale=DEFAULT_SCALE, min_side=DEFAULT_MIN_SIDE, read=read_gray_png):
+    """select_targets_from over the PNGs prompt_source names.  `read` maps a path to a
+    2-D array or GrayRows; a PNG is read once even when many objects share it (the
+    ground truth of c_ini); a missing PNG skips the pair as "missing"."""
+    cache = {}
+
+    def get(path):
+        if path not in cache:
+            cache[path] = read(path) if os.path.isfile(path) else None
+        return cache[path]
+
+    def prompt(cam, obj):
+        path, lo, hi, kind = prompt_source(cam, obj, c_ini_cam, ds_dir, seeds, start_frame)
+        img = get(path)
+        return None if img is None else (img, lo, hi, kind)
+
+    return select_targets_from(cams, objs, prompt, max_area, scale, min_side)
 
 
 # ------------------------------------------------------------------ paste back (numpy, lazy)
@@ -413,10 +466,17 @@ def to_bool_mask(m, np):
     return np.squeeze(m) > 0
 
 
-def track_crop(predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop, obj, num_frame):
+def track_crop(predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop, obj, num_frame,
+               multi_session=False):
     """One session over the cropped frames: frame-0 mask prompt, forward propagation.
     Returns {frame index: (side, side) bool} for every yielded frame; an object the
-    tracker dropped (no output for it) gives an all-False mask."""
+    tracker dropped (no output for it) gives an all-False mask.
+
+    multi_session=True addresses the propagate request the way runMVSeg.TrackForward
+    does for the NewMem (MVOpt) temporal predictor -- session_ids=[sid], spatial_idx=0 --
+    whose cross-view gather then finds no neighbour (a one-session list; xview_gather
+    clips both sides under hygiene).  False is the single-session predictor this file's
+    own main() builds."""
     s = int(prompt_crop.shape[0])
     images = AsyncVideoFrameCPUToGPU(crops, offload_video_to_cpu=True)
     sid = predictor.handle_request(request=dict(type="start_session", images=images,
@@ -428,9 +488,13 @@ def track_crop(predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop
             mask=torch.tensor(np.asarray(prompt_crop).astype("float32"), dtype=torch.float32),
             obj_id=obj))
         out = {}
-        for r in predictor.handle_stream_request(request=dict(
-                type="propagate_in_video", session_id=sid, propagation_direction="forward",
-                start_frame_index=0, max_frame_num_to_track=num_frame)):
+        request = dict(type="propagate_in_video", propagation_direction="forward",
+                       start_frame_index=0, max_frame_num_to_track=num_frame)
+        if multi_session:
+            request.update(session_ids=[sid], spatial_idx=0)
+        else:
+            request["session_id"] = sid
+        for r in predictor.handle_stream_request(request=request):
             o = r["outputs"]
             mask = None
             for i, oid in enumerate(o["out_obj_ids"].tolist()):

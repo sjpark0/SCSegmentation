@@ -28,6 +28,8 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
                                                                   # -> SegMaskSam3XW0MSdcontrol, stage-1 supply
     python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --frame0-seed
                                                                   # -> SegMaskSam3XW0MFs, seed written as frame 0
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --frame0-seed --crop-small 10000
+                                                                  # -> SegMaskSam3XW0MFsCs10kG2, small objects crop-tracked
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -36,6 +38,7 @@ import argparse
 import json
 import os
 import sys
+import time
 
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
@@ -88,7 +91,22 @@ SEEDS_FROM_ALGOS = ("MVOpt",)
 # (masks_spatial after --seeds-from) for that one frame; tracker state and every later
 # frame are untouched.  Folder suffix Fs, after Sd<tag>.  The rule is seeds_from.select_frame0.
 FRAME0_SUFFIX = "Fs"
+# Small-object crop tracking (S2-R2, docs/stage2-R2-prereg.md section 1; the R1 rule of
+# SCSam3/crop_track.py run inside the mainline): after the write loop, every scored
+# (camera, object) whose prompt is smaller than --crop-small pixels is tracked again on
+# the temporal predictor inside a square window around the prompt and, when the gate
+# keeps it, its frames start+1 .. start+num_frame-1 are overwritten with the crop result.
+# Folder suffix Cs<max/1000>k + G1/G2 (gate v1/v2; none: no letter), after Fs.  MVOpt
+# only (the temporal predictor's request shape and masks_spatial are its).  Excludes
+# --xview-mode E (the two-pass loop owns the written frames).
+CROP_SMALL_ALGOS = ("MVOpt",)
+CROP_GATES = ("none", "v1", "v2")               # == crop_track.GATES
+CROP_GATE_DEFAULT = "v2"
+CROP_SCALE_DEFAULT = 4.0
+CROP_MIN_SIDE_DEFAULT = 256
+CROP_GATE_SUFFIX = {"none": "", "v1": "G1", "v2": "G2"}
 _SEEDS_FROM = None
+_CROP_TRACK = None
 
 
 def seeds_from_module():
@@ -104,6 +122,33 @@ def seeds_from_module():
         spec.loader.exec_module(mod)
         _SEEDS_FROM = mod
     return _SEEDS_FROM
+
+
+def crop_track_module():
+    """SCSam3/crop_track.py, loaded by path (as seeds_from_module: SCSam3/ never goes on
+    sys.path).  Only the crop pass needs it, so a run without --crop-small never loads it."""
+    global _CROP_TRACK
+    if _CROP_TRACK is None:
+        import importlib.util
+        path = os.path.join(HERE, "crop_track.py")
+        spec = importlib.util.spec_from_file_location("crop_track", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _CROP_TRACK = mod
+    return _CROP_TRACK
+
+
+def crop_suffix(max_px, gate):
+    """--crop-small folder marker: Cs<max_px/1000>k when max_px is a multiple of 1000
+    (Cs2k, Cs10k), else Cs<max_px> (Cs2500), so two areas never share a name; then G1 /
+    G2 for gate v1 / v2 and nothing for none.  Distinct from Cr<..> (crop_track.py's
+    assembled folders) and from the G/G2 folders of crop_guard.py."""
+    if int(max_px) <= 0:
+        raise ValueError(f"max_px must be positive, got {max_px}")
+    if gate not in CROP_GATES:
+        raise ValueError(f"gate must be one of {CROP_GATES}, got {gate!r}")
+    n = f"{int(max_px) // 1000}k" if int(max_px) % 1000 == 0 else f"{int(max_px)}"
+    return f"Cs{n}" + CROP_GATE_SUFFIX[gate]
 
 
 def parse_args():
@@ -187,6 +232,31 @@ def parse_args():
                          "tracker state and every later frame are unchanged. Folder suffix Fs "
                          "(after Sd<TAG>); an explicit --out must carry it too. Excludes "
                          "--xview-mode E (its seed frame is written by the two-pass loop).")
+    ap.add_argument("--crop-small", type=int, default=0, metavar="MAXPX",
+                    help="S2-R2 (docs/stage2-R2-prereg.md): after the write loop, track every "
+                         "scored (camera, object) whose prompt has 0 < area < MAXPX pixels "
+                         "again inside a square window around the prompt (crop_track.py's "
+                         "rule: side = clamp(ceil(scale * max(box w, h)), min-side, min(H, W)), "
+                         "the num_frame frames, frame-0 mask prompt, forward) on the temporal "
+                         "predictor, and overwrite its frames start+1 .. start+num_frame-1 "
+                         "with the crop result when --crop-gate keeps it. The prompt is the "
+                         "ground truth (== obj) on c_ini and masks_spatial (after --seeds-from) "
+                         "elsewhere. Frame start is never touched; a reverted pair keeps the "
+                         "mainline masks. 0 = off (default; same code path and bytes as before). "
+                         "Folder suffix Cs<MAXPX/1000>k + G1/G2 (after Fs); an explicit --out "
+                         "must carry it too. MVOpt only; excludes --xview-mode E.")
+    ap.add_argument("--crop-gate", choices=CROP_GATES, default=None,
+                    help=f"gate of --crop-small (default {CROP_GATE_DEFAULT}): none keeps every "
+                         "target; v1 reverts a pair whose crop mask at frame start+1 has "
+                         "IoU < 0.05 with the prompt; v2 also reverts when zoom = 1008 / side "
+                         "< 1.2 or the mask lies on a window edge (not an image edge) in >= 10 "
+                         "of the written frames (docs/stage2-R1c-prereg.md). Needs --crop-small.")
+    ap.add_argument("--crop-scale", type=float, default=None, metavar="S",
+                    help=f"--crop-small window: side = ceil(S * max(box w, h)) (default "
+                         f"{CROP_SCALE_DEFAULT:g}). Needs --crop-small.")
+    ap.add_argument("--crop-min-side", type=int, default=None, metavar="PX",
+                    help=f"--crop-small window: side is at least PX (default "
+                         f"{CROP_MIN_SIDE_DEFAULT}; capped at min(H, W)). Needs --crop-small.")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -463,6 +533,44 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         elif FRAME0_SUFFIX not in out_name:
             sys.exit(f"refusing to write a --frame0-seed run into {out_name}: the name must "
                      f"carry {FRAME0_SUFFIX} (a control folder has no frame-0 marker)")
+    # --crop-small: after Fs (Rp/Sd -> Fs -> Cs).  crop = None when off, so main() and the
+    # manifest see one value; the settings are resolved here so the folder name, the run
+    # and the manifest all carry the same numbers.
+    crop = None
+    crop_px = getattr(args, "crop_small", 0) or 0
+    crop_gate = getattr(args, "crop_gate", None)
+    crop_scale = getattr(args, "crop_scale", None)
+    crop_min_side = getattr(args, "crop_min_side", None)
+    if crop_px < 0:
+        sys.exit(f"--crop-small takes a pixel area (0 = off), not {crop_px}")
+    if not crop_px:
+        stray = [f for f, v in (("--crop-gate", crop_gate), ("--crop-scale", crop_scale),
+                                ("--crop-min-side", crop_min_side)) if v is not None]
+        if stray:
+            sys.exit(f"{stray} need --crop-small MAXPX (0 = off: the crop pass does not run)")
+    else:
+        if args.algo not in CROP_SMALL_ALGOS:
+            sys.exit(f"--crop-small is wired into {CROP_SMALL_ALGOS} only, not {args.algo}")
+        if two_pass:
+            sys.exit(f"--crop-small and --xview-mode {mode_eff} do not combine: the two-pass "
+                     "loop owns the written frames (run_two_pass)")
+        # local names must not shadow `gate` (the P12 xview gate above)
+        c_gate = CROP_GATE_DEFAULT if crop_gate is None else crop_gate
+        if c_gate not in CROP_GATES:
+            sys.exit(f"--crop-gate must be one of {CROP_GATES}, not {c_gate!r}")
+        c_scale = CROP_SCALE_DEFAULT if crop_scale is None else float(crop_scale)
+        c_min_side = CROP_MIN_SIDE_DEFAULT if crop_min_side is None else int(crop_min_side)
+        if c_scale <= 0 or c_min_side <= 0:
+            sys.exit("--crop-scale and --crop-min-side must be positive")
+        c_suffix = crop_suffix(crop_px, c_gate)
+        # same rule as Sd/Fs: a crop run must never land on the folder its control wrote
+        if not args.out:
+            out_name += c_suffix
+        elif c_suffix not in out_name:
+            sys.exit(f"refusing to write a --crop-small run into {out_name}: the name must "
+                     f"carry {c_suffix} (a control folder has no crop marker)")
+        crop = dict(max_px=int(crop_px), gate=c_gate, scale=c_scale, min_side=c_min_side,
+                    suffix=c_suffix)
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -475,7 +583,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
-                two_pass=two_pass, frame0_seed=frame0_seed,
+                two_pass=two_pass, frame0_seed=frame0_seed, crop=crop,
                 closure_reach=(len(track_idx) if track_mode == "closure" else None),
                 xview_gate=gate, xview_ptr=ptr, xview_tpos_shift=shift)
 
@@ -770,6 +878,159 @@ def build_runner(algo):
                              frame_index=frame_idx, output_for=output_for))
             return response["outputs"]
 
+        def CropSmall(self, ds_dir, out_dir, cam_names, written_cams, c_ini_cam, start_frame,
+                      num_frame, max_px, gate, scale, min_side, cv2, np):
+            """S2-R2 (docs/stage2-R2-prereg.md section 1): crop-track the small objects of
+            the scored cameras and overwrite their frames start+1 .. start+num_frame-1.
+
+            Runs after the write loop: every mainline mask is on disk and the temporal
+            sessions have yielded their last frame.  Nothing here reads a neighbour memory
+            and no crop session writes into a mainline session (the R1 definition: the
+            crop result does not flow into the neighbour memories either -- they are done).
+            The target rule, window, tracking loop and paste-back are crop_track.py's; the
+            gate is crop_guard.py's, as crop_track.gate_verdict:
+              prompt   c_ini: the ground truth (== obj); other cameras:
+                       masks_spatial[view][obj] as TrackForward consumed it (after
+                       --seeds-from) -- the frame-0 PNG of a --frame0-seed run
+              target   0 < prompt area < max_px, over self.obj_ids
+              window   side = clamp(ceil(scale * max(box w, h)), min_side, min(H, W)), square
+                       centred on the prompt box, pushed inside the image; the same window
+                       for the num_frame frames start .. start+num_frame-1, read from the
+                       original JPGs
+              session  one per target on self.predictor: start_session over the crops,
+                       reset, frame-0 mask prompt, forward propagation capped at num_frame,
+                       close_session; session_ids=[sid] so the cross-view gather sees no
+                       neighbour
+              gate     none / v1 (IoU(crop frame 1, prompt) < 0.05) / v2 (v1, zoom < 1.2,
+                       window-edge frames >= 10); a reverted pair keeps the mainline PNGs
+              write    kept pairs: frames start+1 .. start+num_frame-1 as the crop mask
+                       pasted into a full canvas (0 outside the window), the mainline's
+                       PNG encoding; frame start is never touched
+            Returns the "crop_small" block of MANIFEST.json (plain JSON types).
+            """
+            ct = crop_track_module()
+            t_start = time.time()
+            H, W = int(self.video_height), int(self.video_width)
+            views = {name: i for i, name in enumerate(cam_names)}
+            cams = [cam for cam in written_cams if cam in views]
+            objs = [int(o) for o in self.obj_ids]
+            gt = None
+            if c_ini_cam is not None and c_ini_cam in cams:
+                gt_path = os.path.join(ds_dir, "Mask", c_ini_cam, f"{start_frame:06d}.png")
+                gt = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
+                if gt is None:
+                    raise FileNotFoundError(gt_path)
+                if gt.shape != (H, W):
+                    raise ValueError(f"{gt_path}: {gt.shape[1]}x{gt.shape[0]} but the video "
+                                     f"is {W}x{H}")
+            seeds = {}                                 # (cam, obj) -> bool (H, W)
+
+            def prompt(cam, obj):
+                if gt is not None and cam == c_ini_cam:
+                    return gt, obj, obj, ct.PROMPT_GT
+                m = self.masks_spatial.get(views[cam], {}).get(obj)
+                if m is None:
+                    return None
+                m = m.cpu().numpy() if hasattr(m, "cpu") else np.asarray(m)
+                m = np.squeeze(m).astype(bool)
+                if m.shape != (H, W):
+                    raise ValueError(f"{cam} obj {obj}: seed is {m.shape}, the video is {(H, W)}")
+                seeds[(cam, obj)] = m
+                return m.astype(np.uint8), 1, 1, ct.PROMPT_SEED
+
+            targets, skipped, _ = ct.select_targets_from(cams, objs, prompt, max_px,
+                                                         scale=scale, min_side=min_side)
+            print(f"crop small     {len(targets)} targets of {len(cams) * len(objs)} (cam, obj) "
+                  f"pairs (0 < prompt px < {max_px}); gate {gate}, scale {scale:g}, "
+                  f"min side {min_side}", flush=True)
+            frames, frames_cam = None, None
+            n_written = 0
+            for t in targets:
+                t0 = time.time()
+                cam, obj = t["cam"], t["obj"]
+                cx0, cy0, side = t["crop"][0], t["crop"][1], t["side"]
+                if frames_cam != cam:
+                    frames = ct.read_frames(cv2, os.path.join(ds_dir, "Video", cam),
+                                            start_frame, num_frame)
+                    frames_cam = cam
+                    if any(f.shape[:2] != (H, W) for f in frames):
+                        raise ValueError(f"{cam}: video frames are not {W}x{H}")
+                full = (gt == obj) if (gt is not None and cam == c_ini_cam) else seeds[(cam, obj)]
+                prompt_crop = full[cy0:cy0 + side, cx0:cx0 + side]
+                crops = [np.ascontiguousarray(f[cy0:cy0 + side, cx0:cx0 + side]) for f in frames]
+                masks = ct.track_crop(self.predictor, torch, np, AsyncVideoFrameCPUToGPU, crops,
+                                      prompt_crop, obj, num_frame,
+                                      multi_session=bool(getattr(self, "uses_spatial_predictor",
+                                                                 False)))
+                canvases, areas, empty, touching = {}, [], 0, 0
+                for k in range(num_frame):
+                    m = masks.get(k)
+                    if m is None:
+                        m = np.zeros((side, side), dtype=bool)
+                    a = int(m.sum())
+                    areas.append(a)
+                    if k == 0:
+                        continue                       # frame start is never touched
+                    empty += int(a == 0)
+                    touching += int(ct.touches_window_edge(m, cx0, cy0, H, W))
+                    canvases[k] = ct.paste_back(m, cx0, cy0, H, W)
+                iou_f1 = ct.mask_iou(canvases[1], full) if 1 in canvases else 1.0
+                kept, why = ct.gate_verdict(gate, iou_f1, t["zoom"], touching)
+                # PNGs the mainline never wrote (its tracker dropped the object there):
+                # a kept pair writes them, the folder gains that many files
+                no_png = sum(1 for k in canvases
+                             if not os.path.isfile(os.path.join(out_dir, cam, f"{start_frame + k:d}",
+                                                                f"{obj:d}.png")))
+                if kept:
+                    for k, canvas in sorted(canvases.items()):
+                        folder = os.path.join(out_dir, cam, f"{start_frame + k:d}")
+                        os.makedirs(folder, exist_ok=True)
+                        cv2.imwrite(os.path.join(folder, f"{obj:d}.png"),
+                                    canvas.astype(np.uint8) * 255)
+                        n_written += 1
+                t.update({"iou_f1_seed": round(iou_f1, 6), "frames_empty": empty,
+                          "frames_touching_border": touching, "frames_yielded": len(masks),
+                          "frames_no_mainline_png": no_png, "areas": areas,
+                          "kept": bool(kept), "why": why,
+                          "seconds": round(time.time() - t0, 2)})
+                print(f"  {cam:<12} obj {obj:>3}  {t['prompt']:<4} {t['seed_px']:>6} px  side "
+                      f"{side:>4}  zoom {t['zoom']:.2f}  iou f1 {iou_f1:.3f}  empty "
+                      f"{empty}/{num_frame - 1}  border {touching}/{num_frame - 1}  "
+                      f"{'kept' if kept else 'reverted (' + str(why) + ')'}  "
+                      f"{t['seconds']:.1f} s", flush=True)
+            frames = None
+            reverted = [t for t in targets if not t["kept"]]
+            return {"max_px": int(max_px), "gate": gate, "scale": float(scale),
+                    "min_side": int(min_side), "image_size": ct.IMAGE_SIZE,
+                    "tau": ct.GATE_TAU if gate != "none" else None,
+                    "zoom_min": ct.GATE_ZOOM_MIN if gate == "v2" else None,
+                    "border_max": ct.GATE_BORDER_MAX if gate == "v2" else None,
+                    "prereg": "docs/stage2-R2-prereg.md",
+                    "rule": {"target": "0 < prompt px < max_px, over the prompted objects of "
+                                       "the scored cameras",
+                             "prompt": "c_ini: ground truth == obj; other cameras: "
+                                       "masks_spatial[view][obj] (after --seeds-from)",
+                             "side": "clamp(ceil(scale * max(box w, box h)), min_side, "
+                                     "min(H, W)), square centred on the box, pushed inside "
+                                     "the image",
+                             "box": "[x0, y0, x1, y1], x1/y1 exclusive; crop = [x0, y0]",
+                             "gate": "none: keep all; v1: revert when iou_f1_seed < tau; "
+                                     "v2: v1, or zoom < zoom_min, or "
+                                     "frames_touching_border >= border_max",
+                             "frames_replaced": [int(start_frame) + 1,
+                                                 int(start_frame) + int(num_frame) - 1],
+                             "frames_touching_border": "written frames whose mask lies on a "
+                                                       "window edge that is not an image edge",
+                             "frames_no_mainline_png": "written frames for which the mainline "
+                                                       "wrote no PNG (its tracker dropped the "
+                                                       "object; scored as empty)"},
+                    "c_ini": c_ini_cam, "cameras": cams, "objects": objs,
+                    "n_targets": len(targets), "n_kept": len(targets) - len(reverted),
+                    "n_reverted": len(reverted),
+                    "reverted": [[t["cam"], t["obj"], t["why"]] for t in reverted],
+                    "targets": targets, "skipped": skipped, "n_png_written": n_written,
+                    "seconds": round(time.time() - t_start, 1)}
+
     return MVSegVideo, torch
 
 
@@ -894,6 +1155,10 @@ def main():
     print(f"seed repair    {'on (Rp, max 2 rounds)' if run['repair_seeds'] else 'off'}",
           flush=True)
     print(f"frame0 seed    {'on (Fs: start_frame PNG = the seed, not its re-prediction)' if run['frame0_seed'] else 'off'}",
+          flush=True)
+    print("crop small     " + (f"on ({run['crop']['suffix']}: prompt < {run['crop']['max_px']} px, "
+                               f"gate {run['crop']['gate']}, scale {run['crop']['scale']:g}, "
+                               f"min side {run['crop']['min_side']})" if run["crop"] else "off"),
           flush=True)
     if seed_pre is not None:
         n_png = sum(len(p) for p in seed_pre["pngs"].values())
@@ -1045,6 +1310,22 @@ def main():
                   f"in {frame0_stats['n_views']} views, {frame0_stats['tracker']} from the "
                   f"tracker (no seed){': ' + str(fell_back) if fell_back else ''}", flush=True)
 
+    # --crop-small (S2-R2): after every mainline PNG is on disk, before the counters and
+    # the manifest.  None when off, so the manifest carries one value either way.
+    crop_stats = None
+    if run["crop"]:
+        cs = run["crop"]
+        c_ini_cam = (cam_name(c["c_ini"], c["prefix"], c["prefix1"])
+                     if c.get("c_ini") is not None else None)
+        crop_stats = sc.CropSmall(ds_dir, out_dir, cam_names, written_cams, c_ini_cam,
+                                  c["start_frame"], c["num_frame"], cs["max_px"], cs["gate"],
+                                  cs["scale"], cs["min_side"], cv2, np)
+        print(f"crop small     {crop_stats['n_kept']} kept, {crop_stats['n_reverted']} reverted "
+              f"of {crop_stats['n_targets']} targets; {crop_stats['n_png_written']} PNG "
+              f"overwritten ({crop_stats['seconds']} s)"
+              + (": " + ", ".join(f"{cam}/{obj} ({why})" for cam, obj, why in crop_stats["reverted"])
+                 if crop_stats["reverted"] else ""), flush=True)
+
     # P12 counters (filled only while a knob is on): one summary line, and the manifest.
     xstats = xview_stats_summary(getattr(tracker, "xview_stats", None), eff_gate)
     if xstats is not None:
@@ -1095,6 +1376,7 @@ def main():
                    "seed_repair": repair_stats,
                    "seeds_from": seeds_stats,
                    "frame0_seed": run["frame0_seed"], "frame0_seed_stats": frame0_stats,
+                   "crop_small": crop_stats,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run

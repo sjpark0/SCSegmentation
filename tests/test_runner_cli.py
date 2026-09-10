@@ -30,7 +30,8 @@ def clean_env(monkeypatch):
 def ns(**kw):
     d = dict(algo="MVOpt", xview_window=None, xview_hygiene=False, track_cams=None, out=None,
              xview_mode=None, xview_gate=False, xview_ptr=False, xview_tpos_shift=None,
-             ref_cam=None, repair_seeds=False, seeds_from=None, frame0_seed=False)
+             ref_cam=None, repair_seeds=False, seeds_from=None, frame0_seed=False,
+             crop_small=0, crop_gate=None, crop_scale=None, crop_min_side=None)
     d.update(kw)
     return argparse.Namespace(**d)
 
@@ -672,3 +673,170 @@ def test_parse_args_frame0_seed(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--frame0-seed", "1"])
     with pytest.raises(SystemExit):                                   # store_true takes no value
         mod.parse_args()
+
+
+# ------------------------------------------------- small-object crop tracking: --crop-small
+# S2-R2 (docs/stage2-R2-prereg.md section 1).  Suffix Cs<max/1000>k + G1/G2 goes after Fs
+# (Rp / Sd<tag> -> Fs -> Cs), so a crop run never lands on the folder its control wrote;
+# the assembled R1 folders are Cr<..>G2 and stay distinct.
+def test_crop_suffix():
+    assert mod.crop_suffix(10000, "v2") == "Cs10kG2"
+    assert mod.crop_suffix(10000, "v1") == "Cs10kG1"
+    assert mod.crop_suffix(10000, "none") == "Cs10k"
+    assert mod.crop_suffix(2000, "v2") == "Cs2kG2"
+    assert mod.crop_suffix(1000, "v2") == "Cs1kG2"
+    assert mod.crop_suffix(2500, "v2") == "Cs2500G2"           # not a multiple of 1000: exact
+    assert mod.crop_suffix(500, "none") == "Cs500"
+    for bad in (0, -1):
+        with pytest.raises(ValueError):
+            mod.crop_suffix(bad, "v2")
+    with pytest.raises(ValueError):
+        mod.crop_suffix(10000, "G2")
+    assert mod.CROP_GATES == ("none", "v1", "v2") and mod.CROP_GATE_DEFAULT == "v2"
+    assert (mod.CROP_SCALE_DEFAULT, mod.CROP_MIN_SIDE_DEFAULT) == (4.0, 256)
+
+
+@pytest.mark.parametrize("ds", sorted(CANONICAL_K))
+def test_crop_small_suffix_table(ds):
+    cam_names, written = cams(ds)
+    K = CANONICAL_K[ds]
+    for flags, base_name, ref in ((dict(xview_window=0), "SegMaskSam3XW0M", "M"),
+                                  (dict(xview_window=0, frame0_seed=True), "SegMaskSam3XW0MFs", "M"),
+                                  (dict(xview_window=0, seeds_from="MVSeed_control", frame0_seed=True),
+                                   "SegMaskSam3XW0MSdcontrolFs", "M"),
+                                  (dict(xview_window=0, repair_seeds=True, frame0_seed=True),
+                                   "SegMaskSam3XW0MRpFs", "M"),
+                                  (dict(xview_window=1, xview_mode="C", xview_gate=True,
+                                        xview_ptr=True, xview_tpos_shift=4, frame0_seed=True),
+                                   "SegMaskSam3XW1CGPS4MFs", "M"),
+                                  (dict(xview_window=1, xview_mode="B"), "SegMaskSam3XW1B", None),
+                                  (dict(), "SegMaskSam3MVOpt", None)):
+        base = mod.resolve_run(ns(**flags), cam_names, written, num_frame=21, ref_suffix=ref)
+        assert base["out_name"] == base_name and base["crop"] is None
+        r = mod.resolve_run(ns(crop_small=10000, **flags), cam_names, written, num_frame=21,
+                            ref_suffix=ref)
+        assert r["out_name"] == base_name + "Cs10kG2", (ds, flags)
+        assert r["crop"] == dict(max_px=10000, gate="v2", scale=4.0, min_side=256, suffix="Cs10kG2")
+        assert r["two_pass"] is False
+        # the flag changes nothing else about the run (sessions, kwargs, lineage, seeds, Fs)
+        assert {k: v for k, v in r.items() if k not in ("out_name", "crop")} == \
+               {k: v for k, v in base.items() if k not in ("out_name", "crop")}
+        # gate / scale / min-side reach the name and the run dict as given
+        r = mod.resolve_run(ns(crop_small=2000, crop_gate="v1", crop_scale=3.0, crop_min_side=128,
+                               **flags), cam_names, written, num_frame=21, ref_suffix=ref)
+        assert r["out_name"] == base_name + "Cs2kG1"
+        assert r["crop"] == dict(max_px=2000, gate="v1", scale=3.0, min_side=128, suffix="Cs2kG1")
+        r = mod.resolve_run(ns(crop_small=2500, crop_gate="none", **flags), cam_names, written,
+                            num_frame=21, ref_suffix=ref)
+        assert r["out_name"] == base_name + "Cs2500" and r["crop"]["gate"] == "none"
+    r = mod.resolve_run(ns(xview_window=0, crop_small=10000), cam_names, written, num_frame=21)
+    assert r["track_idx"] == list(range(K)) and r["out_name"] == "SegMaskSam3XW0Cs10kG2"
+    # --track-cams all keeps its own marker, then the reference, Sd, Fs, Cs
+    r = mod.resolve_run(ns(xview_window=0, track_cams="all", seeds_from="MVSeed_control",
+                           frame0_seed=True, crop_small=10000), cam_names, written, num_frame=21,
+                        ref_suffix="M")
+    assert r["out_name"] == "SegMaskSam3XW0allMSdcontrolFsCs10kG2"
+    # an explicit --out is kept as long as it carries the marker(s)
+    r = mod.resolve_run(ns(xview_window=0, out="SegMaskSam3XWmineCs10kG2", crop_small=10000),
+                        cam_names, written, num_frame=21, ref_suffix="M")
+    assert r["out_name"] == "SegMaskSam3XWmineCs10kG2"
+    r = mod.resolve_run(ns(xview_window=0, out="SegMaskSam3XWmineFsCs10kG2", crop_small=10000,
+                           frame0_seed=True), cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XWmineFsCs10kG2"
+    r = mod.resolve_run(ns(xview_window=0, out="ScratchCs10kx", crop_small=10000,
+                           crop_gate="none"), cam_names, written, num_frame=21)
+    assert r["out_name"] == "ScratchCs10kx"
+
+
+def test_crop_small_refusals_and_defaults():
+    cam_names, written = cams("Fencing")
+    # mode E: the two-pass loop owns the written frames
+    for flags in (dict(xview_window=1, xview_mode="E"),
+                  dict(xview_window=2, xview_mode="E", seeds_from="MVSeed_control"),
+                  dict(xview_window=1, xview_mode="E", out="SegMaskSam3XWmineCs10kG2")):
+        assert mod.resolve_run(ns(**flags), cam_names, written, num_frame=21)["two_pass"] is True
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(crop_small=10000, **flags), cam_names, written, num_frame=21)
+    # the crop knobs without --crop-small would be silently inert: refused
+    for extra in (dict(crop_gate="v2"), dict(crop_gate="none"), dict(crop_scale=4.0),
+                  dict(crop_min_side=256)):
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, **extra), cam_names, written, num_frame=21)
+    with pytest.raises(SystemExit):
+        mod.resolve_run(ns(xview_window=0, crop_small=-1), cam_names, written, num_frame=21)
+    for bad in (dict(crop_scale=0.0), dict(crop_scale=-4.0), dict(crop_min_side=0),
+                dict(crop_gate="G2")):
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, crop_small=10000, **bad), cam_names, written,
+                            num_frame=21)
+    # MVOpt only (the temporal predictor's request shape and masks_spatial are its)
+    for algo in ("OneStage", "OneStageNew"):
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(algo=algo, crop_small=10000), cam_names, written)
+    # an explicit --out without the marker could be a control folder: refused
+    for out in ("SegMaskSam3XW0M", "SegMaskSam3XW0MFs", "SegMaskSam3MVOpt", "Whatever",
+                "SegMaskSam3XW0MFsCr10kG2", "SegMaskSam3XW0MFsCs10k", "SegMaskSam3XW0MFsCs10kG1",
+                "SegMaskSam3XW0MFscs10kg2"):
+        with pytest.raises(SystemExit):
+            mod.resolve_run(ns(xview_window=0, out=out, frame0_seed=True, crop_small=10000),
+                            cam_names, written, num_frame=21, ref_suffix="M")
+    # ... and with --frame0-seed both markers are needed
+    with pytest.raises(SystemExit):
+        mod.resolve_run(ns(xview_window=0, out="SegMaskSam3XW0MCs10kG2", frame0_seed=True,
+                           crop_small=10000), cam_names, written, num_frame=21)
+    # the existing guards still apply after the suffix logic
+    with pytest.raises(SystemExit):
+        mod.resolve_run(ns(xview_window=0, crop_small=10000, track_cams="written"),
+                        cam_names, written, num_frame=21)
+    with pytest.raises(SystemExit):
+        mod.resolve_run(ns(xview_window=0, crop_small=10000, seeds_from="MVSeed_control",
+                           repair_seeds=True), cam_names, written, num_frame=21)
+    # off by default: ns(), and a namespace without the attributes (a legacy caller)
+    r = mod.resolve_run(ns(xview_window=0), cam_names, written, num_frame=21)
+    assert r["crop"] is None and r["out_name"] == "SegMaskSam3XW0"
+    assert mod.resolve_run(ns(), cam_names, written)["crop"] is None
+    legacy = argparse.Namespace(algo="MVOpt", xview_window=0, xview_hygiene=False,
+                                track_cams=None, out=None, xview_mode=None)
+    r = mod.resolve_run(legacy, cam_names, written, num_frame=21)
+    assert r["out_name"] == "SegMaskSam3XW0" and r["crop"] is None
+    # the gate names and the rule constants are crop_track's (one definition)
+    ct = mod.crop_track_module()
+    assert ct is mod.crop_track_module()
+    assert os.path.samefile(ct.__file__, os.path.join(REPO, "SCSam3", "crop_track.py"))
+    assert mod.CROP_GATES == ct.GATES
+    assert (mod.CROP_SCALE_DEFAULT, mod.CROP_MIN_SIDE_DEFAULT) == (ct.DEFAULT_SCALE, ct.DEFAULT_MIN_SIDE)
+
+
+def test_parse_args_crop_small(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing"])
+    a = mod.parse_args()
+    assert (a.crop_small, a.crop_gate, a.crop_scale, a.crop_min_side) == (0, None, None, None)
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--algo", "MVOpt", "--xview-window", "1",
+                                      "--xview-mode", "C", "--xview-gate", "--xview-ptr",
+                                      "--xview-tpos-shift", "4", "--ref-cam", "muvod", "--frame0-seed",
+                                      "--crop-small", "10000", "--crop-gate", "v2"])
+    a = mod.parse_args()
+    assert (a.crop_small, a.crop_gate, a.frame0_seed, a.ref_cam) == (10000, "v2", True, "muvod")
+    cam_names, written = cams("Fencing")
+    c = mod.load_config(CONFIG, "Fencing")
+    _, ref = mod.resolve_ref_cam(a.ref_cam, c["cam_list"], c["c_ini"])
+    r = mod.resolve_run(a, cam_names, written, num_frame=21, ref_suffix=ref)
+    assert r["out_name"] == "SegMaskSam3XW1CGPS4MFsCs10kG2"          # the S2-R2 headline run
+    assert r["crop"] == dict(max_px=10000, gate="v2", scale=4.0, min_side=256, suffix="Cs10kG2")
+    # the same run without the crop flags resolves to the control's name
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--algo", "MVOpt", "--xview-window", "1",
+                                      "--xview-mode", "C", "--xview-gate", "--xview-ptr",
+                                      "--xview-tpos-shift", "4", "--ref-cam", "muvod", "--frame0-seed"])
+    r = mod.resolve_run(mod.parse_args(), cam_names, written, num_frame=21, ref_suffix=ref)
+    assert r["out_name"] == "SegMaskSam3XW1CGPS4MFs" and r["crop"] is None
+    monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--algo", "MVOpt", "--xview-window", "0",
+                                      "--crop-small", "2000", "--crop-scale", "3", "--crop-min-side", "128"])
+    a = mod.parse_args()
+    assert (a.crop_small, a.crop_gate, a.crop_scale, a.crop_min_side) == (2000, None, 3.0, 128)
+    assert mod.resolve_run(a, cam_names, written, num_frame=21)["crop"] == \
+           dict(max_px=2000, gate="v2", scale=3.0, min_side=128, suffix="Cs2kG2")
+    for bad in (["--crop-gate", "G2"], ["--crop-gate", "V2"], ["--crop-small"], ["--crop-small", "10k"],
+                ["--crop-min-side", "256.5"]):
+        monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--algo", "MVOpt", "--xview-window", "0"] + bad)
+        with pytest.raises(SystemExit):
+            mod.parse_args()
