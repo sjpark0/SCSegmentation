@@ -11,10 +11,14 @@ spec.loader.exec_module(gate)
 
 
 def _row(scene, cam, obj, gt_px, best, rank=1, top1=None, box=None, pts=None, n_union=2, rig="pinhole", top1_prob=0.8):
-    return {"scene": scene, "cam": cam, "obj": obj, "gt_px": gt_px, "rig": rig, "best_iou": best, "best_rank": rank if n_union else None,
-            "top1_iou": best if top1 is None else top1, "top1_prob": top1_prob if n_union else None, "n_union": n_union, "n_union_dedup": n_union,
+    box = best if box is None else box
+    pts = best if pts is None else pts
+    top1 = best if top1 is None else top1
+    return {"scene": scene, "cam": cam, "obj": obj, "gt_px": gt_px, "rig": rig, "best_iou": best, "exist": best >= 0.5,
+            "best_rank": rank if n_union else None, "best_rank_raw": rank if n_union else None,
+            "top1_iou": top1, "top1_hit": top1 >= 0.5, "top1_prob": top1_prob if n_union else None, "n_union": n_union, "n_union_dedup": n_union,
             "n_cand": {"box": n_union // 2, "pts": n_union - n_union // 2},
-            "best_iou_by_run": {"box": best if box is None else box, "pts": best if pts is None else pts}}
+            "best_iou_by_run": {"box": box, "pts": pts}, "exist_by_run": {"box": box >= 0.5, "pts": pts >= 0.5}}
 
 
 def _rows(n_ge2k=19, n_pin=16, exist_ge2k=12, exist_pin=9, n_lt2k=22, n_n0=623, n_empty=132, halluc=10, rank=1):
@@ -44,6 +48,20 @@ def test_tag_and_summary_pass_case():
     assert s["gates"]["gate1_exist_ge2k"]["pass"] and s["gates"]["gate1p_pinhole"]["pass"] and s["gates"]["gate2_rank"]["pass"] and s["gates"]["gate3_halluc"]["pass"]
     assert s["gates"]["verdict"] == "proceed"
     assert set(s["f0_by_kind"]) == {"misplaced", "empty"} and s["n0_by_size"][">=10000"]["n"] == 0
+    assert set(s["n0_by_size"]) == {"<2000", "2000-10000", ">=10000"}      # score_seeds.SIZE_BINS labels
+    assert s["f0_ge2k"]["exist_box"] == 12 and s["f0_ge2k"]["exist_pts"] == 12
+
+
+def test_gate_boundaries_are_exact_integer_rules():
+    # 11/19 = 0.5789 passes; 10/19 fails; hallucination 13/132 passes, 14/132 fails (exact, no rounding)
+    for ex, ok in ((11, True), (10, False)):
+        rows, f0, n0 = _rows(exist_ge2k=ex, exist_pin=8)
+        s = gate.summarize_gate([gate.tag_row(dict(r), *gate.membership(f0, n0)) for r in rows])
+        assert s["gates"]["gate1_exist_ge2k"]["pass"] is ok
+    for h, ok in ((13, True), (14, False)):
+        rows, f0, n0 = _rows(halluc=h)
+        s = gate.summarize_gate([gate.tag_row(dict(r), *gate.membership(f0, n0)) for r in rows])
+        assert s["gates"]["gate3_halluc"]["pass"] is ok
 
 
 def test_gate_thresholds_and_contingencies():
@@ -95,10 +113,39 @@ def test_score_union_ranks_pooled_candidates_and_dedups():
     rec = gate.score_union(runs, gt, (H, W))
     assert rec["n_cand"] == {"box": 2, "pts": 1} and rec["n_union"] == 3
     assert rec["best_src"] == "pts" and rec["best_rank"] == 2                # prob order: 0.9 box, 0.7 pts, 0.6 box
-    assert rec["best_iou"] > 0.5 and rec["top1_iou"] < 0.5 and rec["top1_src"] == "box"
+    assert rec["exist"] and rec["best_iou"] > 0.5 and rec["top1_iou"] < 0.5 and not rec["top1_hit"] and rec["top1_src"] == "box"
     assert rec["best_iou_by_run"]["box"] == rec["best_iou_by_run"]["pts"] == rec["best_iou"]
+    assert rec["exist_by_run"] == {"box": True, "pts": True}
     assert rec["n_union_dedup"] == 2                                          # the two target copies collapse
     empty = gate.score_union(runs, torch.zeros(H, W, dtype=torch.bool), (H, W))
-    assert empty["best_iou"] == 0.0 and empty["n_union"] == 3                 # gt-empty: IoU 0 by definition
+    assert empty["best_iou"] == 0.0 and not empty["exist"] and empty["n_union"] == 3   # gt-empty: IoU 0 by definition
     none = gate.score_union({"box": [], "pts": []}, gt, (H, W))
-    assert none["n_union"] == 0 and none["best_rank"] is None and none["top1_prob"] is None
+    assert none["n_union"] == 0 and none["best_rank"] is None and none["top1_prob"] is None and not none["exist"]
+    # a near-duplicate copy: the lower-prob pts copy has the marginally higher IoU, but the registered rank is
+    # that of the highest-ranked copy (box at rank 1); the raw index is kept for reporting
+    runs2 = {"box": [(0.9, m(1, 3, 1, 3))], "pts": [(0.8, m(1, 3, 1, 3, v=5.0) + torch.tensor([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0.]]))]}
+    runs2["pts"][0][1][3, 3] = 5.0                                            # one extra low-res cell: IoU with the copy 0.8, with gt lower
+    rec2 = gate.score_union(runs2, gt, (H, W))
+    assert rec2["best_src"] == "box" and rec2["best_rank"] == 1 and rec2["best_rank_raw"] == 1
+    runs3 = {"box": [(0.9, m(1, 3, 1, 3)), (0.85, m(0, 1, 0, 1))], "pts": [(0.7, m(1, 3, 1, 4))]}   # pts copy overlaps the box copy (IoU 2/3) with lower gt IoU
+    rec3 = gate.score_union(runs3, gt, (H, W))
+    assert rec3["best_src"] == "box" and rec3["best_rank"] == 1
+    gt2 = torch.zeros(H, W, dtype=torch.bool); gt2[2:6, 2:8] = True          # now the wider pts copy is the better match
+    rec4 = gate.score_union(runs3, gt2, (H, W))
+    assert rec4["best_src"] == "pts" and rec4["best_rank_raw"] == 3 and rec4["best_rank"] == 1   # collapsed onto the rank-1 box copy
+
+
+def test_expected_keys_and_load_part(tmp_path):
+    cfg = {"S": {"c_ini": 1, "prefix": "cam", "prefix1": 1}}
+    census = {"S": {"cameras": ["cam1", "cam2", "cam3"], "seed_ids_c_ini": [3, 7]}}
+    keys = gate.expected_keys("S", cfg, census)
+    assert keys == [("cam2", 3), ("cam3", 3), ("cam2", 7), ("cam3", 7)]
+    part = tmp_path / "S.json"
+    assert gate.load_part(str(part), keys) is None                           # missing
+    part.write_text("[{\"cam\": \"cam2\", \"obj\": 3}")                        # truncated
+    assert gate.load_part(str(part), keys) is None
+    import json
+    part.write_text(json.dumps([{"cam": c, "obj": o} for c, o in keys[:2]]))  # incomplete enumeration
+    assert gate.load_part(str(part), keys) is None
+    part.write_text(json.dumps([{"cam": c, "obj": o} for c, o in keys]))
+    assert len(gate.load_part(str(part), keys)) == 4

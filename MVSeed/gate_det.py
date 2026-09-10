@@ -39,7 +39,9 @@ GATE2_MAX_RANK_MEDIAN = 3   # rank of the best-IoU candidate among the existing 
 GATE3_MAX_RATE = 0.10       # gt-empty rows with >= 1 candidate
 REGISTERED = {"f0_ge2k": 19, "f0_ge2k_pinhole": 16, "f0_lt2k": 22, "n0": 623, "gt_empty": 132}
 DEDUPE_IOU = 0.5            # report only: union size after cross-run duplicate removal
-HEMISPHERE = ("AlexaMeadeExhibit", "AlexaMeadeFacePaint", "Dog", "Welder")   # == MVSeed/score_seeds.HEMISPHERE (asserted in main)
+HEMISPHERE = ("AlexaMeadeExhibit", "AlexaMeadeFacePaint", "Dog", "Welder")   # == MVSeed/score_seeds.HEMISPHERE (asserted in the GPU branch)
+SIZE_BINS = ("<2000", "2000-10000", ">=10000")                                # == MVSeed/score_seeds.SIZE_BINS
+CANDIDATE_RULE = (0.5, 0.1)                                                   # registered: score_threshold_detection, det_nms_thresh
 
 
 # ----------------------------------------------------------------------------- pure parts
@@ -73,26 +75,32 @@ def score_union(runs, gt_bool, hw):
         full.append(F.interpolate(m[None, None].float(), size=hw, mode="bilinear", align_corners=False)[0, 0] > 0)
     ious = [_iou(f, gt_bool) if gt_bool.any() else 0.0 for f in full]
     rec = {"n_cand": {name: len(cs) for name, cs in runs.items()}, "n_union": len(pooled)}
+    low = [m > 0 for _, m, _ in pooled]
     # union size after cross-run duplicate removal (greedy, prob order, low-res mask IoU > DEDUPE_IOU)
     kept = []
-    for i, (p, m, name) in enumerate(pooled):
-        mi = m > 0
-        if all(_iou(mi, pooled[j][1] > 0) <= DEDUPE_IOU for j in kept):
+    for i in range(len(pooled)):
+        if all(_iou(low[i], low[j]) <= DEDUPE_IOU for j in kept):
             kept.append(i)
     rec["n_union_dedup"] = len(kept)
-    per_run = {}
+    per_run, exist_run = {}, {}
     for name in runs:
         vals = [iou for iou, (p, m, n) in zip(ious, pooled) if n == name]
         per_run[name] = round(max(vals), 4) if vals else 0.0
+        exist_run[name] = bool(vals) and max(vals) >= IOU_EXIST          # decided on the unrounded IoU
     rec["best_iou_by_run"] = per_run
+    rec["exist_by_run"] = exist_run
     if pooled:
         b = max(range(len(pooled)), key=lambda i: ious[i])
-        rec.update({"best_iou": round(ious[b], 4), "best_rank": b + 1, "best_prob": round(pooled[b][0], 4),
-                    "best_src": pooled[b][2], "top1_iou": round(ious[0], 4), "top1_prob": round(pooled[0][0], 4),
+        # the best-IoU candidate may have a near-duplicate copy from the other run ranked higher;
+        # the registered rank is that of the highest-ranked copy (docs/stage1-E2-prereg.md section 2)
+        first = min(j for j in range(b + 1) if j == b or _iou(low[j], low[b]) > DEDUPE_IOU)
+        rec.update({"exist": ious[b] >= IOU_EXIST, "best_iou": round(ious[b], 4), "best_rank": first + 1,
+                    "best_rank_raw": b + 1, "best_prob": round(pooled[b][0], 4), "best_src": pooled[b][2],
+                    "top1_iou": round(ious[0], 4), "top1_hit": ious[0] >= IOU_EXIST, "top1_prob": round(pooled[0][0], 4),
                     "top1_src": pooled[0][2], "probs": [round(p, 3) for p, _, _ in pooled[:10]]})
     else:
-        rec.update({"best_iou": 0.0, "best_rank": None, "best_prob": None, "best_src": None,
-                    "top1_iou": 0.0, "top1_prob": None, "top1_src": None, "probs": []})
+        rec.update({"exist": False, "best_iou": 0.0, "best_rank": None, "best_rank_raw": None, "best_prob": None,
+                    "best_src": None, "top1_iou": 0.0, "top1_hit": False, "top1_prob": None, "top1_src": None, "probs": []})
     return rec
 
 
@@ -114,7 +122,7 @@ def tag_row(row, f0, n0):
     else:
         assert key in n0, ("gt-present row outside F0 and N0", key)
         row["set"] = "N0"
-    row["size_bin"] = None if row["gt_px"] == 0 else ("<2000" if row["gt_px"] < 2000 else "2000-9999" if row["gt_px"] < 10000 else ">=10000")
+    row["size_bin"] = None if row["gt_px"] == 0 else SIZE_BINS[0] if row["gt_px"] < 2000 else SIZE_BINS[1] if row["gt_px"] < 10000 else SIZE_BINS[2]
     return row
 
 
@@ -131,17 +139,18 @@ def _rate(h, n):
 
 
 def _group(rows):
-    ex = [r for r in rows if r["best_iou"] >= IOU_EXIST]
+    ex = [r for r in rows if r["exist"]]
     g = {"n": len(rows), "exist": len(ex), "exist_rate": _rate(len(ex), len(rows)),
          "rank_median": _median([r["best_rank"] for r in ex]),
          "rank_list": sorted(r["best_rank"] for r in ex),
-         "top1_hit": sum(r["top1_iou"] >= IOU_EXIST for r in rows),
+         "top1_hit": sum(r["top1_hit"] for r in rows),
+         "rank_raw_median": _median([r["best_rank_raw"] for r in ex]),
          "n_union_median": _median([r["n_union"] for r in rows]),
          "n_union_dedup_median": _median([r["n_union_dedup"] for r in rows]),
          "best_iou_median": _median([r["best_iou"] for r in rows])}
     for name in PROMPTS:
-        g[f"exist_{name}"] = sum(r["best_iou_by_run"].get(name, 0.0) >= IOU_EXIST for r in rows)
-    g["exist_by_rig"] = {rig: [sum(1 for r in rows if r["rig"] == rig and r["best_iou"] >= IOU_EXIST),
+        g[f"exist_{name}"] = sum(r["exist_by_run"].get(name, False) for r in rows)
+    g["exist_by_rig"] = {rig: [sum(1 for r in rows if r["rig"] == rig and r["exist"]),
                                sum(1 for r in rows if r["rig"] == rig)] for rig in ("pinhole", "hemisphere")}
     return g
 
@@ -155,8 +164,7 @@ def summarize_gate(rows):
          "f0_lt2k": _group([r for r in f0 if r["gt_px"] < 2000]),
          "f0_by_kind": {k: _group([r for r in f0 if r.get("f0_kind") == k]) for k in sorted({r.get("f0_kind") for r in f0})},
          "n0": _group([r for r in rows if r["set"] == "N0"]),
-         "n0_by_size": {b: _group([r for r in rows if r["set"] == "N0" and r["size_bin"] == b])
-                        for b in ("<2000", "2000-9999", ">=10000")}}
+         "n0_by_size": {b: _group([r for r in rows if r["set"] == "N0" and r["size_bin"] == b]) for b in SIZE_BINS}}
     empty = [r for r in rows if r["set"] == "gt_empty"]
     hal = [r for r in empty if r["n_union"] >= 1]
     s["gt_empty"] = {"n": len(empty), "halluc": len(hal), "halluc_rate": _rate(len(hal), len(empty)),
@@ -165,10 +173,12 @@ def summarize_gate(rows):
     counts = {"f0_ge2k": s["f0_ge2k"]["n"], "f0_ge2k_pinhole": s["f0_ge2k_pinhole"]["n"], "f0_lt2k": s["f0_lt2k"]["n"],
               "n0": s["n0"]["n"], "gt_empty": s["gt_empty"]["n"]}
     s["denominators"] = {"registered": REGISTERED, "measured": counts, "match": counts == REGISTERED}
-    g1 = s["f0_ge2k"]["exist_rate"] is not None and s["f0_ge2k"]["exist_rate"] >= GATE1_MIN_RATE
+    # integer comparisons (no rounding): 11/19 >= 0.55 <=> 100*11 >= 55*19; 13/132 <= 0.10 <=> 10*13 <= 132
+    n1, n3 = s["f0_ge2k"]["n"], s["gt_empty"]["n"]
+    g1 = n1 > 0 and 100 * s["f0_ge2k"]["exist"] >= round(GATE1_MIN_RATE * 100) * n1
     g1p = s["f0_ge2k_pinhole"]["exist"] >= GATE1P_MIN
     g2 = s["f0_ge2k"]["rank_median"] is not None and s["f0_ge2k"]["rank_median"] <= GATE2_MAX_RANK_MEDIAN
-    g3 = s["gt_empty"]["halluc_rate"] is not None and s["gt_empty"]["halluc_rate"] <= GATE3_MAX_RATE
+    g3 = n3 > 0 and round(1 / GATE3_MAX_RATE) * s["gt_empty"]["halluc"] <= n3
     if g1 and g2:
         verdict = "proceed" + ("" if g1p else " (hemisphere-limited: pinhole sub-gate failed)") + \
                   ("" if g3 else "; hallucination gate failed -> G-det never fills an empty G0")
@@ -180,6 +190,27 @@ def summarize_gate(rows):
                   "gate3_halluc": {"pass": g3, "value": s["gt_empty"]["halluc_rate"], "max": GATE3_MAX_RATE},
                   "verdict": verdict}
     return s
+
+
+def expected_keys(scene, cfg, census):
+    """[(cam, obj)] rows of a scene in run order: the two non-c_ini annotated cameras x seed_ids_c_ini."""
+    d = cfg[scene]
+    ref_cam = spike.cam_name(d["c_ini"], d)
+    cams = [c for c in census[scene]["cameras"] if c != ref_cam]
+    return [(cam, int(o)) for o in census[scene]["seed_ids_c_ini"] for cam in cams]
+
+
+def load_part(path, keys):
+    """A scene's part file, or None when it is missing, unreadable or not the expected enumeration."""
+    if not os.path.exists(path):
+        return None
+    try:
+        got = json.load(open(path))
+    except (OSError, ValueError):
+        return None
+    if [(r["cam"], r["obj"]) for r in got] != keys:
+        return None
+    return got
 
 
 # ----------------------------------------------------------------------------- GPU part
@@ -268,39 +299,47 @@ def main():
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--summary-only", action="store_true", help="summarise existing part files, no GPU")
     args = ap.parse_args()
-    sys.path.insert(0, os.path.join(REPO, "MVSeed"))
-    from score_seeds import HEMISPHERE as _H
-    assert tuple(_H) == HEMISPHERE, (_H, HEMISPHERE)
     cfg = json.load(open(args.config, encoding="utf-8"))
     census = json.load(open(CENSUS))
     scenes = args.scenes.split(",") if args.scenes else sorted(census)
+    unknown = [x for x in scenes if x not in census]
+    assert not unknown, f"unknown scenes (not in the census): {unknown}"
     f0, n0 = membership(json.load(open(spike.F0))["pairs"], json.load(open(spike.N0))["pairs"])
     os.makedirs(args.parts_dir, exist_ok=True)
     rows, t0 = [], time.time()
     log = lambda s: print(s, flush=True)
+    thresholds = None
     if not args.summary_only:
+        sys.path.insert(0, os.path.join(REPO, "MVSeed"))
+        from score_seeds import HEMISPHERE as _H, SIZE_BINS as _B
+        assert tuple(_H) == HEMISPHERE and tuple(_B) == SIZE_BINS, (_H, _B)
         sys.path.insert(0, spike.PKG)
         import torch
         from build_scsam3 import build_scsam3_video_model
         model = build_scsam3_video_model()
         model.eval()
+        thresholds = (float(model.score_threshold_detection), float(model.det_nms_thresh))
+        assert thresholds == CANDIDATE_RULE, ("candidate rule differs from the registered one", thresholds)
         inj = spike.ExemplarInjector(model.detector)
         with torch.inference_mode():
             for s in scenes:
                 part = os.path.join(args.parts_dir, f"{s}.json")
-                if os.path.exists(part) and not args.overwrite:
-                    log(f"  {s}: part exists, skipping")
+                if load_part(part, expected_keys(s, cfg, census)) is not None and not args.overwrite:
+                    log(f"  {s}: complete part exists, skipping")
                     continue
                 t1 = time.time()
                 res = run_scene(model, inj, s, cfg, census, args.data_root, log)
-                json.dump(res, open(part, "w"), indent=1)
+                json.dump(res, open(part + ".tmp", "w"), indent=1)
+                os.replace(part + ".tmp", part)                       # atomic: no truncated part on interruption
                 log(f"  {s}: {len(res)} rows in {time.time() - t1:.0f}s")
         inj.remove()
+    missing = []
     for s in sorted(census):
-        part = os.path.join(args.parts_dir, f"{s}.json")
-        if os.path.exists(part):
-            rows += [tag_row(r, f0, n0) for r in json.load(open(part))]
-    missing = [s for s in sorted(census) if not os.path.exists(os.path.join(args.parts_dir, f"{s}.json"))]
+        got = load_part(os.path.join(args.parts_dir, f"{s}.json"), expected_keys(s, cfg, census))
+        if got is None:
+            missing.append(s)
+        else:
+            rows += [tag_row(r, f0, n0) for r in got]
     summary = summarize_gate(rows)
     summary["missing_scenes"] = missing
     try:
@@ -311,6 +350,9 @@ def main():
            "git_head": head, "generated_by": "MVSeed/gate_det.py", "argv": sys.argv, "prereg": "docs/stage1-E2-prereg.md",
            "rules": {"prompts": list(PROMPTS), "union": "plain union of the two runs' kept candidates, prob descending",
                      "candidate_rule": "package: prob > score_threshold_detection after nms_masks(det_nms_thresh)",
+                     "score_threshold_detection": CANDIDATE_RULE[0], "det_nms_thresh": CANDIDATE_RULE[1],
+                     "model_thresholds_read_back": thresholds,
+                     "best_rank": "rank of the highest-ranked cross-run copy (low-res IoU > dedupe) of the best-IoU candidate",
                      "iou_exist": IOU_EXIST, "gate1_min_rate": GATE1_MIN_RATE, "gate1p_min": GATE1P_MIN,
                      "gate2_max_rank_median": GATE2_MAX_RANK_MEDIAN, "gate3_max_rate": GATE3_MAX_RATE,
                      "dedupe_iou_report_only": DEDUPE_IOU, "text": "TEXT_ID_FOR_VISUAL ('visual')"},
@@ -323,7 +365,7 @@ def main():
 def print_summary(s):
     def line(name, g):
         print(f"  {name:18s} n={g['n']:3d}  exist {g['exist']:3d} ({g['exist_rate']})  box {g['exist_box']:3d} pts {g['exist_pts']:3d}  "
-              f"rank med {g['rank_median']}  top1 {g['top1_hit']:3d}  union med {g['n_union_median']} (dedup {g['n_union_dedup_median']})  "
+              f"rank med {g['rank_median']} (raw {g['rank_raw_median']})  top1 {g['top1_hit']:3d}  union med {g['n_union_median']} (dedup {g['n_union_dedup_median']})  "
               f"rig {g['exist_by_rig']}")
     print(f"\n[S1-E2 gate] rows {s['n_rows']}  denominators match registered: {s['denominators']['match']} {s['denominators']['measured']}")
     for k in ("f0_ge2k", "f0_ge2k_pinhole", "f0_lt2k", "n0"):
