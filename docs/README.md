@@ -39,6 +39,8 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 |---|---|
 | **[stage1-E0.md](stage1-E0.md)** | **S1-E0·F0·E0′·E1 결과 (2026-09-10)** — 원시 시드 J 0.8426, F0 41쌍 동결; 천장 0.951은 288 격자 왕복 인공물(CPU 재현 = 측정); 순서 변형은 `reverse`만 후보 |
 | [stage1-E0-prereg.md](stage1-E0-prereg.md) | S1-E0·F0·E0′·E1 사전 등록 — 예측 8개·관문·읽기 규칙 |
+| **[stage2-R1.md](stage2-R1.md)** | **S2-R1 결과 (2026-09-10)** — 작은 객체 크롭 추적(2단계 유효 해상도): 정답 시드 <2k px 프레임 1~20 J 0.637→0.842; 17장면 Cr10k+게이트 v2 **+1.05점**(v1 +1.38, 방어선 0.06 차) → E7 구성 후보 |
+| [stage2-R1-prereg.md](stage2-R1-prereg.md) · [R1b](stage2-R1b-prereg.md) · [R1c](stage2-R1c-prereg.md) | S2-R1 사전 등록 셋 — 크롭 규칙·예측, 게이트 v1(IoU<0.05), 게이트 v2(+줌<1.2·창 이탈≥10) |
 | [stage1-E0b-prereg.md](stage1-E0b-prereg.md) | S1-E0″ 사전 등록 — 프레임 0 시드 직기록(결과 +0.030점, stage1-E0.md §8) |
 | **[stage1-plan.md](stage1-plan.md)** | **1단계 구현 계획 v2 (2026-09-10)** — 한 프레임 다중시점 객체분리(시드) 재설계: 후보 생성기 G0/G1/G-det/🔒G-geo/🔒G-corr, SeedVote(τ=0.5, 주석 카메라 2대), 실험 S1-E0~E8과 판정 초안, 배관, 일정. 반박 검토 반영 |
 | [stage1-headroom.md](stage1-headroom.md) | **1단계 상한 측정 (2026-09-09)** — 시드 J가 결과를 결정(R² 0.933), 실패 45쌍 중 38쌍이 자리 틀림, 시점 거리에 비단조, 반구 리그 최악 |
