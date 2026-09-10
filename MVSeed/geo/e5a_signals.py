@@ -44,7 +44,12 @@ P5_MIN_PROMPT = 64
 P5_FRAC = 0.05
 IOU_SIGNALS = ("S2a_iou", "S2b_iou", "S2max_iou", "S1_rev")
 CTR_SIGNALS = ("S2a_ctr", "S2b_ctr")
+# post-hoc diagnostics added after the registered readout (docs/stage1-E5a.md section 4): containment
+# asks "is the seed INSIDE what geometry projected", which forgives a projection whose shape is poor.
+DIAG_SIGNALS = ("S2a_cont", "S2b_cont", "S2max_cont")
 SIGNALS = ("P5area",) + IOU_SIGNALS + CTR_SIGNALS
+ALL_SIGNALS = SIGNALS + DIAG_SIGNALS
+LOW_IS_FLAGGED = IOU_SIGNALS + DIAG_SIGNALS      # these flag LOW scores; CTR_SIGNALS flag HIGH ones
 
 
 # ------------------------------------------------------------------ pure signal maths
@@ -83,6 +88,12 @@ def p5_flag(seed_area, prompt_area, threshold, min_prompt=P5_MIN_PROMPT):
     return bool(prompt_area >= min_prompt and seed_area < threshold)
 
 
+def containment(seed, proj):
+    """Fraction of the seed that falls inside the projection (0 when the seed is empty)."""
+    a = int(seed.sum())
+    return float((seed & proj).sum() / a) if a else 0.0
+
+
 def flagged(row, name):
     """Is this row flagged by signal `name` at its registered operating point?"""
     v = row["signals"][name]
@@ -90,6 +101,7 @@ def flagged(row, name):
         return bool(v)
     if name in CTR_SIGNALS:
         return v is None or v > TAU_CTR          # None == inf (json has no infinity)
+    assert name in LOW_IS_FLAGGED, name
     return v is None or v < TAU_IOU
 
 
@@ -104,7 +116,7 @@ def matched_threshold(pos, neg, name, target_fp):
     IoU signals flag LOW values, centre signals flag HIGH ones; both are swept over the observed
     scores so the comparison is at a matched false-positive count, not a matched threshold.
     """
-    low = name in IOU_SIGNALS
+    low = name in LOW_IS_FLAGGED
     def score(r):
         v = r["signals"][name]
         if v is None:
@@ -130,7 +142,7 @@ def summarize(rows):
     s = {"n_rows": len(rows), "n_misplaced": len(pos), "n_empty_seed": len(empty), "n_normal": len(neg),
          "n_gt_empty": len(gt_empty), "n_gt_empty_nonempty_seed": len(halluc), "operating_point": {}}
     base_fp = _counts(neg, "P5area")
-    for name in SIGNALS:
+    for name in ALL_SIGNALS:
         s["operating_point"][name] = {
             "hits": _counts(pos, name), "n_pos": len(pos),
             "fp": _counts(neg, name), "n_neg": len(neg),
@@ -146,7 +158,7 @@ def summarize(rows):
                               sum(1 for r in neg if r["rig"] == g)] for g in ("pinhole", "hemisphere")}}
     s["matched_fp"] = {"target_fp": base_fp,
                        **{name: matched_threshold(pos, neg, name, base_fp)
-                          for name in IOU_SIGNALS + CTR_SIGNALS}}
+                          for name in ALL_SIGNALS if name != "P5area"}}
     combos = {"S2max_iou AND S1_rev": lambda r: flagged(r, "S2max_iou") and flagged(r, "S1_rev"),
               "S2b_ctr AND S1_rev": lambda r: flagged(r, "S2b_ctr") and flagged(r, "S1_rev"),
               "P5area OR S2max_iou": lambda r: flagged(r, "P5area") or flagged(r, "S2max_iou")}
@@ -195,6 +207,7 @@ def run_scene(scene, cfg, census, log):
             pa = read_mask(os.path.join(CACHE, "proj_a", scene, cam, f"{obj}.png"), shape)
             pb = read_mask(os.path.join(CACHE, "proj_b", scene, cam, f"{obj}.png"), shape)
             ia, ib = warp.iou(seed, pa), warp.iou(seed, pb)
+            ka, kb = containment(seed, pa), containment(seed, pb)
             ca, cb = centre_ratio(seed, pa), centre_ratio(seed, pb)
             inf2none = lambda x: None if math.isinf(x) else round(x, 4)
             rows.append(dict(scene=scene, cam=cam, obj=obj, ref_cam=ref,
@@ -206,7 +219,9 @@ def run_scene(scene, cfg, census, log):
                                           S2a_iou=round(ia, 4), S2b_iou=round(ib, 4),
                                           S2max_iou=round(max(ia, ib), 4),
                                           S1_rev=round(warp.iou(seed, rev), 4),
-                                          S2a_ctr=inf2none(ca), S2b_ctr=inf2none(cb))))
+                                          S2a_ctr=inf2none(ca), S2b_ctr=inf2none(cb),
+                                          S2a_cont=round(ka, 4), S2b_cont=round(kb, 4),
+                                          S2max_cont=round(max(ka, kb), 4))))
     log(f"  {scene:16s} {len(rows)} rows")
     return rows
 
@@ -247,7 +262,7 @@ def print_summary(s):
     print(f"\n[S1-E5a signals] rows {s['n_rows']}  misplaced {s['n_misplaced']}  empty-seed {s['n_empty_seed']}  "
           f"normal {s['n_normal']}  gt-empty {s['n_gt_empty']} (non-empty seed {s['n_gt_empty_nonempty_seed']})")
     print(f"  {'signal':12s} {'hits/38':>9s} {'fp/623':>9s}  {'empty':>5s} {'halluc':>7s}   hits by size / fp by size")
-    for name in SIGNALS:
+    for name in ALL_SIGNALS:
         o = s["operating_point"][name]
         hs = " ".join(f"{k}:{v[0]}/{v[1]}" for k, v in o["hits_by_size"].items())
         fs = " ".join(f"{k}:{v[0]}/{v[1]}" for k, v in o["fp_by_size"].items())
@@ -255,7 +270,9 @@ def print_summary(s):
               f"{o['empty_seed_hits']:5d} {o['gt_empty_hits']:3d}/{o['n_gt_empty_nonempty']:<3d}   {hs}  |  {fs}")
     m = s["matched_fp"]
     print(f"\n  matched to the P5 rule's {m['target_fp']} false positives:")
-    for name in IOU_SIGNALS + CTR_SIGNALS:
+    for name in ALL_SIGNALS:
+        if name == "P5area":
+            continue
         v = m[name]
         print(f"    {name:12s} hits {v['hits']:3d}/{s['n_misplaced']}  fp {v['fp']:3d}  at threshold {v['threshold']}")
     print("  combinations:")

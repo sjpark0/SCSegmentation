@@ -39,7 +39,8 @@ def test_p5_area_rule():
 
 
 def _row(kind, size_bin=">=10000", rig="pinhole", **sig):
-    s = dict(P5area=False, S2a_iou=0.9, S2b_iou=0.9, S2max_iou=0.9, S1_rev=0.9, S2a_ctr=0.1, S2b_ctr=0.1)
+    s = dict(P5area=False, S2a_iou=0.9, S2b_iou=0.9, S2max_iou=0.9, S1_rev=0.9, S2a_ctr=0.1, S2b_ctr=0.1,
+             S2a_cont=0.9, S2b_cont=0.9, S2max_cont=0.9)
     s.update(sig)
     r = dict(scene="S", cam="c", obj=1, gt_px=20000, seed_px=1000, size_bin=size_bin, rig=rig, signals=s)
     r["set"] = "F0" if kind in ("misplaced", "empty") else ("N0" if kind == "normal" else "gt_empty")
@@ -48,6 +49,16 @@ def _row(kind, size_bin=">=10000", rig="pinhole", **sig):
     if kind == "gt_empty":
         r["gt_px"], r["seed_px"], r["size_bin"] = 0, 5, None
     return r
+
+
+def test_containment_is_asymmetric():
+    seed = np.zeros((40, 40), bool); seed[10:20, 10:20] = True
+    big = np.zeros((40, 40), bool); big[5:35, 5:35] = True
+    assert e5.containment(seed, big) == 1.0                        # the seed sits fully inside a sloppy projection
+    assert 0.0 < e5.containment(big, seed) < 0.2
+    assert e5.containment(np.zeros((4, 4), bool), big[:4, :4]) == 0.0
+    away = np.zeros((40, 40), bool); away[30:35, 30:35] = True
+    assert e5.containment(seed, away) == 0.0
 
 
 def test_flagged_operating_points():
