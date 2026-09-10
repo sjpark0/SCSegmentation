@@ -39,6 +39,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 |---|---|
 | **[stage1-E0.md](stage1-E0.md)** | **S1-E0·F0·E0′·E1 결과 (2026-09-10)** — 원시 시드 J 0.8426, F0 41쌍 동결; 천장 0.951은 288 격자 왕복 인공물(CPU 재현 = 측정); 순서 변형은 `reverse`만 후보 |
 | [stage1-E0-prereg.md](stage1-E0-prereg.md) | S1-E0·F0·E0′·E1 사전 등록 — 예측 8개·관문·읽기 규칙 |
+| [stage1-E2-0.md](stage1-E2-0.md) | **S1-E2-0 (2026-09-10)** — 교차 이미지 예시 검출 주입은 됨(② 17/20), 등록 기준 ① 0.75<0.8로 규칙상 G-det 폐기; 재등록 여부 사용자 결정 |
 | **[stage2-R2.md](stage2-R2.md)** | **S2-R2 결과 (2026-09-10) — 새 헤드라인 basic 91.0 / complete 86.4.** 크롭 추적을 본류에 구현해 헤드라인 구성으로 17장면 실행; 조립 추정과 바이트 단위 일치, 16↑/0↓ |
 | **[stage2-R1.md](stage2-R1.md)** | **S2-R1 결과 (2026-09-10)** — 작은 객체 크롭 추적(2단계 유효 해상도): 정답 시드 <2k px 프레임 1~20 J 0.637→0.842; 17장면 Cr10k+게이트 v2 **+1.05점**(v1 +1.38, 방어선 0.06 차) → E7 구성 후보 |
 | [stage2-R1-prereg.md](stage2-R1-prereg.md) · [R1b](stage2-R1b-prereg.md) · [R1c](stage2-R1c-prereg.md) | S2-R1 사전 등록 셋 — 크롭 규칙·예측, 게이트 v1(IoU<0.05), 게이트 v2(+줌<1.2·창 이탈≥10) |

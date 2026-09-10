@@ -1,0 +1,4444 @@
+{
+ "schema": "MVSeed e2_0_spike",
+ "schema_version": 1,
+ "generated_at": "2026-09-10T04:05:34+0000",
+ "git_head": "291817718bb2ccd8d6422f3c5131a17e5f1f0677",
+ "generated_by": "MVSeed/spike_exemplar.py",
+ "argv": [
+  "MVSeed/spike_exemplar.py",
+  "--set",
+  "all",
+  "--parts-dir",
+  "/host/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/9786e830-b342-4be7-bc11-e7701415bd8d/scratchpad/e2_0_parts"
+ ],
+ "torch": "2.10.0+cu128",
+ "gpu": "NVIDIA RTX 6000 Ada Generation",
+ "selection_rule": "N0 (no F0), gt_px>=2000, other annotated cam; per scene 4 smallest view_distance (tie cam,obj); 5 scenes by smallest view_distance (tie scene name); pinhole_supp = next 5 pinhole scenes",
+ "arms": {
+  "same": "c_ini GT box as geometric prompt -> c_ini detections",
+  "slot": "c_ini geo_feats injected as visual_prompt_embed on the other view (registered)",
+  "replace": "c_ini geo_feats replace the other view's geometry-encoder output (exploratory)",
+  "base": "other view with no exemplar (control)"
+ },
+ "summary": {
+  "registered": {
+   "n_pairs": 20,
+   "c1_same_image": {
+    "n": 20,
+    "hits": 15,
+    "rate": 0.75,
+    "any_query_hits": 15,
+    "n_cand_median": 1.5
+   },
+   "c2_slot": {
+    "n": 20,
+    "hits": 17,
+    "rate": 0.85,
+    "rank_of_hit_median": 1,
+    "rank_of_hit_list": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     4
+    ],
+    "n_cand_median": 1.5,
+    "n_cand_list": [
+     2,
+     1,
+     1,
+     2,
+     2,
+     4,
+     1,
+     1,
+     1,
+     1,
+     3,
+     1,
+     7,
+     8,
+     5,
+     6,
+     1,
+     2,
+     1,
+     1
+    ],
+    "any_query_hits": 20,
+    "top1_is_hit": 13,
+    "cand_best_iou_median": 0.8791,
+    "max_abs_dlogit_vs_base_min": 3.4448
+   },
+   "c2_replace": {
+    "n": 20,
+    "hits": 17,
+    "rate": 0.85,
+    "rank_of_hit_median": 1,
+    "rank_of_hit_list": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     2
+    ],
+    "n_cand_median": 1.5,
+    "n_cand_list": [
+     2,
+     1,
+     1,
+     2,
+     2,
+     3,
+     1,
+     1,
+     1,
+     1,
+     3,
+     1,
+     7,
+     8,
+     5,
+     6,
+     1,
+     2,
+     1,
+     1
+    ],
+    "any_query_hits": 20,
+    "top1_is_hit": 13,
+    "cand_best_iou_median": 0.8725499999999999,
+    "max_abs_dlogit_vs_base_min": 3.6909
+   },
+   "c2_base": {
+    "n": 20,
+    "hits": 0,
+    "rate": 0.0,
+    "rank_of_hit_median": null,
+    "rank_of_hit_list": [],
+    "n_cand_median": 0.0,
+    "n_cand_list": [
+     1,
+     1,
+     1,
+     1,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     9,
+     9,
+     9,
+     9
+    ],
+    "any_query_hits": 13,
+    "top1_is_hit": 0,
+    "cand_best_iou_median": 0.0
+   }
+  },
+  "pinhole_supp": {
+   "n_pairs": 20,
+   "c1_same_image": {
+    "n": 20,
+    "hits": 18,
+    "rate": 0.9,
+    "any_query_hits": 18,
+    "n_cand_median": 2.5
+   },
+   "c2_slot": {
+    "n": 20,
+    "hits": 16,
+    "rate": 0.8,
+    "rank_of_hit_median": 1.0,
+    "rank_of_hit_list": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     4
+    ],
+    "n_cand_median": 2.5,
+    "n_cand_list": [
+     7,
+     2,
+     2,
+     2,
+     2,
+     1,
+     2,
+     1,
+     4,
+     18,
+     3,
+     4,
+     2,
+     2,
+     4,
+     1,
+     13,
+     16,
+     13,
+     16
+    ],
+    "any_query_hits": 19,
+    "top1_is_hit": 12,
+    "cand_best_iou_median": 0.87515,
+    "max_abs_dlogit_vs_base_min": 2.6787
+   },
+   "c2_replace": {
+    "n": 20,
+    "hits": 16,
+    "rate": 0.8,
+    "rank_of_hit_median": 1.0,
+    "rank_of_hit_list": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     2,
+     4
+    ],
+    "n_cand_median": 2.5,
+    "n_cand_list": [
+     10,
+     2,
+     2,
+     2,
+     2,
+     1,
+     2,
+     1,
+     4,
+     18,
+     3,
+     4,
+     2,
+     2,
+     4,
+     1,
+     11,
+     13,
+     11,
+     13
+    ],
+    "any_query_hits": 19,
+    "top1_is_hit": 11,
+    "cand_best_iou_median": 0.87215,
+    "max_abs_dlogit_vs_base_min": 2.8328
+   },
+   "c2_base": {
+    "n": 20,
+    "hits": 1,
+    "rate": 0.05,
+    "rank_of_hit_median": 1,
+    "rank_of_hit_list": [
+     1
+    ],
+    "n_cand_median": 1.0,
+    "n_cand_list": [
+     0,
+     0,
+     0,
+     0,
+     1,
+     1,
+     1,
+     1,
+     11,
+     11,
+     11,
+     11,
+     2,
+     2,
+     2,
+     2,
+     0,
+     0,
+     0,
+     0
+    ],
+    "any_query_hits": 15,
+    "top1_is_hit": 1,
+    "cand_best_iou_median": 0.0
+   }
+  },
+  "verdict": {
+   "criterion_1_rate": 0.75,
+   "criterion_2_rate": 0.85,
+   "kill_rules": {
+    "c1_min": 0.8,
+    "c2_min": 0.7
+   },
+   "verdict": "discard: criterion 1 (same-image exemplar) below 0.8"
+  },
+  "thresholds": {
+   "score_threshold_detection": 0.5,
+   "det_nms_thresh": 0.1,
+   "iou_same": 0.8,
+   "iou_cross": 0.5,
+   "min_gt_px": 2000,
+   "text_id": "TEXT_ID_FOR_VISUAL ('visual')",
+   "autocast": "none (detector path in the mainline runs without autocast)"
+  }
+ },
+ "pairs": [
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 1,
+   "gt_px": 866366,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.9756114526283142,
+   "ref_cam": "camera_0007",
+   "ref_gt_px": 801395,
+   "exemplar_box_xyxy": [
+    987,
+    560,
+    2162,
+    1920
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 3,
+     "all_best_iou": 0.9297,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9883,
+     "cand_best_iou": 0.9297,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9883,
+     "cand_top1_iou": 0.9297,
+     "cand_top1_prob": 0.9883,
+     "cand_probs": [
+      0.988,
+      0.899,
+      0.551
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.6835,
+     "all_best_rank": 58,
+     "all_best_prob": 0.1905,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.6574,
+     "all_best_rank": 1,
+     "all_best_prob": 0.8084,
+     "cand_best_iou": 0.6574,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8084,
+     "cand_top1_iou": 0.6574,
+     "cand_top1_prob": 0.8084,
+     "cand_probs": [
+      0.808,
+      0.644
+     ],
+     "max_abs_dlogit_vs_base": 4.0469
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.6644,
+     "all_best_rank": 9,
+     "all_best_prob": 0.1502,
+     "cand_best_iou": 0.5761,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.746,
+     "cand_top1_iou": 0.5761,
+     "cand_top1_prob": 0.746,
+     "cand_probs": [
+      0.746,
+      0.668
+     ],
+     "max_abs_dlogit_vs_base": 3.805
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 2,
+   "gt_px": 363868,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.9509838445785613,
+   "ref_cam": "camera_0007",
+   "ref_gt_px": 330208,
+   "exemplar_box_xyxy": [
+    825,
+    645,
+    1815,
+    1701
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 3,
+     "all_best_iou": 0.9003,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.9003,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.9003,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.945,
+      0.64
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.462,
+     "all_best_rank": 78,
+     "all_best_prob": 0.1579,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.7802,
+     "all_best_rank": 4,
+     "all_best_prob": 0.1255,
+     "cand_best_iou": 0.0004,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8947,
+     "cand_top1_iou": 0.0004,
+     "cand_top1_prob": 0.8947,
+     "cand_probs": [
+      0.895
+     ],
+     "max_abs_dlogit_vs_base": 4.2745
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.7742,
+     "all_best_rank": 4,
+     "all_best_prob": 0.13,
+     "cand_best_iou": 0.0011,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.914,
+     "cand_top1_iou": 0.0011,
+     "cand_top1_prob": 0.914,
+     "cand_probs": [
+      0.914
+     ],
+     "max_abs_dlogit_vs_base": 4.7456
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 3,
+   "gt_px": 80477,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.970150363823431,
+   "ref_cam": "camera_0007",
+   "ref_gt_px": 92756,
+   "exemplar_box_xyxy": [
+    844,
+    1211,
+    1291,
+    1503
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.9634,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.9634,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.9634,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.9239,
+     "all_best_rank": 3,
+     "all_best_prob": 0.4765,
+     "cand_best_iou": 0.0228,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0228,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9624,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9298,
+     "cand_best_iou": 0.9624,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9298,
+     "cand_top1_iou": 0.9624,
+     "cand_top1_prob": 0.9298,
+     "cand_probs": [
+      0.93
+     ],
+     "max_abs_dlogit_vs_base": 4.777
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.951,
+     "all_best_rank": 23,
+     "all_best_prob": 0.13,
+     "cand_best_iou": 0.903,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9416,
+     "cand_top1_iou": 0.903,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942
+     ],
+     "max_abs_dlogit_vs_base": 4.9119
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 4,
+   "gt_px": 8887,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.6341885893688427,
+   "ref_cam": "camera_0007",
+   "ref_gt_px": 7782,
+   "exemplar_box_xyxy": [
+    1521,
+    865,
+    1862,
+    1155
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.8086,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9649,
+     "cand_best_iou": 0.8086,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.8086,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.7885,
+     "all_best_rank": 16,
+     "all_best_prob": 0.3281,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.822,
+     "all_best_rank": 98,
+     "all_best_prob": 0.0461,
+     "cand_best_iou": 0.8099,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.6246,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.8202,
+     "cand_probs": [
+      0.82,
+      0.625
+     ],
+     "max_abs_dlogit_vs_base": 4.0669
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.8333,
+     "all_best_rank": 106,
+     "all_best_prob": 0.0416,
+     "cand_best_iou": 0.8141,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.6098,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.8325,
+     "cand_probs": [
+      0.832,
+      0.61
+     ],
+     "max_abs_dlogit_vs_base": 3.8397
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 1,
+   "gt_px": 22829,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.8432238597104998,
+   "ref_cam": "camera_0002",
+   "ref_gt_px": 23157,
+   "exemplar_box_xyxy": [
+    873,
+    839,
+    1133,
+    974
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9083,
+     "all_best_rank": 7,
+     "all_best_prob": 0.095,
+     "cand_best_iou": 0.9079,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.9079,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.918
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.9064,
+     "all_best_rank": 8,
+     "all_best_prob": 0.3552,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9152,
+     "all_best_rank": 9,
+     "all_best_prob": 0.124,
+     "cand_best_iou": 0.9151,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.957,
+     "cand_top1_iou": 0.9151,
+     "cand_top1_prob": 0.957,
+     "cand_probs": [
+      0.957,
+      0.93
+     ],
+     "max_abs_dlogit_vs_base": 5.7502
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9134,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9134,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9134,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961,
+      0.93
+     ],
+     "max_abs_dlogit_vs_base": 5.8516
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 2,
+   "gt_px": 411751,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.9487888812837478,
+   "ref_cam": "camera_0002",
+   "ref_gt_px": 459050,
+   "exemplar_box_xyxy": [
+    1140,
+    210,
+    2097,
+    1803
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9105,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9844,
+     "cand_best_iou": 0.9105,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9844,
+     "cand_top1_iou": 0.9105,
+     "cand_top1_prob": 0.9844,
+     "cand_probs": [
+      0.984,
+      0.68
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.8948,
+     "all_best_rank": 2,
+     "all_best_prob": 0.4386,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 4,
+     "all_best_iou": 0.9183,
+     "all_best_rank": 4,
+     "all_best_prob": 0.5858,
+     "cand_best_iou": 0.9183,
+     "cand_best_rank": 4,
+     "cand_best_prob": 0.5858,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.6952,
+     "cand_probs": [
+      0.695,
+      0.648,
+      0.621,
+      0.586
+     ],
+     "max_abs_dlogit_vs_base": 3.4448
+    },
+    "replace": {
+     "n_cand": 3,
+     "all_best_iou": 0.9177,
+     "all_best_rank": 2,
+     "all_best_prob": 0.6213,
+     "cand_best_iou": 0.9177,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.6213,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.7388,
+     "cand_probs": [
+      0.739,
+      0.621,
+      0.601
+     ],
+     "max_abs_dlogit_vs_base": 3.8136
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 3,
+   "gt_px": 905301,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.8489159057638116,
+   "ref_cam": "camera_0002",
+   "ref_gt_px": 555203,
+   "exemplar_box_xyxy": [
+    0,
+    0,
+    2559,
+    692
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.7302,
+     "all_best_rank": 42,
+     "all_best_prob": 0.0396,
+     "cand_best_iou": 0.4888,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.4888,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.0209,
+     "all_best_rank": 135,
+     "all_best_prob": 0.101,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.7693,
+     "all_best_rank": 74,
+     "all_best_prob": 0.0303,
+     "cand_best_iou": 0.039,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.039,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965
+     ],
+     "max_abs_dlogit_vs_base": 3.9042
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.803,
+     "all_best_rank": 72,
+     "all_best_prob": 0.0272,
+     "cand_best_iou": 0.0412,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.0412,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ],
+     "max_abs_dlogit_vs_base": 4.1945
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 4,
+   "gt_px": 1284372,
+   "view_distance": 1,
+   "rig": "hemisphere",
+   "raw_J": 0.879094489277453,
+   "ref_cam": "camera_0002",
+   "ref_gt_px": 1671796,
+   "exemplar_box_xyxy": [
+    0,
+    410,
+    2560,
+    1920
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.5424,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9922,
+     "cand_best_iou": 0.5424,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9922,
+     "cand_top1_iou": 0.5424,
+     "cand_top1_prob": 0.9922,
+     "cand_probs": [
+      0.992
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.3645,
+     "all_best_rank": 5,
+     "all_best_prob": 0.3741,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.5341,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.5341,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.5341,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98
+     ],
+     "max_abs_dlogit_vs_base": 4.2047
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.5318,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.5318,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.5318,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98
+     ],
+     "max_abs_dlogit_vs_base": 4.2047
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 2,
+   "gt_px": 131931,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.9412966761175122,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 127735,
+   "exemplar_box_xyxy": [
+    1102,
+    814,
+    1479,
+    1687
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.9486,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9844,
+     "cand_best_iou": 0.9486,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9844,
+     "cand_top1_iou": 0.9486,
+     "cand_top1_prob": 0.9844,
+     "cand_probs": [
+      0.984
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.3751,
+     "all_best_rank": 34,
+     "all_best_prob": 0.2717,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9238,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9238,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9238,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961
+     ],
+     "max_abs_dlogit_vs_base": 4.7794
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.9243,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9532,
+     "cand_best_iou": 0.9243,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9532,
+     "cand_top1_iou": 0.9243,
+     "cand_top1_prob": 0.9532,
+     "cand_probs": [
+      0.953
+     ],
+     "max_abs_dlogit_vs_base": 4.7794
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 3,
+   "gt_px": 2808,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.7009313556398759,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 2713,
+   "exemplar_box_xyxy": [
+    1238,
+    1094,
+    1303,
+    1179
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 12,
+     "all_best_iou": 0.7274,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9336,
+     "cand_best_iou": 0.7274,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9336,
+     "cand_top1_iou": 0.7274,
+     "cand_top1_prob": 0.9336,
+     "cand_probs": [
+      0.934,
+      0.68,
+      0.629,
+      0.601,
+      0.575,
+      0.57,
+      0.57,
+      0.563,
+      0.559,
+      0.543
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.6544,
+     "all_best_rank": 67,
+     "all_best_prob": 0.2254,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.7961,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9298,
+     "cand_best_iou": 0.7961,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9298,
+     "cand_top1_iou": 0.7961,
+     "cand_top1_prob": 0.9298,
+     "cand_probs": [
+      0.93
+     ],
+     "max_abs_dlogit_vs_base": 4.8663
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.7915,
+     "all_best_rank": 109,
+     "all_best_prob": 0.051,
+     "cand_best_iou": 0.7914,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9298,
+     "cand_top1_iou": 0.7914,
+     "cand_top1_prob": 0.9298,
+     "cand_probs": [
+      0.93
+     ],
+     "max_abs_dlogit_vs_base": 4.8663
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 4,
+   "gt_px": 2058,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.8809073724007561,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 1063,
+   "exemplar_box_xyxy": [
+    1790,
+    993,
+    1812,
+    1052
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9029,
+     "all_best_rank": 19,
+     "all_best_prob": 0.0873,
+     "cand_best_iou": 0.8722,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8439,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9336,
+     "cand_probs": [
+      0.934,
+      0.844
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.0206,
+     "all_best_rank": 72,
+     "all_best_prob": 0.2123,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 3,
+     "all_best_iou": 0.854,
+     "all_best_rank": 2,
+     "all_best_prob": 0.8439,
+     "cand_best_iou": 0.854,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8439,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9024,
+     "cand_probs": [
+      0.902,
+      0.844,
+      0.504
+     ],
+     "max_abs_dlogit_vs_base": 3.8965
+    },
+    "replace": {
+     "n_cand": 3,
+     "all_best_iou": 0.8405,
+     "all_best_rank": 2,
+     "all_best_prob": 0.8552,
+     "cand_best_iou": 0.8405,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8552,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9101,
+     "cand_probs": [
+      0.91,
+      0.855,
+      0.511
+     ],
+     "max_abs_dlogit_vs_base": 4.0877
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 5,
+   "gt_px": 786560,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.9169724561858872,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 747451,
+   "exemplar_box_xyxy": [
+    720,
+    0,
+    2181,
+    1920
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.6779,
+     "all_best_rank": 71,
+     "all_best_prob": 0.0849,
+     "cand_best_iou": 0.4517,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.4517,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.622,
+     "all_best_rank": 81,
+     "all_best_prob": 0.2012,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.6972,
+     "all_best_rank": 12,
+     "all_best_prob": 0.1502,
+     "cand_best_iou": 0.0001,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.0001,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ],
+     "max_abs_dlogit_vs_base": 3.6909
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.6936,
+     "all_best_rank": 14,
+     "all_best_prob": 0.127,
+     "cand_best_iou": 0.0001,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.0001,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ],
+     "max_abs_dlogit_vs_base": 3.6909
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 1,
+   "gt_px": 26731,
+   "view_distance": 2,
+   "rig": "pinhole",
+   "raw_J": 0.9770024972977003,
+   "ref_cam": "v7",
+   "ref_gt_px": 25361,
+   "exemplar_box_xyxy": [
+    1281,
+    715,
+    1431,
+    966
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 6,
+     "all_best_iou": 0.9708,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.9708,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.9708,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.965,
+      0.91,
+      0.824,
+      0.785,
+      0.582
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.9669,
+     "all_best_rank": 67,
+     "all_best_prob": 0.2622,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 7,
+     "all_best_iou": 0.9674,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9649,
+     "cand_best_iou": 0.9674,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.9674,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965,
+      0.953,
+      0.938,
+      0.914,
+      0.879,
+      0.793,
+      0.672
+     ],
+     "max_abs_dlogit_vs_base": 6.1145
+    },
+    "replace": {
+     "n_cand": 7,
+     "all_best_iou": 0.9668,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.9668,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.9668,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.961,
+      0.949,
+      0.926,
+      0.899,
+      0.808,
+      0.683
+     ],
+     "max_abs_dlogit_vs_base": 6.2904
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 2,
+   "gt_px": 62721,
+   "view_distance": 2,
+   "rig": "pinhole",
+   "raw_J": 0.9466778645792068,
+   "ref_cam": "v7",
+   "ref_gt_px": 59497,
+   "exemplar_box_xyxy": [
+    896,
+    574,
+    1304,
+    932
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 8,
+     "all_best_iou": 0.958,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.958,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.958,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.902,
+      0.887,
+      0.828,
+      0.746,
+      0.551,
+      0.54,
+      0.528
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.8445,
+     "all_best_rank": 87,
+     "all_best_prob": 0.2392,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 8,
+     "all_best_iou": 0.9369,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9452,
+     "cand_best_iou": 0.9369,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9452,
+     "cand_top1_iou": 0.9369,
+     "cand_top1_prob": 0.9452,
+     "cand_probs": [
+      0.945,
+      0.883,
+      0.855,
+      0.766,
+      0.719,
+      0.531,
+      0.515,
+      0.504
+     ],
+     "max_abs_dlogit_vs_base": 5.3134
+    },
+    "replace": {
+     "n_cand": 8,
+     "all_best_iou": 0.9376,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9494,
+     "cand_best_iou": 0.9376,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9494,
+     "cand_top1_iou": 0.9376,
+     "cand_top1_prob": 0.9494,
+     "cand_probs": [
+      0.949,
+      0.906,
+      0.867,
+      0.777,
+      0.739,
+      0.543,
+      0.528,
+      0.504
+     ],
+     "max_abs_dlogit_vs_base": 5.3968
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 3,
+   "gt_px": 22910,
+   "view_distance": 2,
+   "rig": "pinhole",
+   "raw_J": 0.9044889357218124,
+   "ref_cam": "v7",
+   "ref_gt_px": 16050,
+   "exemplar_box_xyxy": [
+    605,
+    534,
+    861,
+    794
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 8,
+     "all_best_iou": 0.8341,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9452,
+     "cand_best_iou": 0.8341,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9452,
+     "cand_top1_iou": 0.8341,
+     "cand_top1_prob": 0.9452,
+     "cand_probs": [
+      0.945,
+      0.934,
+      0.934,
+      0.926,
+      0.77,
+      0.57,
+      0.543,
+      0.528
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.3625,
+     "all_best_rank": 157,
+     "all_best_prob": 0.0938,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 5,
+     "all_best_iou": 0.9042,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9259,
+     "cand_best_iou": 0.9042,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9259,
+     "cand_top1_iou": 0.9042,
+     "cand_top1_prob": 0.9259,
+     "cand_probs": [
+      0.926,
+      0.895,
+      0.867,
+      0.762,
+      0.704
+     ],
+     "max_abs_dlogit_vs_base": 4.3422
+    },
+    "replace": {
+     "n_cand": 5,
+     "all_best_iou": 0.9078,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9259,
+     "cand_best_iou": 0.9078,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9259,
+     "cand_top1_iou": 0.9078,
+     "cand_top1_prob": 0.9259,
+     "cand_probs": [
+      0.926,
+      0.918,
+      0.883,
+      0.777,
+      0.719
+     ],
+     "max_abs_dlogit_vs_base": 4.4846
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 4,
+   "gt_px": 45779,
+   "view_distance": 2,
+   "rig": "pinhole",
+   "raw_J": 0.9442204445977705,
+   "ref_cam": "v7",
+   "ref_gt_px": 43924,
+   "exemplar_box_xyxy": [
+    351,
+    412,
+    569,
+    740
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 7,
+     "all_best_iou": 0.9402,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9649,
+     "cand_best_iou": 0.9402,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.9402,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965,
+      0.926,
+      0.852,
+      0.852,
+      0.683,
+      0.54,
+      0.531
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.9025,
+     "all_best_rank": 91,
+     "all_best_prob": 0.2347,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 6,
+     "all_best_iou": 0.9317,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9317,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9317,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961,
+      0.883,
+      0.863,
+      0.762,
+      0.664,
+      0.519
+     ],
+     "max_abs_dlogit_vs_base": 4.3764
+    },
+    "replace": {
+     "n_cand": 6,
+     "all_best_iou": 0.9329,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9329,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9329,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961,
+      0.899,
+      0.883,
+      0.766,
+      0.675,
+      0.531
+     ],
+     "max_abs_dlogit_vs_base": 4.9325
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 1,
+   "gt_px": 74822,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.9664755813802337,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 79254,
+   "exemplar_box_xyxy": [
+    2174,
+    558,
+    2493,
+    883
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.8541,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.8541,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.8541,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973
+     ]
+    },
+    "base": {
+     "n_cand": 9,
+     "all_best_iou": 0.8855,
+     "all_best_rank": 96,
+     "all_best_prob": 0.2654,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.554,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.554,
+     "cand_probs": [
+      0.554,
+      0.551,
+      0.551,
+      0.543,
+      0.54,
+      0.535,
+      0.531,
+      0.528,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.905,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.905,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.905,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ],
+     "max_abs_dlogit_vs_base": 5.7754
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.903,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.903,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.903,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ],
+     "max_abs_dlogit_vs_base": 5.7754
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 2,
+   "gt_px": 522132,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.9691485704409002,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 475478,
+   "exemplar_box_xyxy": [
+    1926,
+    802,
+    2560,
+    1920
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.9275,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.9275,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.9275,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969
+     ]
+    },
+    "base": {
+     "n_cand": 9,
+     "all_best_iou": 0.0354,
+     "all_best_rank": 127,
+     "all_best_prob": 0.1782,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.554,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.554,
+     "cand_probs": [
+      0.554,
+      0.551,
+      0.551,
+      0.543,
+      0.54,
+      0.535,
+      0.531,
+      0.528,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9028,
+     "all_best_rank": 5,
+     "all_best_prob": 0.2967,
+     "cand_best_iou": 0.84,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.5242,
+     "cand_top1_iou": 0.0013,
+     "cand_top1_prob": 0.9298,
+     "cand_probs": [
+      0.93,
+      0.524
+     ],
+     "max_abs_dlogit_vs_base": 4.2425
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.8421,
+     "all_best_rank": 2,
+     "all_best_prob": 0.5396,
+     "cand_best_iou": 0.8421,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.5396,
+     "cand_top1_iou": 0.0014,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942,
+      0.54
+     ],
+     "max_abs_dlogit_vs_base": 4.4388
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 3,
+   "gt_px": 16910,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.9270026951086645,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 19047,
+   "exemplar_box_xyxy": [
+    2110,
+    1208,
+    2290,
+    1371
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.9227,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9227,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9227,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961
+     ]
+    },
+    "base": {
+     "n_cand": 9,
+     "all_best_iou": 0.922,
+     "all_best_rank": 13,
+     "all_best_prob": 0.4961,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.554,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.554,
+     "cand_probs": [
+      0.554,
+      0.551,
+      0.551,
+      0.543,
+      0.54,
+      0.535,
+      0.531,
+      0.528,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9375,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9375,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9375,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961
+     ],
+     "max_abs_dlogit_vs_base": 4.3361
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.9342,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9342,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9342,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961
+     ],
+     "max_abs_dlogit_vs_base": 4.3361
+    }
+   }
+  },
+  {
+   "set": "registered",
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 5,
+   "gt_px": 28661,
+   "view_distance": 2,
+   "rig": "hemisphere",
+   "raw_J": 0.8029844083793004,
+   "ref_cam": "camera_0001",
+   "ref_gt_px": 33082,
+   "exemplar_box_xyxy": [
+    1671,
+    1358,
+    2209,
+    1473
+   ],
+   "orig_hw": [
+    1920,
+    2560
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.7709,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9375,
+     "cand_best_iou": 0.7709,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9375,
+     "cand_top1_iou": 0.7709,
+     "cand_top1_prob": 0.9375,
+     "cand_probs": [
+      0.938
+     ]
+    },
+    "base": {
+     "n_cand": 9,
+     "all_best_iou": 0.511,
+     "all_best_rank": 132,
+     "all_best_prob": 0.16,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.554,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.554,
+     "cand_probs": [
+      0.554,
+      0.551,
+      0.551,
+      0.543,
+      0.54,
+      0.535,
+      0.531,
+      0.528,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.7924,
+     "all_best_rank": 1,
+     "all_best_prob": 0.8084,
+     "cand_best_iou": 0.7924,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8084,
+     "cand_top1_iou": 0.7924,
+     "cand_top1_prob": 0.8084,
+     "cand_probs": [
+      0.808
+     ],
+     "max_abs_dlogit_vs_base": 4.345
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.8293,
+     "all_best_rank": 25,
+     "all_best_prob": 0.0716,
+     "cand_best_iou": 0.7794,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.7816,
+     "cand_top1_iou": 0.7794,
+     "cand_top1_prob": 0.7816,
+     "cand_probs": [
+      0.782
+     ],
+     "max_abs_dlogit_vs_base": 4.2172
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 1,
+   "gt_px": 3684,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.5022376926902039,
+   "ref_cam": "v7",
+   "ref_gt_px": 2204,
+   "exemplar_box_xyxy": [
+    810,
+    472,
+    874,
+    776
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.3714,
+     "all_best_rank": 1,
+     "all_best_prob": 0.84,
+     "cand_best_iou": 0.3714,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.84,
+     "cand_top1_iou": 0.3714,
+     "cand_top1_prob": 0.84,
+     "cand_probs": [
+      0.84,
+      0.543
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.2955,
+     "all_best_rank": 163,
+     "all_best_prob": 0.1025,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 7,
+     "all_best_iou": 0.466,
+     "all_best_rank": 8,
+     "all_best_prob": 0.5077,
+     "cand_best_iou": 0.466,
+     "cand_best_rank": 7,
+     "cand_best_prob": 0.5077,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.8242,
+     "cand_probs": [
+      0.824,
+      0.605,
+      0.586,
+      0.551,
+      0.531,
+      0.515,
+      0.508
+     ],
+     "max_abs_dlogit_vs_base": 2.6787
+    },
+    "replace": {
+     "n_cand": 10,
+     "all_best_iou": 0.4655,
+     "all_best_rank": 7,
+     "all_best_prob": 0.5461,
+     "cand_best_iou": 0.4655,
+     "cand_best_rank": 7,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.8325,
+     "cand_probs": [
+      0.832,
+      0.613,
+      0.613,
+      0.601,
+      0.563,
+      0.559,
+      0.546,
+      0.524,
+      0.508,
+      0.504
+     ],
+     "max_abs_dlogit_vs_base": 2.8328
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 2,
+   "gt_px": 47439,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.8536185209941058,
+   "ref_cam": "v7",
+   "ref_gt_px": 48782,
+   "exemplar_box_xyxy": [
+    813,
+    369,
+    1100,
+    998
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.8682,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.8682,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.8682,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.934
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.371,
+     "all_best_rank": 126,
+     "all_best_prob": 0.186,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.8766,
+     "all_best_rank": 12,
+     "all_best_prob": 0.1025,
+     "cand_best_iou": 0.861,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8947,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.8987,
+     "cand_probs": [
+      0.899,
+      0.895
+     ],
+     "max_abs_dlogit_vs_base": 3.949
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.8749,
+     "all_best_rank": 13,
+     "all_best_prob": 0.0791,
+     "cand_best_iou": 0.8622,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8987,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9101,
+     "cand_probs": [
+      0.91,
+      0.899
+     ],
+     "max_abs_dlogit_vs_base": 4.4486
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 3,
+   "gt_px": 72761,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9628839358521337,
+   "ref_cam": "v7",
+   "ref_gt_px": 71931,
+   "exemplar_box_xyxy": [
+    1158,
+    434,
+    1359,
+    978
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9472,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.9472,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.9472,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.848
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.8727,
+     "all_best_rank": 66,
+     "all_best_prob": 0.2889,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9392,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.9392,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.9392,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.789
+     ],
+     "max_abs_dlogit_vs_base": 4.6395
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.938,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.938,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.938,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.808
+     ],
+     "max_abs_dlogit_vs_base": 4.903
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 4,
+   "gt_px": 23597,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9746623740435674,
+   "ref_cam": "v7",
+   "ref_gt_px": 21621,
+   "exemplar_box_xyxy": [
+    1578,
+    263,
+    1807,
+    401
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 3,
+     "all_best_iou": 0.9632,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.9632,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.9632,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.782,
+      0.559
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.9677,
+     "all_best_rank": 14,
+     "all_best_prob": 0.406,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9703,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.9703,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.9703,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.86
+     ],
+     "max_abs_dlogit_vs_base": 5.9524
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9701,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9726,
+     "cand_best_iou": 0.9701,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9726,
+     "cand_top1_iou": 0.9701,
+     "cand_top1_prob": 0.9726,
+     "cand_probs": [
+      0.973,
+      0.883
+     ],
+     "max_abs_dlogit_vs_base": 5.9524
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 1,
+   "gt_px": 291506,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9917249484944668,
+   "ref_cam": "v7",
+   "ref_gt_px": 477232,
+   "exemplar_box_xyxy": [
+    0,
+    118,
+    908,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9705,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9883,
+     "cand_best_iou": 0.9705,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9883,
+     "cand_top1_iou": 0.9705,
+     "cand_top1_prob": 0.9883,
+     "cand_probs": [
+      0.988,
+      0.965
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.8352,
+     "all_best_rank": 9,
+     "all_best_prob": 0.3436,
+     "cand_best_iou": 0.0007,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5429,
+     "cand_top1_iou": 0.0007,
+     "cand_top1_prob": 0.5429,
+     "cand_probs": [
+      0.543
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9838,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.9838,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.9838,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.973
+     ],
+     "max_abs_dlogit_vs_base": 5.5943
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9836,
+     "all_best_rank": 2,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.9836,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.9836,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.977
+     ],
+     "max_abs_dlogit_vs_base": 5.5943
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 2,
+   "gt_px": 342109,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9884073723183512,
+   "ref_cam": "v7",
+   "ref_gt_px": 318601,
+   "exemplar_box_xyxy": [
+    502,
+    283,
+    1213,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.9382,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9922,
+     "cand_best_iou": 0.9382,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9922,
+     "cand_top1_iou": 0.9382,
+     "cand_top1_prob": 0.9922,
+     "cand_probs": [
+      0.992
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.934,
+     "all_best_rank": 1,
+     "all_best_prob": 0.5429,
+     "cand_best_iou": 0.934,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5429,
+     "cand_top1_iou": 0.934,
+     "cand_top1_prob": 0.5429,
+     "cand_probs": [
+      0.543
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9557,
+     "all_best_rank": 2,
+     "all_best_prob": 0.2696,
+     "cand_best_iou": 0.9523,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8987,
+     "cand_top1_iou": 0.9523,
+     "cand_top1_prob": 0.8987,
+     "cand_probs": [
+      0.899
+     ],
+     "max_abs_dlogit_vs_base": 4.1724
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.9551,
+     "all_best_rank": 3,
+     "all_best_prob": 0.2335,
+     "cand_best_iou": 0.6518,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9375,
+     "cand_top1_iou": 0.6518,
+     "cand_top1_prob": 0.9375,
+     "cand_probs": [
+      0.938
+     ],
+     "max_abs_dlogit_vs_base": 4.3288
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 3,
+   "gt_px": 532307,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.990539063393525,
+   "ref_cam": "v7",
+   "ref_gt_px": 404123,
+   "exemplar_box_xyxy": [
+    1363,
+    36,
+    1920,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9715,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9844,
+     "cand_best_iou": 0.9715,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9844,
+     "cand_top1_iou": 0.9715,
+     "cand_top1_prob": 0.9844,
+     "cand_probs": [
+      0.984,
+      0.973
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.858,
+     "all_best_rank": 2,
+     "all_best_prob": 0.4565,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5429,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5429,
+     "cand_probs": [
+      0.543
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.979,
+     "all_best_rank": 3,
+     "all_best_prob": 0.5776,
+     "cand_best_iou": 0.3509,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8865,
+     "cand_top1_iou": 0.3509,
+     "cand_top1_prob": 0.8865,
+     "cand_probs": [
+      0.887,
+      0.879
+     ],
+     "max_abs_dlogit_vs_base": 5.1095
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9791,
+     "all_best_rank": 3,
+     "all_best_prob": 0.5509,
+     "cand_best_iou": 0.3461,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9064,
+     "cand_top1_iou": 0.3461,
+     "cand_top1_prob": 0.9064,
+     "cand_probs": [
+      0.906,
+      0.895
+     ],
+     "max_abs_dlogit_vs_base": 5.3273
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 4,
+   "gt_px": 288514,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9759375767406951,
+   "ref_cam": "v7",
+   "ref_gt_px": 292957,
+   "exemplar_box_xyxy": [
+    982,
+    348,
+    1590,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.963,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.963,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.963,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.515
+     ]
+    },
+    "base": {
+     "n_cand": 1,
+     "all_best_iou": 0.8938,
+     "all_best_rank": 6,
+     "all_best_prob": 0.3846,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5429,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5429,
+     "cand_probs": [
+      0.543
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9581,
+     "all_best_rank": 1,
+     "all_best_prob": 0.961,
+     "cand_best_iou": 0.9581,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.961,
+     "cand_top1_iou": 0.9581,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961
+     ],
+     "max_abs_dlogit_vs_base": 4.0223
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.9425,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9494,
+     "cand_best_iou": 0.9425,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9494,
+     "cand_top1_iou": 0.9425,
+     "cand_top1_prob": 0.9494,
+     "cand_probs": [
+      0.949
+     ],
+     "max_abs_dlogit_vs_base": 4.0952
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 1,
+   "gt_px": 126972,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.9650974917253604,
+   "ref_cam": "S1_CAM_4",
+   "ref_gt_px": 122815,
+   "exemplar_box_xyxy": [
+    226,
+    292,
+    490,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 5,
+     "all_best_iou": 0.9521,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.9521,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.9521,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.91,
+      0.91,
+      0.797,
+      0.754
+     ]
+    },
+    "base": {
+     "n_cand": 11,
+     "all_best_iou": 0.439,
+     "all_best_rank": 50,
+     "all_best_prob": 0.2471,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546,
+      0.546,
+      0.54,
+      0.531,
+      0.524,
+      0.524,
+      0.519,
+      0.511,
+      0.508,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 4,
+     "all_best_iou": 0.9343,
+     "all_best_rank": 1,
+     "all_best_prob": 0.8947,
+     "cand_best_iou": 0.9343,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.8947,
+     "cand_top1_iou": 0.9343,
+     "cand_top1_prob": 0.8947,
+     "cand_probs": [
+      0.895,
+      0.895,
+      0.797,
+      0.714
+     ],
+     "max_abs_dlogit_vs_base": 4.6709
+    },
+    "replace": {
+     "n_cand": 4,
+     "all_best_iou": 0.9356,
+     "all_best_rank": 2,
+     "all_best_prob": 0.9101,
+     "cand_best_iou": 0.9356,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.9101,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9259,
+     "cand_probs": [
+      0.926,
+      0.91,
+      0.82,
+      0.73
+     ],
+     "max_abs_dlogit_vs_base": 5.0566
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 2,
+   "gt_px": 3596,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.7602443369814202,
+   "ref_cam": "S1_CAM_4",
+   "ref_gt_px": 1994,
+   "exemplar_box_xyxy": [
+    417,
+    531,
+    478,
+    699
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 12,
+     "all_best_iou": 0.8088,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9336,
+     "cand_best_iou": 0.8088,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9336,
+     "cand_top1_iou": 0.8088,
+     "cand_top1_prob": 0.9336,
+     "cand_probs": [
+      0.934,
+      0.652,
+      0.629,
+      0.613,
+      0.597,
+      0.578,
+      0.566,
+      0.563,
+      0.543,
+      0.54
+     ]
+    },
+    "base": {
+     "n_cand": 11,
+     "all_best_iou": 0.7773,
+     "all_best_rank": 12,
+     "all_best_prob": 0.5,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546,
+      0.546,
+      0.54,
+      0.531,
+      0.524,
+      0.524,
+      0.519,
+      0.511,
+      0.508,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 18,
+     "all_best_iou": 0.7747,
+     "all_best_rank": 4,
+     "all_best_prob": 0.6832,
+     "cand_best_iou": 0.7747,
+     "cand_best_rank": 4,
+     "cand_best_prob": 0.6832,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.7143,
+     "cand_probs": [
+      0.714,
+      0.71,
+      0.688,
+      0.683,
+      0.672,
+      0.672,
+      0.672,
+      0.672,
+      0.672,
+      0.668
+     ],
+     "max_abs_dlogit_vs_base": 3.9188
+    },
+    "replace": {
+     "n_cand": 18,
+     "all_best_iou": 0.7745,
+     "all_best_rank": 4,
+     "all_best_prob": 0.7193,
+     "cand_best_iou": 0.7745,
+     "cand_best_rank": 4,
+     "cand_best_prob": 0.7193,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.7419,
+     "cand_probs": [
+      0.742,
+      0.734,
+      0.726,
+      0.719,
+      0.71,
+      0.7,
+      0.691,
+      0.688,
+      0.688,
+      0.688
+     ],
+     "max_abs_dlogit_vs_base": 4.0078
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 3,
+   "gt_px": 201314,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.958049696191276,
+   "ref_cam": "S1_CAM_4",
+   "ref_gt_px": 229657,
+   "exemplar_box_xyxy": [
+    430,
+    0,
+    775,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 5,
+     "all_best_iou": 0.9597,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.9597,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.9597,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.848,
+      0.797,
+      0.754,
+      0.664
+     ]
+    },
+    "base": {
+     "n_cand": 11,
+     "all_best_iou": 0.6049,
+     "all_best_rank": 52,
+     "all_best_prob": 0.2392,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546,
+      0.546,
+      0.54,
+      0.531,
+      0.524,
+      0.524,
+      0.519,
+      0.511,
+      0.508,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 3,
+     "all_best_iou": 0.8733,
+     "all_best_rank": 2,
+     "all_best_prob": 0.8084,
+     "cand_best_iou": 0.8733,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8084,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965,
+      0.808,
+      0.706
+     ],
+     "max_abs_dlogit_vs_base": 4.6879
+    },
+    "replace": {
+     "n_cand": 3,
+     "all_best_iou": 0.875,
+     "all_best_rank": 2,
+     "all_best_prob": 0.8242,
+     "cand_best_iou": 0.875,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.8242,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.961,
+     "cand_probs": [
+      0.961,
+      0.824,
+      0.714
+     ],
+     "max_abs_dlogit_vs_base": 4.8138
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 5,
+   "gt_px": 18879,
+   "view_distance": 3,
+   "rig": "pinhole",
+   "raw_J": 0.8654817208644718,
+   "ref_cam": "S1_CAM_4",
+   "ref_gt_px": 124587,
+   "exemplar_box_xyxy": [
+    782,
+    420,
+    1173,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 5,
+     "all_best_iou": 0.9291,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9844,
+     "cand_best_iou": 0.9291,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9844,
+     "cand_top1_iou": 0.9291,
+     "cand_top1_prob": 0.9844,
+     "cand_probs": [
+      0.984,
+      0.961,
+      0.926,
+      0.789,
+      0.782
+     ]
+    },
+    "base": {
+     "n_cand": 11,
+     "all_best_iou": 0.4946,
+     "all_best_rank": 53,
+     "all_best_prob": 0.2381,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.5461,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.5461,
+     "cand_probs": [
+      0.546,
+      0.546,
+      0.54,
+      0.531,
+      0.524,
+      0.524,
+      0.519,
+      0.511,
+      0.508,
+      0.504
+     ]
+    },
+    "slot": {
+     "n_cand": 4,
+     "all_best_iou": 0.5529,
+     "all_best_rank": 72,
+     "all_best_prob": 0.0439,
+     "cand_best_iou": 0.3909,
+     "cand_best_rank": 4,
+     "cand_best_prob": 0.7229,
+     "cand_top1_iou": 0.0516,
+     "cand_top1_prob": 0.8788,
+     "cand_probs": [
+      0.879,
+      0.754,
+      0.75,
+      0.723
+     ],
+     "max_abs_dlogit_vs_base": 4.5932
+    },
+    "replace": {
+     "n_cand": 4,
+     "all_best_iou": 0.5167,
+     "all_best_rank": 23,
+     "all_best_prob": 0.0808,
+     "cand_best_iou": 0.3887,
+     "cand_best_rank": 4,
+     "cand_best_prob": 0.75,
+     "cand_top1_iou": 0.0651,
+     "cand_top1_prob": 0.8904,
+     "cand_probs": [
+      0.89,
+      0.782,
+      0.773,
+      0.75
+     ],
+     "max_abs_dlogit_vs_base": 4.9684
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 1,
+   "gt_px": 101883,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.959552386262484,
+   "ref_cam": "cam4",
+   "ref_gt_px": 223814,
+   "exemplar_box_xyxy": [
+    1169,
+    173,
+    1683,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9667,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.9667,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.9667,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.949
+     ]
+    },
+    "base": {
+     "n_cand": 2,
+     "all_best_iou": 0.8259,
+     "all_best_rank": 32,
+     "all_best_prob": 0.2879,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.6559,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.6559,
+     "cand_probs": [
+      0.656,
+      0.524
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9429,
+     "all_best_rank": 3,
+     "all_best_prob": 0.2696,
+     "cand_best_iou": 0.877,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.957,
+     "cand_top1_iou": 0.877,
+     "cand_top1_prob": 0.957,
+     "cand_probs": [
+      0.957,
+      0.934
+     ],
+     "max_abs_dlogit_vs_base": 4.861
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9448,
+     "all_best_rank": 3,
+     "all_best_prob": 0.2415,
+     "cand_best_iou": 0.8693,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.957,
+     "cand_top1_iou": 0.8693,
+     "cand_top1_prob": 0.957,
+     "cand_probs": [
+      0.957,
+      0.949
+     ],
+     "max_abs_dlogit_vs_base": 5.1486
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 2,
+   "gt_px": 305095,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.9767314016459154,
+   "ref_cam": "cam4",
+   "ref_gt_px": 182630,
+   "exemplar_box_xyxy": [
+    257,
+    138,
+    792,
+    948
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 2,
+     "all_best_iou": 0.9609,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9883,
+     "cand_best_iou": 0.9609,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9883,
+     "cand_top1_iou": 0.9609,
+     "cand_top1_prob": 0.9883,
+     "cand_probs": [
+      0.988,
+      0.945
+     ]
+    },
+    "base": {
+     "n_cand": 2,
+     "all_best_iou": 0.713,
+     "all_best_rank": 41,
+     "all_best_prob": 0.2644,
+     "cand_best_iou": 0.0001,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.6559,
+     "cand_top1_iou": 0.0001,
+     "cand_top1_prob": 0.6559,
+     "cand_probs": [
+      0.656,
+      0.524
+     ]
+    },
+    "slot": {
+     "n_cand": 2,
+     "all_best_iou": 0.9082,
+     "all_best_rank": 4,
+     "all_best_prob": 0.2,
+     "cand_best_iou": 0.5688,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9452,
+     "cand_top1_iou": 0.5688,
+     "cand_top1_prob": 0.9452,
+     "cand_probs": [
+      0.945,
+      0.844
+     ],
+     "max_abs_dlogit_vs_base": 5.0653
+    },
+    "replace": {
+     "n_cand": 2,
+     "all_best_iou": 0.9084,
+     "all_best_rank": 4,
+     "all_best_prob": 0.1722,
+     "cand_best_iou": 0.5935,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9416,
+     "cand_top1_iou": 0.5935,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942,
+      0.879
+     ],
+     "max_abs_dlogit_vs_base": 4.9978
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 5,
+   "gt_px": 38748,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.98728998893663,
+   "ref_cam": "cam4",
+   "ref_gt_px": 20644,
+   "exemplar_box_xyxy": [
+    469,
+    73,
+    650,
+    208
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 4,
+     "all_best_iou": 0.9484,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9805,
+     "cand_best_iou": 0.9484,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9805,
+     "cand_top1_iou": 0.9484,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.953,
+      0.938,
+      0.938
+     ]
+    },
+    "base": {
+     "n_cand": 2,
+     "all_best_iou": 0.9863,
+     "all_best_rank": 31,
+     "all_best_prob": 0.2928,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.6559,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.6559,
+     "cand_probs": [
+      0.656,
+      0.524
+     ]
+    },
+    "slot": {
+     "n_cand": 4,
+     "all_best_iou": 0.9813,
+     "all_best_rank": 178,
+     "all_best_prob": 0.0103,
+     "cand_best_iou": 0.9717,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.9452,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977,
+      0.945,
+      0.938,
+      0.938
+     ],
+     "max_abs_dlogit_vs_base": 5.7341
+    },
+    "replace": {
+     "n_cand": 4,
+     "all_best_iou": 0.982,
+     "all_best_rank": 179,
+     "all_best_prob": 0.0081,
+     "cand_best_iou": 0.9719,
+     "cand_best_rank": 2,
+     "cand_best_prob": 0.957,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": 0.9805,
+     "cand_probs": [
+      0.98,
+      0.957,
+      0.949,
+      0.945
+     ],
+     "max_abs_dlogit_vs_base": 6.0519
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 6,
+   "gt_px": 200525,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.9530376075314057,
+   "ref_cam": "cam4",
+   "ref_gt_px": 64374,
+   "exemplar_box_xyxy": [
+    0,
+    938,
+    1920,
+    1080
+   ],
+   "orig_hw": [
+    1080,
+    1920
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 1,
+     "all_best_iou": 0.8638,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9766,
+     "cand_best_iou": 0.8638,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9766,
+     "cand_top1_iou": 0.8638,
+     "cand_top1_prob": 0.9766,
+     "cand_probs": [
+      0.977
+     ]
+    },
+    "base": {
+     "n_cand": 2,
+     "all_best_iou": 0.004,
+     "all_best_rank": 82,
+     "all_best_prob": 0.2195,
+     "cand_best_iou": 0.0008,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.6559,
+     "cand_top1_iou": 0.0008,
+     "cand_top1_prob": 0.6559,
+     "cand_probs": [
+      0.656,
+      0.524
+     ]
+    },
+    "slot": {
+     "n_cand": 1,
+     "all_best_iou": 0.9387,
+     "all_best_rank": 2,
+     "all_best_prob": 0.4208,
+     "cand_best_iou": 0.3272,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9375,
+     "cand_top1_iou": 0.3272,
+     "cand_top1_prob": 0.9375,
+     "cand_probs": [
+      0.938
+     ],
+     "max_abs_dlogit_vs_base": 4.4576
+    },
+    "replace": {
+     "n_cand": 1,
+     "all_best_iou": 0.9385,
+     "all_best_rank": 2,
+     "all_best_prob": 0.4336,
+     "cand_best_iou": 0.3358,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9416,
+     "cand_top1_iou": 0.3358,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942
+     ],
+     "max_abs_dlogit_vs_base": 4.5685
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 2,
+   "gt_px": 15784,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.8471848186885451,
+   "ref_cam": "v20",
+   "ref_gt_px": 15828,
+   "exemplar_box_xyxy": [
+    0,
+    640,
+    129,
+    900
+   ],
+   "orig_hw": [
+    1088,
+    2048
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 13,
+     "all_best_iou": 0.7606,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9649,
+     "cand_best_iou": 0.7606,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.7606,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965,
+      0.93,
+      0.926,
+      0.922,
+      0.918,
+      0.914,
+      0.906,
+      0.902,
+      0.887,
+      0.855
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.897,
+     "all_best_rank": 34,
+     "all_best_prob": 0.2644,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 13,
+     "all_best_iou": 0.8845,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.8845,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.8845,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.91,
+      0.899,
+      0.895,
+      0.895,
+      0.895,
+      0.89,
+      0.883,
+      0.879,
+      0.844
+     ],
+     "max_abs_dlogit_vs_base": 5.3098
+    },
+    "replace": {
+     "n_cand": 11,
+     "all_best_iou": 0.8832,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.8832,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.8832,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.922,
+      0.91,
+      0.91,
+      0.91,
+      0.906,
+      0.906,
+      0.895,
+      0.895,
+      0.855
+     ],
+     "max_abs_dlogit_vs_base": 5.4639
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 4,
+   "gt_px": 9766,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.8223690798037449,
+   "ref_cam": "v20",
+   "ref_gt_px": 17023,
+   "exemplar_box_xyxy": [
+    552,
+    721,
+    702,
+    975
+   ],
+   "orig_hw": [
+    1088,
+    2048
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 13,
+     "all_best_iou": 0.8888,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.8888,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.8888,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.926,
+      0.926,
+      0.922,
+      0.918,
+      0.918,
+      0.918,
+      0.914,
+      0.871,
+      0.86
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.814,
+     "all_best_rank": 36,
+     "all_best_prob": 0.2622,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 16,
+     "all_best_iou": 0.8139,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9494,
+     "cand_best_iou": 0.8139,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9494,
+     "cand_top1_iou": 0.8139,
+     "cand_top1_prob": 0.9494,
+     "cand_probs": [
+      0.949,
+      0.914,
+      0.914,
+      0.906,
+      0.906,
+      0.902,
+      0.902,
+      0.902,
+      0.89,
+      0.89
+     ],
+     "max_abs_dlogit_vs_base": 5.358
+    },
+    "replace": {
+     "n_cand": 13,
+     "all_best_iou": 0.8145,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9532,
+     "cand_best_iou": 0.8145,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9532,
+     "cand_top1_iou": 0.8145,
+     "cand_top1_prob": 0.9532,
+     "cand_probs": [
+      0.953,
+      0.926,
+      0.926,
+      0.922,
+      0.914,
+      0.914,
+      0.91,
+      0.902,
+      0.902,
+      0.902
+     ],
+     "max_abs_dlogit_vs_base": 5.5205
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 5,
+   "gt_px": 21254,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.9176266741594081,
+   "ref_cam": "v20",
+   "ref_gt_px": 22806,
+   "exemplar_box_xyxy": [
+    1269,
+    767,
+    1451,
+    1080
+   ],
+   "orig_hw": [
+    1088,
+    2048
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 13,
+     "all_best_iou": 0.9383,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9688,
+     "cand_best_iou": 0.9383,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9688,
+     "cand_top1_iou": 0.9383,
+     "cand_top1_prob": 0.9688,
+     "cand_probs": [
+      0.969,
+      0.93,
+      0.93,
+      0.93,
+      0.926,
+      0.918,
+      0.914,
+      0.887,
+      0.86,
+      0.844
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.847,
+     "all_best_rank": 28,
+     "all_best_prob": 0.2768,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 13,
+     "all_best_iou": 0.8713,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9416,
+     "cand_best_iou": 0.8713,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9416,
+     "cand_top1_iou": 0.8713,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942,
+      0.926,
+      0.922,
+      0.922,
+      0.91,
+      0.91,
+      0.902,
+      0.895,
+      0.89,
+      0.824
+     ],
+     "max_abs_dlogit_vs_base": 5.7136
+    },
+    "replace": {
+     "n_cand": 11,
+     "all_best_iou": 0.8779,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9416,
+     "cand_best_iou": 0.8779,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9416,
+     "cand_top1_iou": 0.8779,
+     "cand_top1_prob": 0.9416,
+     "cand_probs": [
+      0.942,
+      0.93,
+      0.93,
+      0.93,
+      0.918,
+      0.918,
+      0.906,
+      0.902,
+      0.895,
+      0.836
+     ],
+     "max_abs_dlogit_vs_base": 5.7136
+    }
+   }
+  },
+  {
+   "set": "pinhole_supp",
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 6,
+   "gt_px": 28618,
+   "view_distance": 4,
+   "rig": "pinhole",
+   "raw_J": 0.9396256443967754,
+   "ref_cam": "v20",
+   "ref_gt_px": 29412,
+   "exemplar_box_xyxy": [
+    1363,
+    796,
+    1566,
+    1088
+   ],
+   "orig_hw": [
+    1088,
+    2048
+   ],
+   "prompt_shapes": {
+    "geo_feats": [
+     2,
+     1,
+     256
+    ],
+    "geo_masks": [
+     1,
+     2
+    ],
+    "txt_tokens": 32
+   },
+   "arms": {
+    "same": {
+     "n_cand": 13,
+     "all_best_iou": 0.9148,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9649,
+     "cand_best_iou": 0.9148,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9649,
+     "cand_top1_iou": 0.9148,
+     "cand_top1_prob": 0.9649,
+     "cand_probs": [
+      0.965,
+      0.922,
+      0.922,
+      0.918,
+      0.914,
+      0.91,
+      0.902,
+      0.879,
+      0.863,
+      0.808
+     ]
+    },
+    "base": {
+     "n_cand": 0,
+     "all_best_iou": 0.8978,
+     "all_best_rank": 33,
+     "all_best_prob": 0.2654,
+     "cand_best_iou": 0.0,
+     "cand_best_rank": null,
+     "cand_best_prob": null,
+     "cand_top1_iou": 0.0,
+     "cand_top1_prob": null,
+     "cand_probs": []
+    },
+    "slot": {
+     "n_cand": 16,
+     "all_best_iou": 0.9106,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9494,
+     "cand_best_iou": 0.9106,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9494,
+     "cand_top1_iou": 0.9106,
+     "cand_top1_prob": 0.9494,
+     "cand_probs": [
+      0.949,
+      0.91,
+      0.906,
+      0.899,
+      0.89,
+      0.887,
+      0.883,
+      0.879,
+      0.875,
+      0.808
+     ],
+     "max_abs_dlogit_vs_base": 5.6432
+    },
+    "replace": {
+     "n_cand": 13,
+     "all_best_iou": 0.9103,
+     "all_best_rank": 1,
+     "all_best_prob": 0.9494,
+     "cand_best_iou": 0.9103,
+     "cand_best_rank": 1,
+     "cand_best_prob": 0.9494,
+     "cand_top1_iou": 0.9103,
+     "cand_top1_prob": 0.9494,
+     "cand_probs": [
+      0.949,
+      0.918,
+      0.914,
+      0.914,
+      0.899,
+      0.895,
+      0.89,
+      0.89,
+      0.883,
+      0.82
+     ],
+     "max_abs_dlogit_vs_base": 5.6432
+    }
+   }
+  }
+ ]
+}
