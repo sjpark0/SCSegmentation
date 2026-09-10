@@ -253,8 +253,9 @@ def summarize(records, thresholds, variant="e2_0", reference=None):
         out[tag] = s
     reg = out.get("registered")
     if reg:
-        arms = spec["verdict"] if isinstance(spec["verdict"], tuple) else (spec["verdict"],)
-        out["verdicts"] = {}
+        multi = isinstance(spec["verdict"], tuple)          # e2_0c: two registered arms + adoption rule
+        arms = spec["verdict"] if multi else (spec["verdict"],)
+        verdicts = {}
         for vk in arms:
             sk, lk = arm_keys(vk)
             c1k = "c1_same_image" if vk == "box" else f"c1_{sk}"
@@ -267,7 +268,7 @@ def summarize(records, thresholds, variant="e2_0", reference=None):
                 verdict = f"pass: proceed to S1-E2 with the {vk} exemplar"
             v = {"arm": vk, "criterion_1_rate": c1, "criterion_2_rate": c2,
                  "kill_rules": {"c1_min": KILL_SAME, "c2_min": KILL_CROSS}, "verdict": verdict}
-            if vk != "box" and "box" in spec["exemplars"]:
+            if multi:
                 # adoption over the box exemplar (docs/stage1-E2-0c-prereg.md section 3): no loss on (1),
                 # (2) >= 0.7, paired (2) hits >= box hits and paired median difference >= 0
                 pr = reg[f"paired_slot_{vk}_vs_box"]["all"]
@@ -276,8 +277,21 @@ def summarize(records, thresholds, variant="e2_0", reference=None):
                 v["adopt_over_box"] = bool(adopt)
                 v["adopt_rule"] = ("c1 hits >= box c1 hits and c2 >= 0.7 and paired c2 hits >= box and "
                                    "paired median d(cand_best_iou) >= 0")
-            out["verdicts"][vk] = v
-        out["verdict"] = out["verdicts"][arms[0]]
+                v["paired_hits"], v["paired_d_median"] = pr[f"hits_slot_{vk}"], pr["d_median"]
+            verdicts[vk] = v
+        if multi:
+            # between-arm selection (section 3): among adoptable arms, more paired (2) hits, then larger
+            # median difference; ties keep the registration order (pts first).  None -> box retained.
+            adoptable = [vk for vk in arms if verdicts[vk]["adopt_over_box"]]
+            adopted = max(adoptable, key=lambda vk: (verdicts[vk]["paired_hits"], verdicts[vk]["paired_d_median"],
+                                                     -arms.index(vk))) if adoptable else None
+            out["verdicts"] = verdicts
+            out["adopted"] = adopted
+            out["adoption_rule"] = "adoptable arms ranked by paired c2 hits, then paired median d; tie -> first registered (pts); none -> box retained"
+            out["verdict"] = dict(verdicts[adopted] if adopted else verdicts[arms[0]],
+                                  adopted=adopted, box_retained=adopted is None)
+        else:
+            out["verdict"] = verdicts[arms[0]]
     if reference is not None:
         out["box_vs_e2_0_reference"] = compare_with_reference(records, reference)
     out["thresholds"] = thresholds
@@ -495,14 +509,16 @@ def tight_box_xyxy(mask):
 
 
 def interior_points(gt, k=K_POINTS, interior_px=INTERIOR_PX):
-    """K positive points inside the mask: farthest-point sampling over the interior (distance to the
-    boundary >= interior_px, computed on the original-resolution mask), seeded at the deepest pixel.
+    """K positive points inside the mask: farthest-point sampling over the interior (exact Euclidean
+    distance to the mask boundary >= interior_px on the original-resolution mask; the frame border counts
+    as boundary, so no point lands on the outermost rows/columns), seeded at the deepest pixel.
     Falls back to the whole mask when the interior has fewer than k pixels.  Returns (k', 2) xy pixels."""
     import cv2
     import numpy as np
     import torch
     m = gt.detach().cpu().numpy().astype(np.uint8)
-    dt = cv2.distanceTransform(m, cv2.DIST_L2, 3)
+    padded = cv2.copyMakeBorder(m, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+    dt = cv2.distanceTransform(padded, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)[1:-1, 1:-1]
     cand = np.argwhere(dt >= interior_px) if (dt >= interior_px).sum() >= k else np.argwhere(m > 0)
     if len(cand) == 0:
         return np.zeros((0, 2), dtype=np.int64)
@@ -588,7 +604,8 @@ def exemplar_prompt(variant, gt_all, obj, device):
         kw["box_mask"] = torch.zeros(1, len(boxes), dtype=torch.bool, device=device)         # nothing padded
         kw["box_labels"] = torch.tensor(labels, dtype=torch.long, device=device)[:, None]    # (n, bs)
     if pts is not None and len(pts):
-        xy = torch.tensor([[float(x) / W, float(y) / H] for x, y in pts], dtype=torch.float32)  # normalised [0, 1]
+        # pixel centres in [0, 1]: grid_sample(align_corners=False) maps (i + 0.5) / W to the centre of cell i
+        xy = torch.tensor([[(float(x) + 0.5) / W, (float(y) + 0.5) / H] for x, y in pts], dtype=torch.float32)
         kw["point_embeddings"] = xy[:, None, :].to(device)                                    # (k, bs, 2)
         kw["point_mask"] = torch.zeros(1, len(pts), dtype=torch.bool, device=device)
         kw["point_labels"] = torch.ones(len(pts), 1, dtype=torch.long, device=device)
@@ -893,8 +910,11 @@ def print_summary(summary, variant="e2_0"):
               f"max |diff| cand_best_iou {ref['max_abs_diff_cand_best_iou']}")
     for v in (summary.get("verdicts") or {"_": summary.get("verdict")}).values():
         if v:
-            extra = f"  adopt_over_box={v['adopt_over_box']}" if "adopt_over_box" in v else ""
+            extra = (f"  adopt_over_box={v['adopt_over_box']} (paired hits {v['paired_hits']}, d med {v['paired_d_median']:+.3f})"
+                     if "adopt_over_box" in v else "")
             print(f"\nverdict (arm {v['arm']}): (1)={v['criterion_1_rate']}  (2)={v['criterion_2_rate']}  -> {v['verdict']}{extra}")
+    if "adopted" in summary:
+        print(f"adopted exemplar: {summary['adopted'] or 'none (box retained)'}")
 
 
 if __name__ == "__main__":

@@ -148,7 +148,7 @@ def test_masked_encode_boxes_matches_reference_with_full_mask():
 
 # ----------------------------------------------------------------------------- S1-E2-0'' (points / negatives)
 def _rec_c(i, box_same, box_slot, pts_same, pts_slot, neg_same, neg_slot, fill=0.5, tag="registered"):
-    arms = {"same": _arm(box_same), "slot": _arm(box_slot), "base": _arm(0.0, n_cand=0)}
+    arms = {"same": _arm(box_same), "slot": _arm(box_slot), "replace": _arm(box_slot), "base": _arm(0.0, n_cand=0)}
     for v, a, b in (("pts", pts_same, pts_slot), ("neg", neg_same, neg_slot), ("ptsonly", pts_same, pts_slot),
                     ("negnc", neg_same, neg_slot), ("negall", neg_same, neg_slot), ("ptsneg", neg_same, neg_slot)):
         arms[f"same_{v}"], arms[f"slot_{v}"] = _arm(a), _arm(b)
@@ -164,14 +164,29 @@ def test_summarize_e2_0c_verdict_per_arm_and_adoption_rule():
             _rec_c(4, 0.9, 0.9, 0.9, 0.9, 0.5, 0.9)]
     s = spike.summarize(recs, {}, variant="e2_0c")
     v = s["verdicts"]
-    assert set(v) == {"pts", "neg"} and s["verdict"] is v["pts"]
+    assert set(v) == {"pts", "neg"} and s["adopted"] == "pts"
+    assert s["verdict"]["arm"] == "pts" and s["verdict"]["adopted"] == "pts" and s["verdict"]["box_retained"] is False
     assert v["pts"]["verdict"].startswith("pass") and v["pts"]["adopt_over_box"] is True
     assert v["neg"]["verdict"].startswith("discard: criterion 1") and v["neg"]["adopt_over_box"] is False
     assert s["registered"]["c2_slot_pts"]["hits"] == 4 and s["registered"]["c1_same_neg"]["hits"] == 3
-    # a pair-level loss (median d < 0) blocks adoption even when the rates pass
-    recs2 = [_rec_c(i, 0.9, 0.9, 0.9, 0.8, 0.9, 0.9) for i in range(4)]
+    # a pair-level loss (median d < 0) blocks adoption even when the rates pass -> box retained
+    recs2 = [_rec_c(i, 0.9, 0.9, 0.9, 0.8, 0.9, 0.8) for i in range(4)]
     s2 = spike.summarize(recs2, {}, variant="e2_0c")
     assert s2["verdicts"]["pts"]["verdict"].startswith("pass") and s2["verdicts"]["pts"]["adopt_over_box"] is False
+    assert s2["adopted"] is None and s2["verdict"]["box_retained"] is True
+    # only neg adoptable -> neg is the adopted arm and the top-level verdict
+    recs3 = [_rec_c(i, 0.9, 0.9 if i else 0.2, 0.9, 0.9 if i else 0.1, 0.9, 0.9) for i in range(4)]
+    s3 = spike.summarize(recs3, {}, variant="e2_0c")
+    assert s3["adopted"] == "neg" and s3["verdict"]["arm"] == "neg"
+    # both adoptable, neg with more paired hits -> neg; equal -> pts (registration order)
+    recs4 = [_rec_c(i, 0.9, 0.9 if i else 0.2, 0.9, 0.9 if i else 0.2, 0.9, 0.9) for i in range(4)]
+    s4 = spike.summarize(recs4, {}, variant="e2_0c")
+    assert s4["adopted"] == "neg"
+    recs5 = [_rec_c(i, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9) for i in range(4)]
+    assert spike.summarize(recs5, {}, variant="e2_0c")["adopted"] == "pts"
+    # e2_0 / e2_0b schemas untouched: no verdicts/adopted keys, no adoption fields
+    s0 = spike.summarize(recs, {}, variant="e2_0")
+    assert "verdicts" not in s0 and "adopted" not in s0 and "adopt_over_box" not in s0["verdict"]
 
 
 def test_negative_boxes_modes_and_order():
@@ -189,9 +204,9 @@ def test_negative_boxes_modes_and_order():
     part = spike.negative_boxes(gt, 1, box, mode="partial")
     assert [v for v, _ in part] == [2, 4]                 # the containing floor is skipped
     allb = spike.negative_boxes(gt, 1, box, mode="all", max_neg=2)
-    assert len(allb) == 2 and allb[0][0] == 4             # nearest centre first, capped
+    assert [v for v, _ in allb] == [9, 4]                 # nearest box centre first (floor centre == target centre), capped
     tiny = spike.negative_boxes(gt, 1, box, mode="overlap", min_overlap=0.5)
-    assert [v for v, _ in tiny] == [9, 2]                 # 4 (9 px) is below 50% of the box area
+    assert [v for v, _ in tiny] == [9]                    # 2 (50 px = 12.5%) and 4 (9 px) are below 50% of the box area
 
 
 def test_interior_points_are_inside_and_spread():
@@ -201,13 +216,16 @@ def test_interior_points_are_inside_and_spread():
     pts = spike.interior_points(gt, k=8, interior_px=3)
     assert pts.shape == (8, 2)
     for x, y in pts:
-        assert gt[y, x] and 13 <= y <= 46 and 23 <= x <= 66      # inside and >= 3 px from the boundary
+        assert gt[y, x] and 12 <= y <= 47 and 22 <= x <= 67      # inside and >= 3 px (exact) from the boundary
     assert len({(int(x), int(y)) for x, y in pts}) == 8            # distinct
     xs, ys = pts[:, 0], pts[:, 1]
     assert xs.max() - xs.min() > 30 and ys.max() - ys.min() > 20   # spread over the rectangle
     small = torch.zeros(20, 20, dtype=torch.bool); small[5:8, 5:8] = True
     p2 = spike.interior_points(small, k=8, interior_px=3)         # interior too thin -> whole mask, <= 9 px
     assert 1 <= len(p2) <= 8 and all(small[y, x] for x, y in p2)
+    edge = torch.zeros(60, 80, dtype=torch.bool); edge[0:40, 0:50] = True   # touches the frame corner
+    p3 = spike.interior_points(edge, k=8, interior_px=3)
+    assert all(x >= 2 and y >= 2 for x, y in p3)                   # frame border = boundary: rows 0-1 excluded (dt 1, 2)
 
 
 def test_exemplar_prompt_formats():
@@ -230,7 +248,9 @@ def test_exemplar_prompt_formats():
             assert pr.box_embeddings is None or pr.box_embeddings.shape[0] == 0
         if n_pts:
             assert list(pr.point_embeddings.shape) == [n_pts, 1, 2] and pr.point_labels.shape == (n_pts, 1)
-            assert (pr.point_labels == 1).all() and (pr.point_embeddings >= 0).all() and (pr.point_embeddings <= 1).all()
+            assert (pr.point_labels == 1).all() and (pr.point_embeddings > 0).all() and (pr.point_embeddings < 1).all()
+            xy = pr.point_embeddings[:, 0, :]
+            assert torch.allclose(xy[:, 0] * 100 - 0.5, torch.tensor([float(x) for x, _ in meta["points"]]))  # pixel centres
         else:
             assert pr.point_embeddings is None or pr.point_embeddings.shape[0] == 0
         assert meta["box"] == [40, 40, 60, 60]
