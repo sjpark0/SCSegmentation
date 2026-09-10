@@ -9,6 +9,7 @@ pytest.importorskip("numpy")
 spec = importlib.util.spec_from_file_location("e4a_project", os.path.join(REPO, "MVSeed", "geo", "e4a_project.py"))
 e4a = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(e4a)
+warp = e4a.warp
 
 
 def _row(scene, cam, obj, gt_px, j, rig="pinhole", available=True, px=100, tag=None):
@@ -85,3 +86,50 @@ def test_unavailable_rows_stay_in_the_population_and_fail():
     g = s["f0_ge2k_pinhole"]
     assert g["n"] == 16 and g["available"] == 12 and g["pass"] == 12
     assert s["gates"]["gate_projection"]["pass"] is True        # 12 >= 8, denominator still 16
+
+
+# ----------------------------------------------------------------------------- S1-E4b (Pi3X provider)
+e4b_spec = importlib.util.spec_from_file_location("e4b_project", os.path.join(REPO, "MVSeed", "geo", "e4b_project.py"))
+e4b = importlib.util.module_from_spec(e4b_spec)
+e4b_spec.loader.exec_module(e4b)
+np = pytest.importorskip("numpy")
+
+
+def test_target_size_keeps_aspect_under_the_pixel_limit():
+    for w0, h0 in ((1920, 1080), (2560, 1920), (2704, 2028), (2048, 1088)):
+        w, h = e4b.target_size(w0, h0)
+        assert w % 14 == 0 and h % 14 == 0
+        assert w * h <= e4b.PIXEL_LIMIT * 1.05
+        assert abs((w / h) / (w0 / h0) - 1) < 0.03
+    assert e4b.target_size(10, 10, pixel_limit=1) == (14, 14)          # never below one patch
+
+
+def test_rotmat_to_qvec_round_trips_through_colmap():
+    rng = np.random.default_rng(0)
+    for _ in range(20):
+        a = rng.normal(size=3)
+        t = np.linalg.norm(a)
+        k = a / t
+        Kx = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+        R = np.eye(3) + np.sin(t) * Kx + (1 - np.cos(t)) * (Kx @ Kx)    # Rodrigues
+        back = np.asarray(e4a.ci.qvec_to_rotmat(e4b.rotmat_to_qvec(R)))
+        assert np.allclose(back, R, atol=1e-9), np.abs(back - R).max()
+    assert np.allclose(np.asarray(e4a.ci.qvec_to_rotmat(e4b.rotmat_to_qvec(np.eye(3)))), np.eye(3))
+
+
+def test_cameras_from_pi3_conventions():
+    K = np.array([[500.0, 0, 335.5], [0, 500.0, 188.5], [0, 0, 1]])
+    R_c2w = np.asarray(e4a.ci.qvec_to_rotmat([0.5 ** 0.5, 0, 0.5 ** 0.5, 0]))
+    T = np.eye(4); T[:3, :3] = R_c2w; T[:3, 3] = [1.0, -2.0, 3.0]
+    cam, img = e4b.cameras_from_pi3(K, T, 672, 378)
+    assert (cam.fx, cam.fy) == (500.0, 500.0)
+    assert (cam.cx, cam.cy) == (336.0, 189.0)                          # +0.5: index -> pixel-centre
+    assert cam.model == "PINHOLE" and not cam.has_distortion
+    R, t = warp.pose_matrices(img)
+    assert np.allclose(R, R_c2w.T)                                     # world-to-camera
+    centre = -R.T @ t                                                  # camera centre back in world
+    assert np.allclose(centre, [1.0, -2.0, 3.0], atol=1e-9)
+    # a point 5 in front of the camera projects to the principal point
+    world = T[:3, :3] @ np.array([0, 0, 5.0]) + T[:3, 3]
+    u, v, z = warp.project(cam, (world @ R.T + t)[None])
+    assert abs(u[0] - cam.cx) < 1e-6 and abs(v[0] - cam.cy) < 1e-6 and abs(z[0] - 5.0) < 1e-9
