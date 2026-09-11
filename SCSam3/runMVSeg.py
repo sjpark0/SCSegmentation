@@ -138,17 +138,34 @@ def crop_track_module():
     return _CROP_TRACK
 
 
-def crop_suffix(max_px, gate):
+def _scale_tag(scale):
+    """4.0 -> "4", 2.5 -> "2p5": a folder name may not carry a dot."""
+    t = f"{float(scale):g}"
+    return t.replace(".", "p")
+
+
+def crop_suffix(max_px, gate, scale=CROP_SCALE_DEFAULT, min_side=CROP_MIN_SIDE_DEFAULT):
     """--crop-small folder marker: Cs<max_px/1000>k when max_px is a multiple of 1000
-    (Cs2k, Cs10k), else Cs<max_px> (Cs2500), so two areas never share a name; then G1 /
-    G2 for gate v1 / v2 and nothing for none.  Distinct from Cr<..> (crop_track.py's
+    (Cs2k, Cs10k), else Cs<max_px> (Cs2500), so two areas never share a name; then the
+    window shape when it is not the default -- S<scale> and Ms<min_side> (S2GS2Ms128) --
+    and finally G1 / G2 for gate v1 / v2 and nothing for none.  Two different windows must
+    never share a folder name (S2-R4): the scale and the floor set the window just as the
+    area sets which pairs are targets.  At the defaults the marker is unchanged, so every
+    folder written before S2-R4 keeps its name.  Distinct from Cr<..> (crop_track.py's
     assembled folders) and from the G/G2 folders of crop_guard.py."""
     if int(max_px) <= 0:
         raise ValueError(f"max_px must be positive, got {max_px}")
     if gate not in CROP_GATES:
         raise ValueError(f"gate must be one of {CROP_GATES}, got {gate!r}")
+    if float(scale) <= 0 or int(min_side) <= 0:
+        raise ValueError(f"scale and min_side must be positive, got {scale}, {min_side}")
     n = f"{int(max_px) // 1000}k" if int(max_px) % 1000 == 0 else f"{int(max_px)}"
-    return f"Cs{n}" + CROP_GATE_SUFFIX[gate]
+    shape = ""
+    if float(scale) != float(CROP_SCALE_DEFAULT):
+        shape += f"S{_scale_tag(scale)}"
+    if int(min_side) != int(CROP_MIN_SIDE_DEFAULT):
+        shape += f"Ms{int(min_side)}"
+    return f"Cs{n}{shape}" + CROP_GATE_SUFFIX[gate]
 
 
 def parse_args():
@@ -562,7 +579,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         c_min_side = CROP_MIN_SIDE_DEFAULT if crop_min_side is None else int(crop_min_side)
         if c_scale <= 0 or c_min_side <= 0:
             sys.exit("--crop-scale and --crop-min-side must be positive")
-        c_suffix = crop_suffix(crop_px, c_gate)
+        c_suffix = crop_suffix(crop_px, c_gate, c_scale, c_min_side)
         # same rule as Sd/Fs: a crop run must never land on the folder its control wrote
         if not args.out:
             out_name += c_suffix

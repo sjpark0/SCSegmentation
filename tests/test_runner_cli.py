@@ -687,6 +687,18 @@ def test_crop_suffix():
     assert mod.crop_suffix(1000, "v2") == "Cs1kG2"
     assert mod.crop_suffix(2500, "v2") == "Cs2500G2"           # not a multiple of 1000: exact
     assert mod.crop_suffix(500, "none") == "Cs500"
+    # S2-R4: the window shape joins the name, and only when it is not the default, so every
+    # folder written before S2-R4 keeps the name it has
+    assert mod.crop_suffix(10000, "v2", 4.0, 256) == "Cs10kG2"
+    assert mod.crop_suffix(10000, "v2", 2.0) == "Cs10kS2G2"
+    assert mod.crop_suffix(10000, "v2", 3.0) == "Cs10kS3G2"
+    assert mod.crop_suffix(10000, "v2", 2.5) == "Cs10kS2p5G2"       # no dot in a folder name
+    assert mod.crop_suffix(10000, "v2", 4.0, 128) == "Cs10kMs128G2"
+    assert mod.crop_suffix(10000, "none", 2.0, 128) == "Cs10kS2Ms128"
+    assert len({mod.crop_suffix(10000, "v2", s) for s in (2.0, 3.0, 4.0)}) == 3
+    for bad in ((0.0, 256), (-2.0, 256), (4.0, 0), (4.0, -1)):
+        with pytest.raises(ValueError):
+            mod.crop_suffix(10000, "v2", *bad)
     for bad in (0, -1):
         with pytest.raises(ValueError):
             mod.crop_suffix(bad, "v2")
@@ -724,8 +736,9 @@ def test_crop_small_suffix_table(ds):
         # gate / scale / min-side reach the name and the run dict as given
         r = mod.resolve_run(ns(crop_small=2000, crop_gate="v1", crop_scale=3.0, crop_min_side=128,
                                **flags), cam_names, written, num_frame=21, ref_suffix=ref)
-        assert r["out_name"] == base_name + "Cs2kG1"
-        assert r["crop"] == dict(max_px=2000, gate="v1", scale=3.0, min_side=128, suffix="Cs2kG1")
+        assert r["out_name"] == base_name + "Cs2kS3Ms128G1"
+        assert r["crop"] == dict(max_px=2000, gate="v1", scale=3.0, min_side=128,
+                                 suffix="Cs2kS3Ms128G1")
         r = mod.resolve_run(ns(crop_small=2500, crop_gate="none", **flags), cam_names, written,
                             num_frame=21, ref_suffix=ref)
         assert r["out_name"] == base_name + "Cs2500" and r["crop"]["gate"] == "none"
@@ -834,7 +847,7 @@ def test_parse_args_crop_small(monkeypatch):
     a = mod.parse_args()
     assert (a.crop_small, a.crop_gate, a.crop_scale, a.crop_min_side) == (2000, None, 3.0, 128)
     assert mod.resolve_run(a, cam_names, written, num_frame=21)["crop"] == \
-           dict(max_px=2000, gate="v2", scale=3.0, min_side=128, suffix="Cs2kG2")
+           dict(max_px=2000, gate="v2", scale=3.0, min_side=128, suffix="Cs2kS3Ms128G2")
     for bad in (["--crop-gate", "G2"], ["--crop-gate", "V2"], ["--crop-small"], ["--crop-small", "10k"],
                 ["--crop-min-side", "256.5"]):
         monkeypatch.setattr(sys, "argv", ["runMVSeg.py", "Fencing", "--algo", "MVOpt", "--xview-window", "0"] + bad)

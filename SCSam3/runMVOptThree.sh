@@ -17,6 +17,11 @@ echo "logs -> ${LOGDIR}"
 #   XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod F0SEED=1 CROP=10000 CROPGATE=v2 ./runMVOptThree.sh Fencing
 #                                                                        # -> SegMaskSam3XW1CGPS4MFsCs10kG2
 #   XVIEW=0 XREF=muvod F0SEED=1 CROP=10000 ./runMVOptThree.sh Fencing   # -> SegMaskSam3XW0MFsCs10kG2
+# CROPSCALE=<s> / CROPMINSIDE=<px> set the crop window (--crop-scale / --crop-min-side,
+# docs/stage2-R4-prereg.md; side = clamp(ceil(s * box longest side), min_side, min(H, W))).
+# Both join the folder name when they are not the default 4 / 256, so two windows never share one:
+#   ... F0SEED=1 CROP=10000 CROPGATE=v2 CROPSCALE=2 ./runMVOptThree.sh Fencing
+#                                                                        # -> SegMaskSam3XW1CGPS4MFsCs10kS2G2
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
@@ -30,7 +35,8 @@ for ds in "$@"; do
 			${XGATE:+--xview-gate} ${XPTR:+--xview-ptr} ${XSHIFT:+--xview-tpos-shift "${XSHIFT}"} \
 			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} ${XREPAIR:+--repair-seeds} \
 			${SEEDS:+--seeds-from "${SEEDS}"} ${F0SEED:+--frame0-seed} \
-			${CROP:+--crop-small "${CROP}"} ${CROPGATE:+--crop-gate "${CROPGATE}"} --overwrite \
+			${CROP:+--crop-small "${CROP}"} ${CROPGATE:+--crop-gate "${CROPGATE}"} \
+			${CROPSCALE:+--crop-scale "${CROPSCALE}"} ${CROPMINSIDE:+--crop-min-side "${CROPMINSIDE}"} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))
