@@ -1,16 +1,24 @@
 {
  "schema": "MVSeed e4b_project",
  "schema_version": 1,
- "generated_at": "2026-09-10T11:58:57+0000",
- "git_head": "b6580c0a8601727ed928130ead018e5c3c2610da",
+ "generated_at": "2026-09-10T13:02:03+0000",
+ "git_head": "ee351882e1d3e4cf70f179c0e33380c7dcd8d553",
  "generated_by": "MVSeed/geo/e4b_project.py",
  "argv": [
-  "MVSeed/geo/e4b_project.py"
+  "MVSeed/geo/e4b_project.py",
+  "--overwrite",
+  "--save-masks",
+  "MVSeed/cache/proj_b",
+  "--out",
+  "MVSeed/runs/e4b_project.json",
+  "--parts-dir",
+  "MVSeed/runs/e4b_project_parts"
  ],
  "prereg": "docs/stage1-E4b-prereg.md",
  "rules": {
   "model": "yyfz233/Pi3X",
   "pixel_limit": 255000,
+  "registered_pixel_limit": 255000,
   "patch": 14,
   "conf_min": 0.1,
   "arms": [

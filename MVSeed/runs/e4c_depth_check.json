@@ -1,0 +1,275 @@
+{
+ "rows": [
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "n": 1175051,
+   "overlap": 0.816,
+   "rel_median": 0.0152,
+   "rel_p90": 0.217,
+   "signed_median": -0.0039,
+   "nearer_frac": 0.6379
+  },
+  {
+   "scene": "Barn",
+   "cam": "v7",
+   "n": 1337997,
+   "overlap": 0.9302,
+   "rel_median": 0.014,
+   "rel_p90": 0.2224,
+   "signed_median": -0.0038,
+   "nearer_frac": 0.6449
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "n": 1195496,
+   "overlap": 0.8311,
+   "rel_median": 0.0155,
+   "rel_p90": 0.226,
+   "signed_median": -0.0045,
+   "nearer_frac": 0.6559
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "n": 532899,
+   "overlap": 0.3721,
+   "rel_median": 0.0116,
+   "rel_p90": 0.0871,
+   "signed_median": -0.0025,
+   "nearer_frac": 0.5751
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam4",
+   "n": 767369,
+   "overlap": 0.5353,
+   "rel_median": 0.1781,
+   "rel_p90": 0.3315,
+   "signed_median": -0.1781,
+   "nearer_frac": 0.9973
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "n": 462711,
+   "overlap": 0.3286,
+   "rel_median": 0.0239,
+   "rel_p90": 0.1433,
+   "signed_median": -0.017,
+   "nearer_frac": 0.7165
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "n": 1239268,
+   "overlap": 0.8616,
+   "rel_median": 0.0056,
+   "rel_p90": 0.0402,
+   "signed_median": -0.002,
+   "nearer_frac": 0.6336
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v7",
+   "n": 1304665,
+   "overlap": 0.907,
+   "rel_median": 0.0056,
+   "rel_p90": 0.0385,
+   "signed_median": -0.0022,
+   "nearer_frac": 0.6464
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "n": 1195694,
+   "overlap": 0.8313,
+   "rel_median": 0.0064,
+   "rel_p90": 0.0406,
+   "signed_median": -0.003,
+   "nearer_frac": 0.6707
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "n": 1286943,
+   "overlap": 0.9485,
+   "rel_median": 0.0485,
+   "rel_p90": 0.1814,
+   "signed_median": -0.0436,
+   "nearer_frac": 0.8577
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v20",
+   "n": 1246884,
+   "overlap": 0.9179,
+   "rel_median": 0.0393,
+   "rel_p90": 0.3352,
+   "signed_median": -0.026,
+   "nearer_frac": 0.7168
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "n": 1275075,
+   "overlap": 0.9398,
+   "rel_median": 0.033,
+   "rel_p90": 0.1363,
+   "signed_median": -0.0229,
+   "nearer_frac": 0.7352
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "n": 1219407,
+   "overlap": 0.8421,
+   "rel_median": 0.8866,
+   "rel_p90": 0.968,
+   "signed_median": -0.8866,
+   "nearer_frac": 0.9428
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v4",
+   "n": 1269012,
+   "overlap": 0.8764,
+   "rel_median": 0.9117,
+   "rel_p90": 0.9867,
+   "signed_median": -0.9117,
+   "nearer_frac": 1.0
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "n": 1145487,
+   "overlap": 0.7911,
+   "rel_median": 0.8404,
+   "rel_p90": 0.9852,
+   "signed_median": -0.8404,
+   "nearer_frac": 0.9383
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "n": 963187,
+   "overlap": 0.5017,
+   "rel_median": 0.1348,
+   "rel_p90": 0.5458,
+   "signed_median": -0.127,
+   "nearer_frac": 0.8389
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "n": 976317,
+   "overlap": 0.5085,
+   "rel_median": 0.1527,
+   "rel_p90": 0.5788,
+   "signed_median": -0.1496,
+   "nearer_frac": 0.9202
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam16",
+   "n": 1183538,
+   "overlap": 0.6164,
+   "rel_median": 0.1788,
+   "rel_p90": 0.4942,
+   "signed_median": -0.175,
+   "nearer_frac": 0.9012
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "n": 446125,
+   "overlap": 0.3119,
+   "rel_median": 0.0113,
+   "rel_p90": 0.1394,
+   "signed_median": -0.0074,
+   "nearer_frac": 0.7436
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v4",
+   "n": 536949,
+   "overlap": 0.3762,
+   "rel_median": 0.0345,
+   "rel_p90": 0.1579,
+   "signed_median": -0.0296,
+   "nearer_frac": 0.7751
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "n": 471773,
+   "overlap": 0.3306,
+   "rel_median": 0.1494,
+   "rel_p90": 0.2972,
+   "signed_median": -0.1494,
+   "nearer_frac": 0.997
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "n": 857965,
+   "overlap": 0.4469,
+   "rel_median": 0.4762,
+   "rel_p90": 0.6939,
+   "signed_median": -0.4762,
+   "nearer_frac": 0.9979
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "n": 960356,
+   "overlap": 0.5002,
+   "rel_median": 0.478,
+   "rel_p90": 0.7848,
+   "signed_median": -0.478,
+   "nearer_frac": 0.9918
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam16",
+   "n": 1237806,
+   "overlap": 0.6447,
+   "rel_median": 0.0998,
+   "rel_p90": 0.4726,
+   "signed_median": -0.0938,
+   "nearer_frac": 0.8483
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "n": 328501,
+   "overlap": 0.2284,
+   "rel_median": 0.0272,
+   "rel_p90": 0.3351,
+   "signed_median": -0.016,
+   "nearer_frac": 0.7105
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v9",
+   "n": 194820,
+   "overlap": 0.1354,
+   "rel_median": 0.1031,
+   "rel_p90": 0.3132,
+   "signed_median": -0.1001,
+   "nearer_frac": 0.8505
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "n": 137329,
+   "overlap": 0.0956,
+   "rel_median": 0.0764,
+   "rel_p90": 0.3733,
+   "signed_median": -0.0595,
+   "nearer_frac": 0.7242
+  }
+ ],
+ "rel_median_overall": 0.0485
+}

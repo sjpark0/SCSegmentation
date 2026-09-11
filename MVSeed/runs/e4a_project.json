@@ -1,11 +1,18 @@
 {
  "schema": "MVSeed e4a_project",
  "schema_version": 1,
- "generated_at": "2026-09-10T08:43:56+0000",
- "git_head": "fbbc68d355938b3b757e6fc7ce34cce9fae3b89e",
+ "generated_at": "2026-09-10T12:57:18+0000",
+ "git_head": "be5e668fd0278e68008cfae336bc8db856965964",
  "generated_by": "MVSeed/geo/e4a_project.py",
  "argv": [
-  "MVSeed/geo/e4a_project.py"
+  "MVSeed/geo/e4a_project.py",
+  "--overwrite",
+  "--save-masks",
+  "MVSeed/cache/proj_a",
+  "--out",
+  "MVSeed/runs/e4a_project.json",
+  "--parts-dir",
+  "MVSeed/runs/e4a_project_parts"
  ],
  "prereg": "docs/stage1-E4a-prereg.md",
  "rules": {
