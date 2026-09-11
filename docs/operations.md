@@ -334,3 +334,18 @@ E 모드는 `runMVSeg.run_two_pass`만 사용합니다. 프레임 t의 1차 패�
 ## 함정 12 (2026-09-10) — 모드 C 큰 장면 + 크롭 추적은 한 호출 600초를 넘김
 
 하네스 배경 태스크는 메모리 감시에 죽지만 **컨테이너는 완주**합니다(CoffeeMartini에서 확인: 래퍼가 죽어도 MANIFEST·21프레임 정상). 600초를 넘길 장면(CoffeeMartini·FlameSteak·반구 3장면)은 `setsid nohup <드라이버>.sh > log &`로 하네스 밖에서 한 장면씩 순서대로 돌리고(앞 컨테이너 종료를 `docker ps`로 기다림) 로그를 Monitor로 지켜보십시오. 완주는 `MANIFEST.json`의 `crop_small`·프레임 폴더 수로 확인.
+
+## 함정 13 (2026-09-11) — `eval/eval_jf.py --out`은 `--root` 기준 상대 경로인데, 파일의 사용 예시가 틀렸습니다
+
+`eval_jf.py`는 `out = args.out if os.path.isabs(args.out) else os.path.join(ROOT, args.out)`로 씁니다
+(`ROOT`는 `--root`, 기본 `Data/MVSeg`). 그런데 그 파일 맨 위의 사용 예시는
+
+    python eval/eval_jf.py --methods ... --out Data/MVSeg/jf_v2.json
+
+로 적혀 있어, 그대로 따라 쓰면 **`Data/MVSeg/Data/MVSeg/jf_v2.json`** 을 찾다가 죽습니다. 더 나쁜 것은
+**153개 작업을 전부 계산한 뒤 마지막 쓰기에서** 죽는다는 점입니다 — 조용히 실패한 뒤 한참 지나서야 발견합니다.
+
+- **올바른 호출**: `--out jf_r4.json`(루트 기준) 또는 컨테이너 절대 경로.
+- 채점 자체는 세 방법 × 17장면 × 3카메라에 **약 3분**입니다. 오래 걸리는 것처럼 보이면 이미 죽은 것이니
+  로그부터 보십시오(`Traceback` / `No such file or directory`).
+- `eval/`은 수정 금지 경로라 예시는 고치지 않고 여기에 남깁니다.
