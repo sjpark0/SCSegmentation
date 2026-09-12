@@ -1,0 +1,7984 @@
+{
+ "schema": "MVSeed e6_vote",
+ "schema_version": 1,
+ "git_head": "e808ada6ff5f1d8404a87ab3febe5d86f667d33d",
+ "generated_at": "2026-09-12T09:08:49+0000",
+ "prereg": "docs/stage1-E6-prereg.md",
+ "seed_folder": "MVSeed_e6_vote",
+ "base": "MVSeed_e0_index",
+ "summary": {
+  "n_rows": 796,
+  "replaced": 28,
+  "kept": 768,
+  "empty_g0_filled": 0,
+  "by_stream": {
+   "Gcorr": 7,
+   "Ggeo_b": 14,
+   "G1": 1,
+   "Gdet": 2,
+   "Ggeo_a": 4
+  }
+ },
+ "votes": [
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 1092,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1092
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 125516,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 125516
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 2123,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2123
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 1922,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1922
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 771791,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 771791
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 1110365,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1110365
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 153079,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 153079
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 1549689,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1549689
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 279973,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 279973
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 22464,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 22464
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 18724,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18724
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 1493,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1493
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 13,
+   "rig": "hemisphere",
+   "g0_px": 13338,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13338
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 14,
+   "rig": "hemisphere",
+   "g0_px": 108396,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 108396
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 15,
+   "rig": "hemisphere",
+   "g0_px": 4512,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4512
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 16,
+   "rig": "hemisphere",
+   "g0_px": 425563,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 425563
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 17,
+   "rig": "hemisphere",
+   "g0_px": 374,
+   "pick": "Gcorr",
+   "why": "2 passed",
+   "pick_px": 1015
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 18,
+   "rig": "hemisphere",
+   "g0_px": 3175,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3175
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 19,
+   "rig": "hemisphere",
+   "g0_px": 9600,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9600
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 20,
+   "rig": "hemisphere",
+   "g0_px": 15539,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15539
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 21,
+   "rig": "hemisphere",
+   "g0_px": 234,
+   "pick": "Gcorr",
+   "why": "2 passed",
+   "pick_px": 788
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 22,
+   "rig": "hemisphere",
+   "g0_px": 3157,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3157
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 23,
+   "rig": "hemisphere",
+   "g0_px": 883,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 883
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 24,
+   "rig": "hemisphere",
+   "g0_px": 675,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 675
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 25,
+   "rig": "hemisphere",
+   "g0_px": 26267,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26267
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 26,
+   "rig": "hemisphere",
+   "g0_px": 32212,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 32212
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 27,
+   "rig": "hemisphere",
+   "g0_px": 2304,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2304
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 28,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 29,
+   "rig": "hemisphere",
+   "g0_px": 2266,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2266
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 30,
+   "rig": "hemisphere",
+   "g0_px": 1103,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1103
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 31,
+   "rig": "hemisphere",
+   "g0_px": 23023,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23023
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 32,
+   "rig": "hemisphere",
+   "g0_px": 14550,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14550
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0003",
+   "obj": 33,
+   "rig": "hemisphere",
+   "g0_px": 17950,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17950
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 900,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 900
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 119039,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 119039
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 2538,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2538
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 1684,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1684
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 663493,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 663493
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 1368561,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1368561
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 119546,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 119546
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 772429,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 772429
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 916433,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 916433
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 24108,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24108
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 21038,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21038
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 8129,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8129
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 13,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 14,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 15,
+   "rig": "hemisphere",
+   "g0_px": 4459,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4459
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 16,
+   "rig": "hemisphere",
+   "g0_px": 391755,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 391755
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 17,
+   "rig": "hemisphere",
+   "g0_px": 8,
+   "pick": "Gcorr",
+   "why": "2 passed",
+   "pick_px": 1091
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 18,
+   "rig": "hemisphere",
+   "g0_px": 3131,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3131
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 19,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 20,
+   "rig": "hemisphere",
+   "g0_px": 19606,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19606
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 21,
+   "rig": "hemisphere",
+   "g0_px": 60,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 22,
+   "rig": "hemisphere",
+   "g0_px": 3550,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3550
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 23,
+   "rig": "hemisphere",
+   "g0_px": 3076,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3076
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 24,
+   "rig": "hemisphere",
+   "g0_px": 84,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 84
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 25,
+   "rig": "hemisphere",
+   "g0_px": 21677,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21677
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 26,
+   "rig": "hemisphere",
+   "g0_px": 36112,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 36112
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 27,
+   "rig": "hemisphere",
+   "g0_px": 2351,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2351
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 28,
+   "rig": "hemisphere",
+   "g0_px": 8634,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8634
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 29,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 30,
+   "rig": "hemisphere",
+   "g0_px": 216,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 216
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 31,
+   "rig": "hemisphere",
+   "g0_px": 29330,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29330
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 32,
+   "rig": "hemisphere",
+   "g0_px": 10035,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10035
+  },
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cam": "camera_0004",
+   "obj": 33,
+   "rig": "hemisphere",
+   "g0_px": 15105,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15105
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 866184,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 866184
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 356365,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 356365
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 78457,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 78457
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 6208,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6208
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 47027,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 47027
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 241306,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 241306
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 1501347,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1501347
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 1325752,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1325752
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0008",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 78238,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 78238
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 700604,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 700604
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 311766,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 311766
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 83447,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 83447
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 7338,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7338
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 24466,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24466
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 29794,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29794
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 6463,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6463
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 2387997,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2387997
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 571635,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 571635
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cam": "camera_0009",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 71985,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 71985
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 1944,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1944
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 43867,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 43867
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 69994,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 69994
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 20825,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20825
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 8434,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8434
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 4055,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4055
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 181485,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 181485
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 34507,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 34507
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 5970,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5970
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 2191,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2191
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 27878,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27878
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 46712,
+   "pick": "Ggeo_b",
+   "why": "2 passed",
+   "pick_px": 26656
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 35927,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35927
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 10251,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10251
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 33381,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33381
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 116693,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 116693
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 5307,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 5197
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 1635,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1635
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 12972,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12972
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 54004,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 54004
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 11455,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11455
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 4461,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4461
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 303948,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 303948
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 5604,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5604
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 57645,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 57645
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 763504,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 763504
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 7218,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7218
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 35767,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35767
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 43489,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 43489
+  },
+  {
+   "scene": "Barn",
+   "cam": "v0",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 1138,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1138
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 2358,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2358
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 44076,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 44076
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 71668,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 71668
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 23631,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23631
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 13347,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13347
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 1425,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1425
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 323169,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 323169
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 34824,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 34824
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 5422,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5422
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 3845,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3845
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 3194,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3194
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 2565,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2565
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 26952,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26952
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 9492,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9492
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 15208,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15208
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 100695,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 100695
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 5259,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 5454
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 1677,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1677
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 15186,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15186
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 31089,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 31089
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 11501,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11501
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 4736,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4736
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 135644,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 135644
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 5520,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5520
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 60533,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60533
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 914495,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 914495
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 7466,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7466
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 37174,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37174
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 46281,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 46281
+  },
+  {
+   "scene": "Barn",
+   "cam": "v10",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 704,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 704
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 98444,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 98444
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 299004,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 299004
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 436,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 436
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 113,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 113
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 38492,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 38492
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 194055,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 194055
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 721531,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 721531
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 27113,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27113
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 15376,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15376
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 9819,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9819
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 3320,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3320
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 56880,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 56880
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 549,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 549
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 260106,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 260106
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam0",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 92130,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 92130
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 299108,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 299108
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 81466,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 81466
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 109,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 109
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 34,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 34
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 11603,
+   "pick": "Gcorr",
+   "why": "2 passed",
+   "pick_px": 9985
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 155254,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 155254
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 106996,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 106996
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 930810,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 930810
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 20479,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20479
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 32150,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 32150
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 2958,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2958
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 19548,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19548
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 65514,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 65514
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 214861,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 214861
+  },
+  {
+   "scene": "Blocks",
+   "cam": "cam9",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 94214,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 94214
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 26310,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26310
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 60128,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60128
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 22274,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 22274
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 44392,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 44392
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 50986,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 50986
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 24992,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24992
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 40900,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 40900
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 21927,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21927
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 30794,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 30794
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 13655,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13655
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 20654,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20654
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 1623,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1623
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 3196,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3196
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 148,
+   "pick": "Ggeo_b",
+   "why": "2 passed",
+   "pick_px": 402
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 518,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 518
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 1091,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1091
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 53,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 53
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 2264,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2264
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 12537,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12537
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 118,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 118
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 1306292,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1306292
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 60576,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60576
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 277714,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 277714
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 2096,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2096
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 1044,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1044
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v5",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 1458,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1458
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 23382,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23382
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 57813,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 57813
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 18628,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 13573
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 39741,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 39741
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 33431,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33431
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 48151,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 48151
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 21134,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21134
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 5497,
+   "pick": "G1",
+   "why": "1 passed",
+   "pick_px": 14099
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 12081,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12081
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 20304,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20304
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 2744,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2744
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 3562,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3562
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 405,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 405
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 470,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 470
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 297,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 297
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 715,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 715
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 1383,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1383
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 6527,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6527
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 10598,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10598
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 190,
+   "pick": "Gdet",
+   "why": "5 passed",
+   "pick_px": 1048
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 1404711,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1404711
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 10204,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10204
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 313560,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 313560
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 1980,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1980
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 389,
+   "pick": "Gcorr",
+   "why": "4 passed",
+   "pick_px": 2066
+  },
+  {
+   "scene": "Breakfast",
+   "cam": "v9",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 1771,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1771
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 366,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 366
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 19654,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19654
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 12893,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12893
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 8949,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8949
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 6998,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6998
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 13987,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13987
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 8448,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8448
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 3847,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3847
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 4672,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4672
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 6176,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6176
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 6058,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6058
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 44,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 44
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 58252,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 58252
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 3396,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3396
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 49062,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 49062
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 82417,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 82417
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v06",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 1704013,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1704013
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 808,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 808
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 13710,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13710
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 522,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 522
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 8434,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8434
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 19695,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19695
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 27443,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27443
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 20974,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20974
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 14497,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14497
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 14054,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14054
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 9639,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9639
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 12853,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12853
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 11204,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11204
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 10750,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10750
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 85367,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 85367
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 6523,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6523
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 88161,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 88161
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 109861,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 109861
+  },
+  {
+   "scene": "CBABasketball",
+   "cam": "v24",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 1715591,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1715591
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 1331,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1331
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 29404,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29404
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 25621,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25621
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 12716,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12716
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 9081,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9081
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 9350,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9350
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 12861,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12861
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 11875,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11875
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 29987,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29987
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 917,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 917
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 870032,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 870032
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 97599,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 97599
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 87919,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 87919
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 669960,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 669960
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 29431,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29431
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 12394,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12394
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 11469,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11469
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 64539,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 64539
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 59414,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 59414
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 19370,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19370
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 1911,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1911
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v0",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 1896,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1896
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 988,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 988
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 17372,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17372
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 26663,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26663
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 12385,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12385
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 9088,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9088
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 9465,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9465
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 13578,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13578
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 4141,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4141
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 177549,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 177549
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 16017,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16017
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 937598,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 937598
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 15334,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15334
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 25805,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25805
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 633119,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 633119
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 28241,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 28241
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 6809,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6809
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 11846,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11846
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 57002,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 57002
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 42701,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 42701
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 18671,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18671
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 2449,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2449
+  },
+  {
+   "scene": "Carpark",
+   "cam": "v8",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 4172,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4172
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 328359,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 328359
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 14497,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14497
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 14180,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14180
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 871058,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 871058
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 10455,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10455
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 42802,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 42802
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 7423,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7423
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 22210,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 22210
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 15914,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15914
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 405212,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 405212
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 48671,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 48671
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 2156,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2156
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 19228,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19228
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 15831,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15831
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 79726,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 79726
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 21063,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21063
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 19189,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19189
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 7984,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7984
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 31837,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 31837
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 32859,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 32859
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 321452,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 321452
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 12584,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12584
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 9245,
+   "pick": "Gcorr",
+   "why": "2 passed",
+   "pick_px": 11391
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 255259,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 152586
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 32500,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 32500
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 13447,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13447
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 2351,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2351
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 44659,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 44659
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 6413,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6413
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 220,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 220
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 34,
+   "rig": "pinhole",
+   "g0_px": 8706,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8706
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 35,
+   "rig": "pinhole",
+   "g0_px": 11614,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11614
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 36,
+   "rig": "pinhole",
+   "g0_px": 19036,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19036
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 37,
+   "rig": "pinhole",
+   "g0_px": 5002,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 6057
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 38,
+   "rig": "pinhole",
+   "g0_px": 67058,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 67058
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 39,
+   "rig": "pinhole",
+   "g0_px": 26476,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26476
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 40,
+   "rig": "pinhole",
+   "g0_px": 1964844,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1964844
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 41,
+   "rig": "pinhole",
+   "g0_px": 16304,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16304
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 42,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 43,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 44,
+   "rig": "pinhole",
+   "g0_px": 6845,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6845
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 45,
+   "rig": "pinhole",
+   "g0_px": 4493,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4493
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 46,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 47,
+   "rig": "pinhole",
+   "g0_px": 33731,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33731
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 48,
+   "rig": "pinhole",
+   "g0_px": 44927,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 44927
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 49,
+   "rig": "pinhole",
+   "g0_px": 25956,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25956
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam02",
+   "obj": 50,
+   "rig": "pinhole",
+   "g0_px": 25148,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25148
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 397015,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 397015
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 21103,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21103
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 4693,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4693
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 938371,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 938371
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 24373,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24373
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 2912,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2912
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 10439,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10439
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 1331452,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1331452
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 18495,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18495
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 427543,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 427543
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 14296,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14296
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 4960,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4960
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 24708,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24708
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 5036,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5036
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 2281,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 4143
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 27113,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27113
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 6798,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6798
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 13278,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13278
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 26685,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26685
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 394159,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 394159
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 1164,
+   "pick": "Ggeo_a",
+   "why": "2 passed",
+   "pick_px": 1870
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 36,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 36
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 198412,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 198412
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 7579,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7579
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 27131,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27131
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 102,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 102
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 2377,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2377
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 35903,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35903
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 34,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 35,
+   "rig": "pinhole",
+   "g0_px": 24802,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24802
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 36,
+   "rig": "pinhole",
+   "g0_px": 8107,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8107
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 37,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 38,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 39,
+   "rig": "pinhole",
+   "g0_px": 13254,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13254
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 40,
+   "rig": "pinhole",
+   "g0_px": 1213714,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1213714
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 41,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 42,
+   "rig": "pinhole",
+   "g0_px": 1280,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1280
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 43,
+   "rig": "pinhole",
+   "g0_px": 8801,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8801
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 44,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 45,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 46,
+   "rig": "pinhole",
+   "g0_px": 9658,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9658
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 47,
+   "rig": "pinhole",
+   "g0_px": 17252,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17252
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 48,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 49,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cam": "cam10",
+   "obj": 50,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 19320,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19320
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 408237,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 408237
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 776998,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 776998
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 1162427,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1162427
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 43265,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 43265
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 1097196,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1097196
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0003",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 1098157,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1098157
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 175013,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 175013
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 751201,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 751201
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 662653,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 662653
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 77016,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 77016
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 911121,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 911121
+  },
+  {
+   "scene": "Dog",
+   "cam": "camera_0004",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 1693576,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1693576
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 112615,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 112615
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 73708,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 73708
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 2254,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2254
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 961,
+   "pick": "Ggeo_a",
+   "why": "1 passed",
+   "pick_px": 1757
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 1227943,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1227943
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 332748,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 332748
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 205903,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 205903
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 89687,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 89687
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 63250,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 63250
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 105096,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 105096
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 1552,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1552
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 2079,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2079
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 1041363,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1041363
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 456354,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 456354
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 105493,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 105493
+  },
+  {
+   "scene": "Fencing",
+   "cam": "v9",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 274525,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 274525
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 366100,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 366100
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 48259,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 48259
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 17044,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17044
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 86408,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 86408
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 2190,
+   "pick": "Ggeo_a",
+   "why": "2 passed",
+   "pick_px": 5683
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 15768,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15768
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 26638,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26638
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 37748,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37748
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 17420,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17420
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 4246,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4246
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 69143,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 69143
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 2907,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2907
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 10060,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 13612
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 1806933,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1806933
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 35050,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35050
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 1696706,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1696706
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 34,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 35,
+   "rig": "pinhole",
+   "g0_px": 198449,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 198449
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 36,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 37,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 38,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 39,
+   "rig": "pinhole",
+   "g0_px": 41465,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 41465
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 40,
+   "rig": "pinhole",
+   "g0_px": 39974,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 39974
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 41,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 42,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 43,
+   "rig": "pinhole",
+   "g0_px": 32318,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 32318
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 44,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 45,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 46,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 47,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 48,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 49,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam01",
+   "obj": 50,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 343969,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 343969
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 11210,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11210
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 80206,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 80206
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 3284,
+   "pick": "Ggeo_a",
+   "why": "1 passed",
+   "pick_px": 6446
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 16694,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16694
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 939522,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 939522
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 37619,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37619
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 3487,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3487
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 2192,
+   "pick": "Ggeo_b",
+   "why": "2 passed",
+   "pick_px": 4473
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 4972,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4972
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 169914,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 169914
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 1249,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1249
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 4412,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 6273
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 28443,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 28443
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 11248,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11248
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 11113,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11113
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 7286,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7286
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 11688,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11688
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 165634,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 165634
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 39374,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 39374
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 24529,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 24529
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 22193,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 22193
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 25732,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25732
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 8860,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8860
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 2635,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2635
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 8668,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8668
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 1590936,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1590936
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 22133,
+   "pick": "Ggeo_b",
+   "why": "2 passed",
+   "pick_px": 45517
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 1152232,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1152232
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 11826,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11826
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 34,
+   "rig": "pinhole",
+   "g0_px": 10603,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10603
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 35,
+   "rig": "pinhole",
+   "g0_px": 150938,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 150938
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 36,
+   "rig": "pinhole",
+   "g0_px": 17007,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17007
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 37,
+   "rig": "pinhole",
+   "g0_px": 46733,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 46733
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 38,
+   "rig": "pinhole",
+   "g0_px": 90,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 90
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 39,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 40,
+   "rig": "pinhole",
+   "g0_px": 60116,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60116
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 41,
+   "rig": "pinhole",
+   "g0_px": 2157,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2157
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 42,
+   "rig": "pinhole",
+   "g0_px": 10749,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10749
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 43,
+   "rig": "pinhole",
+   "g0_px": 19808,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19808
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 44,
+   "rig": "pinhole",
+   "g0_px": 12233,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12233
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 45,
+   "rig": "pinhole",
+   "g0_px": 10983,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 10983
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 46,
+   "rig": "pinhole",
+   "g0_px": 6171,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6171
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 47,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 48,
+   "rig": "pinhole",
+   "g0_px": 16552,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16552
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 49,
+   "rig": "pinhole",
+   "g0_px": 3979,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 6706
+  },
+  {
+   "scene": "FlameSteak",
+   "cam": "cam10",
+   "obj": 50,
+   "rig": "pinhole",
+   "g0_px": 15970,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15970
+  },
+  {
+   "scene": "Frog",
+   "cam": "v4",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 588188,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 588188
+  },
+  {
+   "scene": "Frog",
+   "cam": "v4",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 305786,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 305786
+  },
+  {
+   "scene": "Frog",
+   "cam": "v4",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 197915,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 197915
+  },
+  {
+   "scene": "Frog",
+   "cam": "v4",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 279710,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 279710
+  },
+  {
+   "scene": "Frog",
+   "cam": "v4",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 689325,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 689325
+  },
+  {
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 291446,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 291446
+  },
+  {
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 342098,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 342098
+  },
+  {
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 529349,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 529349
+  },
+  {
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 282775,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 282775
+  },
+  {
+   "scene": "Frog",
+   "cam": "v10",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 614736,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 614736
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 123574,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 123574
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 3320,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3320
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 195054,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 195054
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 1810,
+   "pick": "Ggeo_b",
+   "why": "1 passed",
+   "pick_px": 2415
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 18065,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18065
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 29653,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29653
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 23770,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23770
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 622,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 622
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 3479,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3479
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 34548,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 34548
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 17275,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 17275
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 5279,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5279
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 101992,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 101992
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 36571,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 36571
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 387,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 387
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 871,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 871
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 5340,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5340
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 3362,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3362
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 9328,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9328
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 2197,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2197
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 84273,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 84273
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 296,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 296
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 3201,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3201
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_1",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 1279201,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1279201
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 56842,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 56842
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 57974,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 57974
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 1732,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1732
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 40457,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 40457
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 37134,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37134
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 6339,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6339
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 8,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 8
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 26,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 31478,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 31478
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 28,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 29,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 30,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 31,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 32,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MATF",
+   "cam": "S1_CAM_10",
+   "obj": 33,
+   "rig": "pinhole",
+   "g0_px": 1741381,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1741381
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 12155,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 12155
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 60616,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 60616
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 22048,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 22048
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 46940,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 46940
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 27861,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27861
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 25001,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25001
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 50173,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 50173
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 3733,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3733
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 3720,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3720
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 38479,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 38479
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 41132,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 41132
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 726875,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 726875
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 3160,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3160
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 98467,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 98467
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 221306,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 221306
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 11602,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 11602
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v5",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 642354,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 642354
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 98787,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 98787
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 101331,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 101331
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 37775,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37775
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 37664,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 37664
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 15501,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15501
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 9652,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 9652
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 50183,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 50183
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 2644,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2644
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 678475,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 678475
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 7575,
+   "pick": "Gcorr",
+   "why": "1 passed",
+   "pick_px": 3801
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 2781,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2781
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 232201,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 232201
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 114342,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 114342
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 16123,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16123
+  },
+  {
+   "scene": "MartialArts",
+   "cam": "v13",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 580472,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 580472
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 184193,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 184193
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 2105,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2105
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 61152,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 61152
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 25826,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25826
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 134911,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 134911
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 13967,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13967
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 26032,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26032
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 191360,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 191360
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 4430,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4430
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 5650,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5650
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 35599,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35599
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 47426,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 47426
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 94634,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 94634
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 19542,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19542
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 228965,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 228965
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 6906,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6906
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 177634,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 177634
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 322592,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 322592
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 65502,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 65502
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 448226,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 448226
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 78534,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 78534
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 4694,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4694
+  },
+  {
+   "scene": "Painter",
+   "cam": "v0",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 7214,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 7214
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 245339,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 245339
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 1704,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1704
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 52528,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 52528
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 62721,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 62721
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 106282,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 106282
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 63317,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 63317
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 68211,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 68211
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 46526,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 46526
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 121287,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 121287
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 4475,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4475
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 77886,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 77886
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 51144,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 51144
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 45741,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 45741
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 87301,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 87301
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 16432,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16432
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 168496,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 168496
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 19779,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19779
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 154869,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 154869
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 260414,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 260414
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 29139,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29139
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 345040,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 345040
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 81102,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 81102
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 25,
+   "rig": "pinhole",
+   "g0_px": 13012,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13012
+  },
+  {
+   "scene": "Painter",
+   "cam": "v15",
+   "obj": 27,
+   "rig": "pinhole",
+   "g0_px": 6184,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6184
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 109687,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 109687
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 26384,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26384
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 18763,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18763
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 1068,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1068
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 2123,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2123
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 4311,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4311
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 13698,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13698
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 15297,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15297
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 16343,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16343
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 5436,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5436
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 5079,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5079
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 26519,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 26519
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 23844,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23844
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 4194,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4194
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 6597,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6597
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 2958,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2958
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 5340,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5340
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 29764,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 29764
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 20454,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 20454
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 819840,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 819840
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 94544,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 94544
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 794761,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 794761
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v0",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 13303,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13303
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 1,
+   "rig": "pinhole",
+   "g0_px": 110365,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 110365
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 2,
+   "rig": "pinhole",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 3,
+   "rig": "pinhole",
+   "g0_px": 15615,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15615
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 4,
+   "rig": "pinhole",
+   "g0_px": 847,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 847
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 5,
+   "rig": "pinhole",
+   "g0_px": 2253,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2253
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 6,
+   "rig": "pinhole",
+   "g0_px": 3095,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3095
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 7,
+   "rig": "pinhole",
+   "g0_px": 15740,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 15740
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 8,
+   "rig": "pinhole",
+   "g0_px": 14615,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 14615
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 9,
+   "rig": "pinhole",
+   "g0_px": 16494,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16494
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 10,
+   "rig": "pinhole",
+   "g0_px": 5992,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5992
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 11,
+   "rig": "pinhole",
+   "g0_px": 5040,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5040
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 12,
+   "rig": "pinhole",
+   "g0_px": 41251,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 41251
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 13,
+   "rig": "pinhole",
+   "g0_px": 33244,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33244
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 14,
+   "rig": "pinhole",
+   "g0_px": 23812,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 23812
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 15,
+   "rig": "pinhole",
+   "g0_px": 4401,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 4401
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 16,
+   "rig": "pinhole",
+   "g0_px": 13920,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 13920
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 17,
+   "rig": "pinhole",
+   "g0_px": 5037,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 5037
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 18,
+   "rig": "pinhole",
+   "g0_px": 2539,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 2539
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 19,
+   "rig": "pinhole",
+   "g0_px": 27683,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27683
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 20,
+   "rig": "pinhole",
+   "g0_px": 18808,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 18808
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 21,
+   "rig": "pinhole",
+   "g0_px": 797515,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 797515
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 22,
+   "rig": "pinhole",
+   "g0_px": 92514,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 92514
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 23,
+   "rig": "pinhole",
+   "g0_px": 767857,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 767857
+  },
+  {
+   "scene": "PoznanStreet",
+   "cam": "v8",
+   "obj": 24,
+   "rig": "pinhole",
+   "g0_px": 31291,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 31291
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 76457,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 76457
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 514607,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 514607
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 16695,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 16695
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 247,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 247
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 27886,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 27886
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 320151,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 320151
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 159450,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 159450
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 6911,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6911
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 1034947,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1034947
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 21929,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 21929
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 68848,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 68848
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 25030,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 25030
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 13,
+   "rig": "hemisphere",
+   "g0_px": 1572125,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1572125
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 14,
+   "rig": "hemisphere",
+   "g0_px": 6496,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 6496
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 15,
+   "rig": "hemisphere",
+   "g0_px": 798747,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 798747
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0003",
+   "obj": 16,
+   "rig": "hemisphere",
+   "g0_px": 38711,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 38711
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 1,
+   "rig": "hemisphere",
+   "g0_px": 76468,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 76468
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 2,
+   "rig": "hemisphere",
+   "g0_px": 325963,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 325963
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 3,
+   "rig": "hemisphere",
+   "g0_px": 19836,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 19836
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 4,
+   "rig": "hemisphere",
+   "g0_px": 1354,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1354
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 5,
+   "rig": "hemisphere",
+   "g0_px": 33389,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33389
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 6,
+   "rig": "hemisphere",
+   "g0_px": 0,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 0
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 7,
+   "rig": "hemisphere",
+   "g0_px": 136010,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 136010
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 8,
+   "rig": "hemisphere",
+   "g0_px": 299,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 299
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 9,
+   "rig": "hemisphere",
+   "g0_px": 434942,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 434942
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 10,
+   "rig": "hemisphere",
+   "g0_px": 33839,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 33839
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 11,
+   "rig": "hemisphere",
+   "g0_px": 65443,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 65443
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 12,
+   "rig": "hemisphere",
+   "g0_px": 3438,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 3438
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 13,
+   "rig": "hemisphere",
+   "g0_px": 1680249,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1680249
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 14,
+   "rig": "hemisphere",
+   "g0_px": 181,
+   "pick": "Gdet",
+   "why": "2 passed",
+   "pick_px": 17275
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 15,
+   "rig": "hemisphere",
+   "g0_px": 1760515,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 1760515
+  },
+  {
+   "scene": "Welder",
+   "cam": "camera_0004",
+   "obj": 16,
+   "rig": "hemisphere",
+   "g0_px": 35902,
+   "pick": null,
+   "why": "no candidate passed",
+   "pick_px": 35902
+  }
+ ]
+}
