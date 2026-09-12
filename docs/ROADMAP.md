@@ -205,8 +205,8 @@ ForSam2New 경로 분석 · 재시딩(P14, P4·P5 후).
 ## 채택된 구성 — 2026-09-10 갱신: `SegMaskSam3XW1CGPS4MFsCs10kG2`
 
 **`--xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod --frame0-seed --crop-small 10000 --crop-gate v2`**
-→ MUVOD basic **91.0** / complete **86.4** ([stage2-R2.md](stage2-R2.md)). 분해(basic, XMem 79.4 기준): 기초 모델·2단계 구조 +10.2 →
-이웃 읽기 +0.5 → 프레임 0 시드 +0.03 → **작은 객체 크롭 추적 +0.98** = +11.7. 아래는 그 이전 이력입니다.
+→ MUVOD basic **91.0** / complete **86.4** ([stage2-R2.md](stage2-R2.md)). 분해(basic, XMem 79.400 기준 사다리): 기초 모델·2단계 구조 +10.119 →
+이웃 읽기 +0.515 → 프레임 0 시드 +0.030 → **작은 객체 크롭 추적 +0.951** = **+11.615**(= 91.015 − 79.400). **정정 2026-09-12**: 이전 판의 "+0.98 = +11.7"은 크롭을 `Fs` 없는 90.034에서 재어 프레임 0 시드를 이중으로 센 것이었습니다. 아래는 그 이전 이력입니다.
 
 ## 채택된 구성 (2026-09-08 확정)
 
