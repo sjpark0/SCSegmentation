@@ -62,11 +62,15 @@ def _iou(a, b):
     return float((a & b).sum() / u) if u else 0.0
 
 
-def score_union(runs, gt_bool, hw):
+def score_union(runs, gt_bool, hw, save_path=None):
     """Pool the candidates of several runs (plain union, prob descending) and score them offline.
 
     runs: {name: [(prob, low-res logits), ...]}, gt_bool: [H, W] bool (all False = gt-empty row).
-    IoU with an empty ground truth is 0 by definition.  Returns a plain dict."""
+    IoU with an empty ground truth is 0 by definition.  Returns a plain dict.
+
+    save_path (S1-E6 only, default None = the S1-E2 path unchanged): write the TOP-1 candidate by
+    probability as a PNG there, so the detector arm can supply one candidate mask per (view, object)
+    to SeedVote.  Nothing else about the function changes."""
     import torch
     import torch.nn.functional as F
     pooled = sorted(((p, m, name) for name, cs in runs.items() for p, m in cs), key=lambda t: -t[0])
@@ -101,6 +105,12 @@ def score_union(runs, gt_bool, hw):
     else:
         rec.update({"exist": False, "best_iou": 0.0, "best_rank": None, "best_rank_raw": None, "best_prob": None,
                     "best_src": None, "top1_iou": 0.0, "top1_hit": False, "top1_prob": None, "top1_src": None, "probs": []})
+    if save_path is not None:
+        import cv2
+        import numpy as np
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        top = full[0].cpu().numpy() if full else np.zeros(hw, bool)
+        cv2.imwrite(save_path, (top.astype("uint8") * 255))
     return rec
 
 
@@ -214,7 +224,7 @@ def load_part(path, keys):
 
 
 # ----------------------------------------------------------------------------- GPU part
-def run_scene(model, inj, scene, cfg, census, data_root, log):
+def run_scene(model, inj, scene, cfg, census, data_root, log, save_masks=None):
     import cv2
     import torch
     from io_utils import load_video_frames, AsyncVideoFrameCPUToGPU
@@ -276,7 +286,8 @@ def run_scene(model, inj, scene, cfg, census, data_root, log):
                 runs[name] = kept_candidates(out2, model)
                 inj.mode = None
                 del out2
-            rec = score_union(runs, gt_tgt, hw)
+            sp = (os.path.join(save_masks, scene, cam, f"{obj}.png") if save_masks else None)
+            rec = score_union(runs, gt_tgt, hw, save_path=sp)
             rec.update({"scene": scene, "cam": cam, "obj": obj, "gt_px": int(gt_tgt.sum()), "ref_cam": ref_cam,
                         "ref_gt_px": int(gt_ref.sum()), "rig": "hemisphere" if scene in HEMISPHERE else "pinhole",
                         "prompts": prompt_meta})
@@ -297,6 +308,9 @@ def main():
     ap.add_argument("--data-root", default=spike.DATA)
     ap.add_argument("--config", default=spike.CONFIG)
     ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--save-masks", default=None,
+                    help="S1-E6: also write each row's top-1 candidate mask under this folder "
+                         "(<dir>/<scene>/<cam>/<obj>.png). Off by default: the S1-E2 path is unchanged.")
     ap.add_argument("--summary-only", action="store_true", help="summarise existing part files, no GPU")
     args = ap.parse_args()
     cfg = json.load(open(args.config, encoding="utf-8"))
@@ -328,7 +342,7 @@ def main():
                     log(f"  {s}: complete part exists, skipping")
                     continue
                 t1 = time.time()
-                res = run_scene(model, inj, s, cfg, census, args.data_root, log)
+                res = run_scene(model, inj, s, cfg, census, args.data_root, log, args.save_masks)
                 json.dump(res, open(part + ".tmp", "w"), indent=1)
                 os.replace(part + ".tmp", part)                       # atomic: no truncated part on interruption
                 log(f"  {s}: {len(res)} rows in {time.time() - t1:.0f}s")

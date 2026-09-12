@@ -46,7 +46,7 @@ def iou(a, b):
     return float((a & b).sum() / u) if u else 0.0
 
 
-def run_scene(scene, cfg, census, prompts, log):
+def run_scene(scene, cfg, census, prompts, log, save_masks=None):
     import cv2
     import numpy as np
     import torch
@@ -66,7 +66,7 @@ def run_scene(scene, cfg, census, prompts, log):
         assert gt is not None and gt.shape == (h, w)
         for obj in objects:
             g = gt == obj
-            cands = []
+            cands, top1_mask = [], None
             for c in prompts[scene]["cams"][cam].get(str(obj), []):
                 x, y = c["point"]
                 if c["cos"] < TAU_SIM:
@@ -83,7 +83,13 @@ def run_scene(scene, cfg, census, prompts, log):
                 del state
                 cands.append(dict(point=[x, y], cos=c["cos"], px=int(m.sum()),
                                   iou=round(iou(m, g), 4), kept=bool(m.sum() > 0)))
+                if top1_mask is None and m.sum() > 0:     # candidates arrive in cosine order
+                    top1_mask = m
             kept = [c for c in cands if c["kept"]]
+            if save_masks and top1_mask is not None:      # S1-E6: one candidate mask per (view, object)
+                d = os.path.join(save_masks, scene, cam, f"{obj}.png")
+                os.makedirs(os.path.dirname(d), exist_ok=True)
+                cv2.imwrite(d, (top1_mask.astype("uint8") * 255))
             hits = [c for c in kept if c["iou"] >= IOU_EXIST]
             best = max(kept, key=lambda c: c["iou"]) if kept else None
             rows.append(dict(
@@ -176,6 +182,8 @@ def main():
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--parts-dir", default=PARTS)
     ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--save-masks", default=None,
+                    help="S1-E6: also write the top-1 (by cosine) candidate mask under this folder")
     ap.add_argument("--summary-only", action="store_true")
     args = ap.parse_args()
     cfg = json.load(open(CONFIG, encoding="utf-8"))
@@ -202,7 +210,7 @@ def main():
                     log(f"  {s}: complete part exists, skipping")
                     continue
                 t1 = time.time()
-                res = run_scene(s, cfg, census, prompts, log)
+                res = run_scene(s, cfg, census, prompts, log, args.save_masks)
                 order = {k: i for i, k in enumerate(keys)}
                 res.sort(key=lambda r: order[(r["cam"], r["obj"])])
                 json.dump(res, open(part + ".tmp", "w"), indent=1)
