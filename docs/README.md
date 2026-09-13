@@ -72,7 +72,7 @@ git checkout baseline-onestagenew -- SCSam3/demoSCSam3OneStageNew   # 원본 복
 | **[phase5-seed-repair.md](phase5-seed-repair.md)** | **Phase 3 / P5 결과 (2026-09-09) — 기각.** 17장면 Δ +0.000, Blocks −1.01; 잘못 놓인 복구 시드가 옆 시점 메모리와 같은 카메라 겹침 경쟁을 타고 다른 객체를 지움. Welder는 +2.06이나 규칙상 채택 안 함 |
 | [phase5-seed-repair-prereg.md](phase5-seed-repair-prereg.md) | P5 사전 등록 — 규칙·엔드포인트·판정·감시값, 스모크 뒤 수정 이력 §8 |
 | **[phase5-seed-repair-prep.md](phase5-seed-repair-prep.md)** | **P5 준비 (2026-09-09)** — c_ini 기준 시드 재집계(퇴화 15개), REPORT 감지 규칙의 오탐 90% 확인과 정정, 남은 결정 |
-| **[muvod-comparison.md](muvod-comparison.md)** | **MUVOD 벤치마크 비교 결과 (2026-09-09)** — 공개 기준선 대비 basic +10.5 / complete +9.6, 17개 중 16개 우세, 공정성 대조와 Welder 진단 |
+| **[muvod-comparison.md](muvod-comparison.md)** | **MUVOD 벤치마크 비교 결과 (2026-09-13 갱신)** — 헤드라인 **91.015 / 86.399** 대 XMem 79.35 / 75.63, 짝지은 Δ **+11.66** (t 7.24, CI [+8.71, +14.91], 16/1), 공정성 대조와 Welder(−0.73) 진단 |
 | **[muvod-protocol.md](muvod-protocol.md)** | **MUVOD 평가 프로토콜 채택 (2026-09-09)** — 대외 수치의 채점 규약, 장면별 c_ini를 확정한 근거, 우리 기존 기준 카메라와의 차이 |
 | [experiments.md](experiments.md) | J&F 평가 방법과 전체 결과 |
 | [phase1-measurement.md](phase1-measurement.md) | **Phase 1 결과** — 재현 확인, 짝지은 통계, ref/nonref, nb 구간, 면적 가중, ceiling, 퇴화 시드, 엔드포인트 제안 |
