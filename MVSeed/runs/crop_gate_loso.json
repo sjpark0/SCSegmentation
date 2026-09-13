@@ -1,0 +1,33 @@
+{
+ "fitted_arm": "SegMaskSam3XW0MFsCr10kG2",
+ "fitted": 1.053,
+ "loso": 1.008,
+ "optimism": 0.045,
+ "per_arm": {
+  "SegMaskSam3XW0MFsCr2k": 0.957,
+  "SegMaskSam3XW0MFsCr2kG": 1.042,
+  "SegMaskSam3XW0MFsCr2kG2": 0.892,
+  "SegMaskSam3XW0MFsCr10k": 1.275,
+  "SegMaskSam3XW0MFsCr10kG": 1.38,
+  "SegMaskSam3XW0MFsCr10kG2": 1.053
+ },
+ "held_out": {
+  "AlexaMeadeExhibit": 4.112,
+  "AlexaMeadeFacePaint": 0.0,
+  "Barn": 1.031,
+  "Blocks": 2.943,
+  "Breakfast": 2.631,
+  "CBABasketball": -0.307,
+  "Carpark": 0.261,
+  "CoffeeMartini": 0.847,
+  "Dog": 0.0,
+  "Fencing": 2.075,
+  "FlameSteak": 0.665,
+  "Frog": 0.0,
+  "MATF": 2.174,
+  "MartialArts": -0.361,
+  "Painter": 0.108,
+  "PoznanStreet": 0.635,
+  "Welder": 0.314
+ }
+}

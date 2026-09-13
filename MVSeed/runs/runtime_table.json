@@ -1,0 +1,138 @@
+[
+ {
+  "scene": "AlexaMeadeExhibit",
+  "cams": 3,
+  "objects": 33,
+  "sessions": 24,
+  "wall_s": 808,
+  "peak_mib": 18603
+ },
+ {
+  "scene": "AlexaMeadeFacePaint",
+  "cams": 3,
+  "objects": 12,
+  "sessions": 29,
+  "wall_s": 290,
+  "peak_mib": 16124
+ },
+ {
+  "scene": "Barn",
+  "cams": 3,
+  "objects": 30,
+  "sessions": 15,
+  "wall_s": 418,
+  "peak_mib": 11515
+ },
+ {
+  "scene": "Blocks",
+  "cams": 3,
+  "objects": 16,
+  "sessions": 10,
+  "wall_s": 174,
+  "peak_mib": 9581
+ },
+ {
+  "scene": "Breakfast",
+  "cams": 3,
+  "objects": 27,
+  "sessions": 15,
+  "wall_s": 390,
+  "peak_mib": 11301
+ },
+ {
+  "scene": "CBABasketball",
+  "cams": 3,
+  "objects": 22,
+  "sessions": 30,
+  "wall_s": 464,
+  "peak_mib": 16434
+ },
+ {
+  "scene": "Carpark",
+  "cams": 3,
+  "objects": 22,
+  "sessions": 9,
+  "wall_s": 256,
+  "peak_mib": 9735
+ },
+ {
+  "scene": "CoffeeMartini",
+  "cams": 3,
+  "objects": 50,
+  "sessions": 18,
+  "wall_s": 980,
+  "peak_mib": 19499
+ },
+ {
+  "scene": "Dog",
+  "cams": 3,
+  "objects": 7,
+  "sessions": 24,
+  "wall_s": 206,
+  "peak_mib": 13613
+ },
+ {
+  "scene": "Fencing",
+  "cams": 3,
+  "objects": 8,
+  "sessions": 10,
+  "wall_s": 100,
+  "peak_mib": 9557
+ },
+ {
+  "scene": "FlameSteak",
+  "cams": 3,
+  "objects": 50,
+  "sessions": 21,
+  "wall_s": 1090,
+  "peak_mib": 21287
+ },
+ {
+  "scene": "Frog",
+  "cams": 3,
+  "objects": 5,
+  "sessions": 13,
+  "wall_s": 105,
+  "peak_mib": 9586
+ },
+ {
+  "scene": "MATF",
+  "cams": 3,
+  "objects": 33,
+  "sessions": 10,
+  "wall_s": 307,
+  "peak_mib": 10025
+ },
+ {
+  "scene": "MartialArts",
+  "cams": 3,
+  "objects": 19,
+  "sessions": 15,
+  "wall_s": 248,
+  "peak_mib": 10943
+ },
+ {
+  "scene": "Painter",
+  "cams": 3,
+  "objects": 24,
+  "sessions": 16,
+  "wall_s": 302,
+  "peak_mib": 11587
+ },
+ {
+  "scene": "PoznanStreet",
+  "cams": 3,
+  "objects": 24,
+  "sessions": 9,
+  "wall_s": 285,
+  "peak_mib": 9796
+ },
+ {
+  "scene": "Welder",
+  "cams": 3,
+  "objects": 16,
+  "sessions": 24,
+  "wall_s": 345,
+  "peak_mib": 15169
+ }
+]
