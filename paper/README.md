@@ -116,7 +116,7 @@ Order Form*에 적혀 옵니다. CASS가 링크하는 IEEE 저자 안내서(`cfp
 
 ## 현재 상태 (2026-09-16, 커밋 168ff40 이후)
 
-**초고 완성 — 9개 절 전부 산문, 8쪽(참고문헌 포함).** 절별 검증(515개 주장, 18 에이전트)을 거쳐 지적 56건을 반영했습니다(`docs/paper-numbers.md` §10). 남은 것은 그림과 다듬기입니다.
+**초고 완성 — 9개 절 전부 산문 + 그림 6개, 10쪽(참고문헌 포함).** 절별 검증(515개 주장, 18 에이전트)을 거쳐 지적 56건을 반영했습니다(`docs/paper-numbers.md` §10). 남은 것은 그림과 다듬기입니다.
 
 | 절 | 상태 | 근거 문서 |
 |---|---|---|
@@ -132,9 +132,26 @@ Order Form*에 적혀 옵니다. CASS가 링크하는 IEEE 저자 안내서(`cfp
 | IX. Conclusion | 씀 | — |
 | Fig. 1 | TikZ 파이프라인 도식 (외부 파일 없음) | — |
 
+**그림 (2026-09-16 추가, `figures/make_figs.py`가 생성)**
+
+| 그림 | 파일 | 내용 | 자리 |
+|---|---|---|---|
+| Fig. 1 | (TikZ) | 파이프라인 도식 | §IV |
+| Fig. 2 | `fig_crop.pdf` | 크롭 재추적 — 회복 예(Breakfast 181 px 그릇)와 창 이탈 예(CBA 공) | §IV-D |
+| Fig. 3 | `fig_propagation.pdf` | 세 리그(반구 어안·평면·호)에서 기준→두 카메라, t=0/20, 정답 윤곽 | §V-B (두 단) |
+| Fig. 4 | `fig_scenes.pdf` | 장면별 Δ 막대 | §V-B |
+| Fig. 5 | `fig_perframe.pdf` | 프레임별 J&F, 기준 398쌍 대 비기준 668쌍 — 본문 수치와 일치 확인 | §VI-B |
+| Fig. 6 | `fig_seed_failures.pdf` | 시드 실패 둘: Welder 상자(자리 틀림), CBA 관중석(빈 시드) | §VII |
+
+생성은 `scsam3` 컨테이너에서(호스트에 cv2·matplotlib 없음):
+```bash
+docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD -e HOME=/tmp -e MPLCONFIGDIR=/tmp \
+    scsam3 python paper/figures/make_figs.py
+```
+읽기만 합니다(`Data/MVSeg/<scene>/{Video,Mask}`, 공개 예측 폴더, `jf_r4.json`); 쓰는 곳은 `paper/figures/fig_*.pdf`뿐.
+Fig. 4의 장면별 값만 스크립트에 옮겨 적은 것(`docs/muvod-comparison.md`)이라 그 표가 바뀌면 같이 고칠 것.
+
 **아직 없는 것**
-- 정성 그림(마스크 예시, 실패 사례) — 심사자가 기대함. `figures/`에 넣고 `\includegraphics`.
-- 장면별 Δ 막대그래프 (선택).
 - ORCID·사사(acknowledgement)·저자 약력.
 - 참고문헌: 2026-09-16 검증 워크플로가 arXiv 원문과 대조해 저자·제목을 채움. 남은 `VERIFY` **2건** — WildSeg3D 게재처(ICCV 2025 여부), SA3D 저자 순서(NeurIPS 판). davis2016·colmap은 arXiv에 없어 미대조.
 - 문헌 인용 수치(NVOS 92+, SegMASt3R 표의 SAM 2 AUPRC 61.9→17.0, MUVOD 459/73)는 조사 문서에서 옮긴 것 — 투고 전 원문 대조 필요(`docs/paper-numbers.md` §9-6).

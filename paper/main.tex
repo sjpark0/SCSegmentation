@@ -444,6 +444,23 @@ re-prediction is slightly worse than the seed. We write the seed itself as the
 frame-0 output. The effect is \gainFsSeed\ points; it is reported because it is
 one rung of the ladder in Table~\ref{tab:ladder}, not because it matters.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_crop.pdf}
+\caption{Crop re-tracking. Each row is one (camera, object) whose seed is
+under $\cropAreaMax$\px; the white rectangle is the crop window (\cropScale$\times$
+the seed box, at least \cropMinSide\px, resized to \modelInput\px; zoom
+3.9$\times$ in both rows). Masks are filled in the object's colour, ground
+truth is outlined in white. Top: a 181-px bowl on the reference camera of
+Breakfast. Full-frame tracking loses it after the seed; crop re-tracking
+recovers it (mean \Jscore\ over frames 1--20: 0.14 $\rightarrow$ 0.84).
+Bottom: the ball in CBABasketball, shown in a region 1.6$\times$ the window
+(white rectangle). The ball leaves the fixed window after $t\approx9$; the
+crop session loses it while full-frame tracking keeps it, and the gate of
+Section~\ref{sec:crop} reverts this pair.}
+\label{fig:crop}
+\end{figure}
+
 \subsection{Zoom-Gated Crop Re-Tracking}
 \label{sec:crop}
 Small objects lose most on the $\gridNow\times\gridNow$ grid. For every (camera, object)
@@ -459,8 +476,9 @@ under $2\times10^{3}$\px\ rise from a mean \Jscore\ over frames 1--20 of
 \cropRefSmallBefore\ to \cropRefSmallAfter, which is the mechanism working as
 intended.
 
-A window can also contain a second object of the same appearance, and the
-tracker then follows the wrong one from the first frame. A ground-truth-free
+A fixed window also fails on its own terms: an object that moves quickly can
+leave it, and a window that contains a similar object can capture the wrong
+one. A ground-truth-free
 gate reverts a pair to the full-frame result when any of three conditions
 holds. The crop-tracked mask at frame~1 overlaps the seed with IoU below
 \gateIoU; the zoom is below \gateZoom, so the crop gains no resolution; or the
@@ -517,15 +535,38 @@ complete & \textbf{\OursComplete} & \XMemComplete & \textbf{\DeltaComplete} & $\
 \end{tabular}
 \end{table}
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_propagation.pdf}
+\caption{Cross-view propagation on three rigs. Left column: the input, the
+reference camera's frame 0 with its ground-truth masks. Remaining columns: the
+two other scored cameras at $t=0$ (the Stage-1 seed) and $t=20$, with the
+pipeline's masks filled in the object's colour and the ground truth outlined in
+white; colours identify objects across cameras. Failures are visible as well:
+in CBABasketball, camera A, two objects---among them the grandstand at the
+top---receive no seed at $t=0$ and remain missing (Fig.~\ref{fig:seeds}).}
+\label{fig:propagation}
+\end{figure*}
+
 \subsection{Comparison With the Published Baseline}
 Table~\ref{tab:headline} gives the benchmark result. On the basic protocol the
 paired difference is \DeltaBasic\ points ($t=\tBasic$), on complete
 \DeltaComplete\ ($t=\tComplete$); both intervals exclude zero by a wide margin.
 The pipeline wins \winLoss\ scenes, with a median gain of \medianBasic; the
 largest gain is on \bestScene\ (\bestDelta) and the one loss is \worstScene\
-(\worstDelta). Table~\ref{tab:scenes} lists every scene. Scenes whose basic and
+(\worstDelta). Table~\ref{tab:scenes} lists every scene. Fig.~\ref{fig:scenes} shows the
+same differences graphically. Scenes whose basic and
 complete scores coincide are those whose reference frame contains every
 labelled object, the same property that fixed \cini\ in Section~\ref{sec:cini}.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_scenes.pdf}
+\caption{Per-scene paired difference to the XMem baseline, basic protocol
+(values in Table~\ref{tab:scenes}). Sixteen scenes improve; Welder loses
+\worstDelta.}
+\label{fig:scenes}
+\end{figure}
 
 \begin{table*}[!t]
 \caption{Per-scene results, \JF\ (\%). XMem values are transcribed from the
@@ -692,6 +733,16 @@ a few catastrophes nor uniform. Region \Jscore\ (\regionJ) is worse than
 boundary \Fscore\ (\boundaryF), though the benchmark's boundary tolerance of 0.8\% of the image diagonal
 (\boundaryTol\px\ across scenes) makes \Fscore\ lenient.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_perframe.pdf}
+\caption{Mean \JFpair\ per (camera, object) pair by frame, basic set, headline
+configuration: reference camera (398 pairs) and non-reference cameras (668
+pairs). The reference camera drops at the first tracked frame and is flat
+thereafter; the non-reference deficit is present at $t=0$ and does not grow.}
+\label{fig:perframe}
+\end{figure}
+
 \subsection{A Constant Deficit, Not Drift}
 The reference camera is prompted with ground truth, yet its per-frame \Jscore\
 is \refJfZero\ at $t=0$, \refJfOne\ at $t=1$, and then flat
@@ -700,7 +751,8 @@ first tracked frame and does not accumulate. The non-reference cameras are flat
 from the start at a lower level: their \JFpair\ is \nonrefJFzero\ at $t=0$,
 \nonrefJFten\ at $t=10$, and \nonrefJFtwenty\ at $t=20$, against \refJFzero,
 \refJFten, and \refJFtwenty\ on the reference camera. The deficit is
-present from the first frame and constant thereafter. This rules out the
+present from the first frame and constant thereafter. Fig.~\ref{fig:perframe} plots both
+curves. This rules out the
 intuitive story that cross-view errors compound over time, and points at the
 seed and at the tracker's per-frame quality rather than at temporal drift.
 
@@ -754,13 +806,27 @@ Section~\ref{sec:related} offers several training-free ways to produce a better
 one. We tested five, each pre-registered with its acceptance gate, and report
 all five.
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_seed_failures.pdf}
+\caption{Two Stage-1 failures on non-reference cameras. Left: the object in
+the reference camera (input). Middle and right: the target camera at $t=0$ (the
+seed) and $t=20$, ground truth outlined in white, prediction filled in colour.
+Top: Welder, a 13\,268-px box three cameras away from the reference; the seed
+lands almost entirely outside it (raw \Jscore\ 0.02) and nothing recovers.
+Bottom: CBABasketball, the grandstand fourteen cameras away; the seed is empty
+and the object is never found.}
+\label{fig:seeds}
+\end{figure}
+
 \subsection{Population}
 Stage~1 is evaluated on its own output, the seed at $t=0$, on the two
 non-reference scored cameras of every scene: \nRowsStage\ (camera, object) rows,
 of which \nGtPresent\ have ground truth---\nFzero\ \emph{failing} (raw seed
 \Jscore\ ${<}\voteTau$; we call this set F0) and \nNzero\ \emph{sound} (N0)---and
 \nGtEmpty\ have no ground truth in that camera, where any non-empty candidate
-is a hallucination. The existence gates are read on the \nQualPairs\ failing
+is a hallucination. Fig.~\ref{fig:seeds} shows one failure of
+each kind. The existence gates are read on the \nQualPairs\ failing
 pairs with ground truth of at least $2\times10^{3}$\px\ (\nQualPinhole\
 pinhole, \nQualHemi\ hemisphere), and the geometry arms on the \nGeoPairs\
 pinhole pairs among them, because the geometry gate was registered on the
