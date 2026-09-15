@@ -1,7 +1,8 @@
 # TCSVT 원고
 
-목표: **IEEE TCSVT 특집호 "Spatial Intelligence", 마감 2026-10-31.**
-집필 시작 2026-09-16.
+목표: **IEEE TCSVT 특집호 "Towards Spatial Intelligence: 3D Understanding, Generation,
+and Reasoning from Real-World Videos", 투고 마감 2026-10-31.**  집필 시작 2026-09-16.
+CFP 원문은 `cfp/TCSVT-SI-SpatialIntelligence-CFP.pdf`.
 
 ---
 
@@ -50,28 +51,66 @@ IEEEtran은 2015년 V1.8b 이후 갱신되지 않았고, IEEE Author Center가 �
 
 ---
 
-## TCSVT 규정 — 확인된 것과 못 한 것
+## 특집호 CFP (원문 확보: `cfp/TCSVT-SI-SpatialIntelligence-CFP.pdf`)
 
-### 확인됨 (2026-09-16, ieee-cas.org)
+**Towards Spatial Intelligence: 3D Understanding, Generation, and Reasoning from Real-World Videos**
 
-- 제출 형식: **TeX / LaTeX / Word / RTF** 모두 허용.
-- 원고 종류 둘: **Transactions Papers**(정규 논문)와 **Transactions Letters**(단문).
-- 유사도 검사: 원저 **30%**, 학회논문 확장본 **50%** 초과 시 즉시 반려.
-  → 우리 `docs/`는 공개돼 있지 않으므로 문제 없지만, arXiv 선공개를 한다면 이 수치를 염두에 둘 것.
-- 게재료(2026): **$2,800**, IEEE 회원 5% · 학회 회원 20% 할인.
-- 제출처: `https://ieee.atyponrex.com/journal/TCSVT` (ScholarOne이 아니라 **Atypon Rex**로 바뀌었습니다).
+| | |
+|---|---|
+| 투고 마감 | **2026-10-31** |
+| 1차 심사 통보 | 2026-12-15 (CFP에는 "December 15, **2027**"로 찍혀 있으나 앞뒤 일정상 2026 오타로 보입니다) |
+| 수정본 마감 | 2027-01-15 |
+| 2차 심사 | 2027-02-15 |
+| 최종본 | 2027-03-15 |
+| 게재 | 2027-03-31 |
 
-### 확인 못 함 — 투고 전에 반드시 확인할 것
+객원편집자: Wengang Zhou (USTC) · Hezhen Hu (UT Austin) · Jose M. Alvarez (NVIDIA) ·
+Jianfei Cai (Monash) · Nicu Sebe (Trento).
 
-| 항목 | 왜 못 했나 | 어떻게 확인 |
-|---|---|---|
-| **정규 논문 쪽수 제한**과 초과 쪽 요금 | ieee-cas.org의 저자 안내 페이지가 이 값을 싣지 않음 | 특집호 CFP PDF, 또는 Atypon Rex 제출 화면의 안내 |
-| 특집호 "Spatial Intelligence" 고유 규정 | CFP 페이지를 열지 못함(403) | **선생님이 가진 CFP 원문** — 여기에 쪽수·마감·심사 일정이 있습니다 |
-| 초록 낱말 수, 색인어 개수 | 일반 IEEE 규정을 따르는 것으로 보이나 미확인 | IEEE Author Center |
-| 저자 약력(biography)·사진 필요 여부 | 미확인 | 〃 |
+**우리 논문이 걸리는 주제 항목** (CFP의 topics of interest 그대로):
+- *New benchmarks for 3D understanding/generation/reasoning* ← MUVOD 프로토콜 복원 + 오차 예산
+- *Foundation models for 3D reconstruction/generation/reasoning* ← SAM 3 2단계 파이프라인
+- *Advanced 3D compression (e.g., 3DGS)* / *Large-scale scene reconstruction* ← E4a·E4b·E4c 음성 결과
 
-> **쪽수 제한을 모른 채 쓰면 나중에 줄이는 데 며칠이 듭니다.** CFP PDF를 주시면 바로 반영하겠습니다.
-> 그 전까지는 IEEE Transactions 통례대로 두 단 조판으로 진행합니다.
+> **적합성 주의.** 이 특집호의 축은 "3D 이해·생성·추론"입니다. 우리 방법은 보정도 3D 재구성도
+> 하지 않는 다중시점 2D 마스크 전파라서, 제목과 서론에서 **왜 이것이 spatial intelligence 문제인가**를
+> 명시적으로 이어 주어야 합니다. 역설적으로 **E4 계열(3DGS·포인트맵·SfM 리프팅이 리그에서 실패한다는
+> 음성 결과)이 이 특집호에 가장 직접적으로 말을 거는 부분**입니다.
+
+---
+
+## TCSVT 규정 — 확인 결과
+
+### 쪽수 제한: **TCSVT는 공개적으로 쪽수 제한을 명시하지 않습니다**
+
+이번에 확인할 수 있는 공식 경로를 전부 뒤졌고, 어디에도 숫자가 없습니다.
+
+| 확인한 곳 | 결과 |
+|---|---|
+| 특집호 CFP 원문 | 쪽수 언급 없음 (일정·주제·객원편집자만) |
+| CAS 저자 안내 `guidelines-authors` | 없음 — "IEEE 안내를 보라"고 넘김 |
+| CAS 투고 안내 `tcsvt-manuscript-submission-guide` | 없음 |
+| IEEE Xplore 저널 메타데이터(`rest/publication/home/metadata?pubid=76`) | `authorResources`·`submissionsGuidelinesLink`가 **위 두 CAS 페이지를 가리킴** — 즉 IEEE 본사도 이 둘이 전부라고 봄 |
+| 다른 TCSVT 특집호 CFP 3건(LLM·SAM·데이터압축) | 전부 쪽수 언급 없음 |
+
+**실제로 적용되는 규칙**은 IEEE Policy 6.10입니다: "각 간행물이 정한 쪽수 한도를 넘는 쪽마다
+의무 초과쪽 요금을 물릴 수 있다." 한도 자체는 교정쇄 때 오는 *IEEE Page Charges and Reprint
+Order Form*에 적혀 옵니다. CASS가 링크하는 IEEE 저자 안내서(`cfp/IEEE-info-for-authors-kit.pdf`)의
+일반 지침은 **Transactions 정규 논문 = 인쇄 8~10쪽**입니다(2007년판이라 오래됐습니다).
+
+**실무 결론:** 하드 리밋이 아니라 요금 문턱입니다. 10쪽 안팎을 겨냥하되, 넘겨야 할 이유가 있으면
+넘기고 초과쪽 요금을 부담하면 됩니다. 정확한 문턱이 필요하면 객원편집자나 EiC(Shan Liu, Tencent)에게
+메일 한 통이 가장 빠릅니다.
+
+### 그 밖에 확인된 것
+
+- 제출 형식: **TeX / LaTeX / Word / RTF**.
+- 원고 종류 둘: **Transactions Papers**(정규)와 **Transactions Letters**(단문, 인쇄 3~4쪽).
+- 초록 **50~200 낱말** (IEEE 일반 지침).
+- 유사도: 원저 **30%**, 학회논문 확장본 **50%** 초과 시 즉시 반려.
+- 게재료(2026) **$2,800**. IEEE 회원 5% · 학회 회원 20% 할인.
+- 제출처: `https://ieee.atyponrex.com/journal/TCSVT` (ScholarOne 아님 — **Atypon Rex**).
+- 저널 지표(2026-09 Xplore): Impact Factor **10.8**, CiteScore **18.1**, 월간, 현재 vol. 36 no. 9.
 
 ---
 

@@ -1,6 +1,8 @@
 # 집필용 수치 색인 — 논문에 들어갈 모든 숫자와 그 출처
 
-> 2026-09-13. 집필은 2026-09-16 시작, 목표 **TCSVT 특집호 "Spatial Intelligence" (2026-10-31)**.
+> 2026-09-13. 집필은 2026-09-16 시작, 목표 **TCSVT 특집호 "Towards Spatial Intelligence:
+> 3D Understanding, Generation, and Reasoning from Real-World Videos" (투고 마감 2026-10-31)**.
+> CFP 원문과 확인된 투고 규정: [../paper/README.md](../paper/README.md).
 > **이 문서에서만 수치를 가져오십시오.** 저장소의 다른 문서에는 과거 헤드라인 시점의 값이 섞여 있고,
 > 그것들은 **당시의 사실이므로 고치지 않았습니다**. 여기 있는 값은 전부 현재 헤드라인 기준으로 재계산했습니다.
 
