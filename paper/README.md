@@ -114,18 +114,30 @@ Order Form*에 적혀 옵니다. CASS가 링크하는 IEEE 저자 안내서(`cfp
 
 ---
 
-## 현재 뼈대
+## 현재 상태 (2026-09-16, 커밋 168ff40 이후)
+
+**초고 완성 — 9개 절 전부 산문, 8쪽(참고문헌 포함).** 절별 검증(515개 주장, 18 에이전트)을 거쳐 지적 56건을 반영했습니다(`docs/paper-numbers.md` §10). 남은 것은 그림과 다듬기입니다.
 
 | 절 | 상태 | 근거 문서 |
 |---|---|---|
-| I. Introduction | 문단 5개 지시문만 | — |
-| II. Related Work | 4개 소절 지시문 | `docs/mvimage-seg-survey.md` |
-| III. Problem Setting and Protocol | 지시문 | `docs/muvod-protocol.md` |
-| IV. Method | 4개 구성요소 지시문 | `docs/stage2-R2.md`, `docs/phase3-*.md` |
-| V. Experiments | **표 4개 완성** (헤드라인·사다리·LOSO·비용) | `docs/paper-numbers.md` §1~§4 |
-| VI. Error Budget | **표 2개 완성** (오라클·격자 천장) | 〃 §5~§6 |
-| VII. Negative Results | **표 1개 완성** (다섯 생성기) | 〃 §7 |
-| VIII. Limitations | 6개 항목 지시문 | 〃 §9 |
-| IX. Conclusion | 지시문 | — |
+| Abstract | 씀 (약 230 낱말 — IEEE 일반 지침 200을 조금 넘음, 다듬을 때 줄일 것) | `docs/paper-numbers.md` |
+| I. Introduction | 씀 — 5문단 + 기여 4개 | 〃, `mvimage-seg-survey.md` §0 |
+| II. Related Work | 씀 — 4개 소절 | `mvimage-seg-survey.md` |
+| III. Problem Setting and Protocol | 씀 — 과제·지표·c_ini 복원(증거 A/B/C, Dog 불확실성) | `muvod-protocol.md` |
+| IV. Method | 씀 — 2단계, 이웃 읽기(등록 이력 포함), 프레임 0 시드, 크롭 재추적, 사전 등록 | `phase2/3-*.md`, `stage2-R1/R2.md` |
+| V. Experiments | 씀 — 표 I·II(장면별)·III(사다리)·IV(LOSO)·V(비용) | `paper-numbers.md` §1~4 |
+| VI. Error Budget | 씀 — 표 VI(오라클)·VII(격자 천장), 상수 결손 | `error-budget.md`, `stage1-E0c.md` |
+| VII. Negative Results | 씀 — 표 VIII, 생성기별 실패 양상, 합집합 대 환각, 투표, 1:15 | `stage1-E*.md` |
+| VIII. Limitations | 씀 — 7개 항목 | `paper-numbers.md` §9 |
+| IX. Conclusion | 씀 | — |
+| Fig. 1 | TikZ 파이프라인 도식 (외부 파일 없음) | — |
 
-표 7개는 전부 실제 측정값으로 채워져 있고 컴파일됩니다. 남은 것은 산문입니다.
+**아직 없는 것**
+- 정성 그림(마스크 예시, 실패 사례) — 심사자가 기대함. `figures/`에 넣고 `\includegraphics`.
+- 장면별 Δ 막대그래프 (선택).
+- ORCID·사사(acknowledgement)·저자 약력.
+- 참고문헌: 2026-09-16 검증 워크플로가 arXiv 원문과 대조해 저자·제목을 채움. 남은 `VERIFY` **2건** — WildSeg3D 게재처(ICCV 2025 여부), SA3D 저자 순서(NeurIPS 판). davis2016·colmap은 arXiv에 없어 미대조.
+- 문헌 인용 수치(NVOS 92+, SegMASt3R 표의 SAM 2 AUPRC 61.9→17.0, MUVOD 459/73)는 조사 문서에서 옮긴 것 — 투고 전 원문 대조 필요(`docs/paper-numbers.md` §9-6).
+
+**집필 규약 보충**: 장면별 표(Table II)만은 매크로가 아니라 `docs/muvod-comparison.md`의 표를 옮긴 것입니다.
+그 표가 바뀌면 Table II를 다시 옮겨야 합니다.

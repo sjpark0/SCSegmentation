@@ -55,7 +55,7 @@
 \begin{document}
 
 \title{Propagating a Single-View Mask Across a Static Camera Rig:\\
-Attribution and Error Budget of a Foundation-Model Pipeline\\ for Multi-View Video Object Segmentation}
+Attribution and Error Budget of a Foundation-Model Pipeline\\for Multi-View Video Object Segmentation}
 %% NOTE: working title. \note/\todo must never appear between \title and
 %% \maketitle: IEEEtran's \maketitle issues \twocolumn[...] and any typeset
 %% material before it pushes the whole title block onto the next page.
@@ -66,7 +66,7 @@ Attribution and Error Budget of a Foundation-Model Pipeline\\ for Multi-View Vid
 (ETRI), Daejeon, Republic of Korea (e-mail: seongjin.park@etri.re.kr).}%
 \thanks{\todo{funding / project acknowledgement}}}
 
-\markboth{IEEE Transactions on Circuits and Systems for Video Technology,~Vol.~XX, No.~X, XXX~2027}%
+\markboth{IEEE Transactions on Circuits and Systems for Video Technology,~Vol.~XX, No.~X, XXX~XXXX}%
 {Park: Propagating a Single-View Mask Across a Static Camera Rig}
 
 \maketitle
@@ -77,31 +77,33 @@ A static multi-camera rig observes one scene from many viewpoints at once.
 Given the mask of one object in one camera at one instant, the task is to
 produce that object's mask in every other camera and every subsequent frame,
 with no camera calibration, no category label, and no per-scene optimisation.
-We study this task on MUVOD, the only public rig benchmark, and make three
-contributions. First, a two-stage pipeline built on a promptable segmentation
-foundation model reaches \OursBasic\ \JF\ (basic) and \OursComplete\
+We study this task on MUVOD, to our knowledge the only public rig benchmark,
+and make three contributions. First, a two-stage pipeline built on a promptable segmentation
+foundation model reaches \OursBasic\ J\&F (basic) and \OursComplete\
 (complete), against \XMemBasic/\XMemComplete\ for the published baseline: a
-paired gain of \DeltaBasic\ points ($t=\tBasic$, 95\% CI $\ciBasic$), winning
+paired gain of \DeltaBasic\ points ($t$-statistic \tBasic, 95\% confidence interval $\ciBasic$), winning
 \winLoss\ scenes. Second, we decompose that margin rather than report it whole:
 \gainFoundation\ points come from the foundation model inside an unchanged
 two-stage structure, and \gainOurs\ from our own design---cross-view memory
-during tracking, raw frame-0 seeding, and zoom-gated crop re-tracking---whose
-selection optimism we bound at \losoOmega\ points by leave-one-scene-out.
-Third, we account for the \totalGap\ points that remain: \oracleSeed\ in
-seeding failures, \oracleRef\ in reference-camera re-prediction, and
-\oracleOrdinary\ in ordinary mask quality on pairs that never fail. A
-model-free measurement shows the tracker's \gridNow-cell mask grid costs only
-\lossNow\ of those points. Five pre-registered attempts to repair degenerate
+during tracking, raw frame-0 seeding, and zoom-gated crop re-tracking; the last
+was tuned on the scored scenes, and we bound its selection optimism at
+\losoOmega\ points by leave-one-scene-out.
+Third, three oracles bound the \totalGap\ points that remain: repairing every
+seeding failure is worth at most \oracleSeed, a perfect reference camera at
+most \oracleRef, and perfect masks on the \nOrdinaryPairs\ pairs whose seed
+does not fail \oracleOrdinary---the buckets overlap, and the last dominates. A
+model-free measurement shows the tracker's \gridNow-by-\gridNow\ mask grid
+costs only \lossNow\ of those points. Five pre-registered attempts to repair degenerate
 seeds---exemplar detection, dense correspondence, and three geometry-lifting
-families---all fail, and we identify why: \nFzero\ pairs need repair against
-\nNzero\ that must be left alone, a \asymmetry\ asymmetry that turns any
-imperfect selector into a net loss.
+families---all fail, and we identify why: \nFzero\ non-reference seeds need
+repair against \nNzero\ that must be left alone, a \asymmetry\ asymmetry that
+turns any imperfect selector into a net loss.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Multi-view video object segmentation, camera rig, mask propagation, foundation
-models, promptable segmentation, benchmark analysis, error budget,
-pre-registration.
+Benchmark analysis, camera rig, error budget, foundation models, mask
+propagation, multi-view video object segmentation, pre-registration,
+promptable segmentation.
 \end{IEEEkeywords}
 
 % ===========================================================================
@@ -121,25 +123,29 @@ reconstruction is permitted.
 The task sits between two well-studied problems and belongs to neither. It is
 not video object segmentation: the cameras are not a temporal sequence, their
 baselines are wide, and their index order carries no guarantee of visual
-adjacency. It is not 3D segmentation in the sense of the NeRF and 3D Gaussian
-Splatting (3DGS) literature: those methods assume calibrated poses and a
-pre-trained scene representation, and the best of them are now saturated near
-94\,mIoU on the NVOS benchmark \cite{sagonline,flashsplat,ludvig}. Treating the
-views as a video and propagating with a memory-based tracker is the obvious
-alternative, and its failure has been quantified: the segment-correspondence
-AUPRC of SAM~2 video propagation on ScanNet++ falls from 61.9 at
-$0$--$45^{\circ}$ view difference to 17.0 at $135$--$180^{\circ}$
-\cite{segmast3r}. The 2026 generation of uncalibrated promptable methods
-\cite{mvsam,am3,g2tam} is trained on indoor, object-centric data and has not
-been evaluated on rigs, on environment objects such as wall and floor
-fragments, or on fisheye cameras.
+adjacency. It is not 3D segmentation in the sense of the neural radiance field
+(NeRF) and 3D Gaussian Splatting (3DGS) literature: those methods assume
+calibrated poses and a pre-trained scene representation, and the best of them
+now exceed 92 mean intersection over union (mIoU) on the NVOS benchmark
+\cite{sagonline,flashsplat,ludvig}. Treating the views as a video and
+propagating with a memory-based tracker is the obvious alternative, and its
+failure has been quantified: the segment-correspondence area under the
+precision--recall curve (AUPRC) of Segment Anything Model (SAM)~2 video
+propagation \cite{sam2} on ScanNet++ falls from 61.9 at
+$0^{\circ}$--$45^{\circ}$ view difference to 17.0 at
+$135^{\circ}$--$180^{\circ}$ \cite{segmast3r}. The 2026 generation of
+uncalibrated promptable methods \cite{mvsam,am3,g2tam} learns its multi-view
+head on indoor scans (3AM, G$^{2}$TAM) or on single-view SA-1B masks alone
+(MV-SAM); none has been evaluated on rigs, on environment objects such as wall
+and floor fragments, or on fisheye cameras.
 
 Only one public benchmark poses the rig problem directly. MUVOD \cite{muvod}
 provides \nScenes\ scenes captured by \nCamMin--\nCamMax\ synchronised
 cameras, with \nInstances\ object instances over \nCategories\ categories,
 \nFisheye\ hemispherical fisheye rigs among them, and a published baseline that
 applies a video tracker along both the spatial and the temporal axis. At the
-time of writing no other method has been evaluated on it. This has a
+time of writing no method other than that baseline has been reported on its
+video benchmark, and no later paper has evaluated on it. This has a
 consequence for what an honest paper on the task can claim: the first strong
 number on MUVOD will be informative mainly in proportion to how carefully it is
 taken apart.
@@ -159,10 +165,11 @@ one design choice made by looking at the scored scenes at \losoOmega\ points
 (Table~\ref{tab:loso}).
 
 The second half of the paper asks where the remaining \totalGap\ points are.
-An oracle decomposition (Table~\ref{tab:budget}) attributes \oracleSeed\ of
-them to the pairs whose cross-view seed fails, \oracleRef\ to the ceiling of the
-reference camera itself, and \oracleOrdinary\ to ordinary, unspectacular mask
-quality on the \nOrdinaryPairs\ pairs that never fail. A model-free
+An oracle decomposition (Table~\ref{tab:budget}), in which each row makes one
+component perfect and the rows overlap rather than sum, bounds the pairs whose
+cross-view seed fails at \oracleSeed, the ceiling of the reference camera
+itself at \oracleRef, and ordinary, unspectacular mask quality on the
+\nOrdinaryPairs\ pairs whose seed does not fail at \oracleOrdinary. A model-free
 measurement---ground truth passed through the tracker's own low-resolution mask
 grid---shows that the grid accounts for only \lossNow\ points
 (Table~\ref{tab:grid}), so the large bucket is genuine model error rather than
@@ -171,7 +178,7 @@ repair the failing seeds by exemplar detection, dense correspondence, and three
 geometry-lifting routes (Table~\ref{tab:negative}). All five fail their
 registered gates, a ground-truth-free vote over them loses \voteRule\ points
 where an oracle selector would gain \voteOracle, and the reason is structural:
-there are \nFzero\ pairs to repair and \nNzero\ to protect.
+there are \nFzero\ non-reference seeds to repair and \nNzero\ to protect.
 
 \noindent\textbf{Contributions.}
 \begin{itemize}
@@ -197,7 +204,7 @@ there are \nFzero\ pairs to repair and \nNzero\ to protect.
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Segmentation on a reconstructed 3D representation}
+\subsection{Segmentation on a Reconstructed 3D Representation}
 SPIn-NeRF \cite{spinnerf} and SA3D \cite{sa3d} formalised ``one-view prompt
 $\rightarrow$ all-view masks'' on top of a per-scene radiance field, and the
 representation moved to 3DGS with Gaussian Grouping \cite{gaussiangrouping} and
@@ -208,26 +215,28 @@ point where its own authors describe the remaining differences between methods
 as converging on the 2D foundation model's ceiling \cite{sagonline}. Every
 member of this family assumes COLMAP poses \cite{colmap} and a reconstruction
 of sufficient quality; LUDVIG and SANeRF-HQ state explicitly that the
-reconstruction bounds the segmentation. Sec.~\ref{sec:negative} tests exactly
-this bridge on rigs of \nCamMin--\nCamMax\ cameras and finds that on
-\gsCams\ of \gsCams\ cameras the rendered depth is biased towards the camera,
-with the bias \emph{anti}-correlated with training-view PSNR.
+reconstruction bounds the segmentation. Section~\ref{sec:negative} tests exactly this bridge on the benchmark's pinhole
+rigs of \gsViewsMin--\gsViewsMax\ cameras and finds that on every one of the
+\gsCams\ cameras with a reference depth the rendered depth is biased towards
+the camera, with the bias \emph{anti}-correlated with training-view peak
+signal-to-noise ratio (PSNR).
 
-\subsection{Views as a video}
+\subsection{Views as a Video}
 Ordering the cameras and propagating a first-frame mask with a video object
 segmentation tracker is the structure of the MUVOD baseline \cite{muvod}, of
 OSTRA \cite{ostra}, and of the pre-processing stage of Gaussian Grouping; the
 memory-based trackers XMem \cite{xmem}, DEVA \cite{deva}, Cutie \cite{cutie},
-and SAM~2 \cite{sam2} are the usual engines. WildSeg3D \cite{wildseg3d} adds
-MASt3R alignment \cite{mast3r} to choose the order. The approach inherits the
+and SAM~2 \cite{sam2} are the usual engines. WildSeg3D \cite{wildseg3d} pairs
+the same SAM~2 propagation with a global alignment of MASt3R point maps
+\cite{mast3r}. The approach inherits the
 tracker's prior that consecutive frames are nearly aligned, and it degrades
 accordingly at wide baselines \cite{segmast3r}. Our two-stage baseline belongs
 to this family, and we say so plainly: its cross-view stage is a single
 bidirectional pass of a SAM~3 tracker over the cameras' first frames in index
-order. What we add on top (Sec.~\ref{sec:method}) is small, and we measure it
+order. What we add on top (Section~\ref{sec:method}) is small, and we measure it
 as small.
 
-\subsection{Correspondence, uncalibrated promptable methods}
+\subsection{Correspondence and Uncalibrated Promptable Methods}
 Training-free feature correspondence---Matcher \cite{matcher}, PerSAM
 \cite{persam}---turns a reference mask into prompts for a query image through
 DINOv2 \cite{dinov2} or SAM \cite{sam} features; its sensitivity to viewpoint change is
@@ -239,18 +248,21 @@ learned segment matching such as SegMASt3R \cite{segmast3r}. These are the
 closest existing designs to our input format. None reports MUVOD, none
 evaluates environment objects, and none has been run on fisheye rigs; that is
 why they do not appear as columns in Table~\ref{tab:headline}, a limitation we
-return to in Sec.~\ref{sec:limits}. We do, however, evaluate the training-free
-ingredients they share---DINOv2 correspondence, $\pi^{3}$ point maps, and SAM~3
-exemplar detection---as seed generators in Sec.~\ref{sec:negative}.
+return to in Section~\ref{sec:limits}. We do, however, evaluate training-free
+ingredients of the same kind as seed generators in Section~\ref{sec:negative}:
+feed-forward $\pi^{3}$ point maps as used by MV-SAM and G$^{2}$TAM,
+foundation-feature (DINOv2) correspondence in the manner of Matcher and PerSAM,
+and SAM~3 exemplar detection.
 
-\subsection{Rig benchmarks}
+\subsection{Rig Benchmarks}
 MUVOD \cite{muvod} is, to our knowledge, the only public benchmark with
 synchronised multi-camera rigs, per-instance masks, and a fixed protocol. Its
-3D benchmark excludes the \nFisheye\ fisheye scenes and one further scene
-whose reconstruction was judged too poor, and it uses camera poses; its video
-object segmentation benchmark, which we use, includes all \nScenes\ scenes and
-provides no calibration. Its reference camera per scene is not published,
-which we address in Sec.~\ref{sec:cini}.
+3D benchmark, on which four posed NeRF and 3DGS methods are reported, excludes
+the \nFisheye\ fisheye scenes and one further scene whose reconstruction was
+judged too poor, and it uses camera poses; its video object segmentation
+benchmark, which we use, includes all \nScenes\ scenes, provides no
+calibration, and carries a single published result. Its reference camera per scene is not published,
+which we address in Section~\ref{sec:cini}.
 
 % ===========================================================================
 \section{Problem Setting and Protocol}
@@ -267,30 +279,30 @@ segmenter is a frozen pre-trained model. All frames of all cameras may be
 read---the benchmark's own annotation procedure and its baseline both assume
 this.
 
-\subsection{The MUVOD metric}
+\subsection{The MUVOD Metric}
 MUVOD scores \nAnnotCams\ annotated cameras per scene: \cini\ and two others.
-For each scored camera, region similarity \Jscore\ (intersection over union)
-and boundary accuracy \Fscore\ are computed per object over the
-\nFramesPerCam\ annotated frames with the DAVIS definitions \cite{davis2016};
-the per-camera score is the mean over objects, the scene score is the mean over
-the three cameras, and the benchmark score is the mean over \nScenes\ scenes.
+For each scored camera, region similarity \Jscore\ (intersection over union,
+IoU) and boundary accuracy \Fscore\ are computed per object over the
+\nFramesPerCam\ annotated frames with the DAVIS definitions \cite{davis2016}.
+The per-camera score is the mean over objects, the scene score the mean over
+the three cameras, and the benchmark score the mean over \nScenes\ scenes.
 We write the result \JF. Two object sets are defined: \emph{basic} counts only
 objects visible in the reference frame, \emph{complete} counts every labelled
 object. The two coincide for a scene exactly when the reference frame already
 contains all of that scene's labelled objects, a property we use below. Our
-scoring code is the DAVIS implementation, unchanged; two choices the benchmark
-leaves open we fix conservatively---an object absent from a camera's ground
-truth is not scored for that camera (the alternative awards a perfect score to
-an empty prediction), and all \nFramesPerCam\ frames are scored rather than
-the DAVIS convention of dropping the first and last.
+scoring code is the DAVIS implementation, unchanged. Two choices the benchmark
+leaves open we fix conservatively: an object absent from a camera's ground
+truth is not scored for that camera, since the alternative awards a perfect
+score to an empty prediction, and all \nFramesPerCam\ frames are scored rather
+than dropping the first and last as the DAVIS code does.
 
-\subsection{Recovering the reference camera}
+\subsection{Recovering the Reference Camera}
 \label{sec:cini}
 The benchmark describes \cini\ as a camera ``near the centre of the rig'' but
 does not name it, and the \emph{basic} object set depends on it. We determined
 it per scene from three independent sources. (A) The distributed index records
 the rig geometry; on linear, arc, and planar rigs the middle-numbered annotated
-camera is the geometric centre. (B) For the six scenes whose camera numbering
+camera is the one nearest the geometric centre. (B) For the six scenes whose camera numbering
 is not spatial---four hemispherical rigs and two two-row planar rigs---we read
 the original datasets' calibration files and chose the annotated camera closest
 to the rig centre in metric coordinates. (C) The published tables themselves
@@ -300,11 +312,15 @@ those scenes exactly one annotated camera satisfies that condition in the
 ground truth. In those three scenes (C) agrees with (A) or (B). One scene, Dog,
 remains ambiguous: (C) excludes one of its three annotated cameras, the
 remaining two lie on the same ring of the hemisphere, and we adopt the one
-marginally nearer the axis. A benchmark run with the other candidate is
-reported alongside. The choice matters: the reference rule of our own earlier
-runs---the camera with the most objects at frame 0---selects a different camera
-from \cini\ in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge
-of the rig.
+marginally nearer the axis. Both candidates were run in two
+earlier configurations of the pipeline, with and without cross-view memory and
+before crop re-tracking; the adopted camera gives the lower Dog score in both
+(\dogCini\ against \dogAltCiniA\ and \dogAltCiniB), so the reported figure is
+conservative with respect to this ambiguity. The final configuration was not
+re-run with the alternative. The choice matters: the reference rule of our own earlier
+runs---the camera whose frame-0 ground truth carries the largest object index,
+ties going to the first camera listed---selects a different camera from \cini\
+in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
 
 % ===========================================================================
 \section{Method}
@@ -346,13 +362,13 @@ of the rig.
 \caption{The pipeline. Stage~1 propagates the reference masks across the
 cameras' first frames once; Stage~2 tracks each camera forward in time from
 its seed. Shaded blocks are the elements we add to the baseline structure:
-cross-view memory during tracking (Sec.~\ref{sec:xview}) and crop re-tracking
-of small objects (Sec.~\ref{sec:crop}); the seed is also written unchanged as
-the frame-0 output (Sec.~\ref{sec:fs}).}
+cross-view memory during tracking (Section~\ref{sec:xview}) and crop re-tracking
+of small objects (Section~\ref{sec:crop}); the seed is also written unchanged as
+the frame-0 output (Section~\ref{sec:fs}).}
 \label{fig:pipeline}
 \end{figure}
 
-\subsection{A two-stage baseline}
+\subsection{A Two-Stage Baseline}
 \label{sec:twostage}
 Fig.~\ref{fig:pipeline} shows the structure. \emph{Stage~1} arranges the first
 frames of all $N$ cameras in camera-index order as a pseudo-video, gives the
@@ -364,64 +380,73 @@ it with that camera's seeds at $t=0$, and tracks forward to $t=T$. The segmenter
 is SAM~3 \cite{sam3}, whose tracker inherits the memory-attention design of
 SAM~2 \cite{sam2}: a bank of memory tokens from recent frames, each carrying a
 learned temporal-position encoding, plus per-object pointer vectors. It runs at
-a \modelInput-pixel input and predicts masks on a \gridNow-cell low-resolution
-grid before upsampling, a fact that matters in Sec.~\ref{sec:grid}.
+a \modelInput-pixel input and predicts masks on a $\gridNow\times\gridNow$
+low-resolution grid before upsampling, a fact that matters in
+Section~\ref{sec:grid}.
 
 This is structurally the MUVOD baseline. The benchmark authors describe theirs
-as a ``simple two-stage baseline'' that applies XMem along the spatial axis and
-then along the temporal axis, and note its limitation as being ``inherently
-based on mask propagation'' without multi-view understanding. Ours is that
-structure with the tracker exchanged. We verified the claim that our control
-configuration contains nothing else by byte comparison: with cross-view memory
-disabled, Stage~2 writes \nBytePNG\ PNG masks identical to those of an
-independent single-view package that has no cross-view code at all.
+as a straightforward two-stage baseline that applies XMem first across the
+cameras and then along time, and note that, being based on mask propagation,
+it cannot fully exploit the multi-view information. Ours is that structure
+with the tracker exchanged. We verified that the control code path contains
+nothing else by byte comparison: with cross-view memory disabled, Stage~2
+writes \nBytePNG\ PNG masks on the 15 development scenes identical to those of
+an independent single-view package that has no cross-view code at all.
 
-\subsection{Cross-view memory during tracking}
+\subsection{Cross-View Memory During Tracking}
 \label{sec:xview}
 In the baseline structure the cameras never communicate after Stage~1. We let
 them communicate through the tracker's own memory: at frame $t$, camera $c$'s
 memory bank additionally receives the memory token and object pointer of its
-index neighbours within a window $W=\xviewWindow$---the previous camera at
-frame $t$ and the next camera at frame $t-1$, so that each read refers to a
-frame that has already been computed. Three conditions govern the neighbour
-tokens. They pass the same quality gate as the camera's own memory (a
-low-confidence neighbour frame is dropped exactly as a low-confidence own frame
-would be); the neighbour's object pointer is appended after the camera's own
-pointers; and the neighbour token is assigned the temporal-position encoding of
-row \xviewRow, i.e.\ ``\xviewRow\ frames ago'', rather than row 0.
+index neighbours within a window $W=\xviewWindow$. The neighbours are the
+previous camera at frame $t$ and the next camera at frame $t-1$, so that each
+read refers to a frame that has already been computed. Three conditions govern
+the neighbour tokens. They pass the same quality gate as the camera's own
+memory (a low-confidence neighbour frame is dropped exactly as a low-confidence
+own frame would be); the neighbour's object pointer is appended after the
+camera's own pointers; and the neighbour token is assigned the temporal-position
+encoding of row \xviewRow, i.e., ``five frames ago,'' rather than row 0
+(``one frame ago'').
 
 The last choice is grounded in a measurement. Comparing pixel change between
 adjacent cameras at the same instant with pixel change between the same camera
 at $t$ and $t-k$, one camera step exceeds $k=\viewStepFrames$ frames of change
-in \viewStepPct\% of camera pairs on every scene; the tracker's temporal
-encoding has only seven rows, so the neighbour is placed as far back as the
-encoding allows short of the conditioning row. The curve over the shift is not
-monotonic: it peaks at row \xviewRow\ and falls again at row 6. Window size
-saturates immediately---on our development split $W=2$, $4$ and $6$ add
-nothing over $W=1$---and the gate, pointer, and shift, each individually
-positive, overlap rather than add when combined.
+in \viewStepPct\% of (camera, frame) pairs on each of the 15 development
+scenes. The tracker's temporal encoding has seven rows, six of them
+non-conditioning, so the neighbour is placed near the far end of them. The
+curve over the shift is not monotonic: it peaks one row short of the end, at
+row \xviewRow, and falls again at row 5. Window size saturates
+immediately---on a six-scene subset of the development split, $W=2$, $4$ and
+$6$ change the mean by at most $+0.0007$ over $W=1$---and the pointer and the
+shift, each individually positive, and the gate, whose own effect is
+indistinguishable from zero, overlap rather than add when combined.
 
-We report the history of this component honestly because it bears on how much
-to trust it. Its first pre-registered test, at our original edge-of-rig
-reference cameras, found no effect (paired $\Delta$ on the non-reference
-cameras that receive a neighbour: \firstTestDelta, 95\% CI \firstTestCI). A
-direction ablation likewise found no mode passing its registered criterion.
-Only after the protocol moved to the benchmark's central \cini\ did a
-re-registered test pass: the \nNeighbourless\ cameras that previously had no
-neighbour gained \ciniTestDelta\ (CI \ciniTestCI), and the benchmark moved by
-\ciniTestScenes\ points with no scene falling below the registered floor. The
-mechanism did not change; the number of cameras it could act on did.
+We report the history of this component because it bears on how much to trust
+it. Its first pre-registered test, at our original edge-of-rig reference
+cameras, found no effect (paired $\Delta$ of a $W=4$ one-sided window over no
+window, on the 20 non-reference cameras with at least four neighbours:
+\firstTestDelta, 95\% confidence interval (CI) \firstTestCI). A direction
+ablation likewise found no mode passing its registered criterion. Only after
+the protocol moved to the benchmark's central \cini\ did a re-registered test
+of the second, next-camera direction pass: relative to the one-sided variant,
+the \nNeighbourless\ cameras that previously had no neighbour gained
+\ciniTestDelta\ (CI \ciniTestCI), and the benchmark moved by \ciniTestScenes\
+points with no scene falling below the registered floor. What changed between
+the failing and the passing test was the number of cameras a neighbour could
+reach and the direction it was read from, not the memory mechanism; the full
+component's \gainXview\ over no cross-view memory has not itself passed a
+pre-registered test.
 
-\subsection{Raw frame-0 seeding}
+\subsection{Raw Frame-0 Seeding}
 \label{sec:fs}
 Stage~2 re-predicts frame~0 from the seed it is prompted with, and the
 re-prediction is slightly worse than the seed. We write the seed itself as the
 frame-0 output. The effect is \gainFsSeed\ points; it is reported because it is
 one rung of the ladder in Table~\ref{tab:ladder}, not because it matters.
 
-\subsection{Zoom-gated crop re-tracking}
+\subsection{Zoom-Gated Crop Re-Tracking}
 \label{sec:crop}
-Small objects lose most on the \gridNow-cell grid. For every (camera, object)
+Small objects lose most on the $\gridNow\times\gridNow$ grid. For every (camera, object)
 whose seed covers fewer than $\cropAreaMax$ pixels we open a second, single-object
 tracking session inside a square window centred on the seed's bounding box,
 with side $s=\mathrm{clamp}(\cropScale\cdot\max(w,h),\ \cropMinSide,\
@@ -430,47 +455,51 @@ is $\modelInput/s$. The session reads no neighbour memory and its result is
 pasted back into the full-frame output for frames $1$ to $T$. The seed rule
 uses the seed, not the ground truth, so it is available at inference. On the
 reference camera, whose seeds are ground truth, the \nCropRefSmall\ objects
-under $2\times10^{3}$\px\ rise from a mean frame-1--20 \Jscore\ of
+under $2\times10^{3}$\px\ rise from a mean \Jscore\ over frames 1--20 of
 \cropRefSmallBefore\ to \cropRefSmallAfter, which is the mechanism working as
 intended.
 
 A window can also contain a second object of the same appearance, and the
 tracker then follows the wrong one from the first frame. A ground-truth-free
 gate reverts a pair to the full-frame result when any of three conditions
-holds: the crop-tracked mask at frame~1 overlaps the seed with IoU below
+holds. The crop-tracked mask at frame~1 overlaps the seed with IoU below
 \gateIoU; the zoom is below \gateZoom, so the crop gains no resolution; or the
 object touches the window edge in \gateBorder\ or more of the 20 tracked frames.
 Across the benchmark \nCropTargets\ pairs qualify and \nCropReverted\ are
-reverted. The thresholds were chosen on the scored scenes; Sec.~\ref{sec:loso}
+reverted. The thresholds were chosen on the scored scenes; Section~\ref{sec:loso}
 measures what that cost.
 
-\subsection{Pre-registration and controls}
+\subsection{Pre-Registration and Controls}
 \label{sec:prereg}
-Every experiment in this paper was pre-registered: its hypothesis, population,
-acceptance rule, and predicted outcome were written and committed to the
-repository before the run, and no rule was changed after the data were seen.
-Where a rule was later re-registered we say so (Sec.~\ref{sec:xview}). There
-are \nPrereg\ such documents. The default code path is guarded by \nTests\ CPU
-tests and by byte-level identity checks: cameras that receive no neighbour
-change by exactly zero; the \nByteNontarget\ masks of pairs not touched by crop
-re-tracking are byte-identical to the previous configuration; the
-\nByteSeeds\ reference-camera seeds are byte-identical across every Stage-1
-variant in Sec.~\ref{sec:negative}.
+Every confirmatory experiment in this paper was pre-registered: its
+hypothesis, population, acceptance rule, and predicted outcome were written and
+committed to the repository before the run. Where a rule was made or
+re-registered after data were seen we say so: the direction test
+(Section~\ref{sec:xview}) and the crop gate, whose thresholds were fixed on the
+scored scenes (Sections~\ref{sec:crop} and~\ref{sec:loso}). Exploratory
+measurements---the window curve, the view-step measurement, runtime, and the
+leave-one-scene-out analysis---were not registered. There are \nPrereg\
+registration documents in the repository. The default code path is guarded by
+\nTests\ CPU tests and by byte-level identity checks. Cameras that receive no
+neighbour change by exactly zero; the \nByteNontarget\ masks of pairs not
+touched by crop re-tracking are byte-identical to the previous configuration;
+and the \nByteSeeds\ reference-camera seeds are byte-identical in the Stage-1
+vote experiment of Section~\ref{sec:negative}.
 
 % ===========================================================================
 \section{Experiments}
 \label{sec:exp}
 
 \subsection{Setup}
-All runs use one NVIDIA RTX~6000 Ada (\gpuTotal~GiB) in a Docker container,
-fp32, deterministic. The benchmark is the full MUVOD video set: \nScenes\
+All runs use one NVIDIA RTX~6000 Ada (\gpuTotal\,GiB) in a Docker container
+with mixed-precision (bf16 autocast) inference, deterministic. The benchmark is the full MUVOD video set: \nScenes\
 scenes, \nAnnotCams\ scored cameras per scene, \nFramesPerCam\ frames per
 camera, \nPairsBasic\ (camera, object) pairs in the basic set and
-\nPairsComplete\ in the complete set; the \nPairsUnreachable\ pairs in the
+\nPairsComplete\ in the complete set. The \nPairsUnreachable\ pairs in the
 difference are objects absent from the reference frame, which no propagation
 method can reach. Paired statistics use a scene-cluster bootstrap with
 \nBoot\ resamples and a fixed seed. The XMem baseline numbers are transcribed
-from the benchmark paper; we did not re-run it (Sec.~\ref{sec:limits}).
+from the benchmark paper; we did not re-run it (Section~\ref{sec:limits}).
 
 \begin{table}[!t]
 \caption{Comparison with the published MUVOD baseline. \JF\ (\%) over
@@ -488,7 +517,7 @@ complete & \textbf{\OursComplete} & \XMemComplete & \textbf{\DeltaComplete} & $\
 \end{tabular}
 \end{table}
 
-\subsection{Comparison with the published baseline}
+\subsection{Comparison With the Published Baseline}
 Table~\ref{tab:headline} gives the benchmark result. On the basic protocol the
 paired difference is \DeltaBasic\ points ($t=\tBasic$), on complete
 \DeltaComplete\ ($t=\tComplete$); both intervals exclude zero by a wide margin.
@@ -496,7 +525,7 @@ The pipeline wins \winLoss\ scenes, with a median gain of \medianBasic; the
 largest gain is on \bestScene\ (\bestDelta) and the one loss is \worstScene\
 (\worstDelta). Table~\ref{tab:scenes} lists every scene. Scenes whose basic and
 complete scores coincide are those whose reference frame contains every
-labelled object, the same property that fixed \cini\ in Sec.~\ref{sec:cini}.
+labelled object, the same property that fixed \cini\ in Section~\ref{sec:cini}.
 
 \begin{table*}[!t]
 \caption{Per-scene results, \JF\ (\%). XMem values are transcribed from the
@@ -534,25 +563,28 @@ Mean (\nScenes)     & \textbf{\OursBasic} & \XMemBasic & $\mathbf{\DeltaBasic}$ 
 
 \begin{table}[!t]
 \caption{Where the margin comes from. \JF\ (\%), basic protocol. Each row
-adds one element to the row above; the same scoring is applied throughout.}
+adds one element to the row above. The XMem row is the aggregate printed in
+the benchmark paper (\ladderXMem); Tables~\ref{tab:headline}
+and~\ref{tab:scenes} use the mean of the transcribed per-scene values
+(\XMemBasic), hence the difference between the ladder total and $\Delta$.}
 \label{tab:ladder}
 \centering
 \begin{tabular}{lcc}
 \toprule
 Configuration & \JF & Gain \\
 \midrule
-XMem baseline~\cite{muvod}                       & \ladderXMem     & --- \\
-Two-stage structure, SAM~3 tracker (Sec.~\ref{sec:twostage}) & \ladderTwoStage & \textbf{\gainFoundation} \\
-$+$ cross-view memory (Sec.~\ref{sec:xview})     & \ladderXview    & \gainXview \\
-$+$ raw frame-0 seed (Sec.~\ref{sec:fs})         & \ladderFsSeed   & \gainFsSeed \\
-$+$ zoom-gated crop re-tracking (Sec.~\ref{sec:crop}) & \ladderCrop & \textbf{\gainCrop} \\
+XMem baseline~\cite{muvod}            & \ladderXMem     & --- \\
+Two-stage structure, SAM~3 tracker    & \ladderTwoStage & \textbf{\gainFoundation} \\
+$+$ cross-view memory                 & \ladderXview    & \gainXview \\
+$+$ raw frame-0 seed                  & \ladderFsSeed   & \gainFsSeed \\
+$+$ zoom-gated crop re-tracking       & \ladderCrop     & \textbf{\gainCrop} \\
 \midrule
 Total                                            &                 & \textbf{\gainTotal} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Decomposition of the margin}
+\subsection{Decomposition of the Margin}
 \label{sec:ladder}
 Table~\ref{tab:ladder} climbs from the published baseline to our result one
 element at a time. The first step---replacing the tracker inside an unchanged
@@ -564,8 +596,10 @@ split further into ``foundation model'' and ``two-stage structure'': we never
 ran XMem inside our pipeline, so the structural equivalence with the benchmark
 baseline is argued from the benchmark's description, not measured. Second, and
 for the same reason, the converse claim---that any modern tracker would produce
-this number---is equally unmeasured; no foundation-model method has been
-evaluated on MUVOD by anyone. What is established is the size of our own
+this number---is equally unmeasured; to our knowledge no foundation-model
+method has been evaluated on MUVOD, and at the time of our survey (September
+2026) no paper citing the benchmark was indexed by Semantic Scholar or Google
+Scholar. What is established is the size of our own
 design's share, and that it is small.
 
 \begin{table}[!t]
@@ -586,13 +620,13 @@ Selection optimism $\Omega$                    & \textbf{\losoOmega} (\losoOmega
 \end{tabular}
 \end{table}
 
-\subsection{How much of the gain is selection optimism?}
+\subsection{How Much of the Gain Is Selection Optimism?}
 \label{sec:loso}
-The crop area threshold and the gate variant of Sec.~\ref{sec:crop} were
+The crop area threshold and the gate variant of Section~\ref{sec:crop} were
 chosen among six candidate arms by looking at all \nScenes\ scored scenes.
 We estimate the resulting optimism by leave-one-scene-out: for each scene the
 same selection rule---largest mean gain subject to no scene falling more than
-0.3 points---is re-applied to the other 16, and the chosen arm's gain is read
+\floorPts\ points---is re-applied to the other 16, and the chosen arm's gain is read
 on the held-out scene. Table~\ref{tab:loso} gives the result. The fitted gain
 is \losoFitted, the held-out gain \losoHeldOut, and their difference
 $\Omega=\losoOmega$ points, \losoOmegaPct\% of the effect; \losoAgree\ of
@@ -600,7 +634,7 @@ $\Omega=\losoOmega$ points, \losoOmegaPct\% of the effect; \losoAgree\ of
 is valid; its magnitude is \losoOmega\ points.
 
 \begin{table}[!t]
-\caption{Cost. One RTX~6000 Ada (\gpuTotal~GiB), Docker, \nScenes\ scenes,
+\caption{Cost. One RTX~6000 Ada (\gpuTotal\,GiB), Docker, \nScenes\ scenes,
 one configuration.}
 \label{tab:runtime}
 \centering
@@ -608,17 +642,17 @@ one configuration.}
 \toprule
  & Value \\
 \midrule
-Total, \nScenes\ scenes    & \runtimeTotal~min \\
-Per scene, median          & \runtimeMedian~s \\
-Per scene, min--max        & \runtimeMin--\runtimeMax~s \\
-Peak GPU memory, median    & \gpuMedian~GiB \\
-Peak GPU memory, max       & \gpuMax~GiB \\
+Total, \nScenes\ scenes        & \runtimeTotal\,min \\
+Per scene, median              & \runtimeMedian\,s \\
+Per scene, minimum--maximum    & \runtimeMin--\runtimeMax\,s \\
+Peak GPU memory, median        & \gpuMedian\,GiB \\
+Peak GPU memory, maximum       & \gpuMax\,GiB \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Runtime and memory}
-Table~\ref{tab:runtime}. Time scales with the number of objects and the frame
+\subsection{Runtime and Memory}
+Table~\ref{tab:runtime} reports the cost. Time scales with the number of objects and the frame
 resolution; there is no per-scene optimisation and no reconstruction, which
 is the practical difference from the 3DGS family, where a reconstruction of
 several minutes precedes any segmentation.
@@ -629,7 +663,8 @@ several minutes precedes any segmentation.
 
 \begin{table}[!t]
 \caption{Oracle decomposition of the gap to a perfect score, basic protocol.
-Each row replaces one component by ground truth and reports the gain.}
+Each row replaces one component by ground truth and reports the gain; the rows
+are independent oracles and do not sum to the total.}
 \label{tab:budget}
 \centering
 \begin{tabular}{lc}
@@ -645,26 +680,26 @@ The \nOrdinaryPairs\ pairs whose seed does not fail     & \textbf{\oracleOrdinar
 \end{tabular}
 \end{table}
 
-\subsection{Oracle decomposition}
+\subsection{Oracle Decomposition}
 Table~\ref{tab:budget} asks, for each component, how much the benchmark score
 would rise if that component alone were perfect. The pairs whose seed fails
-at frame~0 (\JFpair${}<0.5$) are few, and repairing all of them is worth
+at frame~0 (\JFpair\ ${<}0.5$) are few, and repairing all of them is worth
 \oracleSeed\ points. The reference camera---which starts from ground truth---has
 a ceiling of \oracleRef. The large bucket, \oracleOrdinary\ points, is spread
 over the \nOrdinaryPairs\ pairs whose seed is sound: \nGoodPairs\ of the
 \nPairsBasic\ pairs already exceed 0.95, and the deficit is neither dominated by
 a few catastrophes nor uniform. Region \Jscore\ (\regionJ) is worse than
-boundary \Fscore\ (\boundaryF), though MUVOD's boundary tolerance of
-\boundaryTol\px\ makes \Fscore\ lenient.
+boundary \Fscore\ (\boundaryF), though the benchmark's boundary tolerance of 0.8\% of the image diagonal
+(\boundaryTol\px\ across scenes) makes \Fscore\ lenient.
 
-\subsection{A constant deficit, not drift}
+\subsection{A Constant Deficit, Not Drift}
 The reference camera is prompted with ground truth, yet its per-frame \Jscore\
 is \refJfZero\ at $t=0$, \refJfOne\ at $t=1$, and then flat
 (\refJfFive, \refJfTen, \refJfTwenty\ at $t=5,10,20$). The drop occurs at the
-first tracked frame and does not accumulate. The non-reference cameras show the
-same shape at a lower level: their \JFpair\ is \nonrefJFzero\ at
-$t=0$, \nonrefJFfive\ at $t=5$, \nonrefJFtwenty\ at $t=20$, against
-\refJFzero, \refJFfive, \refJFtwenty\ on the reference camera. The deficit is
+first tracked frame and does not accumulate. The non-reference cameras are flat
+from the start at a lower level: their \JFpair\ is \nonrefJFzero\ at $t=0$,
+\nonrefJFten\ at $t=10$, and \nonrefJFtwenty\ at $t=20$, against \refJFzero,
+\refJFten, and \refJFtwenty\ on the reference camera. The deficit is
 present from the first frame and constant thereafter. This rules out the
 intuitive story that cross-view errors compound over time, and points at the
 seed and at the tracker's per-frame quality rather than at temporal drift.
@@ -677,32 +712,36 @@ frames).}
 \centering
 \begin{tabular}{lccc}
 \toprule
-Grid & Ceiling \JF & Unreachable & Share of \totalGap \\
+Grid side & Ceiling \JF & Unreachable & Share of \totalGap \\
 \midrule
-\gridNow\ (ours) & \ceilNow  & \textbf{\lossNow} & 20.0\% \\
-576              & \ceilMid  & \lossMid          & 7.4\% \\
-1008             & \ceilHigh & \lossHigh         & 2.4\% \\
+\gridNow\ (ours) & \ceilNow  & \textbf{\lossNow} & \shareNow\% \\
+\gridMid         & \ceilMid  & \lossMid          & \shareMid\% \\
+\gridHigh        & \ceilHigh & \lossHigh         & \shareHigh\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{The mask grid is not the bottleneck}
+\subsection{The Mask Grid Is Not the Bottleneck}
 \label{sec:grid}
-The largest single gain in this paper came from a resolution device
-(Sec.~\ref{sec:crop}), which invites the hypothesis that resolution is the
-dominant residual. We tested it without a model: the ground-truth masks are
-downsampled to the tracker's \gridNow-cell grid, upsampled back, and scored
-against the originals under the benchmark protocol (Table~\ref{tab:grid}). The
-grid's ceiling is \ceilNow, so it can account for at most \lossNow\ of the
-\totalGap\ points; a 576-cell grid would leave \lossMid\ and a full-resolution
-grid \lossHigh. The loss depends on object size alone---\ceilSmall\ for the
-\nSmallRows\ pairs under $2\times10^{3}$\px, \ceilMedium\ for the
-\nMediumRows\ between $2\times10^{3}$ and $10^{4}$, \ceilLarge\ for the
-\nLargeRows\ above---and not on rig type or camera role. Crop re-tracking
-already recovers \gainCrop\ of the \lossNow. The hypothesis is therefore
-rejected: the \oracleOrdinary-point bucket of Table~\ref{tab:budget} is genuine
-model error. Because the measurement uses no model, it is a property of the
-benchmark and applies to any tracker with the same output grid.
+The largest gain among our own design choices (\gainCrop,
+Section~\ref{sec:crop}) came from a resolution device, which invites the
+hypothesis that resolution is the dominant residual. We tested it without a
+model: the ground-truth masks are downsampled to the tracker's
+$\gridNow\times\gridNow$ grid, upsampled back, and scored against the originals
+under the benchmark protocol (Table~\ref{tab:grid}). The grid's ceiling is
+\ceilNow, so it can account for at most \lossNow\ of the \totalGap\ points; a
+$\gridMid\times\gridMid$ grid would leave \lossMid\ and a grid at the model's
+input resolution ($\modelInput\times\modelInput$) \lossHigh. The loss depends
+on object size alone---\ceilSmall\ for the \nSmallRows\ pairs under
+$2\times10^{3}$\px, \ceilMedium\ for the \nMediumRows\ between
+$2\times10^{3}$ and $10^{4}$\px, \ceilLarge\ for the \nLargeRows\ above---and
+not on rig type or camera role. Crop re-tracking already recovers \gainCrop\ of
+the \lossNow. The hypothesis is therefore rejected---the pre-registered reading
+is ``substantial but not dominant'' (\shareNow\% of the gap, at the registered
+20\% boundary)---and the \oracleOrdinary-point bucket of
+Table~\ref{tab:budget} is genuine model error, not a grid artefact. Because the
+measurement uses no model, it is a property of the benchmark and applies to any
+tracker with the same output grid.
 
 % ===========================================================================
 \section{Five Ways to Repair a Failing Seed, and Why None Works}
@@ -711,7 +750,7 @@ benchmark and applies to any tracker with the same output grid.
 The oracle in Table~\ref{tab:budget} puts a bound of \oracleSeed\ points on
 seed repair, but the failing seeds are also the most visible errors---an object
 placed on the wrong thing, or missing altogether---and the literature of
-Sec.~\ref{sec:related} offers several training-free ways to produce a better
+Section~\ref{sec:related} offers several training-free ways to produce a better
 one. We tested five, each pre-registered with its acceptance gate, and report
 all five.
 
@@ -719,19 +758,20 @@ all five.
 Stage~1 is evaluated on its own output, the seed at $t=0$, on the two
 non-reference scored cameras of every scene: \nRowsStage\ (camera, object) rows,
 of which \nGtPresent\ have ground truth---\nFzero\ \emph{failing} (raw seed
-\Jscore$<\voteTau$; we call this set F0) and \nNzero\ \emph{sound} (N0)---and
+\Jscore\ ${<}\voteTau$; we call this set F0) and \nNzero\ \emph{sound} (N0)---and
 \nGtEmpty\ have no ground truth in that camera, where any non-empty candidate
 is a hallucination. The existence gates are read on the \nQualPairs\ failing
 pairs with ground truth of at least $2\times10^{3}$\px\ (\nQualPinhole\
 pinhole, \nQualHemi\ hemisphere), and the geometry arms on the \nGeoPairs\
-pinhole pairs among them, because none of the geometry models handles the raw
-fisheye frames of the hemispherical rigs.
+pinhole pairs among them, because the geometry gate was registered on the
+pinhole scenes: COLMAP and 3DGS do not take the raw fisheye frames of the
+hemispherical rigs ($\pi^{3}$ does, and is reported on them without a gate).
 
 \begin{table}[!t]
 \caption{Pre-registered seed generators. Gate: number of qualifying failing
-pairs on which a candidate with IoU$>0.5$ against ground truth exists. The
-vote's gate is a paired improvement whose CI excludes zero \emph{and} reaches
-$+0.3$ benchmark points.}
+pairs on which a candidate with IoU ${>}0.5$ against ground truth exists.
+The vote's gate is a paired improvement whose CI excludes zero \emph{and}
+reaches $+\floorPts$ benchmark points.}
 \label{tab:negative}
 \centering
 \footnotesize
@@ -745,21 +785,24 @@ G-geo-a & SfM $+$ dense MVS      & $\geq 8$/\nGeoPairs   & \gateGeoA/\nGeoPairs 
 G-geo-b & $\pi^{3}$ point maps   & $\geq 8$/\nGeoPairs   & \gateGeoB/\nGeoPairs \\
 G-gs    & 3DGS depth             & $\geq 8$/\nGeoPairs   & \gateGeoC/\nGeoPairs \\
 \midrule
-SeedVote & all above $+$ order   & CI${}>0$, ${\geq}+0.3$ & \voteRule \\
+SeedVote & all above $+$ order   & CI ${>}0$, ${\geq}+\floorPts$ & \voteRule \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{The generators}
-Table~\ref{tab:negative} lists them. In every arm the mask is produced by the
-frozen SAM~3; the arms differ in how the object's \emph{position} in the target
-camera is obtained. \emph{G-det} injects the reference mask as an exemplar
-prompt into SAM~3's detector on each target frame and takes the union of the
-box- and point-exemplar candidates. \emph{G-corr} builds a DINOv2-L prototype
+\subsection{The Generators}
+Table~\ref{tab:negative} lists them. In the two appearance arms the mask is
+produced by the frozen SAM~3 and the arms differ in how the object's
+\emph{position} in the target camera is obtained; in the three geometry arms
+the candidate is the reference mask itself, lifted to 3D and reprojected into
+the target camera. \emph{G-det} injects box and interior-point exemplars
+derived from the reference mask into SAM~3's detector on each target frame and
+takes the union of the two candidate sets. \emph{G-corr} builds a DINOv2-L prototype
 from the patch tokens under the reference mask, computes its cosine map on the
 target frame, and prompts a single-frame SAM~3 session at the top peaks.
-\emph{G-geo-a} runs COLMAP structure-from-motion on the first frames, densifies
-with multi-view stereo, lifts the reference mask to 3D, and reprojects it.
+\emph{G-geo-a} runs COLMAP structure-from-motion (SfM) on the first frames,
+densifies with multi-view stereo (MVS), lifts the reference mask to 3D, and
+reprojects it.
 \emph{G-geo-b} replaces the reconstruction by $\pi^{3}$ feed-forward point maps
 \cite{pi3}. \emph{G-gs} trains a 3DGS \cite{gaussiansplatting} on the first
 frames for \gsIter\ iterations, renders $\alpha$-normalised depth, and uses the
@@ -772,59 +815,65 @@ failures are not the same. G-det finds a correct candidate on \gateDet\ of
 correct candidate exists on \corrSoundExist\% of N0 with median IoU
 \corrSoundIoU---and fails precisely where it is needed: on pinhole failing pairs
 at view distance $\geq 4$ it finds \corrFarPinhole. G-geo-a is limited by
-availability: structure-from-motion succeeds on \geoAavail\ of \nRowsStage\
-rows, failing outright on two scenes, and dense stereo leaves holes exactly
-where the small failing objects are. G-geo-b removes the availability problem
+availability: SfM and dense stereo are available on \geoAavail\ of the
+\nGtPresent\ rows with ground truth, failing outright on two scenes and losing
+a required camera on two more, and where they are available the stereo depth
+either has holes or returns background depth on the failing objects---moving
+people, textureless walls, glass. G-geo-b removes the availability problem
 and its depth is accurate---median relative error \geoBdepthErr\% against
 multi-view stereo where both exist---but its point-map resolution cannot resolve
 the failing objects, and it passes \gateGeoB\ of \nGeoPairs.
 
 G-gs deserves a paragraph because it is the bridge that the entire
-3D-representation family of Sec.~\ref{sec:related} relies on. The
+3D-representation family of Section~\ref{sec:related} relies on. The
 reconstructions are good by their own measure: training-view PSNR is
-\gsPSNRmin--\gsPSNRmax~dB and the rendered depth covers the target objects.
-Yet the depth error against multi-view stereo ranges from \gsDepthBest\% on the
-scene with the \emph{lowest} PSNR to \gsDepthWorst\% on the scene with among
-the highest, and across the \gsCams\ cameras with a reference depth the
-rendered surface is nearer than the stereo surface on every one. With
-\nCamMin--\nCamMax\ wide-baseline views, semi-transparent Gaussians placed
+\gsPSNRmin--\gsPSNRmax\,dB and the rendered depth covers the target objects.
+Yet the depth error against MVS ranges from \gsDepthBest\% on a scene whose
+training-view PSNR is among the \emph{lowest} (31--36\,dB) to \gsDepthWorst\%
+on a scene among the highest (40--42\,dB), and across the \gsCams\ cameras with
+a reference depth the rendered surface is nearer than the stereo surface on
+every one. With \gsViewsMin--\gsViewsMax\ wide-baseline views per scene,
+semi-transparent Gaussians placed
 anywhere along a ray reproduce the training images; PSNR rises and the surface
 dissolves into floaters. A depth that is dense and confidently wrong is worse
 than one that is missing: the four pairs G-geo-a passed all collapse under
 G-gs, and \gateGeoC\ of \nGeoPairs\ pass.
 
-\subsection{Candidates exist; the selection signal does not}
+\subsection{Candidates Exist; the Selection Signal Does Not}
 The union of all generators contains a correct candidate for \unionOracle\ of
 the \nQualPairs\ qualifying failing pairs, so the information is present in
 the candidate set. The same union produces a non-empty candidate on
 \unionHalluc\ of the ground-truth-empty rows. Any selector must therefore
 separate ``the object, elsewhere'' from ``something else, anywhere'' without
-ground truth. We registered one, SeedVote: a candidate replaces the default
-seed only if it is dissimilar to the default, agrees with at least one other
-stream or with a geometry-based scale check, scores higher than the default on
-a SAM~3 confidence signal, and does not overlap another object; on rows where
-the default seed is empty, a stricter agreement count is required so that the
-hallucinating union cannot fill empty rows. The vote replaced \nVoteReplaced\
+ground truth. We registered one, SeedVote. A candidate replaces the default
+seed only if it is dissimilar to the default (IoU ${<}\voteTau$), agrees with
+at least one other stream or with the geometric reprojection of the reference
+mask (IoU ${\geq}\voteTau$), is closer than the default to the reference object
+in SAM~3's object-pointer space, and does not overlap another object's seed. On
+rows where the default seed is empty, a stricter agreement count is required so
+that the hallucinating union cannot fill empty rows. The vote replaced \nVoteReplaced\
 of \nGtPresent\ seeds. On the failing set it was accurate: \voteFzeroRep\
 replacements, \voteFzeroRec\ recovered, \voteFzeroBroke\ broken, paired
 $\Delta\Jscore=\voteFzeroDJ$ (CI \voteFzeroCI). On the sound set it was not:
 \voteNzeroRep\ replacements, \voteNzeroBroke\ of which broke a working pair,
-$\Delta\Jscore=\voteNzeroDJ$ (CI \voteNzeroCI). The net benchmark effect is
-\voteRule\ points. With an oracle choosing among the same candidates the
-effect would be \voteOracle\ points and \voteOraclePairs\ pairs recovered.
+$\Delta\Jscore=\voteNzeroDJ$ (CI \voteNzeroCI). Converted to benchmark points by the registered aggregation---an optimistic
+upper bound, since the voted seeds were not propagated through Stage~2---the
+net effect is \voteRule\ points; the same conversion with an oracle choosing
+among the same candidates gives \voteOracle\ points and \voteOraclePairs\ pairs
+recovered.
 Hallucination on the empty rows did not increase. The hemisphere rigs alone
 show a net gain with no new failures ($\Delta\Jscore=\voteHemiDJ$, CI
 \voteHemiCI); restricting the rule to them would be a post-hoc choice, and we
 do not make it.
 
-\subsection{The structural reason}
+\subsection{The Structural Reason}
 \label{sec:asymmetry}
 The result generalises beyond our rule. There are \nFzero\ pairs that need
 repair and \nNzero\ that must not be touched, a ratio of \asymmetry. A
 selector that is right on most of the failing pairs and wrong on a small
 fraction of the sound ones still loses, because the small fraction is taken of
-a population fifteen times larger; our own vote had a replacement precision of
-83\% on F0 and 31\% on N0 and lost. Three independent attempts in this
+a population $15\times$ larger. Our own vote had a replacement precision of
+\votePrecFzero\% on F0 and \votePrecNzero\% on N0, and lost. Three independent attempts in this
 project---a post-hoc seed repair, exemplar detection, and the vote---hit the
 same wall. The quantity that determines whether seed repair on rigs can help is
 not recall on the failing pairs, which every generator family can reach, but
@@ -839,33 +888,39 @@ on that population directly.
         the benchmark paper, and the equivalence of the two pipelines'
         structure is argued from the paper's description, not measured.
   \item There is one baseline and one dataset. SAM~2, Cutie, DEVA, and the
-        2026 uncalibrated promptable methods do not appear as columns because
-        none has been evaluated on MUVOD; running them is a contribution in
-        itself and outside the present scope.
-  \item Cross-view memory (\gainXview) failed its first pre-registered test
-        and passed a second, re-registered one at the benchmark's reference
-        camera. The mechanism is the same; the reader should weigh the
-        component accordingly.
-  \item The crop gate was selected on the scored scenes. Sec.~\ref{sec:loso}
+        2026 uncalibrated promptable methods do not appear as columns because,
+        to our knowledge, none has been evaluated on MUVOD under its protocol
+        (our own SAM~2 runs are diagnostic and predate the protocol); running
+        them is a contribution in itself and outside the present scope.
+  \item Cross-view memory (\gainXview) failed its first two pre-registered
+        tests---an on/off test at our edge-of-rig reference cameras and a
+        direction ablation---and passed a third, re-registered one at the
+        benchmark's reference camera. The mechanism is the same; the reader
+        should weigh the component accordingly.
+  \item The crop gate was selected on the scored scenes. Section~\ref{sec:loso}
         bounds the optimism at \losoOmega\ points.
   \item MUVOD scores three cameras per scene, so the Stage-1 populations of
-        Sec.~\ref{sec:negative} live on two non-reference cameras per scene.
+        Section~\ref{sec:negative} live on two non-reference cameras per scene.
   \item The \nFisheye\ fisheye scenes are scored but excluded from the
         geometry arms, and from MUVOD's own 3D benchmark; the geometry
         conclusions are for pinhole rigs.
   \item The reference camera of one scene (Dog) is determined up to two
-        candidates; both are reported.
+        candidates on the same ring of the rig; the adopted one scored lower in
+        the two earlier configurations where both were run
+        (Section~\ref{sec:cini}), and the final configuration was not re-run
+        with the other.
 \end{enumerate}
 
 % ===========================================================================
 \section{Conclusion}
-On the only public rig benchmark, a two-stage pipeline with a promptable
+On the only public rig benchmark we know of, a two-stage pipeline with a promptable
 foundation model improves on the published baseline by \DeltaBasic\ points,
 of which \gainOurs\ is ours. The remaining \totalGap\ points are mostly ordinary
-mask quality on pairs that never fail, not resolution and not drift. The
-visible failures---seeds placed on the wrong object---can be repaired by an
-oracle but not, in five pre-registered attempts, by any ground-truth-free rule,
-because \nFzero\ pairs to fix stand against \nNzero\ to protect. That
+mask quality on pairs whose seed does not fail, not resolution and not drift.
+The visible failures---seeds placed on the wrong object---can be repaired by an
+oracle, but the five pre-registered candidate generators fail their gates and
+the one pre-registered ground-truth-free rule over their union loses, because
+\nFzero\ pairs to fix stand against \nNzero\ to protect. That
 \asymmetry\ asymmetry is the number the next method for this task should be
 designed against.
 
