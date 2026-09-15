@@ -102,3 +102,107 @@
 
 %% 파생 표현 ------------------------------------------------------------------
 \newcommand{\lossNowPctText}{20.0\% of the residual error}
+
+%% ===========================================================================
+%% 2026-09-16 본문 집필용 추가 매크로. 출처는 각 줄 주석의 문서.
+%% ===========================================================================
+
+%% 데이터셋 (docs/muvod-protocol.md, docs/mvimage-seg-survey.md §4)
+\newcommand{\nCamMin}{9}
+\newcommand{\nCamMax}{46}
+\newcommand{\nFramesPerCam}{21}
+\newcommand{\nAnnotCams}{3}
+\newcommand{\nInstances}{459}
+\newcommand{\nCategories}{73}
+\newcommand{\nFisheye}{4}
+\newcommand{\nPairsBasic}{1\,066}
+\newcommand{\nPairsComplete}{1\,139}
+\newcommand{\nPairsUnreachable}{73}
+\newcommand{\nCiniMismatch}{15}        % pick_reference 규칙이 c_ini와 다른 장면 수
+
+%% 2단계 이웃 읽기 (docs/phase2-control.md, phase3-*.md, phase3-direction-cini.md)
+\newcommand{\xviewWindow}{1}
+\newcommand{\xviewShift}{4}
+\newcommand{\xviewRow}{5}
+\newcommand{\firstTestDelta}{+0.0057}
+\newcommand{\firstTestCI}{[-0.0002,\,+0.0140]}
+\newcommand{\ciniTestDelta}{+0.0138}
+\newcommand{\ciniTestCI}{[+0.0021,\,+0.0307]}
+\newcommand{\ciniTestScenes}{+0.22}
+\newcommand{\nNeighbourless}{9}
+\newcommand{\viewStepFrames}{8}
+\newcommand{\viewStepPct}{91--100}
+\newcommand{\nBytePNG}{19\,848}
+\newcommand{\nByteNontarget}{16\,051}
+\newcommand{\nByteTarget}{5\,254}
+\newcommand{\nByteSeeds}{398}
+
+%% 크롭 추적 (docs/stage2-R1.md, stage2-R2.md)
+\newcommand{\cropAreaMax}{10^{4}}
+\newcommand{\cropScale}{4}
+\newcommand{\cropMinSide}{256}
+\newcommand{\modelInput}{1008}
+\newcommand{\gateIoU}{0.05}
+\newcommand{\gateZoom}{1.2}
+\newcommand{\gateBorder}{10}
+\newcommand{\nCropTargets}{349}
+\newcommand{\nCropReverted}{71}
+\newcommand{\cropRefSmallBefore}{0.637}
+\newcommand{\cropRefSmallAfter}{0.842}
+\newcommand{\nCropRefSmall}{36}
+
+%% 오차 예산 (docs/error-budget.md §3)
+\newcommand{\refJfZero}{0.970}
+\newcommand{\refJfOne}{0.933}
+\newcommand{\refJfFive}{0.923}
+\newcommand{\refJfTen}{0.927}
+\newcommand{\refJfTwenty}{0.923}
+\newcommand{\refJFzero}{0.981}
+\newcommand{\refJFfive}{0.953}
+\newcommand{\refJFtwenty}{0.950}
+\newcommand{\nonrefJFzero}{0.894}
+\newcommand{\nonrefJFfive}{0.890}
+\newcommand{\nonrefJFtwenty}{0.890}
+\newcommand{\nGoodPairs}{536}          % J&F > 0.95 인 쌍
+\newcommand{\boundaryTol}{26}          % MUVOD F 경계 허용폭 px
+\newcommand{\nSmallRows}{98}
+\newcommand{\nMediumRows}{244}
+\newcommand{\nLargeRows}{724}
+
+%% 1단계 (docs/stage1-E2/E3/E4a/E4b/E4c/E6.md)
+\newcommand{\nRowsStage}{796}
+\newcommand{\nGtPresent}{664}
+\newcommand{\nGtEmpty}{132}
+\newcommand{\nQualHemi}{3}
+\newcommand{\detHalluc}{129/132}
+\newcommand{\corrHalluc}{103/132}
+\newcommand{\corrSoundExist}{78.8}
+\newcommand{\corrSoundIoU}{0.845}
+\newcommand{\corrFarPinhole}{2/20}
+\newcommand{\geoAavail}{416}
+\newcommand{\geoAsound}{268}
+\newcommand{\geoBdepthErr}{1.03}
+\newcommand{\geoBsound}{387}
+\newcommand{\gsPSNRmin}{25.1}
+\newcommand{\gsPSNRmax}{45.7}
+\newcommand{\gsDepthBest}{0.6}
+\newcommand{\gsDepthWorst}{84--91}
+\newcommand{\gsCams}{27}
+\newcommand{\gsIter}{30\,000}
+\newcommand{\nVoteReplaced}{28}
+\newcommand{\voteFzeroRep}{12}
+\newcommand{\voteFzeroRec}{10}
+\newcommand{\voteFzeroBroke}{0}
+\newcommand{\voteNzeroRep}{16}
+\newcommand{\voteNzeroBroke}{11}
+\newcommand{\voteFzeroDJ}{+0.0932}
+\newcommand{\voteFzeroCI}{[+0.0269,\,+0.1466]}
+\newcommand{\voteNzeroDJ}{-0.0091}
+\newcommand{\voteNzeroCI}{[-0.0148,\,-0.0028]}
+\newcommand{\voteAllCI}{[-0.0109,\,+0.0063]}
+\newcommand{\voteHemiDJ}{+0.0198}
+\newcommand{\voteHemiCI}{[+0.0000,\,+0.0265]}
+\newcommand{\votePinDJ}{-0.0078}
+\newcommand{\voteOraclePairs}{24}
+\newcommand{\voteTau}{0.5}
+\newcommand{\voteOverlapTau}{0.5}
