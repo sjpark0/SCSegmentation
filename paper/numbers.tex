@@ -1,0 +1,104 @@
+%% ---------------------------------------------------------------------------
+%% numbers.tex — 논문에 등장하는 모든 수치의 단일 출처.
+%%
+%% 이 파일은 docs/paper-numbers.md 와 1:1로 대응한다. 본문에서는 절대 숫자를
+%% 직접 타이핑하지 말고 여기 매크로만 쓴다. 수치가 바뀌면 이 파일과
+%% docs/paper-numbers.md 를 함께 고친다.
+%% ---------------------------------------------------------------------------
+
+%% §1 헤드라인 -----------------------------------------------------------------
+\newcommand{\OursBasic}{91.015}
+\newcommand{\OursComplete}{86.399}
+\newcommand{\XMemBasic}{79.35}
+\newcommand{\XMemComplete}{75.63}
+\newcommand{\DeltaBasic}{+11.662}
+\newcommand{\DeltaComplete}{+10.770}
+\newcommand{\tBasic}{7.24}
+\newcommand{\tComplete}{7.43}
+\newcommand{\ciBasic}{[+8.71,\,+14.91]}
+\newcommand{\ciComplete}{[+8.10,\,+13.68]}
+\newcommand{\winLoss}{16/1}
+\newcommand{\medianBasic}{+10.32}
+\newcommand{\worstScene}{Welder}
+\newcommand{\worstDelta}{\ensuremath{-0.73}}
+\newcommand{\bestScene}{AlexaMeadeFacePaint}
+\newcommand{\bestDelta}{+27.66}
+\newcommand{\nScenes}{17}
+\newcommand{\nBoot}{10\,000}
+
+%% §2 분해 사다리 ---------------------------------------------------------------
+\newcommand{\ladderXMem}{79.400}
+\newcommand{\ladderTwoStage}{89.519}
+\newcommand{\ladderXview}{90.034}
+\newcommand{\ladderFsSeed}{90.064}
+\newcommand{\ladderCrop}{91.015}
+\newcommand{\gainFoundation}{+10.119}
+\newcommand{\gainXview}{+0.515}
+\newcommand{\gainFsSeed}{+0.030}
+\newcommand{\gainCrop}{+0.951}
+\newcommand{\gainTotal}{+11.615}
+\newcommand{\gainOurs}{+1.50}
+\newcommand{\pctFoundation}{87}
+
+%% §3 선택 낙관 (LOSO) ----------------------------------------------------------
+\newcommand{\losoFitted}{+1.053}
+\newcommand{\losoHeldOut}{+1.008}
+\newcommand{\losoOmega}{+0.045}
+\newcommand{\losoOmegaPct}{4.3}
+\newcommand{\losoAgree}{15}
+
+%% §4 실행 시간·메모리 ----------------------------------------------------------
+\newcommand{\runtimeTotal}{113}
+\newcommand{\runtimeMedian}{302}
+\newcommand{\runtimeMin}{100}
+\newcommand{\runtimeMax}{1\,090}
+\newcommand{\gpuMedian}{11.5}
+\newcommand{\gpuMax}{20.8}
+\newcommand{\gpuTotal}{48}
+
+%% §5 오차 예산 ----------------------------------------------------------------
+\newcommand{\totalGap}{8.985}
+\newcommand{\oracleSeed}{+1.11}
+\newcommand{\oracleRef}{+1.59}
+\newcommand{\oracleOrdinary}{+7.87}
+\newcommand{\nOrdinaryPairs}{1\,051}
+\newcommand{\regionJ}{87.3}
+\newcommand{\boundaryF}{94.8}
+
+%% §6 격자 천장 ----------------------------------------------------------------
+\newcommand{\gridNow}{288}
+\newcommand{\ceilNow}{98.201}
+\newcommand{\lossNow}{1.799}
+\newcommand{\ceilMid}{99.340}
+\newcommand{\lossMid}{0.660}
+\newcommand{\ceilHigh}{99.784}
+\newcommand{\lossHigh}{0.216}
+\newcommand{\ceilSmall}{93.201}
+\newcommand{\ceilMedium}{97.663}
+\newcommand{\ceilLarge}{99.004}
+\newcommand{\nRows}{1\,066}
+\newcommand{\nFrames}{22\,220}
+
+%% §7 1단계 음성 결과 -----------------------------------------------------------
+\newcommand{\nQualPairs}{19}
+\newcommand{\nQualPinhole}{16}
+\newcommand{\gateDet}{9}
+\newcommand{\gateCorr}{5}
+\newcommand{\gateGeoA}{4}
+\newcommand{\gateGeoB}{1}
+\newcommand{\gateGeoC}{0}
+\newcommand{\nGeoPairs}{16}
+\newcommand{\unionOracle}{11}
+\newcommand{\unionHalluc}{132/132}
+\newcommand{\voteOracle}{+2.967}
+\newcommand{\voteRule}{\ensuremath{-0.061}}
+\newcommand{\nFzero}{41}
+\newcommand{\nNzero}{623}
+\newcommand{\asymmetry}{1{:}15}
+
+%% §8 방법론 ------------------------------------------------------------------
+\newcommand{\nPrereg}{22}
+\newcommand{\nTests}{506}
+
+%% 파생 표현 ------------------------------------------------------------------
+\newcommand{\lossNowPctText}{20.0\% of the residual error}

@@ -1,0 +1,13 @@
+# LaTeX 빌드 산출물
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+main.pdf
+final.tex
+final.pdf

@@ -1,0 +1,477 @@
+%% ===========================================================================
+%%  IEEE Transactions on Circuits and Systems for Video Technology (TCSVT)
+%%  Target: Special Issue "Spatial Intelligence", deadline 2026-10-31
+%%
+%%  Class:  IEEEtran.cls V1.8b (2015/08/26), vendored in vendor/IEEEtran/.
+%%  Build:  make        (docker + TeX Live, see README.md)
+%%
+%%  RULE: every number in this file comes from a macro defined in numbers.tex,
+%%        which is kept in step with docs/paper-numbers.md. Do not type a
+%%        numeric result directly into the prose.
+%% ===========================================================================
+\documentclass[journal]{IEEEtran}
+
+% --- IEEE-recommended packages ---------------------------------------------
+\usepackage{cite}                 % IEEE reference style: [1], [2]-[5]
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[caption=false,font=footnotesize]{subfig}   % IEEEtran-recommended
+\usepackage{xcolor}
+\usepackage{balance}              % even out the two columns on the last page
+% hyperref must be configured before orcidlink, which loads it itself
+\PassOptionsToPackage{hidelinks}{hyperref}
+\usepackage{orcidlink}
+\usepackage{hyperref}             % must stay last
+\urlstyle{same}
+
+% IEEEtran wants \bstctlcite for the control entry (see refs.bib)
+\newcommand{\Jscore}{\ensuremath{\mathcal{J}}}
+\newcommand{\Fscore}{\ensuremath{\mathcal{F}}}
+\newcommand{\JF}{\ensuremath{\mathcal{J}\&\mathcal{F}^{3}}}
+\newcommand{\cini}{\ensuremath{c_{\mathrm{ini}}}}
+
+% --- drafting aids: set \draftfalse before submitting ----------------------
+\newif\ifdraft\drafttrue
+\ifdraft
+  \newcommand{\todo}[1]{\textcolor{red}{\small$\blacktriangleright$\,\textsf{TODO: #1}}}
+  \newcommand{\note}[1]{\textcolor{blue!70!black}{\small$\dagger$\,\textsf{#1}}}
+\else
+  \newcommand{\todo}[1]{}
+  \newcommand{\note}[1]{}
+\fi
+
+\input{numbers}
+
+\begin{document}
+
+\title{Propagating a Single-View Mask Across a Static Camera Rig:\\
+A Two-Stage Foundation-Model Pipeline and an Error Budget\\ for Multi-View Video Object Segmentation}
+%% NOTE: working title --- decide once Sec. I is written.
+%% \note/\todo must never appear between \title and \maketitle: IEEEtran's
+%% \maketitle issues \twocolumn[...] and any typeset material before it
+%% pushes the whole title block onto the next page.
+
+\author{Seongjin~Park\,\orcidlink{0000-0000-0000-0000}%
+\thanks{Manuscript received XXX; revised XXX.}%
+\thanks{S.~Park is with the Electronics and Telecommunications Research Institute
+(ETRI), Daejeon, Republic of Korea (e-mail: seongjin.park@etri.re.kr).}%
+\thanks{\todo{funding / project acknowledgement}}}
+
+\markboth{IEEE Transactions on Circuits and Systems for Video Technology,~Vol.~XX, No.~X, XXX~2027}%
+{Park: Propagating a Single-View Mask Across a Static Camera Rig}
+
+\maketitle
+
+% ===========================================================================
+\begin{abstract}
+\todo{rewrite once Sec.~I--VI are drafted; this is a scaffold that already
+carries the final numbers}
+Given one object mask in one camera at one instant, a static multi-camera rig
+must produce the mask of that object in every other camera and every subsequent
+frame, without camera calibration, category labels, or per-scene optimisation.
+We study this task on MUVOD, the only public rig benchmark, and report two
+results. First, a two-stage pipeline built on a promptable segmentation
+foundation model reaches \OursBasic\ \JF\ (basic) and \OursComplete\ (complete),
+against \XMemBasic/\XMemComplete\ for the published baseline --- a paired
+improvement of \DeltaBasic\ points ($t=\tBasic$, 95\% CI $\ciBasic$,
+winning in \winLoss\ scenes). Second, and more informative for the field, we
+decompose that margin: \gainFoundation\ of it is attributable to the foundation
+model inside an unchanged two-stage structure, and only \gainOurs\ to our own
+design --- cross-view memory during tracking, raw frame-0 seeding, and
+zoom-gated crop re-tracking. We then account for the \totalGap\ points that
+remain. An oracle decomposition attributes \oracleSeed\ to seeding failures,
+\oracleRef\ to reference-camera re-prediction, and \oracleOrdinary\ to ordinary
+mask quality on pairs that never fail; a ground-truth-through-the-grid
+measurement shows the tracker's \gridNow-cell mask grid costs only \lossNow\ of
+those points. We further report five pre-registered attempts to repair
+degenerate seeds --- example detection, dense correspondence, and three
+geometry-lifting families --- all of which fail, and we identify the reason: on
+this benchmark there are \nFzero\ pairs to fix against \nNzero\ to protect, an
+\asymmetry\ asymmetry that any imperfect selector turns into a net loss.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Multi-view video object segmentation, camera rig, mask propagation, foundation
+models, promptable segmentation, benchmark analysis, error budget,
+pre-registration.
+\end{IEEEkeywords}
+
+% ===========================================================================
+\section{Introduction}
+\IEEEPARstart{A}{static} multi-camera rig observes one scene from many
+viewpoints at once.
+\todo{Paragraph 1 --- the task. One mask, one camera, one instant $\rightarrow$
+every camera, every frame. Say why it is not video object segmentation (the
+views are not a temporal sequence; baselines are wide and unordered) and not
+3D segmentation (no calibration, no per-scene reconstruction).}
+
+\todo{Paragraph 2 --- why it is hard now. Per the survey: 3D-representation
+methods are saturated on NVOS but all assume COLMAP poses and a pre-trained
+3DGS/NeRF; view-as-video propagation collapses at wide baselines (SAM2 segment
+AUPRC 61.9 at 0--45$^\circ$ vs 17.0 at 135--180$^\circ$); the 2026 uncalibrated
+promptable family exists but is trained on indoor/object-centric data and does
+not evaluate environment objects (walls, floor fragments) or fisheye rigs.}
+
+\todo{Paragraph 3 --- what is actually measurable. MUVOD is the only public rig
+benchmark and has no follow-up citations; therefore the honest contribution of
+this paper is as much \emph{measurement} as method.}
+
+\todo{Paragraph 4 --- the decomposition claim. This is the paper's spine: we
+refuse to report a single margin. State \gainFoundation\ vs \gainOurs\ up
+front.}
+
+\todo{Paragraph 5 --- the error budget and the negative results.}
+
+\noindent\textbf{Contributions.}
+\begin{itemize}
+  \item \todo{C1: a two-stage rig pipeline that sets the first
+        foundation-model result on MUVOD (\OursBasic/\OursComplete), and a
+        \emph{decomposition} of its margin that separates the foundation model
+        (\gainFoundation) from our design (\gainOurs).}
+  \item \todo{C2: an error budget for the remaining \totalGap\ points,
+        including a model-free measurement of the mask-grid ceiling
+        (\lossNow\ points, i.e.\ \lossNowPctText).}
+  \item \todo{C3: five pre-registered negative results on seed repair and the
+        structural reason they fail (the \asymmetry\ asymmetry).}
+  \item \todo{C4: a reconstruction of the MUVOD reference-camera protocol,
+        which the benchmark does not publish, verified on \nScenes/\nScenes\
+        scenes.}
+\end{itemize}
+
+% ===========================================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Segmentation on a reconstructed 3D representation}
+\todo{SPIn-NeRF, SA3D $\rightarrow$ 3DGS feature fields (SAGA, Gaussian
+Grouping) $\rightarrow$ training-free lifting (FlashSplat, GaussianCut, LUDVIG,
+SAGOnline, VCAR, ArtisanGS). Saturated at NVOS mIoU $\approx$ 94. Common
+assumption: COLMAP poses plus a pre-trained 3DGS. Our Sec.~\ref{sec:negative}
+tests exactly this bridge and it fails on rigs.}
+
+\subsection{Views as a video}
+\todo{OSTRA, WildSeg3D, and the render-trajectory variants. Quantified failure
+at wide baselines. This is the family our two-stage baseline belongs to, and we
+say so plainly.}
+
+\subsection{Uncalibrated promptable and learned-correspondence methods}
+\todo{MV-SAM, 3AM, G$^2$TAM, SegMASt3R, MuViSeg, PanSt3R. None reports MUVOD;
+none evaluates environment objects or hemispherical fisheye rigs. This is why
+we cannot add them as columns --- state it here, not only in the limitations.}
+
+\subsection{Rig benchmarks}
+\todo{MUVOD: \nScenes\ scenes, 9--46 cameras, 459 instances / 73 categories;
+its 3D benchmark excludes the four fisheye scenes and uses camera pose. Zero
+citations at survey time.}
+
+% ===========================================================================
+\section{Problem Setting and Protocol}
+\label{sec:protocol}
+
+\subsection{Task}
+\todo{Formalise: cameras $\{c_1,\dots,c_N\}$ synchronised, mask $M$ of object
+$o$ given in $\cini$ at $t=0$; output $\hat{M}_{c,t}$ for all $c$, $t\in[0,T]$.
+No intrinsics, no extrinsics, no per-scene training.}
+
+\subsection{The MUVOD metric}
+\todo{Define \JF: per-camera mean over objects, then mean over the three
+annotated cameras, then mean over \nScenes\ scenes. Define \emph{basic}
+(objects visible in the reference frame) and \emph{complete} (all labelled
+objects). Note that the two coincide when the reference frame already contains
+every labelled object.}
+
+\subsection{Recovering the reference camera}
+\label{sec:cini}
+\todo{MUVOD does not publish the per-scene $\cini$. We recover it from three
+independent pieces of evidence --- rig geometry, source-dataset coordinates,
+and the basic$=$complete constraint visible in the published tables --- and the
+three agree on \nScenes/\nScenes\ scenes. This matters because the whole
+comparison is invalid if the reference camera is wrong.}
+
+% ===========================================================================
+\section{Method}
+\label{sec:method}
+
+\subsection{A two-stage baseline}
+\todo{Stage 1: propagate the reference mask across cameras at $t=0$ to obtain
+one seed per (camera, object). Stage 2: track each camera independently
+forward in time. This is structurally the same as the published MUVOD baseline
+--- which the benchmark authors describe as applying a video tracker along both
+the spatial and the temporal axis --- with the tracker replaced.}
+
+\subsection{Cross-view memory during tracking}
+\todo{At frame $t$, camera $c$'s tracker additionally attends to the stored
+state of its neighbouring camera at $t-s$. Report the window $W=1$, mode~C, the
+gate, the pointer, and the temporal-position shift $s=4$. Be explicit that
+$s=4$ was selected by ablation and that $W$ saturates at 1.}
+\note{Honesty item: this component did not pass its \emph{first} registered
+test ($+0.0057$, CI $[-0.0002,+0.0140]$); it passed on re-registration under
+the MUVOD protocol. Disclose in Sec.~\ref{sec:limits}, not here.}
+
+\subsection{Raw frame-0 seeding}
+\todo{Write the seed produced by stage 1 directly to frame 0 rather than
+re-predicting it. Worth \gainFsSeed\ --- report it because it is part of the
+ladder, not because it matters.}
+
+\subsection{Zoom-gated crop re-tracking}
+\label{sec:crop}
+\todo{Objects whose seed is below \(10^4\) px are re-tracked inside a crop
+window $s=\mathrm{clamp}(\lceil \alpha \max(w,h)\rceil, s_{\min}, \min(H,W))$
+resized to the model resolution, giving zoom $=1008/s$. A gate reverts a pair
+when the first tracked frame does not overlap its seed, when the zoom gain is
+below threshold, or when the object rides the window edge.}
+\note{The gate thresholds were chosen on the same \nScenes\ scenes that are
+scored. Sec.~\ref{sec:loso} bounds the resulting optimism instead of hiding
+it.}
+
+% ===========================================================================
+\section{Experiments}
+\label{sec:exp}
+
+\subsection{Setup}
+\todo{One RTX 6000 Ada, Docker, deterministic. \nScenes\ scenes, 21 frames per
+camera. Scoring code is the benchmark's own \Jscore/\Fscore\ implementation,
+unmodified.}
+
+\begin{table}[!t]
+\caption{Comparison with the published MUVOD baseline. \JF\ (\%) over
+\nScenes\ scenes. Paired statistics use a scene-cluster bootstrap
+(\nBoot\ resamples, seed 0).}
+\label{tab:headline}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+ & Ours & XMem~\cite{muvod} & $\Delta$ & 95\% CI \\
+\midrule
+basic    & \textbf{\OursBasic}    & \XMemBasic    & \textbf{\DeltaBasic}  & $\ciBasic$ \\
+complete & \textbf{\OursComplete} & \XMemComplete & \textbf{\DeltaComplete} & $\ciComplete$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Comparison with the published baseline}
+\todo{Table~\ref{tab:headline}. Paired $t=\tBasic$; wins in \winLoss\ scenes;
+median \medianBasic; best \bestScene\ \bestDelta, worst \worstScene\
+\worstDelta. State immediately that the baseline is transcribed from the MUVOD
+paper and was not re-run by us (Sec.~\ref{sec:limits}).}
+
+\begin{table}[!t]
+\caption{Where the margin comes from. \JF\ (\%), basic.}
+\label{tab:ladder}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Step & \JF & Gain \\
+\midrule
+XMem baseline~\cite{muvod}          & \ladderXMem    & --- \\
+$\rightarrow$ two-stage, foundation tracker & \ladderTwoStage & \textbf{\gainFoundation} \\
+$+$ cross-view memory               & \ladderXview   & \gainXview \\
+$+$ raw frame-0 seed                & \ladderFsSeed  & \gainFsSeed \\
+$+$ zoom-gated crop tracking        & \ladderCrop    & \textbf{\gainCrop} \\
+\midrule
+\multicolumn{2}{l}{Total}           & \textbf{\gainTotal} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Decomposition}
+\label{sec:ladder}
+\todo{Table~\ref{tab:ladder}. \pctFoundation\% of the margin is the foundation
+model inside an unchanged structure; our design accounts for \gainOurs.
+\textbf{Critical honesty paragraph}: the \gainFoundation\ step cannot be split
+further into ``foundation model'' and ``two-stage structure'' because we never
+ran XMem inside our pipeline. By the same token, the claim that ``any modern
+tracker would do this'' is also unmeasured --- no foundation-model method has
+been evaluated on MUVOD.}
+
+\begin{table}[!t]
+\caption{Leave-one-scene-out estimate of selection optimism for the crop gate.
+\JF\ (\%) gain over the configuration on which the choice was actually made.}
+\label{tab:loso}
+\centering
+\begin{tabular}{lc}
+\toprule
+ & Gain \\
+\midrule
+Chosen on all \nScenes\ scenes (fitted) & \losoFitted \\
+Leave-one-scene-out (held out)          & \losoHeldOut \\
+\midrule
+Selection optimism $\Omega$             & \textbf{\losoOmega} (\losoOmegaPct\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{How much of the gain is selection optimism?}
+\label{sec:loso}
+\todo{Table~\ref{tab:loso}. The crop threshold and gate were chosen by looking
+at all \nScenes\ scenes. Refitting the same selection rule on 16 scenes and
+reading the held-out scene gives \losoHeldOut\ against \losoFitted\ fitted:
+$\Omega=\losoOmega$ points, \losoOmegaPct\% of the effect. \losoAgree\ of
+\nScenes\ folds select the same arm. This converts ``tuned on the test set''
+from a fatal objection into a bounded one.}
+
+\begin{table}[!t]
+\caption{Cost. One RTX 6000 Ada (\gpuTotal~GiB), Docker, \nScenes\ scenes,
+one configuration.}
+\label{tab:runtime}
+\centering
+\begin{tabular}{lc}
+\toprule
+ & Value \\
+\midrule
+Total, \nScenes\ scenes    & \runtimeTotal~min \\
+Per scene (median)         & \runtimeMedian~s \\
+Per scene (min--max)       & \runtimeMin--\runtimeMax~s \\
+Peak GPU memory (median)   & \gpuMedian~GiB \\
+Peak GPU memory (max)      & \gpuMax~GiB \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Runtime and memory}
+\todo{Table~\ref{tab:runtime}. No per-scene optimisation, no reconstruction ---
+contrast with the 3DGS families, which need a per-scene reconstruction before
+segmentation can start.}
+
+% ===========================================================================
+\section{What Limits the Remaining Error}
+\label{sec:budget}
+
+\begin{table}[!t]
+\caption{Oracle decomposition of the \totalGap-point gap to a perfect score.}
+\label{tab:budget}
+\centering
+\begin{tabular}{lc}
+\toprule
+Component & \JF\ points \\
+\midrule
+Total gap ($100-\OursBasic$)                       & \totalGap \\
+\midrule
+Repairing every frame-0 seeding failure            & \oracleSeed \\
+Reference-camera re-prediction ceiling             & \oracleRef \\
+Ordinary mask quality on \nOrdinaryPairs\ sound pairs & \textbf{\oracleOrdinary} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Oracle decomposition}
+\todo{Table~\ref{tab:budget}. Region \Jscore~\regionJ, boundary \Fscore~\boundaryF.
+The key qualitative fact: the non-reference cameras' deficit is
+\emph{constant from $t=0$}, not accumulated drift (0.894/0.890/0.890 vs
+0.981/0.953/0.950). This kills the ``it drifts'' story and points at the
+cross-view seeding step instead.}
+
+\begin{table}[!t]
+\caption{Model-free ceiling of the tracker's mask grid, measured by passing
+ground truth through the same grid (\nRows\ rows, \nFrames\ frames).}
+\label{tab:grid}
+\centering
+\begin{tabular}{lccc}
+\toprule
+Grid & Ceiling \JF & Unreachable & of \totalGap \\
+\midrule
+\gridNow\ (ours) & \ceilNow  & \textbf{\lossNow} & 20.0\% \\
+576              & \ceilMid  & \lossMid          & 7.4\% \\
+1008             & \ceilHigh & \lossHigh         & 2.4\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The mask grid is not the bottleneck}
+\label{sec:grid}
+\todo{Table~\ref{tab:grid}. Passing ground truth through the tracker's own
+\gridNow-cell low-resolution mask grid costs \lossNow\ of the \totalGap\ points,
+and the loss is a function of object size alone (\ceilSmall\ below $2\times10^3$
+px, \ceilMedium\ between $2\times10^3$ and $10^4$, \ceilLarge\ above). Crop
+tracking (Sec.~\ref{sec:crop}) already recovers \gainCrop\ of that \lossNow.
+\textbf{Therefore the \oracleOrdinary-point bucket is genuine model error, not
+a resolution artefact} --- this is the sentence that justifies the whole
+subsection.}
+
+% ===========================================================================
+\section{Five Ways to Repair a Degenerate Seed, and Why None Works}
+\label{sec:negative}
+
+\begin{table}[!t]
+\caption{Pre-registered seed-repair generators. Each was registered with its
+acceptance gate before being run; none passed.}
+\label{tab:negative}
+\centering
+\begin{tabular}{llc}
+\toprule
+Generator & Gate & Result \\
+\midrule
+Example detection            & $\geq 11$ of \nQualPairs  & \gateDet/\nQualPairs \\
+Dense correspondence         & $\geq 11$ of \nQualPairs  & \gateCorr/\nQualPairs \\
+SfM $+$ dense MVS            & $\geq 8$ of \nGeoPairs    & \gateGeoA/\nGeoPairs \\
+Feed-forward point maps      & $\geq 8$ of \nGeoPairs    & \gateGeoB/\nGeoPairs \\
+3DGS lifting                 & $\geq 8$ of \nGeoPairs    & \gateGeoC/\nGeoPairs \\
+\midrule
+Voting over all five         & CI${}>0$ and ${\geq}+0.3$ & \voteRule \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The generators}
+\todo{Table~\ref{tab:negative}. Describe each in two sentences. Note that the
+3DGS family closed at \gateGeoC/\nGeoPairs\ and that train-view PSNR
+\emph{anti-correlates} with depth accuracy across the rig --- a result worth
+reporting on its own.}
+
+\subsection{Candidates exist; the selection signal does not}
+\todo{The union of the five generators is correct on \unionOracle\ of
+\nQualPairs\ qualifying pairs --- so the information is present. But the same
+union hallucinates on \unionHalluc\ of the ground-truth-empty pairs. With an
+oracle selector, voting is worth \voteOracle\ points; with the registered
+ground-truth-free rule it is \voteRule.}
+
+\subsection{The structural reason}
+\label{sec:asymmetry}
+\todo{\textbf{This is the most transferable result in the paper.} There are
+\nFzero\ pairs that need repair and \nNzero\ that must not be touched, an
+\asymmetry\ asymmetry. A selector with anything short of near-perfect precision
+on the majority class destroys more than it repairs: in our run, 10 of 12
+repairs on the failing set succeeded and 0 broke, while 11 of 16 substitutions
+on the sound set broke a working pair. Any future work on seed repair for rigs
+must report precision on the \emph{sound} population, not recall on the failing
+one.}
+
+% ===========================================================================
+\section{Limitations}
+\label{sec:limits}
+\todo{Write these as declarative sentences, not hedges. Source:
+docs/paper-numbers.md \S9.}
+\begin{enumerate}
+  \item \todo{We did not re-run the XMem baseline; its numbers are transcribed
+        from the MUVOD paper, and the structural equivalence of the two
+        pipelines is argued, not measured.}
+  \item \todo{One baseline, one dataset. There is no SAM~2, Cutie, DEVA, or
+        2026 uncalibrated-promptable column, because none of those methods has
+        been evaluated on MUVOD and running them is a contribution in itself.}
+  \item \todo{Cross-view memory (\gainXview) failed its first registered test
+        and passed a second, re-registered one. Disclose the sequence.}
+  \item \todo{The crop gate was selected on the scored scenes; Sec.~\ref{sec:loso}
+        bounds the optimism at \losoOmega\ points.}
+  \item \todo{MUVOD scores three annotated cameras per scene, so the
+        \nFzero/\nNzero\ populations live on two non-reference cameras.}
+  \item \todo{Fisheye hemispherical scenes are included in our evaluation but
+        excluded from MUVOD's own 3D benchmark, so the geometry baselines in
+        Sec.~\ref{sec:negative} are not directly comparable there.}
+\end{enumerate}
+
+% ===========================================================================
+\section{Conclusion}
+\todo{Three sentences: what we measured, what we could not attribute, and the
+\asymmetry\ asymmetry as the thing the next paper should attack.}
+
+% ===========================================================================
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
