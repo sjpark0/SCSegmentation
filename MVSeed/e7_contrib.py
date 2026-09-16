@@ -45,7 +45,11 @@ def main():
             g = next((name for name, pop in groups.items() if k in pop), "other_nonref")
             contrib[g] = contrib.get(g, 0.0) + pm[k][1] * (pm[k][0] - pb[k][0]); counts[g] = counts.get(g, 0) + 1
         total = sum(contrib.values())
-        res = dict(method=m, base=base, total=total, weight_mismatch=wdiff,
+        # the nonreference pairs outside F0 ∪ N0: GT empty at the seed frame, present in later frames
+        other = sorted(k for k in pm if k not in ref and k not in F0 and k not in N0)
+        gt = {pair_key(r): r["gt"] for r in Rm}
+        other_pairs = [dict(scene=k[0], cam=k[1], obj=k[2], gt_px_frame0=gt[k][0], frames_with_gt=sum(1 for a in gt[k] if a), dS=round(pm[k][0] - pb[k][0], 4)) for k in other]
+        res = dict(method=m, base=base, total=total, weight_mismatch=wdiff, other_pairs=other_pairs,
                    contrib={g: round(v, 4) for g, v in contrib.items()}, n={g: counts[g] for g in counts},
                    share_of_total={g: round(v / total, 4) for g, v in contrib.items()} if abs(total) > 1e-9 else None)
         out["runs"][rid] = res

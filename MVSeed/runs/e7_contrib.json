@@ -6,6 +6,40 @@
    "base": "SegMaskSam3XW0MFs",
    "total": 4.3832366314757705,
    "weight_mismatch": 0.0,
+   "other_pairs": [
+    {
+     "scene": "Blocks",
+     "cam": "cam9",
+     "obj": 4,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": -0.0632
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 6,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": -0.0084
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 7,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": 0.0
+    },
+    {
+     "scene": "PoznanStreet",
+     "cam": "v8",
+     "obj": 2,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": 0.0012
+    }
+   ],
    "contrib": {
     "ref": 0.0853,
     "N0": 2.6604,
@@ -30,6 +64,40 @@
    "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
    "total": 4.258248143619934,
    "weight_mismatch": 0.0,
+   "other_pairs": [
+    {
+     "scene": "Blocks",
+     "cam": "cam9",
+     "obj": 4,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": -0.2252
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 6,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": -0.0072
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 7,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": -0.0037
+    },
+    {
+     "scene": "PoznanStreet",
+     "cam": "v8",
+     "obj": 2,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": -0.0007
+    }
+   ],
    "contrib": {
     "ref": 0.0571,
     "N0": 2.7802,
@@ -54,6 +122,40 @@
    "base": "SegMaskSam3XW0MFs",
    "total": -0.04976088810843299,
    "weight_mismatch": 0.0,
+   "other_pairs": [
+    {
+     "scene": "Blocks",
+     "cam": "cam9",
+     "obj": 4,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": 0.0
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 6,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": 0.0
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 7,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": 0.0
+    },
+    {
+     "scene": "PoznanStreet",
+     "cam": "v8",
+     "obj": 2,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": 0.0
+    }
+   ],
    "contrib": {
     "ref": 0.0,
     "N0": -0.2272,
@@ -78,6 +180,40 @@
    "base": "SegMaskSam3XW0MFs",
    "total": 1.0928711792015857,
    "weight_mismatch": 0.0,
+   "other_pairs": [
+    {
+     "scene": "Blocks",
+     "cam": "cam9",
+     "obj": 4,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": -0.0174
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 6,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": -0.0
+    },
+    {
+     "scene": "MATF",
+     "cam": "S1_CAM_1",
+     "obj": 7,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 18,
+     "dS": 0.0
+    },
+    {
+     "scene": "PoznanStreet",
+     "cam": "v8",
+     "obj": 2,
+     "gt_px_frame0": 0,
+     "frames_with_gt": 19,
+     "dS": -0.0001
+    }
+   ],
    "contrib": {
     "ref": 0.0,
     "N0": 0.3285,

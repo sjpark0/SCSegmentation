@@ -219,3 +219,15 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 
 문구 정정(수치 없음): "초기화·추적 절반씩" → "개입이 격차의 47.4 %(대조군 41.9 %)를 회복"; 한계 8의 "하한" 삭제; 식 (1)에 동일 가중·두 집단·시드 프레임 가정 명시와 정확한 ΔB = Σ wᵢ ΔSᵢ 병기; 투표 −0.050의 CI가 0을 포함함을 명시; 오라클 +1.093은 "프레임-0 최선"이지 후보 집합의 상한이 아님; +10.119를 "foundation model의 기여"로 단정하지 않고 "공개 기저 대비, 구현·평가 조건 차이 포함"으로.
 
+### 14a. 리뷰 3차(2026-09-16) — 기여량 표(Table VII `tab:contrib`) 완결
+
+| 매크로 | 값 | 출처 |
+|---|---|---|
+| `\gtSeedRefContribCtrl` / `\gtSeedOtherContribCtrl` | +0.085 / −0.009 | R1 기준 카메라 / 기타 4쌍 (`e7_contrib.json`) |
+| `\gtSeedOtherContrib` | −0.030 | R2 기타 4쌍 (기준 카메라는 기존 `\gtSeedRefContrib` +0.057) |
+| `\oracleRefContrib` / `\oracleOtherContrib` | 0 / −0.002 | R4 |
+| `\voteRefContrib` / `\voteOtherContrib` | 0 / 0 | R3 (+0.0000) |
+| `\nOtherNonref` | 4 | 668 − 664: 시드 프레임 GT 없음·뒤 프레임 GT 있음 (stage1-E7.md §7) |
+
+표의 행 합은 반올림 전 짝지은 Δ와 일치(R1 4.3832, R2 4.2582, R3 −0.0498, R4 1.0929); 3자리 표기에서는 ±0.001 차이가 날 수 있어 캡션에 "반올림 전 합"이라고 적음. 문구: 초록 "cannot pick it" → "repairs some seeds but shows no net gain"; §VII 첫 문단 "room is small"을 시험한 후보 집합·실패 집합으로 한정; 결론에서 투표(비대칭)와 프레임-0 오라클(프레임 0/전파 불일치)의 원인 분리; 소제목 §VI-B "A Deficit From the First Frame; Mean Drift Is Small", §VII "Five Seed-Repair Attempts and Where Each Fails Its Gate".
+

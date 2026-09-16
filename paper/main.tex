@@ -87,18 +87,19 @@ promptable foundation model reaches \OursBasic\ J\&F (basic) and
 \OursComplete\ (complete) against the published \XMemBasic/\XMemComplete, a
 paired gain of \DeltaBasic\ points. We decompose the margin: \gainFoundation\
 points separate the published baseline from the same two-stage structure with
-the foundation model as tracker, a term that also carries any implementation
-and evaluation difference; \gainOurs\ come from our design: cross-view memory,
+the foundation model as tracker, which also carries implementation and
+evaluation differences; \gainOurs\ come from our design: cross-view memory,
 raw frame-0 seeding, and zoom-gated crop retracking. Rerunning the tracker
 from ground-truth seeds on the scored cameras recovers \gtSeedHeadlineDelta\
 of the remaining \totalGap\ points; a model-free round trip of ground truth
 through the mask grid bounds the grid's own cost at \lossNow. Five
-preregistered seed-repair attempts all fail their gates: no generator yields
-enough correct candidates, and where the candidate union holds one a
-ground-truth-free vote cannot pick it, because \nFzero\ nonreference seeds need
-repair against \nNzero\ sound ones---a \asymmetry\ ratio under which, at the
-vote's own gains and losses, a selector wins only by damaging sound seeds
-about \breakEvenTimes\ times less often than it repairs failing ones.
+preregistered seed-repair attempts fail their gates: no generator yields
+enough correct candidates, and where the candidate union holds one, a
+ground-truth-free vote repairs some seeds but shows no net gain, because
+\nFzero\ nonreference seeds need repair against \nNzero\ sound ones---a
+\asymmetry\ ratio under which, at the vote's gains and losses, a selector wins
+only by damaging sound seeds about \breakEvenTimes\ times less often than it
+repairs failing ones.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -201,8 +202,9 @@ detection, dense correspondence, and three geometry-lifting routes
 (Table~\ref{tab:negative}). All five fail their registered gates; propagated
 through Stage~2, a ground-truth-free vote over their candidates changes the
 benchmark by \voteReal\ points (an interval that spans zero) and even the best
-frame-0 choice among them gains only \oracleReal. The generators fail for want
-of correct candidates; the vote fails for a structural reason: there are
+frame-0 choice among them gains only \oracleReal, a seed that is best at frame 0
+not being best after tracking. The generators fail for want of correct
+candidates; the vote fails for a structural reason: there are
 \nFzero\ nonreference seeds to repair and \nNzero\ to protect.
 
 \noindent\textbf{Contributions.}
@@ -798,6 +800,31 @@ Total gap of the full pipeline ($100-\OursBasic$) & \totalGap \\
 \end{tabular}
 \end{table}
 
+\begin{table}[!t]
+\caption{Where the seed-replacement gains of Table~\ref{tab:budget} land:
+each paired $\Delta$ split over the scored pairs with the benchmark's own
+weights (Section~\ref{sec:asymmetry}) into the reference camera (398 pairs),
+the failing (F0, \nFzero) and sound (N0, \nNzero) nonreference pairs, and the
+\nOtherNonref\ nonreference pairs with empty ground truth at frame 0. Rows sum
+to the total before rounding. The reference camera moves under ground-truth
+seeds because its frame-0 output becomes the raw ground truth rather than its
+round trip (Section~\ref{sec:fs}).}
+\label{tab:contrib}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Seeds (configuration) & Ref. & F0 & N0 & Other & Total \\
+\midrule
+GT (control)       & \gtSeedRefContribCtrl & \gtSeedFzeroContribCtrl & \gtSeedNzeroContribCtrl & \gtSeedOtherContribCtrl & \gtSeedControlDelta \\
+GT (full pipeline) & \gtSeedRefContrib & \gtSeedFzeroContrib & \gtSeedNzeroContrib & \gtSeedOtherContrib & \gtSeedHeadlineDelta \\
+Best frame-0 (control) & \oracleRefContrib & \oracleFzeroContrib & \oracleNzeroContrib & \oracleOtherContrib & \oracleReal \\
+SeedVote (control) & \voteRefContrib & \voteFzeroContrib & \voteNzeroContrib & \voteOtherContrib & \voteReal \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Oracle Decomposition}
 Table~\ref{tab:budget} collects every oracle we ran. The most informative rows
 are the first two: replacing the frame-0 seed of the three scored cameras by
@@ -819,12 +846,10 @@ configuration the \nFzero\ failing nonreference pairs gain \gtSeedFzeroGain\ eac
 on average over frames 1--20 (\gtSeedFzeroRec\ recovered), but the \nNzero\ sound
 pairs also gain \gtSeedNzeroGain\ each, \gtSeedNzeroUp\ of them by more than 0.05,
 so the small imperfections of seeds that do not fail cost more in total than
-the failures do. Weighted as the benchmark weights them, the sound pairs
-contribute \gtSeedNzeroContribCtrl\ of the \gtSeedControlDelta\ control points and
-the failing pairs \gtSeedFzeroContribCtrl\ (\gtSeedNzeroContrib\ and
-\gtSeedFzeroContrib\ of the \gtSeedHeadlineDelta\ in the full pipeline); the
-reference camera, whose frame-0 output becomes the raw ground truth instead of
-its round trip, adds \gtSeedRefContrib. Two objects of 2 and 6 px vanish in
+the failures do. Table~\ref{tab:contrib} splits each gain over the scored pairs with the
+benchmark's own weights: in both configurations the sound pairs contribute
+more than the failing ones (\gtSeedNzeroContribCtrl\ against
+\gtSeedFzeroContribCtrl\ of the \gtSeedControlDelta\ control points). Two objects of 2 and 6 px vanish in
 the tracker's mask encoding and are the only pairs whose ground-truth seed is
 not written back at frame 0. The output-replacement rows, which do not rerun
 the tracker and overlap with one another, give the older and narrower reading:
@@ -846,7 +871,7 @@ thereafter; the nonreference deficit is present at $t=0$ and does not grow.}
 \label{fig:perframe}
 \end{figure}
 
-\subsection{A Constant Deficit, Not Drift}
+\subsection{A Deficit From the First Frame; Mean Drift Is Small}
 The reference camera is prompted with ground truth, yet its per-frame \Jscore\
 is \refJfZero\ at $t=0$ (the frame-0 output is the prompt after the tracker's
 mask round trip, Section~\ref{sec:fs}), \refJfOne\ at $t=1$, and then flat
@@ -913,13 +938,15 @@ model, it is a property of the benchmark and applies to any tracker with the
 same output grid.
 
 % ===========================================================================
-\section{Five Ways to Repair a Failing Seed, and Why None Works}
+\section{Five Seed-Repair Attempts and Where Each Fails Its Gate}
 \label{sec:negative}
 
 Replacing the outputs of the 15 pairs whose final frame-0 mask fails is worth
 \oracleSeed\ points (Table~\ref{tab:budget}), and rerunning Stage~2 from the
-best frame-0 candidate \oracleReal; neither is a ceiling on seed repair in
-general, but both say the room is small. The failing seeds are nevertheless the
+best frame-0 candidate of the generators below \oracleReal. Neither is a
+ceiling on seed repair in general---ground-truth seeds on the scored cameras
+recover \gtSeedHeadlineDelta---but both say that the room in the outright
+failures, and in the candidate set we tested, is small. The failing seeds are nevertheless the
 most visible errors---an object placed on the wrong thing, or missing
 altogether---and the literature of
 Section~\ref{sec:related} offers several training-free ways to produce a better
@@ -1035,6 +1062,7 @@ of the median difference. The finding says nothing about 3DGS segmentation
 methods that never read a depth.
 
 \subsection{Candidates Exist; the Selection Signal Does Not}
+\label{sec:cands}
 The union of all generators contains a correct candidate for \unionOracle\ of
 the \nQualPairs\ qualifying failing pairs, so the information is present in
 the candidate set. The same union produces a nonempty candidate on
@@ -1098,10 +1126,13 @@ times less often than it repairs failing ones. SeedVote repaired
 \voteRepairRate\ of the failing pairs and damaged \voteDamageRate\ of the sound
 ones, a ratio of \voteBR, and did not pass; the two earlier attempts in this
 project---a post hoc seed repair and exemplar detection---failed the same
-inequality. Propagated and weighted as the benchmark weights them, the vote's \voteReal\
-points are \voteFzeroContrib\ from the failing pairs and \voteNzeroContrib\ from
-the sound ones, and the best frame-0 choice's \oracleReal\ are
-\oracleFzeroContrib\ and \oracleNzeroContrib. The factor of \breakEvenTimes\ is the condition at
+inequality. Propagated and weighted as the benchmark weights them
+(Table~\ref{tab:contrib}), the vote's \voteReal\ points are \voteFzeroContrib\
+from the failing pairs and \voteNzeroContrib\ from the sound ones: the damage
+on the majority cancels the repair on the minority. The frame-0 oracle, by
+contrast, gains on both populations (\oracleFzeroContrib\ and
+\oracleNzeroContrib), so its shortfall against the seed-level prediction is not
+the asymmetry but the frame-0/propagated mismatch of Section~\ref{sec:cands}. The factor of \breakEvenTimes\ is the condition at
 SeedVote's own $g$ and $\ell$, not a constant of the benchmark; what the
 inequality makes explicit is that on a rig benchmark the damage rate on the
 majority population, not recall on the failing minority, decides the sign, and
@@ -1158,11 +1189,13 @@ remains. The visible failures---seeds placed on the wrong object---are where
 repair was attempted: the five preregistered candidate generators fail their
 gates for want of correct candidates, and where candidates exist the one
 preregistered ground-truth-free rule over their union does not help (\voteReal,
-an interval spanning zero) while even the best frame-0 choice among the same
-candidates gains only \oracleReal\ once propagated, because \nFzero\ pairs to
-fix stand against \nNzero\ to protect. The \asymmetry\ ratio, and the
-break-even condition it implies at a selector's own gains and losses, are what
-the next method for this task should be designed against. For video-driven spatial intelligence the message is
+an interval spanning zero), because what it breaks among the \nNzero\ sound
+pairs cancels what it repairs among the \nFzero\ failing ones; even the best
+frame-0 choice among the same candidates gains only \oracleReal\ once
+propagated, because a seed that is best at frame 0 is not always best after
+tracking. The \asymmetry\ ratio, and the break-even condition it implies at a
+selector's own gains and losses, are what the next selector for this task
+should be designed against. For video-driven spatial intelligence the message is
 twofold: a 2D segmentation foundation model already carries most of the
 cross-view consistency a real-world rig demands, and on rigs of
 \gsViewsMin--\gsViewsMax\ wide-baseline cameras the explicit 3D routes we
