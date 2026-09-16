@@ -24,9 +24,20 @@ N_BOOT, SEED = 10000, 0
 
 
 def load(names):
-    d = []
-    for n in names:
-        d += json.load(open(os.path.join(DATA, n)))
+    """Entries of the named files first, then every other Data/MVSeg/jf_*.json, deduplicated on
+    (method, dataset, camera) -- the base folders were scored in earlier files (jf_r1, jf_r4...)."""
+    import glob
+    files = [os.path.join(DATA, n) for n in names] + sorted(f for f in glob.glob(os.path.join(DATA, "jf_*.json")) if os.path.basename(f) not in names)
+    d, seen = [], set()
+    for f in files:
+        if not os.path.exists(f) or "smoke" in os.path.basename(f): continue
+        data = json.load(open(f))
+        if not isinstance(data, list): continue          # older summary files are dicts
+        for e in data:
+            if not isinstance(e, dict): continue
+            k = (e.get("method"), e.get("dataset"), e.get("camera"))
+            if k in seen or not e.get("result"): continue
+            seen.add(k); d.append(e)
     return d
 
 
@@ -56,6 +67,8 @@ def paired(a, b):
     """scene-cluster bootstrap of mean(b - a), Random(SEED), N_BOOT resamples."""
     scenes = sorted(set(a) & set(b)); d = [b[s] - a[s] for s in scenes]
     rng = random.Random(SEED); n = len(d); boots = []
+    if n == 0:
+        return dict(n=0, mean=None, ci=[None, None], wins=0, losses=0, worst=(None, None), best=(None, None), per_scene={})
     for _ in range(N_BOOT):
         boots.append(statistics.mean(d[rng.randrange(n)] for _ in range(n)))
     boots.sort()
