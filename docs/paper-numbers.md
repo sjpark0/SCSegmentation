@@ -261,3 +261,14 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 
 초록의 격자 왕복 문장(1.799)은 이 시연 문장을 넣으며 뺐음(기여·§VI-C·결론에는 남음). 초록 247단어.
 
+## 16. E3 교차시점 회복 사건을 §IV-B에 (2026-09-16) — Fig. 9 교체
+
+| 매크로 | 값 | 출처 |
+|---|---|---|
+| `\xrEvents` / 회복 / 반대 | three / 3 / 0 | [xview-recovery.md](xview-recovery.md) §1 (규칙: 대조군 J<0.1 ≥3프레임, 처치 J>0.5 ≥2프레임; 발견 GPS4M−XW0M, 검증 GPS4−XW0, 겹침 3/3) |
+| `\xrGainPerInterval` | +0.58 | 구간당 J 이득 평균 (+0.90, +0.62, +0.22) |
+| `\xrPvalue` | 0.25 | 양측, n=3 |
+| `\xrFencingLost` / `\xrFencingBack` / `\xrPoznanEnter` | 6 / 7 / 2 | 사건 프레임 |
+
+그림 `fig_recovery.pdf`는 **현재** 헤드라인(`XW1CGPS4MFsCs10kG2`) 대 대조군(`XW0MFs`) 출력으로 그렸고, 프레임별 J 궤적이 E3 문서와 같은 사건을 보임(Fencing v9 obj 3: 대조군 t=6부터 0.00, 헤드라인 t=7부터 0.55~0.70; PoznanStreet v8 obj 2: 대조군 t=2~16 0.00, 헤드라인 t=2부터 0.68~0.96). 플레놉틱 사건 그림(Fig. 9)은 보이는 조각이 너무 작아 뺐고(사용자 결정) 본문 서술만 남김.
+

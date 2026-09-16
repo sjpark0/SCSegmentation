@@ -241,6 +241,51 @@ def fig_perframe():
     fig.savefig(os.path.join(OUT, "fig_perframe.pdf")); plt.close(fig); print("fig_perframe.pdf")
     return cr, cn
 
+
+def fig_recovery():
+    """Two of the three E3 divergence events (docs/xview-recovery.md) drawn from the current headline and control
+    outputs: Fencing v9 obj 3 (the foil, occluded at t=6) and PoznanStreet v8 obj 2 (a pedestrian entering at t=2).
+    Rows: control XW0MFs / headline; columns: three frames per event, cropped around the object."""
+    CTRL = "SegMaskSam3XW0MFs"
+    events = [("Fencing", "v9", 3, (5, 8, 16), "foil, occluded at $t=6$"), ("PoznanStreet", "v8", 2, (2, 4, 12), "pedestrian, enters at $t=2$")]
+    col = np.array([230, 25, 75], dtype=float)
+    def load(scene, cam, t):
+        f = CFG[scene]["start_frame"] + t
+        img = cv2.imread(os.path.join(DATA, scene, "Video", cam, f"{f:06d}.jpg"))[:, :, ::-1]
+        gt = cv2.imread(os.path.join(DATA, scene, "Mask", cam, f"{f:06d}.png"), cv2.IMREAD_GRAYSCALE)
+        return img, gt, f
+    def pred(scene, method, cam, f, obj):
+        q = os.path.join(DATA, scene, method, cam, str(f), f"{obj}.png")
+        return (cv2.imread(q, cv2.IMREAD_GRAYSCALE) > 0) if os.path.exists(q) else None
+    fig, axs = plt.subplots(2, 6, figsize=(7.16, 2.55))
+    for e, (scene, cam, obj, ts, lab) in enumerate(events):
+        # crop box: union of the ground truth over the shown frames, 35% margin
+        ys, xs = [], []
+        for t in ts:
+            _, gt, _ = load(scene, cam, t); yy, xx = np.nonzero(gt == obj)
+            if len(yy): ys += [yy.min(), yy.max()]; xs += [xx.min(), xx.max()]
+        Hh, Ww = gt.shape; y0, y1, x0, x1 = min(ys), max(ys), min(xs), max(xs); h, w = y1 - y0, x1 - x0
+        side = max(h, w) * 1.35; cy, cx = (y0 + y1) / 2, (x0 + x1) / 2
+        by0, by1 = int(max(cy - side / 2, 0)), int(min(cy + side / 2, Hh)); bx0, bx1 = int(max(cx - side / 2, 0)), int(min(cx + side / 2, Ww))
+        for r, method in enumerate((CTRL, H)):
+            for c, t in enumerate(ts):
+                img, gt, f = load(scene, cam, t); out = img.astype(float); m = pred(scene, method, cam, f, obj)
+                if m is not None and m.any(): out[m] = 0.35 * out[m] + 0.65 * col
+                out = out.astype(np.uint8)
+                cs, _ = cv2.findContours((gt == obj).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cv2.drawContours(out, cs, -1, (255, 255, 255), 2)
+                ax = axs[r, e * 3 + c]; ax.imshow(out[by0:by1, bx0:bx1]); ax.axis("off")
+                inter = float(np.logical_and(m, gt == obj).sum()) if m is not None else 0.0
+                union = float(np.logical_or(m, gt == obj).sum()) if m is not None else float((gt == obj).sum())
+                ax.set_title(f"$t={t}$, $\\mathcal{{J}}={inter / union:.2f}$" if union else f"$t={t}$", fontsize=6.5, pad=2)
+        axs[0, e * 3 + 1].text(0.5, 1.28, f"({'ab'[e]}) {scene} {cam}, {lab}", transform=axs[0, e * 3 + 1].transAxes, ha="center", fontsize=7)
+    axs[0, 0].text(-0.06, 0.5, "single-view\ntracker", transform=axs[0, 0].transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
+    axs[1, 0].text(-0.06, 0.5, "with cross-view\nmemory", transform=axs[1, 0].transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
+    plt.subplots_adjust(left=0.035, right=0.995, top=0.83, bottom=0.01, wspace=0.04, hspace=0.22)
+    fig.savefig(os.path.join(OUT, "fig_recovery.pdf")); fig.savefig("/tmp/fig_recovery.png", dpi=110); plt.close(fig); print("fig_recovery.pdf")
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
-    fig_propagation(); fig_seed_failures(); fig_crop(); fig_scenes(); fig_perframe()
+    import sys
+    if len(sys.argv) > 1: [globals()[f]() for f in sys.argv[1:]]
+    else: fig_propagation(); fig_seed_failures(); fig_crop(); fig_scenes(); fig_perframe(); fig_recovery()

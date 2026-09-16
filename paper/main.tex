@@ -484,6 +484,37 @@ reach and the direction it was read from, not the memory mechanism; the full
 component's \gainXview\ over no cross-view memory has not itself passed a
 preregistered test.
 
+What the memory does when it acts is visible at the event level. Under a
+registered rule---an object that the single-view tracker loses
+($\Jscore<0.1$) for at least three consecutive frames while the
+neighbor-reading configuration holds it ($\Jscore>0.5$) on at least two of
+them---the \nScenes\ scenes contain \xrEvents\ such intervals: one late entry
+(PoznanStreet, a pedestrian who walks into view at $t=\xrPoznanEnter$) and two
+occlusions (Fencing, a foil lost when the blades cross at $t=\xrFencingLost$;
+Breakfast). All three are recovered by the neighbor-reading configuration,
+with a mean gain of \xrGainPerInterval\ in \Jscore\ over the interval, none
+goes the other way, and the same three recur when the reference camera is
+changed. Fig.~\ref{fig:recovery} shows two of them. Three events are too few
+for a statistical claim ($p=\xrPvalue$, two-sided), and that is the finding
+itself: the 21-frame clips rarely exercise the mechanism, so its mean effect
+stays small while its effect where it acts is large.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_recovery.pdf}
+\caption{Two of the three intervals in which the single-view tracker loses an
+object for three or more frames while the neighbor-reading tracker holds it
+(Section~\ref{sec:xview}), drawn from the control and headline
+configurations. (a) Fencing, camera v9: the foil (object 3) is lost when the
+blades cross at $t=\xrFencingLost$ and never recovered by the single-view
+tracker; the cross-view memory re-acquires it at $t=\xrFencingBack$.
+(b) PoznanStreet, camera v8: a pedestrian (object 2) enters the view at
+$t=\xrPoznanEnter$; the single-view tracker, seeded at $t=0$, never acquires
+him, the cross-view memory holds him from the frame he enters. Filled:
+prediction; white outline: ground truth; \Jscore\ per frame above each crop.}
+\label{fig:recovery}
+\end{figure*}
+
 \subsection{Raw Frame-0 Seeding}
 \label{sec:fs}
 Stage~2 repredicts frame~0 from the seed it is prompted with, and the
@@ -1213,16 +1244,6 @@ Table~\ref{tab:plen}.}
 \label{fig:plencurve}
 \end{figure}
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_plenoptic_event_cam_26_1_zoom.pdf}
-\caption{The one divergence event: camera 26, person 1 passes behind another
-dancer for frames \plenEventFrames. Top: the single-view tracker loses him for
-all \plenEventN\ frames. Bottom: with cross-view memory a mask stays on the
-visible part for \plenEventHeld\ of them. Crops around the person.}
-\label{fig:plenevent}
-\end{figure}
-
 \textit{Seeding without a mask.} SAM~3 accepts concept prompts, which the XMem
 baseline (a mask) and SAM~2 (points and boxes) do not. We seeded the reference
 camera three ways and ran the unchanged Stage~1: the ground-truth masks, as on
@@ -1253,13 +1274,12 @@ its seed area while the other keeps at least 50\% on at least two of those
 frames. One interval qualifies, in the direction of the full pipeline: on
 camera 26, person 1 passes behind another dancer for frames \plenEventFrames;
 the single-view tracker loses him for all \plenEventN\ frames and the
-cross-view configuration keeps a mask on the visible sliver for
-\plenEventHeld\ of them (Fig.~\ref{fig:plenevent}). No interval goes the other
-way. Both configurations lose the same \plenVanished\ of the \plenPairsSeeded\
+cross-view configuration keeps a mask on the sliver of him visible beside
+the occluder for \plenEventHeld\ of them. No interval goes the other way. Both configurations lose the same \plenVanished\ of the \plenPairsSeeded\
 seeded pairs by the last frame, all of them dancers that have moved fully or
 almost fully behind another person in that camera in the closing frames; the
-clip ends before they reappear. As on MUVOD (Section~\ref{sec:xview}), the
-cross-view memory acts on the rare frames where a neighbor still sees what the
+clip ends before they reappear. As on MUVOD (Section~\ref{sec:xview},
+Fig.~\ref{fig:recovery}), the cross-view memory acts on the rare frames where a neighbor still sees what the
 camera has lost, and does no harm; one event is an illustration, not a
 measurement.
 
