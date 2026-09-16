@@ -16,7 +16,7 @@ import numpy as np, cv2
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", "T06_flag_ganggang")
+SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_SCENE", "T06_flag_ganggang"))   # PLEN_SCENE=T06_flag_ganggang_L for P3
 OUT = os.path.join(REPO, "paper", "figures"); PREV = os.path.join(REPO, "plenoptic")
 CTRL, HEAD, TXT = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFsCs10kG2", "SegMaskSam3XW0MFs_txt"
 REF, NCAM = 6, 32
@@ -71,7 +71,7 @@ def fig_ring(method, t):
 def bbox_union(cam, obj, a, b, margin=0.4):
     """crop box (x0, y0, x1, y1) at figure scale around every mask of `obj` in either configuration over frames a-1..b+1."""
     ys, xs = [], []
-    for t in range(max(a - 1, 0), min(b + 1, 100) + 1):
+    for t in range(max(a - 1, 0), min(b + 1, int(os.environ.get("PLEN_LAST", 100))) + 1):
         for method in (CTRL, HEAD):
             m = pred(method, cam, t, obj)
             if m is not None and m.any(): yy, xx = np.nonzero(m); ys += [yy.min(), yy.max()]; xs += [xx.min(), xx.max()]
@@ -82,7 +82,8 @@ def bbox_union(cam, obj, a, b, margin=0.4):
 
 
 def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
-    ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, 100)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, 100)]))
+    last = int(os.environ.get("PLEN_LAST", 100))
+    ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, last)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, last)]))
     rows = [(CTRL, "single-view tracker (XW0)"), (HEAD, "with cross-view memory (ours)")]
     if neighbor: rows.append((None, f"neighbour {neighbor}"))
     box = bbox_union(cam, obj, a, b) if zoom else None

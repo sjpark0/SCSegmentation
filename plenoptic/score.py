@@ -17,10 +17,13 @@ import numpy as np
 from PIL import Image
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SHARE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", "T06_flag_ganggang")
-JF = os.path.join(REPO, "plenoptic", "jf_plenoptic.json")
+import argparse
+_ap = argparse.ArgumentParser(); _ap.add_argument("--scene", default="T06_flag_ganggang"); _ap.add_argument("--nframes", type=int, default=101); _ap.add_argument("--tag", default="")
+_a = _ap.parse_args()
+SHARE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", _a.scene)
+JF = os.path.join(REPO, "plenoptic", f"jf_plenoptic{_a.tag}.json")
 CTRL, HEAD, TXT, PT = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFsCs10kG2", "SegMaskSam3XW0MFs_txt", "SegMaskSam3XW0MFs_pt"
-REF, NCAM, NOBJ, NFRAME = 6, 32, 6, 101
+REF, NCAM, NOBJ, NFRAME = 6, 32, 6, _a.nframes
 VANISH, HOLD, MIN_RUN, MIN_HOLD = 0.1, 0.5, 3, 2          # Q6 rule, registered
 
 
@@ -112,14 +115,31 @@ def main():
         # descriptive: how many pairs end (t=100) below 10% of their seed area in each configuration
         out["Q6_end_vanished"] = {"control": sum(1 for ko in Ac if Ac[ko][0] and Ac[ko][-1] < VANISH * Ac[ko][0]),
                                   "headline": sum(1 for ko in Ah if Ah[ko][0] and Ah[ko][-1] < VANISH * Ah[ko][0])}
-    json.dump(out, open(os.path.join(REPO, "plenoptic", "score.json"), "w"), indent=1, default=float)
+        # Q7 (prereg section 7): pairs both configurations lose from the same frame -- who re-acquires (>= HOLD*A0) first
+        q7 = []
+        for ko in Ac:
+            a0 = Ac[ko][0]
+            if a0 == 0 or Ah[ko][0] != a0: continue
+            lc = np.nonzero(Ac[ko][1:] < VANISH * a0)[0]; lh = np.nonzero(Ah[ko][1:] < VANISH * a0)[0]
+            if len(lc) == 0 or len(lh) == 0 or lc[0] != lh[0]: continue
+            s0 = int(lc[0]) + 1
+            if s0 + MIN_RUN > NFRAME or not (Ac[ko][s0:s0 + MIN_RUN] < VANISH * a0).all() or not (Ah[ko][s0:s0 + MIN_RUN] < VANISH * a0).all(): continue
+            def back(A):
+                r = np.nonzero(A[s0:] >= HOLD * a0)[0]; return int(s0 + r[0]) if len(r) else None
+            bc, bh = back(Ac[ko]), back(Ah[ko])
+            q7.append(dict(cam=f"cam_{ko[0]:02d}", obj=ko[1], lost_from=s0, control_back=bc, headline_back=bh,
+                           first="headline" if (bh is not None and (bc is None or bh < bc)) else "control" if (bc is not None and (bh is None or bc < bh)) else "tie" if bc is not None else "neither"))
+        out["Q7_both_lost"] = q7
+        out["Q7_counts"] = {k: sum(e["first"] == k for e in q7) for k in ("headline", "control", "tie", "neither")}
+    json.dump(out, open(os.path.join(REPO, "plenoptic", f"score{_a.tag}.json"), "w"), indent=1, default=float)
     for m in (CTRL, HEAD, TXT, PT):
         if m in out:
             s = out[m]; print(f"{m}: Q1 {s['Q1_mean_J']:.3f} (median {s['Q1_median_J']:.3f}, n={s['n_present']})  Q3 fail {s['Q3_fail_lt05']} ({100*s['Q3_fail_rate']:.1f}%)  Q5 {s['Q5_scene_JF_t0']:.2f}")
             print("   Q2 by d:", " ".join(f"{d}:{v['mean_J']:.2f}" for d, v in s["Q2_by_distance"].items()))
-    for k in ("Q4_text_minus_gt", "Q4_point_minus_gt", "Z1_t0_score_mismatch", "Q6_counts", "Q6_end_vanished"):
+    for k in ("Q4_text_minus_gt", "Q4_point_minus_gt", "Z1_t0_score_mismatch", "Q6_counts", "Q6_end_vanished", "Q7_counts"):
         if k in out: print(k, out[k])
     for e in out.get("Q6_events", []): print("  event", e)
+    for e in out.get("Q7_both_lost", []): print("  both-lost", e)
 
 
 if __name__ == "__main__":
