@@ -26,5 +26,7 @@ case "${1:-}" in
   P1-H) run P1-H T06_flag_ganggang $ROOT/plenoptic/Plenoptic.json $SHARE $HEAD ;;
   P2-T) run P2-T T06_flag_ganggang_txt $ROOT/plenoptic/Plenoptic_variants.json $ROOT/Data/Plenoptic $CTRL ;;
   P2-P) run P2-P T06_flag_ganggang_pt $ROOT/plenoptic/Plenoptic_variants.json $ROOT/Data/Plenoptic $CTRL ;;
-  *) echo "usage: $0 P1-C|P1-H|P2-T|P2-P"; exit 2 ;;
+  P3-C) run P3-C T06_flag_ganggang_L $ROOT/plenoptic/Plenoptic_long.json $SHARE $CTRL ;;
+  P3-H) run P3-H T06_flag_ganggang_L $ROOT/plenoptic/Plenoptic_long.json $SHARE $HEAD ;;
+  *) echo "usage: $0 P1-C|P1-H|P2-T|P2-P|P3-C|P3-H"; exit 2 ;;
 esac
