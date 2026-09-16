@@ -41,12 +41,12 @@ def load(names):
     return d
 
 
-def rows(d, method):
+def rows(d, method, objects="basic"):
     for r in d:
         if r["method"] != method or not r.get("result"): continue
         sc = r["dataset"]; basic = set(CEN[sc]["seed_ids_c_ini"]); ref = CEN[sc]["c_ini"]; pf = r["result"]["per_frame"]
         for i, o in enumerate(r["objects"]):
-            if o not in basic: continue
+            if objects == "basic" and o not in basic: continue
             yield dict(scene=sc, cam=r["camera"], obj=o, ref=r["camera"] == ref, J=pf["J"][i], F=pf["F"][i], gt=pf["gt_area"][i])
 
 
@@ -91,7 +91,10 @@ def main():
         if not Rm: print(f"{rid}: no rows for {m} (not scored yet?)"); continue
         sm, sb = scene_scores(Rm), scene_scores(Rb)
         st = paired(sb, sm)
-        res = dict(method=m, base=base, seeds=seeds, n_scenes=len(sm), basic=statistics.mean(sm.values()), base_basic=statistics.mean(sb.values()), paired=st)
+        cm, cb = scene_scores(list(rows(d, m, "complete"))), scene_scores(list(rows(d, base, "complete")))
+        stc = paired(cb, cm)
+        res = dict(method=m, base=base, seeds=seeds, n_scenes=len(sm), basic=statistics.mean(sm.values()), base_basic=statistics.mean(sb.values()), paired=st,
+                   complete=statistics.mean(cm.values()), base_complete=statistics.mean(cb.values()), paired_complete=stc)
         # per-pair mean J&F over frames 1..20, F0 / N0 split (non-reference rows only)
         pm = {pair_key(r): statistics.mean(v) for r in Rm if (v := [x for x in (jf(r, t) for t in range(1, len(r["J"]))) if x is not None])}
         pb = {pair_key(r): statistics.mean(v) for r in Rb if (v := [x for x in (jf(r, t) for t in range(1, len(r["J"]))) if x is not None])}
@@ -128,6 +131,7 @@ def main():
         res["Z2_provenance"] = z2
         out["runs"][rid] = res
         print(f"{rid} {m}\n   basic {res['basic']:.3f} vs base {res['base_basic']:.3f}  Δ {st['mean']:+.3f}  CI [{st['ci'][0]:+.3f}, {st['ci'][1]:+.3f}]  {st['wins']}↑/{st['losses']}↓  worst {st['worst'][1]} {st['worst'][0]:+.2f}  best {st['best'][1]} {st['best'][0]:+.2f}")
+        print(f"   complete {res['complete']:.3f} vs base {res['base_complete']:.3f}  Δ {stc['mean']:+.3f}  CI [{stc['ci'][0]:+.3f}, {stc['ci'][1]:+.3f}]")
         for k, v in split.items(): print(f"   {k}: n={v['n']} ΔJ&F(1-20) {v['mean_dJF']:+.4f}  recovered {v['recovered']} broken {v['broken']}  up {v['up']} down {v['down']}")
         if "P3_frame0_J_is_1" in res: print(f"   P3 frame-0 J==1: {res['P3_frame0_J_is_1']}")
         print(f"   Z1 {res['Z1_frame0_bytes']}   Z2 {z2}")
