@@ -105,7 +105,10 @@ def copy_frames(scene_dir):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--masks", action="store_true"); ap.add_argument("--frames", action="store_true")
     ap.add_argument("--nframes", type=int, default=NFRAMES); ap.add_argument("--suffix", default="")   # P3: 201 frames -> T06_flag_ganggang_L
-    a = ap.parse_args(); globals()["NFRAMES"] = a.nframes; scene_dir = os.path.join(ROOT, SCENE + a.suffix); os.makedirs(scene_dir, exist_ok=True)
+    ap.add_argument("--scale", type=float, default=SCALE)                                               # P4: 0.25 -> 960x540
+    a = ap.parse_args(); globals()["NFRAMES"] = a.nframes; globals()["SCALE"] = a.scale
+    globals()["W"], globals()["H"] = int(SRC_W * a.scale), int(SRC_H * a.scale)
+    scene_dir = os.path.join(ROOT, SCENE + a.suffix); os.makedirs(scene_dir, exist_ok=True)
     if a.frames: copy_frames(scene_dir)
     if a.masks:
         stats, digests = build_masks(scene_dir); qa_figure(scene_dir)
