@@ -122,7 +122,7 @@ RTX 6000 Ada 1대, 도커, 17장면 한 구성.
    c_ini에서 재등록한 **세 번째** 시도(모드 C 대 모드 A, 즉 방향)가 통과했습니다 — 이웃 읽기 전체(켬 대 끔)가 등록 검정을 통과한 적은 없습니다([phase3-neighbourhood.md](phase3-neighbourhood.md) §4.5에 자진 기록).
 4. **크롭 게이트는 시험집합을 보고 골랐습니다** — 다만 §3이 낙관을 **+0.045점**으로 묶었습니다.
 5. **1단계 분석의 범위**: MUVOD는 장면당 주석 카메라 3대만 채점하므로 F0=41·N0=623은 **비기준 카메라 2대** 위의 값입니다.
-6. **조사 문서의 수치는 원문을 읽지 않고 검색 결과에서 전사**한 것이 있습니다([mvimage-seg-survey.md](mvimage-seg-survey.md) 머리말) — 관련연구에 쓰기 전 확인 필요.
+6. ~~조사 문서의 수치는 원문을 읽지 않고 검색 결과에서 전사한 것이 있습니다~~ → **2026-09-16 원문 대조 완료** (§11). 관련연구에 쓴 수치는 전부 arXiv PDF에서 확인했고, 원문에 없던 두 문장(SAGOnline "2D 상한 수렴", LUDVIG "재구성이 상한")은 원고에서 뺐습니다.
 
 ## 10. 2026-09-16 집필 검증에서 정정·보강된 것
 
@@ -144,3 +144,33 @@ RTX 6000 Ada 1대, 도커, 17장면 한 구성.
 | E6 환산값 | 실측처럼 적음 | **등록 환산(낙관 상한)**, 투표 시드는 2단계 미전파 | `stage1-E6-prereg.md` §2 |
 
 원고 반영 커밋은 `paper/` 이력을 보십시오.
+
+## 11. 관련연구 문헌 수치 원문 대조 (2026-09-16)
+
+arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
+
+| 원고의 주장 | 원문 | 판정 |
+|---|---|---|
+| MUVOD 17장면·9~46뷰·459 인스턴스·73 카테고리·30프레임 촬영·주석 3대·21프레임 | 2507.07519 초록·§III | ✔ |
+| c_ini "near the center of the rig" | §III 주석 절차 | ✔ (원문 표현 그대로) |
+| basic = 참조 프레임에 보이는 객체, complete = 라벨 전부 | §IV-B | ✔ |
+| 기준선 = "straightforward two-stage baseline by applying XMem both spatially and temporally" | §IV-C | ✔ — 원고를 원문 표현("both spatially and temporally")으로 고침 |
+| "natively mask-propagation-based … lacks the capability to fully understand a 4D scene by leveraging the multi-view information" | §IV-C | ✔ |
+| Table III basic 17장면값·Global 79.4 | Table III | ✔ 원고 Table II와 17/17 일치 |
+| Table IV complete 17장면값·Global 75.6 | Table IV | ✔ 원고 Table II와 17/17 일치 |
+| 3D 벤치마크 12장면, 반구 4장면은 어안 보정 열화로 제외, MATF는 재구성 불량으로 제외, 50 인스턴스, GG 78.8 / SA3D 65.8 / SAGA 47.2 / ISRF 28.0 | §V-B, Table VIII | ✔ |
+| "3D 벤치마크가 카메라 자세를 쓴다" | 원문에 명시 없음 | △ → "네 방법 모두 자세가 필요하다"로 고침 |
+| SegMASt3R 표: SAM2 AUPRC 61.9 / 46.6 / 27.9 / 17.0 (0–45 … 135–180°) | 2510.05051 Table (p.6) | ✔ |
+| SAGOnline NVOS 92.7 | 2508.08219 초록·Table I | ✔ |
+| SAGOnline "방법 간 격차가 2D 기초 모델 상한에 수렴" | **원문에 없음** (있는 것: SAGA 대비 +0.1) | ✘ → 삭제, "+0.1 over SAGA"로 교체 |
+| FlashSplat NVOS 91.8 | 2409.08270 Table 1 | ✔ |
+| LUDVIG NVOS 92.4 (DINOv2) / 91.3 (SAM·SAM2) | 2410.14462 Table 1·D | ✔ |
+| LUDVIG·SANeRF-HQ "재구성이 분할의 상한이라 명시" | LUDVIG **없음**; SANeRF-HQ는 한계 절에 "NeRF quality"가 성능에 영향 | ✘ → SANeRF-HQ 한계 문장만 인용 |
+| NVOS "94 근처 포화" → "92 초과" → | 인용한 세 편은 91.8~92.7 | "about 92"로 고침 |
+| MV-SAM: SA-1B 단일 뷰로만 학습, 4.1M 파라미터 | 2601.17866 §3.4·Table 8 | ✔ |
+| 3AM: 실내 스캔 학습 | ASE(합성)+ScanNet++(실내)+MOSE(비디오) 혼합 | △ → "합성·실내 스캔 + 비디오"로 고침 |
+| G²TAM: ScanNet++ 기반 InsTrack으로 학습, 무순서 입력, ICML 2026 | 2607.03789 §4·부록 A; arXiv comments "Accepted by ICML 2026" | ✔ |
+| WildSeg3D: MASt3R 포인트맵 전역 정렬(DGA) + SAM2 마스크 캐시; ICCV 2025 | 2503.08407 Fig.1·§3; DOI 10.1109/ICCV51701.2025.00491 | ✔ |
+| SA3D NeurIPS 2023 저자 9인 | arXiv v4 (comments "NeurIPS 2023") | ✔ bib 갱신 (v1은 7인) |
+
+참고문헌 30건 → 31건(SANeRF-HQ 추가), `VERIFY` 0건.

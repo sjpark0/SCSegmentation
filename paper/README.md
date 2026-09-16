@@ -157,8 +157,8 @@ Fig. 4의 장면별 값만 스크립트에 옮겨 적은 것(`docs/muvod-compari
 
 **아직 없는 것**
 - ORCID·사사(acknowledgement)·저자 약력.
-- 참고문헌: 2026-09-16 검증 워크플로가 arXiv 원문과 대조해 저자·제목을 채움. 남은 `VERIFY` **2건** — WildSeg3D 게재처(ICCV 2025 여부), SA3D 저자 순서(NeurIPS 판). davis2016·colmap은 arXiv에 없어 미대조.
-- 문헌 인용 수치(NVOS 92+, SegMASt3R 표의 SAM 2 AUPRC 61.9→17.0, MUVOD 459/73)는 조사 문서에서 옮긴 것 — 투고 전 원문 대조 필요(`docs/paper-numbers.md` §9-6).
+- 참고문헌 31건 전부 arXiv 원문과 대조 완료, `VERIFY` 0건 (WildSeg3D ICCV 2025 DOI 확인, SA3D는 NeurIPS 판 저자 9인).
+- 관련연구 문헌 수치는 arXiv PDF 원문과 대조 완료 — 결과표 `docs/paper-numbers.md` §11. 원문에 없던 두 문장은 뺐음.
 
 **집필 규약 보충**: 장면별 표(Table II)만은 매크로가 아니라 `docs/muvod-comparison.md`의 표를 옮긴 것입니다.
 그 표가 바뀌면 Table II를 다시 옮겨야 합니다.

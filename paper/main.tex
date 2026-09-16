@@ -126,7 +126,7 @@ baselines are wide, and their index order carries no guarantee of visual
 adjacency. It is not 3D segmentation in the sense of the neural radiance field
 (NeRF) and 3D Gaussian Splatting (3DGS) literature: those methods assume
 calibrated poses and a pre-trained scene representation, and the best of them
-now exceed 92 mean intersection over union (mIoU) on the NVOS benchmark
+now report about 92 mean intersection over union (mIoU) on the NVOS benchmark
 \cite{sagonline,flashsplat,ludvig}. Treating the views as a video and
 propagating with a memory-based tracker is the obvious alternative, and its
 failure has been quantified: the segment-correspondence area under the
@@ -135,8 +135,8 @@ propagation \cite{sam2} on ScanNet++ falls from 61.9 at
 $0^{\circ}$--$45^{\circ}$ view difference to 17.0 at
 $135^{\circ}$--$180^{\circ}$ \cite{segmast3r}. The 2026 generation of
 uncalibrated promptable methods \cite{mvsam,am3,g2tam} learns its multi-view
-head on indoor scans (3AM, G$^{2}$TAM) or on single-view SA-1B masks alone
-(MV-SAM); none has been evaluated on rigs, on environment objects such as wall
+head on indoor scans (G$^{2}$TAM), on synthetic and indoor scans plus video
+(3AM), or on single-view SA-1B masks alone (MV-SAM); none has been evaluated on rigs, on environment objects such as wall
 and floor fragments, or on fisheye cameras.
 
 Only one public benchmark poses the rig problem directly. MUVOD \cite{muvod}
@@ -230,12 +230,12 @@ $\rightarrow$ all-view masks'' on top of a per-scene radiance field, and the
 representation moved to 3DGS with Gaussian Grouping \cite{gaussiangrouping} and
 its successors. The current generation lifts masks onto a \emph{pre-trained}
 3DGS without further optimisation---FlashSplat \cite{flashsplat}, LUDVIG
-\cite{ludvig}, SAGOnline \cite{sagonline}---and has pushed NVOS mIoU to the
-point where its own authors describe the remaining differences between methods
-as converging on the 2D foundation model's ceiling \cite{sagonline}. Every
-member of this family assumes COLMAP poses \cite{colmap} and a reconstruction
-of sufficient quality; LUDVIG and SANeRF-HQ state explicitly that the
-reconstruction bounds the segmentation. Section~\ref{sec:negative} tests exactly this bridge on the benchmark's pinhole
+\cite{ludvig}, SAGOnline \cite{sagonline}---and has pushed NVOS mIoU to
+about 92, where the latest entries are separated by tenths of a point
+(SAGOnline reports $+0.1$ over SAGA \cite{sagonline}). Every member of this
+family assumes COLMAP poses \cite{colmap} and a reconstruction of sufficient
+quality; SANeRF-HQ lists the quality of the radiance field among its
+limitations \cite{sanerfhq}. Section~\ref{sec:negative} tests exactly this bridge on the benchmark's pinhole
 rigs of \gsViewsMin--\gsViewsMax\ cameras and finds that on every one of the
 \gsCams\ cameras with a reference depth the rendered depth is biased towards
 the camera, with the bias \emph{anti}-correlated with training-view peak
@@ -279,7 +279,8 @@ MUVOD \cite{muvod} is, to our knowledge, the only public benchmark with
 synchronised multi-camera rigs, per-instance masks, and a fixed protocol. Its
 3D benchmark, on which four posed NeRF and 3DGS methods are reported, excludes
 the \nFisheye\ fisheye scenes and one further scene whose reconstruction was
-judged too poor, and it uses camera poses; its video object segmentation
+judged too poor, and its four methods all require camera poses; its video
+object segmentation
 benchmark, which we use, includes all \nScenes\ scenes, provides no
 calibration, and carries a single published result. Its reference camera per scene is not published,
 which we address in Section~\ref{sec:cini}.
@@ -405,9 +406,9 @@ low-resolution grid before upsampling, a fact that matters in
 Section~\ref{sec:grid}.
 
 This is structurally the MUVOD baseline. The benchmark authors describe theirs
-as a straightforward two-stage baseline that applies XMem first across the
-cameras and then along time, and note that, being based on mask propagation,
-it cannot fully exploit the multi-view information. Ours is that structure
+as a straightforward two-stage baseline that applies XMem both spatially and
+temporally, and note that, being natively mask-propagation-based, it cannot
+fully exploit the multi-view information. Ours is that structure
 with the tracker exchanged. We verified that the control code path contains
 nothing else by byte comparison: with cross-view memory disabled, Stage~2
 writes \nBytePNG\ PNG masks on the 15 development scenes identical to those of
