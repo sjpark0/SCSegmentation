@@ -87,7 +87,11 @@ def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
     rows = [(CTRL, "single-view tracker (XW0)"), (HEAD, "with cross-view memory (ours)")]
     if neighbor: rows.append((None, f"neighbour {neighbor}"))
     box = bbox_union(cam, obj, a, b) if zoom else None
-    fig, axs = plt.subplots(len(rows), len(ts), figsize=(3.5 if cols == 3 else 7.16, (1.75 if cols == 3 else 1.45) * len(rows)))
+    fw = 3.5 if cols == 3 else 7.16
+    if box: asp = (box[3] - box[1]) / max(box[2] - box[0], 1)
+    else: asp = 9 / 16
+    ph = (fw / len(ts)) * asp                                    # panel height from the crop's aspect ratio
+    fig, axs = plt.subplots(len(rows), len(ts), figsize=(fw, ph * len(rows) * 1.12 + 0.25))
     for r, (method, lab) in enumerate(rows):
         for c, t in enumerate(ts):
             ax = axs[r, c]
@@ -101,7 +105,7 @@ def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
             ax.axis("off")
             if r == 0: ax.set_title(f"t = {t}", fontsize=7, pad=2)
             if c == 0: ax.text(-0.02, 0.5, lab, transform=ax.transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
-    plt.subplots_adjust(left=0.035, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.05)
+    plt.subplots_adjust(left=0.06 if cols == 3 else 0.035, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.06)
     name = f"fig_plenoptic_event_{cam}_{obj}" + ("_zoom" if zoom else "")
     fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 

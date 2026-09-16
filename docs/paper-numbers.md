@@ -272,3 +272,14 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 
 그림 `fig_recovery.pdf`는 **현재** 헤드라인(`XW1CGPS4MFsCs10kG2`) 대 대조군(`XW0MFs`) 출력으로 그렸고, 프레임별 J 궤적이 E3 문서와 같은 사건을 보임(Fencing v9 obj 3: 대조군 t=6부터 0.00, 헤드라인 t=7부터 0.55~0.70; PoznanStreet v8 obj 2: 대조군 t=2~16 0.00, 헤드라인 t=2부터 0.68~0.96). 플레놉틱 사건 그림(Fig. 9)은 보이는 조각이 너무 작아 뺐고(사용자 결정) 본문 서술만 남김.
 
+### 15a. P4 긴 클립 (2026-09-17) — Fig. 10, §VIII 가림 문단
+
+| 매크로 | 값 | 출처 |
+|---|---|---|
+| `\plenLFrames` / `\plenLSeconds` / `\plenLRes` | 201 / 10 / 960×540 | plenoptic-P.md §7 |
+| `\plenLJgt` | 0.932 | 540p t=0 Q1 (Z5) |
+| `\plenLEventsFor` | three | Q6 사건(전부 cam_16 p5), 반대 0 |
+| `\plenLBothLost` / `\plenLTie` / `\plenLHeadFirst` / `\plenLCtrlFirst` / `\plenLNeither` | 125 / 71 / two / one / 51 | Q7 |
+| `\plenLEventFrom` | 137 | cam_16 p5 소실 시작; 이후 63프레임(138~200) 대조군 미회복 |
+| `\plenLRuntimeCtrl` / `\plenLRuntimeHead` | 1511 / 2453 | 초 |
+

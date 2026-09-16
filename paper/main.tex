@@ -1264,24 +1264,44 @@ click selects a shirt or a torso as often as the person (reference-camera
 \plenFailPt\ failures)---the part/whole ambiguity that the text prompt
 resolves.
 
-\textit{Occlusion during tracking.} Stage~2 was run over the \plenFrames\
-frames in the control configuration and in the full pipeline (\plenRuntimeCtrl\
-and \plenRuntimeHead\ s on the GPU of Table~\ref{tab:runtime}); the Stage-1
-seeds are byte-identical, so the two differ only in tracking. Without ground
-truth after $t=0$ we registered an event rule on mask area alone: an interval
-of at least three frames in which one configuration's mask falls below 10\% of
-its seed area while the other keeps at least 50\% on at least two of those
-frames. One interval qualifies, in the direction of the full pipeline: on
-camera 26, person 1 passes behind another dancer for frames \plenEventFrames;
-the single-view tracker loses him for all \plenEventN\ frames and the
-cross-view configuration keeps a mask on the sliver of him visible beside
-the occluder for \plenEventHeld\ of them. No interval goes the other way. Both configurations lose the same \plenVanished\ of the \plenPairsSeeded\
-seeded pairs by the last frame, all of them dancers that have moved fully or
-almost fully behind another person in that camera in the closing frames; the
-clip ends before they reappear. As on MUVOD (Section~\ref{sec:xview},
-Fig.~\ref{fig:recovery}), the cross-view memory acts on the rare frames where a neighbor still sees what the
-camera has lost, and does no harm; one event is an illustration, not a
-measurement.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_plenoptic_event_cam_16_5_zoom.pdf}
+\caption{Occlusion on the ring (10-s clip): camera 16, person 5 passes behind
+the flag and a dancer at $t\approx\plenLEventFrom$. Top: the single-view
+tracker drops him and keeps at most a few hundred pixels on him for the rest
+of the clip although he is fully visible again. Bottom: with cross-view memory
+the whole person is kept throughout. Crops around the person.}
+\label{fig:plenevent}
+\end{figure}
+
+\textit{Occlusion during tracking.} Stage~2 was run in the control
+configuration and in the full pipeline on the 5-s clip (\plenRuntimeCtrl\ and
+\plenRuntimeHead\ s on the GPU of Table~\ref{tab:runtime}) and on a 10-s clip
+of \plenLFrames\ frames, which the runner's memory use forced to \plenLRes\
+(\plenLJgt\ at $t=0$ against \plenJgt\ at the higher resolution). The Stage-1
+seeds are byte-identical between the two configurations, so they differ only
+in tracking. Without ground truth after $t=0$ we registered an event rule on
+mask area alone: an interval of at least three frames in which one
+configuration's mask falls below 10\% of its seed area while the other keeps
+at least 50\% on at least two of those frames. In the 5-s clip one interval
+qualifies, in the direction of the full pipeline (camera 26, person 1, frames
+\plenEventFrames, a sliver of him visible beside the occluder), and none goes
+the other way. The 10-s clip has the dancers pass behind one another and
+reappear: \plenLBothLost\ (camera, person) pairs lose their mask in both
+configurations from the same frame, and of those that reappear, \plenLTie\
+are re-acquired by both configurations at the same frame, \plenLHeadFirst\
+earlier with cross-view memory and \plenLCtrlFirst\ earlier without
+(\plenLNeither\ do not return by the last frame). The memory does not make
+re-acquisition faster; SAM~3's own memory does that in both configurations.
+Where it acts is during the occlusion: the \plenLEventsFor\ qualifying
+intervals all fall on camera 16, person 5 (Fig.~\ref{fig:plenevent}), whom
+the single-view tracker drops at $t=\plenLEventFrom$ and never recovers
+although he is fully visible for the remaining 63 frames, while the cross-view
+configuration keeps the whole person; no interval goes the other way. As on
+MUVOD (Section~\ref{sec:xview}, Fig.~\ref{fig:recovery}), the mechanism acts
+on the rare frames where a neighbor still sees what the camera has lost, does
+no harm, and is invisible in a mean.
 
 % ===========================================================================
 \section{Limitations}
@@ -1323,8 +1343,8 @@ measurement.
         either direction. In the control configuration the cameras are tracked
         independently and the caveat does not arise.
   \item The studio-ring demonstration is one scene of our own capture, not
-        public, with ground truth on the first frame only; its event count is
-        one.
+        public, with ground truth on the first frame only; its divergence
+        events number one in the 5-s clip and one pair in the 10-s clip.
 \end{enumerate}
 
 % ===========================================================================
