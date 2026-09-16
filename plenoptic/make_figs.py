@@ -16,7 +16,9 @@ import numpy as np, cv2
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_SCENE", "T06_flag_ganggang"))   # PLEN_SCENE=T06_flag_ganggang_L for P3
+SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_SCENE", "T06_flag_ganggang"))   # masks: PLEN_SCENE=T06_flag_ganggang_L540 for P4
+IMG_SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_IMG_SCENE", os.environ.get("PLEN_SCENE", "T06_flag_ganggang")))  # frames may come from the 1080p copy
+FIG_SCALE = float(os.environ.get("PLEN_FIG_SCALE", 0.5))     # display scale of the frames (1.0 for crops)
 OUT = os.path.join(REPO, "paper", "figures"); PREV = os.path.join(REPO, "plenoptic")
 CTRL, HEAD, TXT = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFsCs10kG2", "SegMaskSam3XW0MFs_txt"
 REF, NCAM = 6, 32
@@ -24,21 +26,30 @@ COLS = np.array([[0, 0, 0], [230, 25, 75], [60, 180, 75], [255, 225, 25], [0, 13
 plt.rcParams.update({"font.family": "serif", "font.size": 7, "pdf.fonttype": 42})
 
 
-def frame(cam, t, scale=0.5):
-    im = cv2.imread(os.path.join(SCENE, "Video", cam, f"{t:06d}.jpg"))[:, :, ::-1]
-    return cv2.resize(im, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+_FSIZE = {}
 
 
-def pred(method, cam, t, obj, scale=0.5):
+def frame(cam, t, scale=None):
+    scale = FIG_SCALE if scale is None else scale
+    im = cv2.imread(os.path.join(IMG_SCENE, "Video", cam, f"{t:06d}.jpg"))[:, :, ::-1]
+    im = cv2.resize(im, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA) if scale != 1.0 else im
+    _FSIZE[cam] = im.shape[:2]; return im
+
+
+def _to_frame(m, cam):
+    """masks (possibly at a lower run resolution) resized to the displayed frame size"""
+    h, w = _FSIZE.get(cam) or frame(cam, 0).shape[:2]
+    return cv2.resize(m.astype(np.uint8), (w, h), interpolation=cv2.INTER_NEAREST)
+
+
+def pred(method, cam, t, obj, scale=None):
     p = os.path.join(SCENE, method, cam, str(t), f"{obj}.png")
     if not os.path.exists(p): return None
-    m = cv2.imread(p, cv2.IMREAD_GRAYSCALE) > 0
-    return cv2.resize(m.astype(np.uint8), None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST).astype(bool)
+    return _to_frame(cv2.imread(p, cv2.IMREAD_GRAYSCALE) > 0, cam).astype(bool)
 
 
-def gt(cam, scale=0.5):
-    g = cv2.imread(os.path.join(SCENE, "Mask", cam, "000000.png"), cv2.IMREAD_GRAYSCALE)
-    return cv2.resize(g, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
+def gt(cam, scale=None):
+    return _to_frame(cv2.imread(os.path.join(SCENE, "Mask", cam, "000000.png"), cv2.IMREAD_GRAYSCALE), cam)
 
 
 def overlay(img, method, cam, t, with_gt):
@@ -81,17 +92,18 @@ def bbox_union(cam, obj, a, b, margin=0.4):
     return (max(int(x0 - margin * w), 0), max(int(y0 - margin * h), 0), min(int(x1 + margin * w), W), min(int(y1 + margin * h), H))
 
 
-def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
+def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5, ts=None):
     last = int(os.environ.get("PLEN_LAST", 100))
-    ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, last)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, last)]))
-    rows = [(CTRL, "single-view tracker (XW0)"), (HEAD, "with cross-view memory (ours)")]
+    if ts is None: ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, last)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, last)]))
+    cols = len(ts)
+    rows = [(CTRL, "single view (XW0)"), (HEAD, "cross-view memory (ours)")]
     if neighbor: rows.append((None, f"neighbour {neighbor}"))
     box = bbox_union(cam, obj, a, b) if zoom else None
-    fw = 3.5 if cols == 3 else 7.16
+    fw = 3.5 if cols == 3 else 7.16                              # 3 panels: column width; otherwise text width
     if box: asp = (box[3] - box[1]) / max(box[2] - box[0], 1)
     else: asp = 9 / 16
     ph = (fw / len(ts)) * asp                                    # panel height from the crop's aspect ratio
-    fig, axs = plt.subplots(len(rows), len(ts), figsize=(fw, ph * len(rows) * 1.12 + 0.25))
+    fig, axs = plt.subplots(len(rows), len(ts), figsize=(fw, ph * len(rows) * 1.10 + 0.2))
     for r, (method, lab) in enumerate(rows):
         for c, t in enumerate(ts):
             ax = axs[r, c]
@@ -104,8 +116,8 @@ def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
                 ax.imshow(img)
             ax.axis("off")
             if r == 0: ax.set_title(f"t = {t}", fontsize=7, pad=2)
-            if c == 0: ax.text(-0.02, 0.5, lab, transform=ax.transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
-    plt.subplots_adjust(left=0.06 if cols == 3 else 0.035, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.06)
+            if c == 0: ax.text(0.02, 0.97, lab, transform=ax.transAxes, va="top", ha="left", fontsize=7, bbox=dict(facecolor="white", alpha=0.85, pad=1.5, edgecolor="none"))
+    plt.subplots_adjust(left=0.005, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.08)
     name = f"fig_plenoptic_event_{cam}_{obj}" + ("_zoom" if zoom else "")
     fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 
@@ -127,10 +139,10 @@ def fig_curve():
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("what", choices=["ring", "event", "curve"])
     ap.add_argument("--method", default=CTRL); ap.add_argument("--t", type=int, default=0)
-    ap.add_argument("--cam"); ap.add_argument("--obj", type=int); ap.add_argument("--frames", type=int, nargs=2); ap.add_argument("--neighbor"); ap.add_argument("--zoom", action="store_true"); ap.add_argument("--cols", type=int, default=5)
+    ap.add_argument("--cam"); ap.add_argument("--obj", type=int); ap.add_argument("--frames", type=int, nargs=2); ap.add_argument("--neighbor"); ap.add_argument("--zoom", action="store_true"); ap.add_argument("--cols", type=int, default=5); ap.add_argument("--ts", type=int, nargs="+")
     a = ap.parse_args()
     if a.what == "ring": fig_ring(a.method, a.t)
-    elif a.what == "event": fig_event(a.cam, a.obj, a.frames[0], a.frames[1], a.neighbor, a.zoom, a.cols)
+    elif a.what == "event": fig_event(a.cam, a.obj, a.frames[0], a.frames[1], a.neighbor, a.zoom, a.cols, a.ts)
     else: fig_curve()
 
 

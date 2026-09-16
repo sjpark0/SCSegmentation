@@ -1264,16 +1264,16 @@ click selects a shirt or a torso as often as the person (reference-camera
 \plenFailPt\ failures)---the part/whole ambiguity that the text prompt
 resolves.
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=\columnwidth]{figures/fig_plenoptic_event_cam_16_5_zoom.pdf}
+\includegraphics[width=\textwidth]{figures/fig_plenoptic_event_cam_16_5_zoom.pdf}
 \caption{Occlusion on the ring (10-s clip): camera 16, person 5 passes behind
 the flag and a dancer at $t\approx\plenLEventFrom$. Top: the single-view
 tracker drops him and keeps at most a few hundred pixels on him for the rest
 of the clip although he is fully visible again. Bottom: with cross-view memory
 the whole person is kept throughout. Crops around the person.}
 \label{fig:plenevent}
-\end{figure}
+\end{figure*}
 
 \textit{Occlusion during tracking.} Stage~2 was run in the control
 configuration and in the full pipeline on the 5-s clip (\plenRuntimeCtrl\ and
