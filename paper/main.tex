@@ -73,37 +73,37 @@ Attribution and Error Budget of a Foundation-Model Pipeline\\for Multi-View Vide
 
 % ===========================================================================
 \begin{abstract}
-A static multi-camera rig observes one scene from many viewpoints at once.
-Given the mask of one object in one camera at one instant, the task is to
-produce that object's mask in every other camera and every subsequent frame,
-with no camera calibration, no category label, and no per-scene optimisation.
-We study this task on MUVOD, to our knowledge the only public rig benchmark,
-and make three contributions. First, a two-stage pipeline built on a promptable segmentation
-foundation model reaches \OursBasic\ J\&F (basic) and \OursComplete\
-(complete), against \XMemBasic/\XMemComplete\ for the published baseline: a
-paired gain of \DeltaBasic\ points ($t$-statistic \tBasic, 95\% confidence interval $\ciBasic$), winning
-\winLoss\ scenes. Second, we decompose that margin rather than report it whole:
-\gainFoundation\ points come from the foundation model inside an unchanged
-two-stage structure, and \gainOurs\ from our own design---cross-view memory
-during tracking, raw frame-0 seeding, and zoom-gated crop re-tracking; the last
-was tuned on the scored scenes, and we bound its selection optimism at
-\losoOmega\ points by leave-one-scene-out.
-Third, three oracles bound the \totalGap\ points that remain: repairing every
-seeding failure is worth at most \oracleSeed, a perfect reference camera at
-most \oracleRef, and perfect masks on the \nOrdinaryPairs\ pairs whose seed
-does not fail \oracleOrdinary---the buckets overlap, and the last dominates. A
-model-free measurement shows the tracker's \gridNow-by-\gridNow\ mask grid
-costs only \lossNow\ of those points. Five pre-registered attempts to repair degenerate
-seeds---exemplar detection, dense correspondence, and three geometry-lifting
-families---all fail, and we identify why: \nFzero\ non-reference seeds need
-repair against \nNzero\ that must be left alone, a \asymmetry\ asymmetry that
-turns any imperfect selector into a net loss.
+A static multi-camera rig records a real-world scene from many viewpoints at
+once; its video feeds volumetric capture and per-object 3D reconstruction,
+which consume multi-view masks. Given one object mask in one camera at one
+instant, the task is to produce that object's mask in every other camera and
+every subsequent frame, with no calibration, category label, or per-scene
+optimisation---a spatial-intelligence question posed on real-world video: does
+a segmentation foundation model keep a geometrically and temporally consistent
+notion of an object across a rig without a 3D model? On the MUVOD rig
+benchmark, a two-stage pipeline built on a promptable foundation model reaches
+\OursBasic\ J\&F (basic) and \OursComplete\ (complete) against
+\XMemBasic/\XMemComplete\ for the published baseline, a paired gain of
+\DeltaBasic\ points (95\% CI $\ciBasic$) in 16 of \nScenes\ scenes. We
+decompose the margin: \gainFoundation\ points come from the foundation model
+inside an unchanged two-stage structure and \gainOurs\ from our
+design---cross-view memory, raw frame-0 seeding, and zoom-gated crop
+re-tracking (leave-one-scene-out optimism \losoOmega). Overlapping oracles
+bound the remaining \totalGap\ points---seeding failures \oracleSeed, the
+reference camera \oracleRef, ordinary mask quality on \nOrdinaryPairs\ sound
+pairs \oracleOrdinary---and the tracker's \gridNow-by-\gridNow\ mask grid,
+measured without a model, costs only \lossNow. Five pre-registered seed-repair
+attempts---exemplar detection, dense correspondence, structure-from-motion,
+feed-forward point maps, per-scene 3DGS---all fail, for a structural reason:
+\nFzero\ non-reference seeds need repair against \nNzero\ that must be left
+alone, a \asymmetry\ asymmetry that turns any imperfect selector into a net
+loss.
 \end{abstract}
 
 \begin{IEEEkeywords}
 Benchmark analysis, camera rig, error budget, foundation models, mask
 propagation, multi-view video object segmentation, pre-registration,
-promptable segmentation.
+promptable segmentation, spatial intelligence.
 \end{IEEEkeywords}
 
 % ===========================================================================
@@ -150,6 +150,23 @@ consequence for what an honest paper on the task can claim: the first strong
 number on MUVOD will be informative mainly in proportion to how carefully it is
 taken apart.
 
+The task is a question of spatial intelligence posed on real-world video
+rather than on a reconstructed scene, and we state the connection explicitly.
+A rig video is the raw input of volumetric capture and of every per-object 3D
+reconstruction or generation pipeline downstream of it, and those pipelines
+consume multi-view masks: one mask per object, camera, and frame is what a
+segmented 3DGS or a per-object radiance field is trained from, and today a
+person supplies it by annotating camera after camera. The question we ask is
+whether a 2D segmentation foundation model, given the object once, maintains a
+geometrically and temporally consistent notion of it across the rig's
+viewpoints---without poses, without a 3D model, on scenes with moving people,
+environment objects, and fisheye optics---and, where it does not, whether
+explicit 3D reasoning (structure-from-motion, feed-forward point maps, or a
+per-scene 3DGS) can supply what it lacks. Sections~\ref{sec:exp}
+and~\ref{sec:budget} measure the first; Section~\ref{sec:negative} answers the
+second, negatively, with a finding about 3DGS on sparse wide-baseline rigs that
+bears on 3D reconstruction from real-world video beyond segmentation.
+
 We therefore build the simplest pipeline that could plausibly work---the
 benchmark's own two-stage structure with the video tracker replaced by a
 promptable segmentation foundation model, SAM~3 \cite{sam3}---add three small
@@ -192,10 +209,13 @@ there are \nFzero\ non-reference seeds to repair and \nNzero\ to protect.
         model-free measurement of the mask-grid ceiling (\lossNow\ points) and
         the observation that the non-reference cameras' deficit is constant
         from the first frame rather than accumulated drift.
-  \item Five pre-registered negative results on seed repair, the union-oracle
-        versus hallucination trade-off that underlies them, and the
-        \asymmetry\ repair-to-protect asymmetry as the quantity future work on
-        this task must report against.
+  \item Five pre-registered negative results on seed repair---including the
+        finding that on rigs of \gsViewsMin--\gsViewsMax\ wide-baseline cameras
+        a per-scene 3DGS renders depth that is confidently wrong, with the
+        error anti-correlated with training-view PSNR---the union-oracle versus
+        hallucination trade-off that underlies them, and the \asymmetry\
+        repair-to-protect asymmetry as the quantity future work on this task
+        must report against.
   \item A reconstruction of the MUVOD reference-camera protocol, which the
         benchmark does not publish, from three independent lines of evidence.
 \end{itemize}
@@ -988,7 +1008,12 @@ oracle, but the five pre-registered candidate generators fail their gates and
 the one pre-registered ground-truth-free rule over their union loses, because
 \nFzero\ pairs to fix stand against \nNzero\ to protect. That
 \asymmetry\ asymmetry is the number the next method for this task should be
-designed against.
+designed against. For video-driven spatial intelligence the message is
+twofold: a 2D segmentation foundation model already carries most of the
+cross-view consistency a real-world rig demands, and on rigs of
+\gsViewsMin--\gsViewsMax\ wide-baseline cameras the explicit 3D routes we
+tested---structure-from-motion, feed-forward point maps, and per-scene
+3DGS---do not yet add to it.
 
 % ===========================================================================
 \balance

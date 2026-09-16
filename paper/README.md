@@ -120,7 +120,7 @@ Order Form*에 적혀 옵니다. CASS가 링크하는 IEEE 저자 안내서(`cfp
 
 | 절 | 상태 | 근거 문서 |
 |---|---|---|
-| Abstract | 씀 (약 230 낱말 — IEEE 일반 지침 200을 조금 넘음, 다듬을 때 줄일 것) | `docs/paper-numbers.md` |
+| Abstract | 씀 — 특집호 적합성 문장 포함, 약 245 낱말 (IEEE 일반 지침 50~200; TCSVT 게재 논문은 250 안팎이 흔함) | `docs/paper-numbers.md` |
 | I. Introduction | 씀 — 5문단 + 기여 4개 | 〃, `mvimage-seg-survey.md` §0 |
 | II. Related Work | 씀 — 4개 소절 | `mvimage-seg-survey.md` |
 | III. Problem Setting and Protocol | 씀 — 과제·지표·c_ini 복원(증거 A/B/C, Dog 불확실성) | `muvod-protocol.md` |
@@ -150,6 +150,10 @@ docker run --rm --user $(id -u):$(id -g) -v /:/host -w /host$PWD -e HOME=/tmp -e
 ```
 읽기만 합니다(`Data/MVSeg/<scene>/{Video,Mask}`, 공개 예측 폴더, `jf_r4.json`); 쓰는 곳은 `paper/figures/fig_*.pdf`뿐.
 Fig. 4의 장면별 값만 스크립트에 옮겨 적은 것(`docs/muvod-comparison.md`)이라 그 표가 바뀌면 같이 고칠 것.
+
+**특집호 적합성 (2026-09-16 명시)**
+- 원고: 초록의 "spatial intelligence" 문장, 서론 4번째 문단(리그 영상 = 볼류메트릭 캡처·객체별 3D 재구성의 입력이고 그 파이프라인이 다중시점 마스크를 소비함; 2D 기초 모델의 시점 간 일관성 + 명시적 3D가 보태는가), 기여 C3(3DGS 발견), 결론 마지막 문장, 색인어 `spatial intelligence`.
+- **`cover-letter.md`**: CFP 주제 항목에 대응시킨 영문 커버레터 초안 (Atypon Rex 투고 칸용). 이해충돌 문장은 확인 후 유지.
 
 **아직 없는 것**
 - ORCID·사사(acknowledgement)·저자 약력.
