@@ -1,0 +1,30 @@
+{
+ "T06_flag_ganggang_txt": {
+  "start_frame": 0,
+  "cam_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+  "c_ini": 6,
+  "num_frame": 2,
+  "folder": "T06_flag_ganggang_txt",
+  "num_cam": 32,
+  "start_cam": 0,
+  "prefix": "cam_",
+  "prefix1": 2,
+  "num_objs": 6,
+  "obj_list": [],
+  "_note": "P2-T: same rig, Video = relative symlink to the shared copy, Mask/cam_06/000000.png = SAM 3 text-prompt ('person') instances matched to GT ids (plenoptic/prompt_seed.py --mode text). Stage 1 only, so num_frame 2."
+ },
+ "T06_flag_ganggang_pt": {
+  "start_frame": 0,
+  "cam_list": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+  "c_ini": 6,
+  "num_frame": 2,
+  "folder": "T06_flag_ganggang_pt",
+  "num_cam": 32,
+  "start_cam": 0,
+  "prefix": "cam_",
+  "prefix1": 2,
+  "num_objs": 6,
+  "obj_list": [],
+  "_note": "P2-P: Mask/cam_06/000000.png = one positive click per person (GT inner-most pixel), highest-score mask of multimask_output (plenoptic/prompt_seed.py --mode point)."
+ }
+}

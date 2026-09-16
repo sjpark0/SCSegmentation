@@ -55,7 +55,7 @@ def main():
     import torch, sam3
     from sam3 import build_sam3_image_model
     from sam3.model.sam3_image_processor import Sam3Processor
-    bpe = os.path.join(os.path.dirname(sam3.__file__), "..", "assets", "bpe_simple_vocab_16e6.txt.gz")
+    bpe = os.path.join(os.path.dirname(sam3.__file__), "assets", "bpe_simple_vocab_16e6.txt.gz")   # /opt/sam3/sam3/assets in the container
 
     src_scene = os.path.join(SHARE, SCENE)
     img = Image.open(os.path.join(src_scene, "Video", REF, "000000.jpg")).convert("RGB")
@@ -83,15 +83,11 @@ def main():
             out[masks[i]] = ids[j]; report["persons"][ids[j]] = dict(instance=int(i), score=float(scores[i]), iou_gt=float(M[i, j]))
     else:
         model = build_sam3_image_model(bpe_path=bpe, enable_inst_interactivity=True)
-        pred = model.inst_interactive_predictor if hasattr(model, "inst_interactive_predictor") else None
-        if pred is None:
-            from sam3.model.sam1_task_predictor import SAM3InteractiveImagePredictor
-            pred = SAM3InteractiveImagePredictor(model)
-        pred.set_image(np.array(img))
+        proc = Sam3Processor(model); st = proc.set_image(img)            # examples/sam3_for_sam1_task_example.ipynb
         cands = []
         for p in ids:
             x, y = inner_point(gt == p)
-            m, sc, _ = pred.predict(point_coords=np.array([[x, y]]), point_labels=np.array([1]), multimask_output=True)
+            m, sc, _ = model.predict_inst(st, point_coords=np.array([[x, y]]), point_labels=np.array([1]), multimask_output=True)
             m = np.asarray(m).reshape(-1, H, W).astype(bool); sc = np.asarray(sc).reshape(-1)
             k = int(sc.argmax()); cands.append((p, m[k], float(sc[k]), (x, y)))
             report["persons"][p] = dict(click=[x, y], score=float(sc[k]), iou_gt=iou(m[k], gt == p))

@@ -29,7 +29,9 @@ FRAME0, STEP, NFRAMES = 900, 3, 101
 PERMS = list(range(0, 8)) + list(range(16, 32)) + list(range(8, 16))       # ring order over JPG folders
 PNUM = [i + 1 if i < 16 else i + 5 for i in range(32)]                       # JPG folder -> P number (01..16, 21..36)
 PEOPLE = ["p1", "p2", "p3", "p4", "p5", "p6"]
-W, H = 3840, 2160
+SRC_W, SRC_H = 3840, 2160
+SCALE = 0.5                                     # 2026-09-16: 4K x 101 frames x 32 cameras = 80 GB in host RAM -> SIGKILL; 1080p = 20 GB
+W, H = int(SRC_W * SCALE), int(SRC_H * SCALE)
 
 
 def cam_name(k): return f"cam_{k:02d}"
@@ -38,13 +40,13 @@ def cam_name(k): return f"cam_{k:02d}"
 def rasterize(json_path):
     """labelme shape_to_mask equivalent: polygon outline+fill at full resolution, one plane per person."""
     d = json.load(open(json_path, encoding="utf-8"))
-    assert d["imageWidth"] == W and d["imageHeight"] == H, json_path
+    assert d["imageWidth"] == SRC_W and d["imageHeight"] == SRC_H, json_path
     planes = {}
     for p in PEOPLE:
         m = Image.new("1", (W, H), 0); dr = ImageDraw.Draw(m)
         for s in d["shapes"]:
             if s["label"] != p: continue
-            xy = [tuple(pt) for pt in s["points"]]
+            xy = [(pt[0] * SCALE, pt[1] * SCALE) for pt in s["points"]]      # polygon coordinates scaled, then rasterized
             if len(xy) >= 3: dr.polygon(xy, outline=1, fill=1)
         planes[p] = np.array(m, dtype=bool)
     return planes
@@ -77,7 +79,7 @@ def qa_figure(scene_dir, cams=(0, 8, 16, 24)):
     cols = np.array([[0, 0, 0], [230, 25, 75], [60, 180, 75], [255, 225, 25], [0, 130, 200], [245, 130, 48], [145, 30, 180]], dtype=float)
     fig, axs = plt.subplots(2, 2, figsize=(16, 9))
     for ax, k in zip(axs.ravel(), cams):
-        img = np.array(Image.open(os.path.join(SRC_JPG, str(PERMS[k]), f"{FRAME0}.jpg")).convert("RGB"), dtype=float)
+        img = np.array(Image.open(os.path.join(scene_dir, "Video", cam_name(k), "000000.jpg")).convert("RGB"), dtype=float)
         gt = np.array(Image.open(os.path.join(scene_dir, "Mask", cam_name(k), "000000.png")))
         over = img.copy(); m = gt > 0; over[m] = 0.45 * img[m] + 0.55 * cols[gt[m]]
         ax.imshow(over.astype(np.uint8)); ax.set_title(f"{cam_name(k)} (P{PNUM[PERMS[k]]:02d})"); ax.axis("off")
@@ -94,8 +96,8 @@ def copy_frames(scene_dir):
         d = os.path.join(vdir, cam_name(k)); os.makedirs(d, exist_ok=True)
         for t in range(NFRAMES):
             src = os.path.join(SRC_JPG, str(jpg), f"{FRAME0 + STEP * t}.jpg"); dst = os.path.join(d, f"{t:06d}.jpg")
-            if not os.path.exists(dst) or os.path.getsize(dst) != os.path.getsize(src):
-                shutil.copyfile(src, dst); n += 1
+            im = Image.open(src); im.draft("RGB", (W, H))                      # fast JPEG downscale, then exact resize
+            im.convert("RGB").resize((W, H), Image.LANCZOS).save(dst, quality=95); n += 1
         print(f"{cam_name(k)}: {NFRAMES} frames", flush=True)
     print("copied", n)
 
@@ -103,16 +105,17 @@ def copy_frames(scene_dir):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--masks", action="store_true"); ap.add_argument("--frames", action="store_true")
     a = ap.parse_args(); scene_dir = os.path.join(ROOT, SCENE); os.makedirs(scene_dir, exist_ok=True)
+    if a.frames: copy_frames(scene_dir)
     if a.masks:
         stats, digests = build_masks(scene_dir); qa_figure(scene_dir)
         src = {"frames": SRC_JPG, "labels": SRC_LAB, "frame0": FRAME0, "step": STEP, "n_frames": NFRAMES,
                "frames_used": [FRAME0 + STEP * t for t in range(NFRAMES)], "ring_order_jpg_folders": PERMS,
+               "resolution": [W, H], "source_resolution": [SRC_W, SRC_H], "scale": SCALE,
                "cameras": stats, "gt_sha256": digests, "note": "GT only at t=0 (source frame 900); labels p1..p6 -> ids 1..6"}
         json.dump(src, open(os.path.join(scene_dir, "SOURCE.json"), "w"), indent=1)
         # candidate reference camera by the MUVOD-style rule: most persons present, tie -> largest total area
         best = max(stats, key=lambda c: (stats[c]["n_present"], sum(stats[c]["areas"].values())))
         print("c_ini candidate (most present, then largest area):", best, stats[best]["n_present"], sum(stats[best]["areas"].values()))
-    if a.frames: copy_frames(scene_dir)
 
 
 if __name__ == "__main__":
