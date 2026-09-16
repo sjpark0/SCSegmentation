@@ -1,0 +1,101 @@
+{
+ "note": "S1-E7 descriptive decomposition (not a registered rule; docs/stage1-E7.md §6).  Splits each",
+ "runs": {
+  "R1": {
+   "method": "SegMaskSam3XW0MSdgtFs",
+   "base": "SegMaskSam3XW0MFs",
+   "total": 4.3832366314757705,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0853,
+    "N0": 2.6604,
+    "F0": 1.6464,
+    "other_nonref": -0.0089
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   },
+   "share_of_total": {
+    "ref": 0.0195,
+    "N0": 0.6069,
+    "F0": 0.3756,
+    "other_nonref": -0.002
+   }
+  },
+  "R2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "total": 4.258248143619934,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0571,
+    "N0": 2.7802,
+    "F0": 1.4513,
+    "other_nonref": -0.0304
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   },
+   "share_of_total": {
+    "ref": 0.0134,
+    "N0": 0.6529,
+    "F0": 0.3408,
+    "other_nonref": -0.0071
+   }
+  },
+  "R3": {
+   "method": "SegMaskSam3XW0MSde6_voteFs",
+   "base": "SegMaskSam3XW0MFs",
+   "total": -0.04976088810843299,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0,
+    "N0": -0.2272,
+    "F0": 0.1774,
+    "other_nonref": 0.0
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   },
+   "share_of_total": {
+    "ref": -0.0,
+    "N0": 4.5655,
+    "F0": -3.5655,
+    "other_nonref": -0.0
+   }
+  },
+  "R4": {
+   "method": "SegMaskSam3XW0MSde6_oracleFs",
+   "base": "SegMaskSam3XW0MFs",
+   "total": 1.0928711792015857,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0,
+    "N0": 0.3285,
+    "F0": 0.7666,
+    "other_nonref": -0.0023
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   },
+   "share_of_total": {
+    "ref": 0.0,
+    "N0": 0.3006,
+    "F0": 0.7015,
+    "other_nonref": -0.0021
+   }
+  }
+ }
+}

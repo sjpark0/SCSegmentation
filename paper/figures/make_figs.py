@@ -227,7 +227,7 @@ def fig_perframe():
     def curve(rows): return [statistics.mean([r[t] for r in rows if r[t] is not None]) for t in range(21)]
     cr, cn = curve(ref_rows), curve(non_rows)
     print(f"  per-frame: ref n={len(ref_rows)} t0/10/20 = {cr[0]:.3f}/{cr[10]:.3f}/{cr[20]:.3f}; nonref n={len(non_rows)} t0/10/20 = {cn[0]:.3f}/{cn[10]:.3f}/{cn[20]:.3f}")
-    fig, ax = plt.subplots(figsize=(3.5, 2.1))
+    fig, ax = plt.subplots(figsize=(3.5, 2.6))
     ax.plot(range(21), cr, "o-", ms=2.5, lw=1.1, color="#1f5f8b", label=f"reference camera ($n$={len(ref_rows)})")
     ax.plot(range(21), cn, "s-", ms=2.5, lw=1.1, color="#b03a2e", label=f"nonreference, all ($n$={len(non_rows)})")
     for typ, ls, col in (("dynamic", "--", "#b03a2e"), ("static", ":", "#b03a2e"), ("env", "-.", "#b03a2e")):
@@ -235,9 +235,9 @@ def fig_perframe():
         ax.plot(range(21), ct, ls, lw=0.8, color=col, alpha=0.8, label=f"nonreference, {typ} ($n$={len(by_type[typ])})")
     ax.set_xlabel("frame $t$", fontsize=7); ax.set_ylabel("mean J&F per pair", fontsize=7); ax.set_xticks(range(0, 21, 5))
     ax.set_xlim(-0.5, 20.5); ax.set_ylim(0.82, 1.0); ax.tick_params(labelsize=6); ax.grid(alpha=0.25, lw=0.5)
-    ax.legend(fontsize=5.2, frameon=False, loc="lower right", ncol=2)
+    ax.legend(fontsize=5.2, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2, columnspacing=1.5)  # below the axes: inside, it covered the lower curves
     for s in ("top", "right"): ax.spines[s].set_visible(False)
-    plt.subplots_adjust(left=0.15, right=0.98, top=0.97, bottom=0.2)
+    plt.subplots_adjust(left=0.15, right=0.98, top=0.97, bottom=0.36)
     fig.savefig(os.path.join(OUT, "fig_perframe.pdf")); plt.close(fig); print("fig_perframe.pdf")
     return cr, cn
 

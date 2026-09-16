@@ -270,3 +270,21 @@
 \newcommand{\oracleFzeroBroke}{4}
 \newcommand{\voteWins}{5}
 \newcommand{\voteLosses}{5}
+
+
+%% 2026-09-16 외부 리뷰 2차 반영 (docs/paper-numbers.md §14) ---------------------
+\newcommand{\controlBasic}{89.549}          % SegMaskSam3XW0MFs basic (E7 기저)
+\newcommand{\controlGap}{10.451}            % 100-89.549
+\newcommand{\gtSeedControlPct}{41.9}        % 4.383/10.451
+\newcommand{\gtSeedControlRemaining}{6.067} % 100-93.933
+\newcommand{\gtSeedHeadlinePct}{47.4}       % 4.258/8.985
+\newcommand{\gtSeedFzeroGain}{0.39}        % E7 R1(대조군) F0 mean ΔJ&F(1-20) per pair; NzeroGain/Up/FzeroRec도 R1
+\newcommand{\gtSeedFzeroContrib}{+1.451}     % e7_contrib.py: R2 벤치마크 가중 기여 (F0 41쌍)
+\newcommand{\gtSeedNzeroContrib}{+2.780}     % R2, N0 623쌍
+\newcommand{\gtSeedRefContrib}{+0.057}       % R2, 기준 카메라 398쌍 (프레임 0가 왕복 전 GT로 바뀜)
+\newcommand{\gtSeedFzeroContribCtrl}{+1.646} % R1 (대조군)
+\newcommand{\gtSeedNzeroContribCtrl}{+2.660}
+\newcommand{\voteFzeroContrib}{+0.177}       % R3 투표
+\newcommand{\voteNzeroContrib}{\ensuremath{-0.227}}
+\newcommand{\oracleFzeroContrib}{+0.767}     % R4 프레임-0 오라클
+\newcommand{\oracleNzeroContrib}{+0.329}
