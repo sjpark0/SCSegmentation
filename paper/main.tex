@@ -374,7 +374,7 @@ in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
   \node[box, right=of t1] (trk) {SAM~3 tracker\\per camera};
   \node[box, right=of trk] (out) {$\hat M_{o,c,t}$};
   \node[box, right=of out, fill=black!6] (crop) {crop retrack\\seed $<\cropAreaMax$\px};
-  \node[below=1mm of trk, xshift=6mm] {\textbf{Stage 2} (temporal, per camera)};
+  \node[above=3mm of t1, anchor=south west, xshift=-3mm] {\textbf{Stage 2} (temporal, per camera)};
   \draw[arr] (t1) -- (trk);
   \draw[arr] (trk) -- (out);
   \draw[arr] (out) -- (crop);
