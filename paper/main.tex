@@ -555,6 +555,7 @@ the address will be given in the final version.\todo{release URL}
 \label{sec:exp}
 
 \subsection{Setup}
+\label{sec:setup}
 All runs use one NVIDIA RTX~6000 Ada (\gpuTotal~GiB) in a Docker container
 with mixed-precision (bfloat16 autocast) inference, deterministic. The benchmark is the full MUVOD video set: \nScenes\
 scenes, three scored cameras per scene, \nFramesPerCam\ frames per
@@ -563,7 +564,20 @@ camera, \nPairsBasic\ (camera, object) pairs in the basic set and
 difference are objects absent from the reference frame, which no propagation
 method can reach. Paired statistics use a scene-cluster bootstrap with
 \nBoot\ resamples and a fixed seed. The XMem baseline numbers are transcribed
-from the benchmark paper; we did not rerun it (Section~\ref{sec:limits}).
+from the benchmark paper; we did not rerun it (Section~\ref{sec:limits}), so
+we checked the evaluation conditions against the release wherever they can be
+checked: the scored cameras are exactly those carrying the released
+annotations (\cini\ plus two), every scene has \nFramesPerCam\ frames per
+camera at the annotated offsets, the object counts match the release index in
+all \nScenes\ scenes, the ground-truth masks are byte-identical to the
+release, and the recovered \cini\ reproduces the benchmark table's
+basic-equals-complete pattern in every scene (Section~\ref{sec:cini}). Two
+choices the benchmark leaves open were sized rather than guessed: we score the
+given frame 0 of \cini\ (omitting it lowers the basic score by
+\protocolDiscretion\ points, measured on an earlier configuration), and we
+score only the objects present in a camera's ground truth (crediting an
+absent object's empty prediction as perfect would inflate the score). These
+checks cover the evaluation conditions, not the baseline's implementation.
 
 \begin{table}[!t]
 \caption{Comparison with the published MUVOD baseline. \JF\ (\%) over
@@ -1139,8 +1153,10 @@ we suggest that future work on seed repair report both rates.
 \label{sec:limits}
 \begin{enumerate}
   \item We did not rerun the XMem baseline. Its numbers are transcribed from
-        the benchmark paper, and the equivalence of the two pipelines'
-        structure is argued from the paper's description, not measured.
+        the benchmark paper; the evaluation conditions were matched to the
+        release where checkable (Section~\ref{sec:setup}), but the equivalence
+        of the two pipelines' structure is argued from the paper's description,
+        not measured.
   \item There is one baseline and one dataset. SAM~2, Cutie, DEVA, and the
         2026 uncalibrated promptable methods do not appear as columns because,
         to our knowledge, none has been evaluated on MUVOD under its protocol

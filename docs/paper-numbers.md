@@ -232,3 +232,12 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 표의 행 합은 반올림 전 짝지은 Δ와 일치(R1 4.3832, R2 4.2582, R3 −0.0498, R4 1.0929); 3자리 표기에서는 ±0.001 차이가 날 수 있어 캡션에 "반올림 전 합"이라고 적음. 문구: 초록 "cannot pick it" → "repairs some seeds but shows no net gain"; §VII 첫 문단 "room is small"을 시험한 후보 집합·실패 집합으로 한정; 결론에서 투표(비대칭)와 프레임-0 오라클(프레임 0/전파 불일치)의 원인 분리; 소제목 §VI-B "A Deficit From the First Frame; Mean Drift Is Small", §VII "Five Seed-Repair Attempts and Where Each Fails Its Gate".
 
 리뷰 4차(최종 편집, 2026-09-16): 수치 변경 없음. §VII-C 소제목 → "Candidate Availability and the Limits of SeedVote", 결론 "does not help" → "does not demonstrate a net gain", `centerd` → `centered`, Table VI·VII·III 캡션과 서론 한 문장 압축, Fig. 5 높이 2.6→2.4 in — 제출본 11쪽 복귀.
+
+### 14b. 평가 조건 대조를 원고에 (2026-09-16)
+
+| 매크로 | 값 | 출처 |
+|---|---|---|
+| `\protocolDiscretion` | 0.06 | muvod-comparison.md §2: c_ini의 주어진 프레임 0을 채점에서 빼면 89.82 → 89.76 (2026-09-09 당시 구성 89.8에서 잰 값 — 원고에도 "earlier configuration"이라고 씀) |
+
+§V-A에 공정성 대조 6항목(채점 카메라 = 주석 카메라, 카메라당 21프레임·오프셋 일치, 객체 수 17/17 일치, 정답 마스크 바이트 동일, c_ini의 basic=complete 패턴 17/17 재현)과 프로토콜 재량 2건(프레임 0 채점, 카메라에 없는 객체)을 넣고, 한계 1에 "평가 조건은 대조했으나 구현 동등성은 미측정"으로 범위를 적음. XMem 동일 조건 재실행은 하지 않기로 결정(2026-09-16): MUVOD가 코드를 공개하지 않아 재실행도 우리 설정의 XMem이 되어 애매함이 남고, 심사에서 요구되면 revision에서 수행.
+
