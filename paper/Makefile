@@ -14,9 +14,9 @@ GID    := $(shell id -g)
 RUN     = docker run --rm --user $(UID):$(GID) \
             -v $(CURDIR):/work -w /work \
             -e HOME=/tmp \
-            -e TEXINPUTS=".//:./vendor/IEEEtran//:" \
-            -e BSTINPUTS=".//:./vendor/IEEEtran//:" \
-            -e BIBINPUTS=".//:" \
+            -e TEXINPUTS=".:./vendor/IEEEtran//:" \
+            -e BSTINPUTS=".:./vendor/IEEEtran//:" \
+            -e BIBINPUTS=".:" \
             $(IMAGE)
 
 .PHONY: all pages final clean image bundle

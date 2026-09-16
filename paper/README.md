@@ -27,7 +27,8 @@ make clean
 
 | 파일 | 내용 |
 |---|---|
-| `vendor/IEEEtran/IEEEtran.cls` | **V1.8b (2015/08/26)**, CTAN 원본 그대로. md5 `5b2e4fa15b0f7eabb840ebf67df4c0f7` |
+| `vendor/IEEEtran/IEEEtran.cls` | **V1.8b (2015/08/26), IEEE Author Center 배포본** (2026-09-16 교체; 사용자가 준 `IEEE-Transactions-LaTeX2e-templates-and-instructions.zip`). CTAN 원본과의 차이는 IEEE가 2023-02-27에 제목 글꼴(`\LARGE`/`\huge`/`\Huge`)을 **18pt로 고정**한 것뿐. CTAN 원본은 `IEEEtran-ctan-v1.8b.cls.txt`로 보존. |
+| `vendor/IEEEtran/bare_jrnl_new_sample4.tex`, `New_IEEEtran_how-to.{tex,pdf}` | 같은 zip의 새 샘플·설명서. 샘플의 `[lettersize,journal]` 옵션 중 `lettersize`는 클래스에 없는 옵션(기본이 letterpaper)이라 쓰지 않음 |
 | `vendor/IEEEtran/IEEEtran.bst` | v1.14 (2015/08/26). md5 `7c8250ecf02814ce6ddc0cdbb63df1dd` |
 | `vendor/IEEEtran/IEEEtran_HOWTO.pdf` | 공식 사용 설명서 — 표·수식·저자 블록 규칙은 여기를 볼 것 |
 | `vendor/IEEEtran/bare_jrnl.tex` | IEEE가 배포하는 저널 논문 빈 양식(참고용) |
@@ -37,6 +38,28 @@ make clean
 IEEEtran은 2015년 V1.8b 이후 갱신되지 않았고, IEEE Author Center가 지금도 이 판본을 배포합니다.
 
 ---
+
+## IEEE 스타일 가이드 대조 (2026-09-16)
+
+사용자가 준 **IEEE Magazine Style Guide v.2026**은 잡지 편집 지침이고, TCSVT는 Transactions라
+**IEEE Editorial Style Manual for Authors**(저널용, `scratchpad`에서 받아 대조)가 기준입니다. 둘이 다른 곳은
+저널 규칙을 따랐습니다.
+
+| 규칙 | 잡지 가이드 | 저널 매뉴얼 / IEEEtran | 원고 |
+|---|---|---|---|
+| 철자 | 미국식 | 미국식 ("Change all British spellings") | **영국식 36곳 → 미국식**으로 바꿈 (참고문헌 제목은 원문 유지) |
+| 접두어 붙임표 | non/pre/multi/re 붙여 씀 | 같은 관행 (nonlinear 등) | non-reference→nonreference, pre-registered→preregistered, multi-view→**multiview**, re-run→rerun 등 57곳. `re-registered`는 붙이면 뜻이 흐려져 유지 |
+| 아홉 이하 숫자 | 말로 | (명시 없음, 관행 동일) | 산문의 3·4·9 → three·four·nine (표는 숫자 유지) |
+| 천 단위 | 쉼표 (1,000) | **얇은 공백** (62 000), 네 자리는 구분 없음 (4000) | 다섯 자리 이상 `\,` 유지, **네 자리(1066·1139·1051·1090·5254)는 구분 제거** |
+| 숫자–단위 | — | **보통 공백** (얇은 공백 금지) | `\,GiB` 등 → `~GiB` |
+| 퍼센트 범위 | 20%–30% (기호 반복) | 〃 | 91%–100% |
+| 그림 참조 | "Figure 3" | **"Fig. 3"**, 표는 로마숫자 | Fig./TABLE I 유지 |
+| 그림 설명 | "FIGURE 1." 문장형; 위/아래 대신 (a)(b) | "Fig. 1." ; 첫 단어 대문자, 관사로 시작 금지 | (a)(b) 라벨을 그림 안에 넣고 설명도 (a)(b)로; "The pipeline." → "Pipeline." |
+| 약어 | 첫 사용에 정의; 표가 먼저 나오면 표에서도 정의 | 〃 | Table VIII 설명에 SfM·MVS 정의 추가; 초록의 CI는 풀어 씀 |
+| 초록 | 한 문단, 수식·인용·각주 없음 | **150~250 낱말** | 242낱말 |
+| 소속 | 국가 필수, 우편번호 | 〃 | "Daejeon 34129, Republic of Korea" (우편번호 확인 TODO) |
+| 사사 | 단수 "Acknowledgment"; **AI 생성 내용 공개 의무** | 같은 조항 (p.12–13) | `\section*{Acknowledgment}` 추가, Claude 사용 공개 문장 초안 (문구 확정 TODO) |
+| 약력 | GDPR상 요구 불가 | 〃 | 주석 틀만 (`IEEEbiographynophoto`) |
 
 ## 집필 규약
 
@@ -156,7 +179,7 @@ Fig. 4의 장면별 값만 스크립트에 옮겨 적은 것(`docs/muvod-compari
 - **`cover-letter.md`**: CFP 주제 항목에 대응시킨 영문 커버레터 초안 (Atypon Rex 투고 칸용). 이해충돌 문장은 확인 후 유지.
 
 **아직 없는 것**
-- ORCID·사사(acknowledgement)·저자 약력.
+- ORCID, 사사의 과제·기관 문장, AI 공개 문구 확정, 우편번호 확인, (선택) 약력.
 - 참고문헌 31건 전부 arXiv 원문과 대조 완료, `VERIFY` 0건 (WildSeg3D ICCV 2025 DOI 확인, SA3D는 NeurIPS 판 저자 9인).
 - 관련연구 문헌 수치는 arXiv PDF 원문과 대조 완료 — 결과표 `docs/paper-numbers.md` §11. 원문에 없던 두 문장은 뺐음.
 
