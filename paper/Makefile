@@ -5,6 +5,8 @@
 #   make final      \draftfalse 로 빌드해 final.pdf 생성 (TODO 주석 숨김)
 #   make clean      중간 파일 삭제
 #   make image      도커 이미지 빌드 (최초 1회)
+#   make bundle     제출 묶음: submission/tcsvt-manuscript.pdf (TODO 숨김) +
+#                   submission/tcsvt-source.zip (tex·bib·bbl·cls·bst·figures, 평평한 구조)
 
 IMAGE  := sctex:ieee
 UID    := $(shell id -u)
@@ -17,7 +19,7 @@ RUN     = docker run --rm --user $(UID):$(GID) \
             -e BIBINPUTS=".//:" \
             $(IMAGE)
 
-.PHONY: all pages final clean image
+.PHONY: all pages final clean image bundle
 
 all: main.pdf
 
@@ -39,3 +41,18 @@ clean:
 
 image:
 	docker build -t $(IMAGE) docker
+
+# 제출 묶음. IEEE 저널은 초기 투고에 PDF 하나, 채택 후에 소스(.tex/.bib/.bbl/그림)를 요구한다.
+# .bbl 을 함께 넣는 이유: IEEE 조판 시스템은 bibtex 을 다시 돌리지 않는 경우가 있다.
+bundle: final
+	rm -rf submission && mkdir -p submission/src/figures
+	cp final.pdf submission/tcsvt-manuscript.pdf
+	cp final.tex submission/src/main.tex
+	cp numbers.tex refs.bib submission/src/
+	cp final.bbl submission/src/main.bbl
+	cp vendor/IEEEtran/IEEEtran.cls vendor/IEEEtran/IEEEtran.bst submission/src/
+	cp figures/fig_*.pdf submission/src/figures/
+	cd submission/src && zip -q -r ../tcsvt-source.zip .
+	@echo "submission/tcsvt-manuscript.pdf  $$(du -h submission/tcsvt-manuscript.pdf | cut -f1)"
+	@echo "submission/tcsvt-source.zip      $$(du -h submission/tcsvt-source.zip | cut -f1)"
+	@unzip -l submission/tcsvt-source.zip | tail -n +4 | head -n -2
