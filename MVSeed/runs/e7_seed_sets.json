@@ -1,0 +1,18 @@
+{
+ "gt": {
+  "n_png": 1194,
+  "n_empty": 132
+ },
+ "oracle": {
+  "n_rows": 664,
+  "best_by_stream": {
+   "Gcorr": 52,
+   "G0": 270,
+   "Gdet": 87,
+   "G1": 222,
+   "Ggeo_a": 24,
+   "Ggeo_c": 4,
+   "Ggeo_b": 5
+  }
+ }
+}
