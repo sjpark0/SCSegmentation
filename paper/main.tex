@@ -76,30 +76,30 @@ Grant \ldots''}}}
 
 % ===========================================================================
 \begin{abstract}
-On a static multicamera rig---the input of volumetric capture---the task is,
-given the masks of the objects of interest in one camera at one instant, to
-produce each object's mask in every other camera and subsequent frame with no
-calibration, category label, or per-scene optimization: a spatial-intelligence
-question on real-world video, whether a segmentation foundation model keeps a
-geometrically and temporally consistent notion of an object across a rig
-without a 3D model. On the MUVOD rig benchmark, a two-stage pipeline on a
-promptable foundation model reaches \OursBasic\ J\&F (basic) and
-\OursComplete\ (complete) against the published \XMemBasic/\XMemComplete, a
-paired gain of \DeltaBasic\ points. We decompose the margin: \gainFoundation\
-points separate the published baseline from the same two-stage structure with
-the foundation model as tracker, which also carries implementation and
-evaluation differences; \gainOurs\ come from our design: cross-view memory,
-raw frame-0 seeding, and zoom-gated crop retracking. Rerunning the tracker
-from ground-truth seeds on the scored cameras recovers \gtSeedHeadlineDelta\
-of the remaining \totalGap\ points; a model-free round trip of ground truth
-through the mask grid bounds the grid's own cost at \lossNow. Five
-preregistered seed-repair attempts fail their gates: no generator yields
-enough correct candidates, and where the candidate union holds one, a
-ground-truth-free vote repairs some seeds but shows no net gain, because
-\nFzero\ nonreference seeds need repair against \nNzero\ sound ones---a
-\asymmetry\ ratio under which, at the vote's gains and losses, a selector wins
-only by damaging sound seeds about \breakEvenTimes\ times less often than it
-repairs failing ones.
+Given the masks of the objects of interest in one camera of a static
+multicamera rig at one instant, the task is to produce each object's mask in
+every other camera and subsequent frame with no calibration, category label,
+or per-scene optimization: a spatial-intelligence question on real-world
+video, whether a segmentation foundation model keeps a geometrically and
+temporally consistent notion of an object across a rig without a 3D model. On
+the MUVOD rig benchmark, a two-stage pipeline on a promptable foundation model
+reaches \OursBasic\ J\&F (basic) and \OursComplete\ (complete) against the
+published \XMemBasic/\XMemComplete, a paired gain of \DeltaBasic. We decompose
+the margin: \gainFoundation\ points separate the published baseline from the
+same two-stage structure with the foundation model as tracker, which also
+carries implementation and evaluation differences; \gainOurs\ come from our
+design: cross-view memory, raw frame-0 seeding, and zoom-gated crop
+retracking. Rerunning the tracker from ground-truth seeds recovers
+\gtSeedHeadlineDelta\ of the remaining \totalGap\ points. Five preregistered
+seed-repair attempts fail their gates, and a ground-truth-free vote over their
+candidates repairs some seeds but shows no net gain, because \nFzero\
+nonreference seeds need repair against \nNzero\ sound ones---a \asymmetry\
+ratio under which, at the vote's gains and losses, a selector wins only by
+damaging sound seeds about \breakEvenTimes\ times less often than it repairs
+failing ones. On a \plenCams-camera studio ring, starting the pipeline from
+the text prompt ``person'' on one camera matches ground-truth seeding on the
+other 31 (\Jscore\ \plenJtxt\ against \plenJgt)---a route only a
+concept-promptable model offers.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -205,7 +205,9 @@ benchmark by \voteReal\ points (an interval that spans zero) and even the best
 frame-0 choice among them gains only \oracleReal, a seed that is best at frame 0
 not being best after tracking. The generators fail for want of correct
 candidates; the vote fails for a structural reason: there are
-\nFzero\ nonreference seeds to repair and \nNzero\ to protect.
+\nFzero\ nonreference seeds to repair and \nNzero\ to protect. A closing
+demonstration on a \plenCams-camera studio ring runs the same pipeline from a
+single text prompt on one camera (Section~\ref{sec:plenoptic}).
 
 \noindent\textbf{Contributions.}
 \begin{itemize}
@@ -229,6 +231,11 @@ candidates; the vote fails for a structural reason: there are
         training-view PSNR---the union-oracle versus
         hallucination trade-off that underlies them, and the \asymmetry\ repair-to-protect ratio with the break-even
         condition it implies for any seed selector.
+  \item A demonstration on a \plenCams-camera studio ring that the pipeline
+        starts from one text prompt on one camera with no loss against
+        ground-truth seeding (\plenDeltaTxt\ in \Jscore), a route open to a
+        concept-promptable model and not to the mask- or point-prompted
+        trackers it is compared with.
   \item A reconstruction of the MUVOD reference-camera protocol, which the
         benchmark does not publish, from three independent lines of evidence.
 \end{itemize}
@@ -1149,6 +1156,114 @@ majority population, not recall on the failing minority, decides the sign, and
 we suggest that future work on seed repair report both rates.
 
 % ===========================================================================
+\section{Beyond the Benchmark: A 32-Camera Studio Ring}
+\label{sec:plenoptic}
+MUVOD scores three cameras per scene and seeds every method from a
+ground-truth mask. To see the pipeline on a dense rig, and without any mask at
+all, we ran it on one scene from a plenoptic studio: \plenCams\ synchronized 4K
+cameras on a ring (about \plenRingDeg$^{\circ}$ apart) around six people who
+circle a flag holding hands, so that in every camera each person passes behind
+others. The scene is our own capture and is not public; this is a
+demonstration, not a benchmark. We use \plenFrames\ frames at \plenFps\
+frames/s (\plenSeconds\ s), downsampled to \plenRes, and hand-drawn polygon
+masks of the six people on the first frame of every camera (\plenPairs\
+nonreference (camera, person) pairs carry ground truth; one person is
+unannotated in each of two cameras). No ground truth exists after the first
+frame. The protocol was preregistered; the reference camera is the one that
+sees all six people with the largest total mask area, and cameras are indexed
+in ring order so that index neighbors are physical neighbors.
+
+\begin{table}[!t]
+\caption{Stage 1 on the ring at $t=0$, \plenPairs\ nonreference (camera,
+person) pairs with ground truth. Seed \Jscore: the reference camera's own mask
+against ground truth (the ground-truth seed itself scores \plenRefRoundTrip\
+after the tracker's round trip). Fail.: pairs with $\Jscore<0.5$. Scene \JF:
+the MUVOD aggregation (persons, then cameras) at $t=0$.}
+\label{tab:plen}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Reference seed & Seed \Jscore & Mean/median \Jscore & Fail. & Scene \JF \\
+\midrule
+Ground-truth masks   & (GT) & \plenJgt\ / \plenJgtMed & \plenFailGt & \plenQfiveGt \\
+Text ``person''      & \plenSeedJtxt & \plenJtxt\ / \plenJtxtMed & \plenFailTxt & \plenQfiveTxt \\
+One click per person & \plenSeedJpt & \plenJpt\ / \plenJptMed & \plenFailPt & \plenQfivePt \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_plenoptic_ring_txt.pdf}
+\caption{Stage 1 on the \plenCams-camera ring from the text prompt ``person''
+on the reference camera (top left), shown at ring distances 2, 4, 8, 12, and 16
+at $t=0$. Filled: the pipeline's masks, colors identify persons; white
+outline: ground truth. No mask was given anywhere.}
+\label{fig:plenring}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_plenoptic_curve.pdf}
+\caption{Mean \Jscore\ at $t=0$ by ring distance from the reference camera
+(two cameras per distance, one at 16) for the three seeds of
+Table~\ref{tab:plen}.}
+\label{fig:plencurve}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_plenoptic_event_cam_26_1_zoom.pdf}
+\caption{The one divergence event: camera 26, person 1 passes behind another
+dancer for frames \plenEventFrames. Top: the single-view tracker loses him for
+all \plenEventN\ frames. Bottom: with cross-view memory a mask stays on the
+visible part for \plenEventHeld\ of them. Crops around the person.}
+\label{fig:plenevent}
+\end{figure}
+
+\textit{Seeding without a mask.} SAM~3 accepts concept prompts, which the XMem
+baseline (a mask) and SAM~2 (points and boxes) do not. We seeded the reference
+camera three ways and ran the unchanged Stage~1: the ground-truth masks, as on
+MUVOD; the single text prompt ``person,'' whose \plenTxtInstances\ instances
+are assigned to the six people by IoU for scoring only (the pipeline never
+sees ground truth on this route); and one positive click per person at the
+innermost pixel of the person's mask, keeping the highest-scoring of SAM~3's
+three candidate masks. Table~\ref{tab:plen} gives the result. From ground
+truth the ring is covered almost uniformly: mean \Jscore\ \plenJgt\ (median
+\plenJgtMed), \plenFailGt\ failures in \plenPairs\ pairs, and no dependence on
+ring distance---the cameras opposite the reference (distance 16) score
+\plenJdSixteen\ against \plenJdOne\ next to it (Fig.~\ref{fig:plencurve}); we
+had registered a monotone decrease and were wrong. The text prompt reproduces
+this within \plenDeltaTxt\ (\plenJtxt): one word on one camera gives masks of
+the same quality on all 32 (Fig.~\ref{fig:plenring}). One click does not: the
+click selects a shirt or a torso as often as the person (reference-camera
+\Jscore\ \plenSeedJpt), and a part propagates as a part (\plenJpt,
+\plenFailPt\ failures)---the part/whole ambiguity that the text prompt
+resolves.
+
+\textit{Occlusion during tracking.} Stage~2 was run over the \plenFrames\
+frames in the control configuration and in the full pipeline (\plenRuntimeCtrl\
+and \plenRuntimeHead\ s on the GPU of Table~\ref{tab:runtime}); the Stage-1
+seeds are byte-identical, so the two differ only in tracking. Without ground
+truth after $t=0$ we registered an event rule on mask area alone: an interval
+of at least three frames in which one configuration's mask falls below 10\% of
+its seed area while the other keeps at least 50\% on at least two of those
+frames. One interval qualifies, in the direction of the full pipeline: on
+camera 26, person 1 passes behind another dancer for frames \plenEventFrames;
+the single-view tracker loses him for all \plenEventN\ frames and the
+cross-view configuration keeps a mask on the visible sliver for
+\plenEventHeld\ of them (Fig.~\ref{fig:plenevent}). No interval goes the other
+way. Both configurations lose the same \plenVanished\ of the \plenPairsSeeded\
+seeded pairs by the last frame, all of them dancers that have moved fully or
+almost fully behind another person in that camera in the closing frames; the
+clip ends before they reappear. As on MUVOD (Section~\ref{sec:xview}), the
+cross-view memory acts on the rare frames where a neighbor still sees what the
+camera has lost, and does no harm; one event is an illustration, not a
+measurement.
+
+% ===========================================================================
 \section{Limitations}
 \label{sec:limits}
 \begin{enumerate}
@@ -1187,6 +1302,9 @@ we suggest that future work on seed repair report both rates.
         initialization of the whole rig, and we do not claim it as a bound in
         either direction. In the control configuration the cameras are tracked
         independently and the caveat does not arise.
+  \item The studio-ring demonstration is one scene of our own capture, not
+        public, with ground truth on the first frame only; its event count is
+        one.
 \end{enumerate}
 
 % ===========================================================================
@@ -1212,7 +1330,7 @@ twofold: a 2D segmentation foundation model already carries most of the
 cross-view consistency a real-world rig demands, and on rigs of
 \gsViewsMin--\gsViewsMax\ wide-baseline cameras the explicit 3D routes we
 tested---structure-from-motion, feed-forward point maps, and per-scene
-3DGS---do not yet add to it.
+3DGS---do not yet add to it. On a dense studio ring, one word on one camera is enough to start it.
 
 % ===========================================================================
 \section*{Acknowledgment}

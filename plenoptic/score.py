@@ -103,7 +103,7 @@ def main():
     for tag, m in (("text", TXT), ("point", PT)):
         if R[m] and R[CTRL]:
             out[f"Q4_{tag}_minus_gt"] = out[m]["Q1_mean_J"] - out[CTRL]["Q1_mean_J"]
-    if os.path.isdir(os.path.join(SHARE, CTRL)) and os.path.isdir(os.path.join(SHARE, HEAD)):
+    if all(os.path.exists(os.path.join(SHARE, m, "MANIFEST.json")) for m in (CTRL, HEAD)):   # MANIFEST is written at the end of a run
         Ac, Ah = areas(CTRL), areas(HEAD)
         ev = events(Ac, Ah, "control_lost_headline_held") + events(Ah, Ac, "headline_lost_control_held")
         out["Q6_events"] = ev

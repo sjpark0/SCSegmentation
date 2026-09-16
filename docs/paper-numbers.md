@@ -241,3 +241,23 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 
 §V-A에 공정성 대조 6항목(채점 카메라 = 주석 카메라, 카메라당 21프레임·오프셋 일치, 객체 수 17/17 일치, 정답 마스크 바이트 동일, c_ini의 basic=complete 패턴 17/17 재현)과 프로토콜 재량 2건(프레임 0 채점, 카메라에 없는 객체)을 넣고, 한계 1에 "평가 조건은 대조했으나 구현 동등성은 미측정"으로 범위를 적음. XMem 동일 조건 재실행은 하지 않기로 결정(2026-09-16): MUVOD가 코드를 공개하지 않아 재실행도 우리 설정의 XMem이 되어 애매함이 남고, 심사에서 요구되면 revision에서 수행.
 
+## 15. S3-P 플레놉틱 리그 시연 (2026-09-16) — §VIII "Beyond the Benchmark", Table X, Fig. 7–9
+
+출처 [plenoptic-P.md](plenoptic-P.md), `plenoptic/score.json`, `plenoptic/prompt_seed_{txt,pt}.json`. 매크로 `\plen*` (numbers.tex 끝).
+
+| 매크로 | 값 | 뜻 |
+|---|---|---|
+| `\plenCams` / `\plenFrames` / `\plenFps` / `\plenSeconds` / `\plenRes` | 32 / 101 / 20 / 5 / 1920×1080 | 링 카메라, 프레임 900+3t, 등가 fps, 길이, 축소 해상도(4K 원본; 러너 RAM 때문에 축소) |
+| `\plenRingDeg` | 11 | 360/32 = 11.25° |
+| `\plenPairs` / `\plenPairsSeeded` | 184 / 189 | 비기준 31×6 − 2(P25 p5, P28 p3 미주석) / 시드 있는 쌍(192 중) |
+| `\plenJgt` / `\plenJgtMed` / `\plenFailGt` / `\plenQfiveGt` | 0.939 / 0.972 / 2 / 95.81 | P1 정답 시드, t=0 |
+| `\plenRefRoundTrip` | 0.969–0.997 | 기준 카메라 정답 시드의 왕복 뒤 J (6명) |
+| `\plenJdOne` / `\plenJdEight` / `\plenJdSixteen` | 0.92 / 0.88 / 0.97 | Q2 링 거리 1 / 8(최소) / 16 |
+| `\plenTxtInstances` / `\plenSeedJtxt` / `\plenJtxt` / `\plenJtxtMed` / `\plenFailTxt` / `\plenQfiveTxt` / `\plenDeltaTxt` | 6 / 0.956 / 0.937 / 0.969 / 2 / 95.57 / −0.002 | P2-T 텍스트 "person" |
+| `\plenSeedJpt` / `\plenJpt` / `\plenJptMed` / `\plenFailPt` / `\plenQfivePt` | 0.42 / 0.362 / 0.371 / 147 / 40.48 | P2-P 클릭 1개/사람 |
+| `\plenEventFrames` / `\plenEventN` / `\plenEventHeld` / `\plenVanished` | 76–88 / 13 / 7 / 15 | Q6 사건(cam_26 p1) / 두 구성이 함께 잃는 쌍 |
+| `\plenCropTargets` / `\plenCropKept` | 18 / 3 | 헤드라인 크롭 대상·채택 (본문 미사용) |
+| `\plenRuntimeCtrl` / `\plenRuntimeHead` | 2011 / 1745 | 초, 32대 × 101프레임 |
+
+초록의 격자 왕복 문장(1.799)은 이 시연 문장을 넣으며 뺐음(기여·§VI-C·결론에는 남음). 초록 247단어.
+

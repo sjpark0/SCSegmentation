@@ -68,11 +68,25 @@ def fig_ring(method, t):
     fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 
 
-def fig_event(cam, obj, a, b, neighbor):
-    ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, 100)]))
+def bbox_union(cam, obj, a, b, margin=0.4):
+    """crop box (x0, y0, x1, y1) at figure scale around every mask of `obj` in either configuration over frames a-1..b+1."""
+    ys, xs = [], []
+    for t in range(max(a - 1, 0), min(b + 1, 100) + 1):
+        for method in (CTRL, HEAD):
+            m = pred(method, cam, t, obj)
+            if m is not None and m.any(): yy, xx = np.nonzero(m); ys += [yy.min(), yy.max()]; xs += [xx.min(), xx.max()]
+    if not ys: return None
+    y0, y1, x0, x1 = min(ys), max(ys), min(xs), max(xs); h, w = y1 - y0, x1 - x0
+    H, W = frame(cam, 0).shape[:2]
+    return (max(int(x0 - margin * w), 0), max(int(y0 - margin * h), 0), min(int(x1 + margin * w), W), min(int(y1 + margin * h), H))
+
+
+def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5):
+    ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, 100)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, 100)]))
     rows = [(CTRL, "single-view tracker (XW0)"), (HEAD, "with cross-view memory (ours)")]
     if neighbor: rows.append((None, f"neighbour {neighbor}"))
-    fig, axs = plt.subplots(len(rows), len(ts), figsize=(7.16, 1.45 * len(rows)))
+    box = bbox_union(cam, obj, a, b) if zoom else None
+    fig, axs = plt.subplots(len(rows), len(ts), figsize=(3.5 if cols == 3 else 7.16, (1.75 if cols == 3 else 1.45) * len(rows)))
     for r, (method, lab) in enumerate(rows):
         for c, t in enumerate(ts):
             ax = axs[r, c]
@@ -80,12 +94,14 @@ def fig_event(cam, obj, a, b, neighbor):
             else:
                 img = frame(cam, t).astype(float); m = pred(method, cam, t, obj)
                 if m is not None and m.any(): img[m] = 0.4 * img[m] + 0.6 * COLS[obj]
-                ax.imshow(img.astype(np.uint8))
+                img = img.astype(np.uint8)
+                if box: img = img[box[1]:box[3], box[0]:box[2]]
+                ax.imshow(img)
             ax.axis("off")
             if r == 0: ax.set_title(f"t = {t}", fontsize=7, pad=2)
             if c == 0: ax.text(-0.02, 0.5, lab, transform=ax.transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
     plt.subplots_adjust(left=0.035, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.05)
-    name = f"fig_plenoptic_event_{cam}_{obj}"
+    name = f"fig_plenoptic_event_{cam}_{obj}" + ("_zoom" if zoom else "")
     fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 
 
@@ -106,10 +122,10 @@ def fig_curve():
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("what", choices=["ring", "event", "curve"])
     ap.add_argument("--method", default=CTRL); ap.add_argument("--t", type=int, default=0)
-    ap.add_argument("--cam"); ap.add_argument("--obj", type=int); ap.add_argument("--frames", type=int, nargs=2); ap.add_argument("--neighbor")
+    ap.add_argument("--cam"); ap.add_argument("--obj", type=int); ap.add_argument("--frames", type=int, nargs=2); ap.add_argument("--neighbor"); ap.add_argument("--zoom", action="store_true"); ap.add_argument("--cols", type=int, default=5)
     a = ap.parse_args()
     if a.what == "ring": fig_ring(a.method, a.t)
-    elif a.what == "event": fig_event(a.cam, a.obj, a.frames[0], a.frames[1], a.neighbor)
+    elif a.what == "event": fig_event(a.cam, a.obj, a.frames[0], a.frames[1], a.neighbor, a.zoom, a.cols)
     else: fig_curve()
 
 
