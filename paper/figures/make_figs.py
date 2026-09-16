@@ -212,24 +212,30 @@ def fig_scenes():
 # =====================================================================
 def fig_perframe():
     J = json.load(open(os.path.join(DATA, "jf_r4.json")))
-    ref_rows, non_rows = [], []
+    ref_rows, non_rows, by_type = [], [], {"dynamic": [], "static": [], "env": []}
     for e in J:
         if e["method"] != H or not e.get("result"): continue
         scene = e["dataset"]; basic = set(basic_objects(scene)); ref = cam_by_num(scene, CFG[scene]["c_ini"])
+        labels = json.load(open(os.path.join(DATA, CFG[scene]["folder"], "Mask", "objects_labels.json")))
         pf = e["result"]["per_frame"]
         for i, o in enumerate(e["objects"]):
             if o not in basic: continue
             jf = [None if (pf["J"][i][t] is None or pf["F"][i][t] is None) else 0.5 * (pf["J"][i][t] + pf["F"][i][t]) for t in range(21)]
-            (ref_rows if e["camera"] == ref else non_rows).append(jf)
+            if e["camera"] == ref: ref_rows.append(jf)
+            else:
+                non_rows.append(jf); by_type[labels[str(o)]["type"]].append(jf)
     def curve(rows): return [statistics.mean([r[t] for r in rows if r[t] is not None]) for t in range(21)]
     cr, cn = curve(ref_rows), curve(non_rows)
     print(f"  per-frame: ref n={len(ref_rows)} t0/10/20 = {cr[0]:.3f}/{cr[10]:.3f}/{cr[20]:.3f}; nonref n={len(non_rows)} t0/10/20 = {cn[0]:.3f}/{cn[10]:.3f}/{cn[20]:.3f}")
-    fig, ax = plt.subplots(figsize=(3.5, 1.9))
-    ax.plot(range(21), cr, "o-", ms=2.5, lw=1, color="#1f5f8b", label=f"reference camera ($n$={len(ref_rows)})")
-    ax.plot(range(21), cn, "s-", ms=2.5, lw=1, color="#b03a2e", label=f"non-reference cameras ($n$={len(non_rows)})")
+    fig, ax = plt.subplots(figsize=(3.5, 2.1))
+    ax.plot(range(21), cr, "o-", ms=2.5, lw=1.1, color="#1f5f8b", label=f"reference camera ($n$={len(ref_rows)})")
+    ax.plot(range(21), cn, "s-", ms=2.5, lw=1.1, color="#b03a2e", label=f"nonreference, all ($n$={len(non_rows)})")
+    for typ, ls, col in (("dynamic", "--", "#b03a2e"), ("static", ":", "#b03a2e"), ("env", "-.", "#b03a2e")):
+        ct = curve(by_type[typ]); print(f"  nonref/{typ}: n={len(by_type[typ])} t1/20 = {ct[1]:.3f}/{ct[20]:.3f}")
+        ax.plot(range(21), ct, ls, lw=0.8, color=col, alpha=0.8, label=f"nonreference, {typ} ($n$={len(by_type[typ])})")
     ax.set_xlabel("frame $t$", fontsize=7); ax.set_ylabel("mean J&F per pair", fontsize=7); ax.set_xticks(range(0, 21, 5))
-    ax.set_xlim(-0.5, 20.5); ax.set_ylim(0.85, 1.0); ax.tick_params(labelsize=6); ax.grid(alpha=0.25, lw=0.5)
-    ax.legend(fontsize=6, frameon=False, loc="lower right")
+    ax.set_xlim(-0.5, 20.5); ax.set_ylim(0.82, 1.0); ax.tick_params(labelsize=6); ax.grid(alpha=0.25, lw=0.5)
+    ax.legend(fontsize=5.2, frameon=False, loc="lower right", ncol=2)
     for s in ("top", "right"): ax.spines[s].set_visible(False)
     plt.subplots_adjust(left=0.15, right=0.98, top=0.97, bottom=0.2)
     fig.savefig(os.path.join(OUT, "fig_perframe.pdf")); plt.close(fig); print("fig_perframe.pdf")

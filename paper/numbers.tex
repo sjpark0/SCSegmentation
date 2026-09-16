@@ -222,3 +222,28 @@
 \newcommand{\dogCini}{88.3}            % Dog basic, camera_0002 (채택), 대조군 XW0, muvod-comparison.md §5
 \newcommand{\dogAltCiniA}{91.9}        % Dog basic, camera_0004, XW0
 \newcommand{\dogAltCiniB}{91.7}        % Dog basic, camera_0004, XW1GPS4
+
+
+%% 2026-09-16 외부 리뷰 반영 추가 (docs/paper-numbers.md §12) --------------------
+\newcommand{\gainOursPctGap}{14.3}      % 1.496 / (100-89.519)=10.481
+\newcommand{\gapAfterTracker}{10.481}
+\newcommand{\gapNotGrid}{7.19}          % 8.985 - 1.799
+\newcommand{\nFramesAll}{22\,386}       % 1066 x 21
+\newcommand{\gsScenes}{9}               % E4c 깊이 대조 장면 수
+\newcommand{\nNonrefPairs}{668}
+\newcommand{\driftMedianNonref}{\ensuremath{-0.0001}}   % eval/drift_by_type.py, t20-t1, J&F
+\newcommand{\driftMedianRef}{\ensuremath{-0.0015}}
+\newcommand{\driftDownNonref}{23}
+\newcommand{\driftUpNonref}{18}
+\newcommand{\driftFellNonref}{12}
+\newcommand{\driftRoseNonref}{2}
+\newcommand{\driftDynNonref}{0.013}
+\newcommand{\driftEnvNonref}{0.014}
+\newcommand{\driftStaNonref}{0.002}
+\newcommand{\gainPerRecovered}{0.38}    % E6: F0 총 ΔJ +0.0932x41=3.82 / 회복 10쌍
+\newcommand{\lossPerBroken}{0.52}       % E6: N0 총 ΔJ -0.0091x623=5.67 / 파괴 11쌍
+\newcommand{\breakEvenRatio}{0.048}     % (41x0.38)/(623x0.52)
+\newcommand{\breakEvenTimes}{20}
+\newcommand{\voteRepairRate}{24\%}      % 10/41
+\newcommand{\voteDamageRate}{1.8\%}     % 11/623
+\newcommand{\voteBR}{0.072}             % 0.018/0.244
