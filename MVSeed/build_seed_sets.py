@@ -98,8 +98,9 @@ def build_oracle(cv2, np, scene, rows, log):
             m = cv2.imread(SV.mask_path(kind, fname, scene, folder, cam, start, obj), cv2.IMREAD_GRAYSCALE)
             write_png(cv2, os.path.join(dst, cam, str(start), f"{obj}.png"), m > 127)
             by_stream[best] = by_stream.get(best, 0) + 1
-    # written_views: the two non-reference annotated cameras (G0 copy covers every camera anyway)
-    written = [cm for cm in annotated_cams(scene) if cm != c_ini]
+    # written_views must cover every scored camera (seeds_from.check_coverage), c_ini included:
+    # the folder is a whole G0 copy, so list every camera directory it holds
+    written = sorted(d for d in os.listdir(dst) if os.path.isdir(os.path.join(dst, d)))
     man = manifest(scene, "oracle", written, dict(base=SV.BASE, streams=SV.NAMES, n_rows=len(choices),
                                                    n_replaced=sum(by_stream.values()), by_stream=by_stream))
     json.dump(man, open(os.path.join(dst, "SEED_MANIFEST.json"), "w"), indent=1)
