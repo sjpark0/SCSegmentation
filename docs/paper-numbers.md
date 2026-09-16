@@ -231,3 +231,4 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 
 표의 행 합은 반올림 전 짝지은 Δ와 일치(R1 4.3832, R2 4.2582, R3 −0.0498, R4 1.0929); 3자리 표기에서는 ±0.001 차이가 날 수 있어 캡션에 "반올림 전 합"이라고 적음. 문구: 초록 "cannot pick it" → "repairs some seeds but shows no net gain"; §VII 첫 문단 "room is small"을 시험한 후보 집합·실패 집합으로 한정; 결론에서 투표(비대칭)와 프레임-0 오라클(프레임 0/전파 불일치)의 원인 분리; 소제목 §VI-B "A Deficit From the First Frame; Mean Drift Is Small", §VII "Five Seed-Repair Attempts and Where Each Fails Its Gate".
 
+리뷰 4차(최종 편집, 2026-09-16): 수치 변경 없음. §VII-C 소제목 → "Candidate Availability and the Limits of SeedVote", 결론 "does not help" → "does not demonstrate a net gain", `centerd` → `centered`, Table VI·VII·III 캡션과 서론 한 문장 압축, Fig. 5 높이 2.6→2.4 in — 제출본 11쪽 복귀.

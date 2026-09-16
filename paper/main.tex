@@ -178,10 +178,10 @@ claiming. The pipeline reaches \OursBasic\ \JF\ on the \emph{basic} protocol
 and \OursComplete\ on \emph{complete}, against \XMemBasic\ and \XMemComplete\
 for the published XMem baseline (Table~\ref{tab:headline}). Reported as a single margin, that is \DeltaBasic\ points; \pctFoundation\% of
 it, however, is the distance from the published baseline to the same two-stage
-structure with the tracker replaced---a term that also carries any difference
-in implementation and evaluation conditions, since the baseline was not rerun
-in our code---and \gainOurs\ points come from our design, measured within our
-pipeline (Table~\ref{tab:ladder}). The
+structure with the tracker replaced---which, since the baseline was not rerun
+in our code, also carries implementation and evaluation differences---and
+\gainOurs\ points come from our design, measured within our pipeline
+(Table~\ref{tab:ladder}). The
 latter is small in absolute terms but removes \gainOursPctGap\% of the gap the
 tracker replacement left. We estimate the optimism of its final arm selection
 by leave-one-scene-out (\losoOmega\ points, Table~\ref{tab:loso}); the design
@@ -508,7 +508,7 @@ Section~\ref{sec:crop} reverts this pair.}
 \label{sec:crop}
 Small objects lose most on the $\gridNow\times\gridNow$ grid. For every (camera, object)
 whose seed covers fewer than $\cropAreaMax$ pixels we open a second, single-object
-tracking session inside a square window centerd on the seed's bounding box,
+tracking session inside a square window centered on the seed's bounding box,
 with side $s=\mathrm{clamp}(\cropScale\cdot\max(w,h),\ \cropMinSide,\
 \min(H,W))$, resized to the model's \modelInput-pixel input; the effective zoom
 is $\modelInput/s$. The session reads no neighbor memory and its result is
@@ -655,9 +655,8 @@ adds one element to the row above. The XMem row is the aggregate printed in
 the benchmark paper (\ladderXMem); Tables~\ref{tab:headline}
 and~\ref{tab:scenes} use the mean of the transcribed per-scene values
 (\XMemBasic), hence the difference between the ladder total and $\Delta$.
-The first gain is against the published number and includes any difference in
-implementation and evaluation conditions; the other three are measured within
-our pipeline.}
+The first gain is against the published number (implementation and evaluation
+differences included); the other three are measured within our pipeline.}
 \label{tab:ladder}
 \centering
 \begin{tabular}{lcc}
@@ -772,10 +771,9 @@ several minutes precedes any segmentation.
 \begin{table}[!t]
 \caption{Oracles on the gap to a perfect score, basic protocol. \emph{Seed}
 rows replace the frame-0 seed of the three scored cameras and rerun the
-unchanged Stage~2 (17 scenes each; paired CI from a scene-cluster bootstrap);
-\emph{control} is the two-stage structure with raw frame-0 seeding and neither
-cross-view memory nor crop retracking (\controlBasic). \emph{Output} rows replace final
-masks by ground truth without rerunning and overlap with one another. Gains are
+unchanged Stage~2; \emph{control} is the two-stage structure with raw frame-0
+seeding, no cross-view memory or crop retracking (\controlBasic). \emph{Output} rows replace final masks by ground
+truth without rerunning and overlap with one another. Gains are
 benchmark points against the configuration named.}
 \label{tab:budget}
 \centering
@@ -801,14 +799,13 @@ Total gap of the full pipeline ($100-\OursBasic$) & \totalGap \\
 \end{table}
 
 \begin{table}[!t]
-\caption{Where the seed-replacement gains of Table~\ref{tab:budget} land:
-each paired $\Delta$ split over the scored pairs with the benchmark's own
-weights (Section~\ref{sec:asymmetry}) into the reference camera (398 pairs),
-the failing (F0, \nFzero) and sound (N0, \nNzero) nonreference pairs, and the
-\nOtherNonref\ nonreference pairs with empty ground truth at frame 0. Rows sum
-to the total before rounding. The reference camera moves under ground-truth
-seeds because its frame-0 output becomes the raw ground truth rather than its
-round trip (Section~\ref{sec:fs}).}
+\caption{Seed-replacement gains of Table~\ref{tab:budget} split over the
+scored pairs with the benchmark's own weights (Section~\ref{sec:asymmetry}):
+reference camera (398 pairs), failing (F0, \nFzero) and sound (N0, \nNzero)
+nonreference pairs, and \nOtherNonref\ nonreference pairs with empty ground
+truth at frame 0. Rows sum to the total before rounding; the reference camera
+moves under ground-truth seeds because its frame 0 becomes the raw ground
+truth, not its round trip (Section~\ref{sec:fs}).}
 \label{tab:contrib}
 \centering
 \footnotesize
@@ -832,8 +829,7 @@ ground truth and rerunning the unchanged Stage~2 raises the control
 configuration from \controlBasic\ to \gtSeedControl\ (\gtSeedControlDelta,
 95\% CI \gtSeedControlCI, 17 of \nScenes\ scenes) and the full pipeline from
 \OursBasic\ to \gtSeedHeadline\ (\gtSeedHeadlineDelta, CI \gtSeedHeadlineCI).
-The two readings isolate different things. In the control configuration the
-cameras are tracked independently, so the gain is the effect of a correct seed
+In the control configuration the cameras are tracked independently, so the gain is the effect of a correct seed
 on each scored camera, \gtSeedControlPct\% of that configuration's
 \controlGap-point gap, and the \gtSeedControlRemaining\ that remain are what
 the tracker loses from a correct seed. In the full pipeline the unscored
@@ -944,9 +940,9 @@ same output grid.
 Replacing the outputs of the 15 pairs whose final frame-0 mask fails is worth
 \oracleSeed\ points (Table~\ref{tab:budget}), and rerunning Stage~2 from the
 best frame-0 candidate of the generators below \oracleReal. Neither is a
-ceiling on seed repair in general---ground-truth seeds on the scored cameras
-recover \gtSeedHeadlineDelta---but both say that the room in the outright
-failures, and in the candidate set we tested, is small. The failing seeds are nevertheless the
+ceiling on seed repair---ground-truth seeds recover \gtSeedHeadlineDelta---but
+both say the room in the outright failures and in the candidate set we tested
+is small. The failing seeds are nevertheless the
 most visible errors---an object placed on the wrong thing, or missing
 altogether---and the literature of
 Section~\ref{sec:related} offers several training-free ways to produce a better
@@ -1061,7 +1057,7 @@ absolute relative difference where both depths exist, and the bias is the sign
 of the median difference. The finding says nothing about 3DGS segmentation
 methods that never read a depth.
 
-\subsection{Candidates Exist; the Selection Signal Does Not}
+\subsection{Candidate Availability and the Limits of SeedVote}
 \label{sec:cands}
 The union of all generators contains a correct candidate for \unionOracle\ of
 the \nQualPairs\ qualifying failing pairs, so the information is present in
@@ -1188,8 +1184,8 @@ outright, and neither the output grid nor temporal drift explains much of what
 remains. The visible failures---seeds placed on the wrong object---are where
 repair was attempted: the five preregistered candidate generators fail their
 gates for want of correct candidates, and where candidates exist the one
-preregistered ground-truth-free rule over their union does not help (\voteReal,
-an interval spanning zero), because what it breaks among the \nNzero\ sound
+preregistered ground-truth-free rule over their union does not demonstrate a
+net gain (\voteReal, an interval spanning zero), because what it breaks among the \nNzero\ sound
 pairs cancels what it repairs among the \nFzero\ failing ones; even the best
 frame-0 choice among the same candidates gains only \oracleReal\ once
 propagated, because a seed that is best at frame 0 is not always best after
