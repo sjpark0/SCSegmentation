@@ -14,6 +14,7 @@ Runs in the scsam3 container (cv2, matplotlib); reads only, writes PDFs under pa
 import argparse, json, os
 import numpy as np, cv2
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+plt.rcParams["savefig.dpi"] = 600          # IEEE: photos >= 300 dpi at printed size; matplotlib resamples imshow rasters at savefig dpi
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_SCENE", "T06_flag_ganggang"))   # masks: PLEN_SCENE=T06_flag_ganggang_L540 for P4
@@ -76,7 +77,7 @@ def fig_ring(method, t):
         ax.imshow(overlay(frame(cam, t), method, cam, t, with_gt=(t == 0))); ax.set_title(f"{cam} ({lab})", fontsize=7, pad=2); ax.axis("off")
     plt.subplots_adjust(left=0.005, right=0.995, top=0.93, bottom=0.01, wspace=0.02, hspace=0.12)
     name = f"fig_plenoptic_ring_{'txt' if method == TXT else 'gt'}"
-    fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
+    fig.savefig(os.path.join(OUT, name + ".pdf"), dpi=600); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 
 
 def bbox_union(cam, obj, a, b, margin=0.4):
@@ -119,7 +120,7 @@ def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5, ts=None):
             if c == 0: ax.text(0.02, 0.97, lab, transform=ax.transAxes, va="top", ha="left", fontsize=7, bbox=dict(facecolor="white", alpha=0.85, pad=1.5, edgecolor="none"))
     plt.subplots_adjust(left=0.005, right=0.995, top=0.9, bottom=0.01, wspace=0.02, hspace=0.08)
     name = f"fig_plenoptic_event_{cam}_{obj}" + ("_zoom" if zoom else "")
-    fig.savefig(os.path.join(OUT, name + ".pdf")); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
+    fig.savefig(os.path.join(OUT, name + ".pdf"), dpi=600); fig.savefig(os.path.join(PREV, name + ".png"), dpi=110); plt.close(fig); print(name)
 
 
 def fig_curve():
@@ -133,7 +134,7 @@ def fig_curve():
     ax.set_ylim(0, 1.0); ax.grid(alpha=0.25, lw=0.5); ax.legend(fontsize=6, frameon=False, loc="lower left")
     for s in ("top", "right"): ax.spines[s].set_visible(False)
     plt.subplots_adjust(left=0.14, right=0.98, top=0.97, bottom=0.22)
-    fig.savefig(os.path.join(OUT, "fig_plenoptic_curve.pdf")); fig.savefig(os.path.join(PREV, "fig_plenoptic_curve.png"), dpi=110); plt.close(fig); print("fig_plenoptic_curve")
+    fig.savefig(os.path.join(OUT, "fig_plenoptic_curve.pdf"), dpi=600); fig.savefig(os.path.join(PREV, "fig_plenoptic_curve.png"), dpi=110); plt.close(fig); print("fig_plenoptic_curve")
 
 
 def main():

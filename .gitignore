@@ -192,3 +192,9 @@ SCSam3/hf_cache/*
 # 로컬 파일은 그대로 두고 추적만 끕니다 (2026-09-09).
 mount_*.sh
 MVSeed/cache/
+paper/fig1.pdf
+paper/fig1-body.tex
+paper/fig1.aux
+paper/fig1.log
+paper/fig1.fls
+paper/fig1.fdb_latexmk

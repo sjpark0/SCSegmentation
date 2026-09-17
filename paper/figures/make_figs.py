@@ -14,6 +14,7 @@ import numpy as np, cv2
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+plt.rcParams["savefig.dpi"] = 600          # IEEE: photos >= 300 dpi at printed size; matplotlib resamples imshow rasters at savefig dpi
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA = os.path.join(REPO, "Data", "MVSeg")
@@ -22,7 +23,7 @@ CFG = json.load(open(os.path.join(REPO, "SCSam3", "demo", "MVSeg.json"), encodin
 H = "SegMaskSam3XW1CGPS4MFsCs10kG2"      # headline
 B = "SegMaskSam3XW0MFs"                 # crop-tracking base (seed written as frame 0)
 C = "SegMaskSam3XW0MFsCr10k"            # crop-tracked, no gate
-PANEL_W = 560
+PANEL_W = 960      # thumbnail width in px; >= 300 dpi at the printed panel width (IEEE), was 320
 
 # ---------- palette: one colour per object id, stable across cameras ----------
 _tab = plt.get_cmap("tab20").colors + plt.get_cmap("tab20b").colors + plt.get_cmap("tab20c").colors
@@ -113,7 +114,7 @@ def fig_propagation():
             if r == 0: ax.set_title(title, fontsize=6.5, pad=2)
             if c == 0: ax.set_ylabel(f"({'abc'[r]}) " + rig, fontsize=5.5, labelpad=2)
     plt.subplots_adjust(wspace=0.02, hspace=0.04, left=0.045, right=0.995, top=0.93, bottom=0.01)
-    fig.savefig(os.path.join(OUT, "fig_propagation.pdf"), dpi=200)
+    fig.savefig(os.path.join(OUT, "fig_propagation.pdf"), dpi=600)
     plt.close(fig); print("fig_propagation.pdf")
 
 # =====================================================================
@@ -145,7 +146,7 @@ def fig_seed_failures():
             if k == 0: ax.set_ylabel(f"({'ab'[r]}) {scene}\n{lab} (obj {obj})\n{p['kind']}, $J_{{\\mathrm{{seed}}}}$={p['raw_J']:.2f}", fontsize=5.5, labelpad=2)
         print(f"  seed failure row {r}: {scene} {cam} obj {obj} {lab} kind={p['kind']} rawJ={p['raw_J']:.3f} gt_px={p['gt_px']} view_distance={p['view_distance']}")
     plt.subplots_adjust(wspace=0.03, hspace=0.05, left=0.14, right=0.995, top=0.92, bottom=0.01)
-    fig.savefig(os.path.join(OUT, "fig_seed_failures.pdf"), dpi=200)
+    fig.savefig(os.path.join(OUT, "fig_seed_failures.pdf"), dpi=600)
     plt.close(fig); print("fig_seed_failures.pdf")
 
 # =====================================================================
@@ -184,7 +185,7 @@ def fig_crop():
             if k == 0: ax.set_ylabel(f"({'ab'[r]}) {scene}\n{lab.replace('_or_', '/')} (obj {obj})\nseed {int(seed.sum())} px, zoom {1008/box[2]:.1f}$\\times$", fontsize=5.5, labelpad=2)
         print(f"  crop row {r}: {scene} {cam} obj {obj} {lab} ref={isref} seed_px={int(seed.sum())} window={box} zoom={1008/box[2]:.2f}")
     plt.subplots_adjust(wspace=0.03, hspace=0.18, left=0.15, right=0.995, top=0.93, bottom=0.01)
-    fig.savefig(os.path.join(OUT, "fig_crop.pdf"), dpi=200)
+    fig.savefig(os.path.join(OUT, "fig_crop.pdf"), dpi=600)
     plt.close(fig); print("fig_crop.pdf")
 
 # =====================================================================
@@ -205,7 +206,7 @@ def fig_scenes():
     ax.tick_params(axis="both", labelsize=6); ax.set_xlim(-3, 30)
     for s in ("top", "right"): ax.spines[s].set_visible(False)
     plt.subplots_adjust(left=0.36, right=0.98, top=0.98, bottom=0.14)
-    fig.savefig(os.path.join(OUT, "fig_scenes.pdf")); plt.close(fig); print("fig_scenes.pdf")
+    fig.savefig(os.path.join(OUT, "fig_scenes.pdf"), dpi=600); plt.close(fig); print("fig_scenes.pdf")
 
 # =====================================================================
 # Fig. 6: per-frame J&F, reference vs non-reference, basic set (jf_r4.json, H)
@@ -238,7 +239,7 @@ def fig_perframe():
     ax.legend(fontsize=5.2, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2, columnspacing=1.5)  # below the axes: inside, it covered the lower curves
     for s in ("top", "right"): ax.spines[s].set_visible(False)
     plt.subplots_adjust(left=0.15, right=0.98, top=0.97, bottom=0.38)
-    fig.savefig(os.path.join(OUT, "fig_perframe.pdf")); plt.close(fig); print("fig_perframe.pdf")
+    fig.savefig(os.path.join(OUT, "fig_perframe.pdf"), dpi=600); plt.close(fig); print("fig_perframe.pdf")
     return cr, cn
 
 
@@ -282,7 +283,7 @@ def fig_recovery():
     axs[0, 0].text(-0.06, 0.5, "single-view\ntracker", transform=axs[0, 0].transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
     axs[1, 0].text(-0.06, 0.5, "with cross-view\nmemory", transform=axs[1, 0].transAxes, rotation=90, va="center", ha="right", fontsize=6.5)
     plt.subplots_adjust(left=0.035, right=0.995, top=0.83, bottom=0.01, wspace=0.04, hspace=0.22)
-    fig.savefig(os.path.join(OUT, "fig_recovery.pdf")); fig.savefig("/tmp/fig_recovery.png", dpi=110); plt.close(fig); print("fig_recovery.pdf")
+    fig.savefig(os.path.join(OUT, "fig_recovery.pdf"), dpi=600); fig.savefig("/tmp/fig_recovery.png", dpi=110); plt.close(fig); print("fig_recovery.pdf")
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)

@@ -1,0 +1,19 @@
+%% Standalone build of Fig. 1 (the TikZ pipeline diagram that lives inline in main.tex) for the
+%% IEEE final-submission package, which wants every figure as a separate file.  The tikzpicture
+%% body is extracted from main.tex by the Makefile (target fig1) into fig1-body.tex, so the two
+%% never diverge.  Same font size as IEEEtran's \footnotesize (8 pt at 10 pt base).
+\documentclass{article}
+\usepackage[paperwidth=4in,paperheight=3.2in,margin=0.05in]{geometry}
+\pagestyle{empty}   % cropped afterwards with pdfcrop (no standalone.cls in the TeX image)
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\newcommand{\cini}{\ensuremath{c_{\mathrm{ini}}}}
+\newcommand{\px}{~px}
+\input{numbers}
+\begin{document}
+\noindent\footnotesize
+\input{fig1-body}
+\end{document}

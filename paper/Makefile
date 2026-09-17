@@ -23,14 +23,14 @@ RUN     = docker run --rm --user $(UID):$(GID) \
 
 all: main.pdf
 
-main.pdf: main.tex numbers.tex refs.bib
+main.pdf: main.tex numbers.tex refs.bib $(wildcard figures/fig_*.pdf)
 	$(RUN) latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 
 # 쪽수는 pdflatex 로그에서 읽는다 (이미지에 pdfinfo 가 없다)
 pages: main.pdf
 	@sed -n 's/.*Output written on main\.pdf (\([0-9]*\) pages.*/main.pdf: \1 pages/p' main.log | tail -1
 
-final: main.tex numbers.tex refs.bib
+final: main.tex numbers.tex refs.bib $(wildcard figures/fig_*.pdf)
 	@sed 's/\\drafttrue/\\draftfalse/' main.tex > final.tex
 	$(RUN) latexmk -pdf -interaction=nonstopmode -halt-on-error final.tex
 	@sed -n 's/.*Output written on final\.pdf (\([0-9]*\) pages.*/final.pdf: \1 pages/p' final.log | tail -1
@@ -44,7 +44,13 @@ image:
 
 # 제출 묶음. IEEE 저널은 초기 투고에 PDF 하나, 채택 후에 소스(.tex/.bib/.bbl/그림)를 요구한다.
 # .bbl 을 함께 넣는 이유: IEEE 조판 시스템은 bibtex 을 다시 돌리지 않는 경우가 있다.
-bundle: final
+# Fig. 1 is inline TikZ in main.tex; the final-submission package wants it as a file too.
+fig1: main.tex numbers.tex fig1.tex
+	@sed -n '/\\begin{tikzpicture}/,/\\end{tikzpicture}/p' main.tex > fig1-body.tex
+	$(RUN) sh -c 'latexmk -pdf -interaction=nonstopmode -halt-on-error fig1.tex > /dev/null && pdfcrop --margins 2 fig1.pdf fig1.pdf > /dev/null'
+	@echo "fig1.pdf: $$(pdfinfo fig1.pdf | sed -n 's/Page size: *//p')"
+
+bundle: final fig1
 	rm -rf submission && mkdir -p submission/src/figures
 	cp final.pdf submission/tcsvt-manuscript.pdf
 	cp final.tex submission/src/main.tex
@@ -52,6 +58,7 @@ bundle: final
 	cp final.bbl submission/src/main.bbl
 	cp vendor/IEEEtran/IEEEtran.cls vendor/IEEEtran/IEEEtran.bst submission/src/
 	cp figures/fig_*.pdf submission/src/figures/
+	python3 number_figs.py main.tex submission/figures-numbered
 	cd submission/src && zip -q -r ../tcsvt-source.zip .
 	@echo "submission/tcsvt-manuscript.pdf  $$(du -h submission/tcsvt-manuscript.pdf | cut -f1)"
 	@echo "submission/tcsvt-source.zip      $$(du -h submission/tcsvt-source.zip | cut -f1)"
