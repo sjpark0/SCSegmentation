@@ -8,6 +8,7 @@ LOG=${LOG:-/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/9786e830-b342-
 SHARE=$ROOT/PlenopticServer1/CROOM/SegResult
 CTRL="--algo MVOpt --xview-window 0 --track-cams closure --ref-cam muvod --frame0-seed"
 HEAD="--algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod --frame0-seed --crop-small 10000 --crop-gate v2"
+MEM="--algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod --frame0-seed"   # memory only, no crop retracking (P5)
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 run() {  # id dataset config data-root flags...
   local id=$1 ds=$2 cfg=$3 root=$4; shift 4
@@ -30,5 +31,7 @@ case "${1:-}" in
   P3-H) run P3-H T06_flag_ganggang_L $ROOT/plenoptic/Plenoptic_long.json $SHARE $HEAD ;;
   P4-C) run P4-C T06_flag_ganggang_L540 $ROOT/plenoptic/Plenoptic_long540.json $SHARE $CTRL ;;
   P4-H) run P4-H T06_flag_ganggang_L540 $ROOT/plenoptic/Plenoptic_long540.json $SHARE $HEAD ;;
-  *) echo "usage: $0 P1-C|P1-H|P2-T|P2-P|P3-C|P3-H|P4-C|P4-H"; exit 2 ;;
+  P5-M10) run P5-M10 T06_flag_ganggang_L540 $ROOT/plenoptic/Plenoptic_long540.json $SHARE $MEM ;;
+  P5-M5) run P5-M5 T06_flag_ganggang $ROOT/plenoptic/Plenoptic.json $SHARE $MEM ;;
+  *) echo "usage: $0 P1-C|P1-H|P2-T|P2-P|P3-C|P3-H|P4-C|P4-H|P5-M10|P5-M5"; exit 2 ;;
 esac
