@@ -19,10 +19,12 @@ from PIL import Image
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import argparse
 _ap = argparse.ArgumentParser(); _ap.add_argument("--scene", default="T06_flag_ganggang"); _ap.add_argument("--nframes", type=int, default=101); _ap.add_argument("--tag", default="")
+_ap.add_argument("--head", default="SegMaskSam3XW1CGPS4MFsCs10kG2", help="the arm compared with the control in Q6/Q7 (P5: SegMaskSam3XW1CGPS4MFs = memory only)")
+_ap.add_argument("--jf", default=None, help="scorer output to read (default plenoptic/jf_plenoptic<tag>.json)")
 _a = _ap.parse_args()
 SHARE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", _a.scene)
-JF = os.path.join(REPO, "plenoptic", f"jf_plenoptic{_a.tag}.json")
-CTRL, HEAD, TXT, PT = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFsCs10kG2", "SegMaskSam3XW0MFs_txt", "SegMaskSam3XW0MFs_pt"
+JF = os.path.abspath(_a.jf) if _a.jf else os.path.join(REPO, "plenoptic", f"jf_plenoptic{_a.tag}.json")
+CTRL, HEAD, TXT, PT = "SegMaskSam3XW0MFs", _a.head, "SegMaskSam3XW0MFs_txt", "SegMaskSam3XW0MFs_pt"
 REF, NCAM, NOBJ, NFRAME = 6, 32, 6, _a.nframes
 VANISH, HOLD, MIN_RUN, MIN_HOLD = 0.1, 0.5, 3, 2          # Q6 rule, registered
 

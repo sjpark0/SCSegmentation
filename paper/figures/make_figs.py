@@ -246,8 +246,8 @@ def fig_perframe():
 def fig_recovery():
     """Two of the three E3 divergence events (docs/xview-recovery.md) drawn from the current headline and control
     outputs: Fencing v9 obj 3 (the foil, occluded at t=6) and PoznanStreet v8 obj 2 (a pedestrian entering at t=2).
-    Rows: control XW0MFs / headline; columns: three frames per event, cropped around the object."""
-    CTRL = "SegMaskSam3XW0MFs"
+    Rows: control XW0MFs / memory-only XW1CGPS4MFs (no crop retracking); three frames per event, cropped around the object."""
+    CTRL, MEM = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFs"      # control vs cross-view memory only (no crop retracking)
     events = [("Fencing", "v9", 3, (5, 8, 16), "foil, occluded at $t=6$"), ("PoznanStreet", "v8", 2, (2, 4, 12), "pedestrian, enters at $t=2$")]
     col = np.array([230, 25, 75], dtype=float)
     def load(scene, cam, t):
@@ -268,7 +268,7 @@ def fig_recovery():
         Hh, Ww = gt.shape; y0, y1, x0, x1 = min(ys), max(ys), min(xs), max(xs); h, w = y1 - y0, x1 - x0
         side = max(h, w) * 1.35; cy, cx = (y0 + y1) / 2, (x0 + x1) / 2
         by0, by1 = int(max(cy - side / 2, 0)), int(min(cy + side / 2, Hh)); bx0, bx1 = int(max(cx - side / 2, 0)), int(min(cx + side / 2, Ww))
-        for r, method in enumerate((CTRL, H)):
+        for r, method in enumerate((CTRL, MEM)):
             for c, t in enumerate(ts):
                 img, gt, f = load(scene, cam, t); out = img.astype(float); m = pred(scene, method, cam, f, obj)
                 if m is not None and m.any(): out[m] = 0.35 * out[m] + 0.65 * col

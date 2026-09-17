@@ -283,3 +283,11 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 | `\plenLEventFrom` | 137 | cam_16 p5 소실 시작; 이후 63프레임(138~200) 대조군 미회복 |
 | `\plenLRuntimeCtrl` / `\plenLRuntimeHead` | 1511 / 2453 | 초 |
 
+### 15b. 리뷰 4차(2026-09-17) 반영 — 귀속 분리·표현 축소 (수치 변경 없음)
+
+- §VIII 가림 문단·Fig. 10과 MUVOD Fig. 2를 **대조군(`XW0MFs`) 대 메모리만(`XW1CGPS4MFs`, 크롭 없음)**으로 바꿈. P5 실행(plenoptic-P.md §8)에서 Q6·Q7이 헤드라인 비교와 동일(3/0; 2/1/71/51) → `\plenL*` 매크로 값 불변. cam_16 p5는 헤드라인에서 크롭 대상이었으나 되돌려짐.
+- §IV-B: 사건 규칙을 대칭(양방향, 최대 연속 구간)으로 명시, p값 문장 삭제(`\xrPvalue` 미사용).
+- 초록·기여·§VIII·결론: "no loss / same quality on all 32 / concept-promptable model만" → "첫 프레임 31대 평균 J −0.002, 외부 검출기 없이(native text prompting)"; Grounded SAM 인용 추가(`groundedsam`, arXiv 2401.14159, 저자·제목 arXiv 확인).
+- "does no harm" → "등록된 면적 규칙에서 역방향 사건 없음"; "재획득을 앞당기지 않는다" → "돌아온 74쌍 중 71쌍이 같은 프레임".
+- 재현 세부: 2단계는 정답 시딩 1단계에서 출발, 텍스트 ID 매칭은 기준 카메라에서 1회(채점용), 기준 카메라 선택은 주석 기반 프로토콜 선택, Table X 장면 점수는 32대 전부.
+

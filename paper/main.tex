@@ -95,11 +95,11 @@ seed-repair attempts fail their gates, and a ground-truth-free vote over their
 candidates repairs some seeds but shows no net gain, because \nFzero\
 nonreference seeds need repair against \nNzero\ sound ones---a \asymmetry\
 ratio under which, at the vote's gains and losses, a selector wins only by
-damaging sound seeds about \breakEvenTimes\ times less often than it repairs
+damaging sound seeds \breakEvenTimes\ times less often than it repairs
 failing ones. On a \plenCams-camera studio ring, starting the pipeline from
-the text prompt ``person'' on one camera matches ground-truth seeding on the
-other 31 (\Jscore\ \plenJtxt\ against \plenJgt)---a route only a
-concept-promptable model offers.
+the text prompt ``person'' on one camera gives a first-frame mean \Jscore\
+of \plenJtxt\ on the other cameras against \plenJgt\ from ground-truth
+seeding, without an external detector.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -232,10 +232,10 @@ single text prompt on one camera (Section~\ref{sec:plenoptic}).
         hallucination trade-off that underlies them, and the \asymmetry\ repair-to-protect ratio with the break-even
         condition it implies for any seed selector.
   \item A demonstration on a \plenCams-camera studio ring that the pipeline
-        starts from one text prompt on one camera with no loss against
-        ground-truth seeding (\plenDeltaTxt\ in \Jscore), a route open to a
-        concept-promptable model and not to the mask- or point-prompted
-        trackers it is compared with.
+        can be started from one text prompt on one camera: on the first
+        frame the mean \Jscore\ over the other 31 cameras is within
+        \plenDeltaTxt\ of ground-truth seeding, using the model's native text
+        prompting rather than an external detector.
   \item A reconstruction of the MUVOD reference-camera protocol, which the
         benchmark does not publish, from three independent lines of evidence.
 \end{itemize}
@@ -484,28 +484,31 @@ reach and the direction it was read from, not the memory mechanism; the full
 component's \gainXview\ over no cross-view memory has not itself passed a
 preregistered test.
 
-What the memory does when it acts is visible at the event level. Under a
-registered rule---an object that the single-view tracker loses
-($\Jscore<0.1$) for at least three consecutive frames while the
-neighbor-reading configuration holds it ($\Jscore>0.5$) on at least two of
-them---the \nScenes\ scenes contain \xrEvents\ such intervals: one late entry
-(PoznanStreet, a pedestrian who walks into view at $t=\xrPoznanEnter$) and two
-occlusions (Fencing, a foil lost when the blades cross at $t=\xrFencingLost$;
-Breakfast). All three are recovered by the neighbor-reading configuration,
-with a mean gain of \xrGainPerInterval\ in \Jscore\ over the interval, none
-goes the other way, and the same three recur when the reference camera is
-changed. Fig.~\ref{fig:recovery} shows two of them. Three events are too few
-for a statistical claim ($p=\xrPvalue$, two-sided), and that is the finding
-itself: the 21-frame clips rarely exercise the mechanism, so its mean effect
-stays small while its effect where it acts is large.
+What the memory does when it acts is visible at the event level. We
+registered a symmetric rule and applied it to both configurations: a
+\emph{divergence interval} is a maximal run of at least three consecutive
+frames in which one configuration loses an object ($\Jscore<0.1$) while the
+other holds it ($\Jscore>0.5$) on at least two of those frames, searched in
+both directions over every scored (camera, object) pair of the \nScenes\
+scenes, with the memory turned on and off and nothing else changed (no crop
+retracking in either arm). Three intervals exist, all in the direction of the
+memory: one late entry (PoznanStreet, a pedestrian who walks into view at
+$t=\xrPoznanEnter$) and two occlusions (Fencing, a foil lost when the blades
+cross at $t=\xrFencingLost$; Breakfast), with a mean gain of
+\xrGainPerInterval\ in \Jscore\ over the interval; no interval goes the other
+way, and the same three recur when the reference camera is changed.
+Fig.~\ref{fig:recovery} shows two of them. Three intervals are too few for a
+statistical claim and we make none; the count itself says that the 21-frame
+clips rarely exercise the mechanism, so its mean effect stays small while
+its effect where it acts is large.
 
 \begin{figure*}[!t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_recovery.pdf}
 \caption{Two of the three intervals in which the single-view tracker loses an
 object for three or more frames while the neighbor-reading tracker holds it
-(Section~\ref{sec:xview}), drawn from the control and headline
-configurations. (a) Fencing, camera v9: the foil (object 3) is lost when the
+(Section~\ref{sec:xview}), drawn from the control configuration and the
+configuration with cross-view memory only (no crop retracking). (a) Fencing, camera v9: the foil (object 3) is lost when the
 blades cross at $t=\xrFencingLost$ and never recovered by the single-view
 tracker; the cross-view memory re-acquires it at $t=\xrFencingBack$.
 (b) PoznanStreet, camera v8: a pedestrian (object 2) enters the view at
@@ -1200,16 +1203,19 @@ frames/s (\plenSeconds\ s), downsampled to \plenRes, and hand-drawn polygon
 masks of the six people on the first frame of every camera (\plenPairs\
 nonreference (camera, person) pairs carry ground truth; one person is
 unannotated in each of two cameras). No ground truth exists after the first
-frame. The protocol was preregistered; the reference camera is the one that
-sees all six people with the largest total mask area, and cameras are indexed
-in ring order so that index neighbors are physical neighbors.
+frame. The protocol was preregistered; the reference camera is the one whose
+annotation shows all six people with the largest total mask area---a protocol
+choice made from the annotations, the model receiving only that camera's
+masks or prompt---and cameras are indexed in ring order so that index
+neighbors are physical neighbors.
 
 \begin{table}[!t]
 \caption{Stage 1 on the ring at $t=0$, \plenPairs\ nonreference (camera,
 person) pairs with ground truth. Seed \Jscore: the reference camera's own mask
 against ground truth (the ground-truth seed itself scores \plenRefRoundTrip\
 after the tracker's round trip). Fail.: pairs with $\Jscore<0.5$. Scene \JF:
-the MUVOD aggregation (persons, then cameras) at $t=0$.}
+the MUVOD aggregation (persons, then cameras) at $t=0$ over all \plenCams
+cameras including the reference, not MUVOD's three.}
 \label{tab:plen}
 \centering
 \footnotesize
@@ -1244,21 +1250,25 @@ Table~\ref{tab:plen}.}
 \label{fig:plencurve}
 \end{figure}
 
-\textit{Seeding without a mask.} SAM~3 accepts concept prompts, which the XMem
-baseline (a mask) and SAM~2 (points and boxes) do not. We seeded the reference
+\textit{Seeding without a mask.} SAM~3 accepts concept prompts natively;
+the XMem baseline needs a mask, and SAM~2 takes points and boxes, so a text
+start for SAM~2 goes through an external open-vocabulary detector, as in
+Grounded SAM~\cite{groundedsam}. We seeded the reference
 camera three ways and ran the unchanged Stage~1: the ground-truth masks, as on
-MUVOD; the single text prompt ``person,'' whose \plenTxtInstances\ instances
-are assigned to the six people by IoU for scoring only (the pipeline never
-sees ground truth on this route); and one positive click per person at the
+MUVOD; the single text prompt ``person,'' whose \plenTxtInstances\ instances are
+matched to the six people once, on the reference camera, by IoU with its
+annotation and for scoring only---the identities then travel with the masks
+through Stage~1, and nothing on this route reads ground truth; and one positive click per person at the
 innermost pixel of the person's mask, keeping the highest-scoring of SAM~3's
 three candidate masks. Table~\ref{tab:plen} gives the result. From ground
 truth the ring is covered almost uniformly: mean \Jscore\ \plenJgt\ (median
 \plenJgtMed), \plenFailGt\ failures in \plenPairs\ pairs, and no dependence on
 ring distance---the cameras opposite the reference (distance 16) score
 \plenJdSixteen\ against \plenJdOne\ next to it (Fig.~\ref{fig:plencurve}); we
-had registered a monotone decrease and were wrong. The text prompt reproduces
-this within \plenDeltaTxt\ (\plenJtxt): one word on one camera gives masks of
-the same quality on all 32 (Fig.~\ref{fig:plenring}). One click does not: the
+had registered a monotone decrease and were wrong. The text prompt gives a mean of
+\plenJtxt, \plenDeltaTxt\ from the ground-truth seed (Fig.~\ref{fig:plenring});
+the two seeds differ on individual cameras, and nothing is claimed about later
+frames on this route. One click does not: the
 click selects a shirt or a torso as often as the person (reference-camera
 \Jscore\ \plenSeedJpt), and a part propagates as a part (\plenJpt,
 \plenFailPt\ failures)---the part/whole ambiguity that the text prompt
@@ -1270,38 +1280,45 @@ resolves.
 \caption{Occlusion on the ring (10-s clip): camera 16, person 5 passes behind
 the flag and a dancer at $t\approx\plenLEventFrom$. Top: the single-view
 tracker drops him and keeps at most a few hundred pixels on him for the rest
-of the clip although he is fully visible again. Bottom: with cross-view memory
-the whole person is kept throughout. Crops around the person.}
+of the clip although he is fully visible again. Bottom: the same tracker with
+cross-view memory and nothing else changed (no crop retracking) keeps the
+whole person. Crops around the person.}
 \label{fig:plenevent}
 \end{figure*}
 
-\textit{Occlusion during tracking.} Stage~2 was run in the control
-configuration and in the full pipeline on the 5-s clip (\plenRuntimeCtrl\ and
+\textit{Occlusion during tracking.} Stage~2 was run from the
+ground-truth-seeded Stage~1 in two configurations that differ in the
+cross-view memory and in nothing else---the control and the memory switched on
+without crop retracking---on the 5-s clip (\plenRuntimeCtrl\ and
 \plenRuntimeHead\ s on the GPU of Table~\ref{tab:runtime}) and on a 10-s clip
 of \plenLFrames\ frames, which the runner's memory use forced to \plenLRes\
 (\plenLJgt\ at $t=0$ against \plenJgt\ at the higher resolution). The Stage-1
-seeds are byte-identical between the two configurations, so they differ only
-in tracking. Without ground truth after $t=0$ we registered an event rule on
-mask area alone: an interval of at least three frames in which one
-configuration's mask falls below 10\% of its seed area while the other keeps
-at least 50\% on at least two of those frames. In the 5-s clip one interval
-qualifies, in the direction of the full pipeline (camera 26, person 1, frames
-\plenEventFrames, a sliver of him visible beside the occluder), and none goes
-the other way. The 10-s clip has the dancers pass behind one another and
-reappear: \plenLBothLost\ (camera, person) pairs lose their mask in both
-configurations from the same frame, and of those that reappear, \plenLTie\
-are re-acquired by both configurations at the same frame, \plenLHeadFirst\
-earlier with cross-view memory and \plenLCtrlFirst\ earlier without
-(\plenLNeither\ do not return by the last frame). The memory does not make
-re-acquisition faster; SAM~3's own memory does that in both configurations.
-Where it acts is during the occlusion: the \plenLEventsFor\ qualifying
-intervals all fall on camera 16, person 5 (Fig.~\ref{fig:plenevent}), whom
-the single-view tracker drops at $t=\plenLEventFrom$ and never recovers
-although he is fully visible for the remaining 63 frames, while the cross-view
-configuration keeps the whole person; no interval goes the other way. As on
-MUVOD (Section~\ref{sec:xview}, Fig.~\ref{fig:recovery}), the mechanism acts
-on the rare frames where a neighbor still sees what the camera has lost, does
-no harm, and is invisible in a mean.
+seeds are byte-identical between the two arms, so they differ only in
+tracking; the full pipeline with crop retracking gives the same masks except
+on the two pairs where the crop gate kept a crop. Without ground truth after
+$t=0$ we registered the rule of Section~\ref{sec:xview} on mask area alone,
+applied in both directions: an interval of at least three frames in which one
+arm's mask falls below 10\% of its seed area while the other keeps at least
+50\% on at least two of those frames. Mask area is not accuracy---a mask can
+persist on the wrong person---so every interval was also inspected by eye. In
+the 5-s clip one interval qualifies, in the direction of the memory (camera
+26, person 1, frames \plenEventFrames, the mask staying on the sliver of him
+visible beside the occluder), and none in the other direction. In the 10-s
+clip the dancers pass behind one another and reappear: \plenLBothLost\
+(camera, person) pairs lose their mask in both arms from the same frame; of
+those that return, \plenLTie\ are re-acquired by both arms at the same frame,
+\plenLHeadFirst\ earlier with the memory and \plenLCtrlFirst\ earlier without
+(\plenLNeither\ do not return by the last frame), so within this clip the
+memory did not change when a reappearing person is re-acquired. The
+\plenLEventsFor\ qualifying intervals all fall on one pair, camera 16, person
+5 (Fig.~\ref{fig:plenevent}): the single-view arm drops him at
+$t=\plenLEventFrom$ and keeps at most a few hundred pixels on him for the
+remaining 63 frames although he is fully visible again, while the memory arm
+keeps the whole person, on the right person by inspection. Under the
+registered area rule no interval went the other way in either clip. This is
+one pair and one scene; it illustrates, as the MUVOD intervals of
+Section~\ref{sec:xview} do, where the memory acts---on frames where a neighbor
+still sees what the camera has lost---and not how often.
 
 % ===========================================================================
 \section{Limitations}
@@ -1370,7 +1387,8 @@ twofold: a 2D segmentation foundation model already carries most of the
 cross-view consistency a real-world rig demands, and on rigs of
 \gsViewsMin--\gsViewsMax\ wide-baseline cameras the explicit 3D routes we
 tested---structure-from-motion, feed-forward point maps, and per-scene
-3DGS---do not yet add to it. On a dense studio ring, one word on one camera is enough to start it.
+3DGS---do not yet add to it. On a dense studio ring, a text prompt on one camera started it as well as
+ground-truth masks did on the first frame.
 
 % ===========================================================================
 \section*{Acknowledgment}

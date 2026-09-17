@@ -21,7 +21,7 @@ SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.
 IMG_SCENE = os.path.join(REPO, "PlenopticServer1", "CROOM", "SegResult", os.environ.get("PLEN_IMG_SCENE", os.environ.get("PLEN_SCENE", "T06_flag_ganggang")))  # frames may come from the 1080p copy
 FIG_SCALE = float(os.environ.get("PLEN_FIG_SCALE", 0.5))     # display scale of the frames (1.0 for crops)
 OUT = os.path.join(REPO, "paper", "figures"); PREV = os.path.join(REPO, "plenoptic")
-CTRL, HEAD, TXT = "SegMaskSam3XW0MFs", "SegMaskSam3XW1CGPS4MFsCs10kG2", "SegMaskSam3XW0MFs_txt"
+CTRL, HEAD, TXT = "SegMaskSam3XW0MFs", os.environ.get("PLEN_HEAD", "SegMaskSam3XW1CGPS4MFsCs10kG2"), "SegMaskSam3XW0MFs_txt"   # PLEN_HEAD=SegMaskSam3XW1CGPS4MFs: memory only (P5)
 REF, NCAM = 6, 32
 COLS = np.array([[0, 0, 0], [230, 25, 75], [60, 180, 75], [255, 225, 25], [0, 130, 200], [245, 130, 48], [145, 30, 180]], dtype=float)
 plt.rcParams.update({"font.family": "serif", "font.size": 7, "pdf.fonttype": 42})
@@ -97,7 +97,7 @@ def fig_event(cam, obj, a, b, neighbor, zoom=False, cols=5, ts=None):
     last = int(os.environ.get("PLEN_LAST", 100))
     if ts is None: ts = sorted(set([max(a - 1, 0), a, (a + b) // 2, b, min(b + 1, last)])) if cols == 5 else sorted(set([max(a - 1, 0), (a + b) // 2, min(b + 1, last)]))
     cols = len(ts)
-    rows = [(CTRL, "single view (XW0)"), (HEAD, "cross-view memory (ours)")]
+    rows = [(CTRL, "single view (XW0)"), (HEAD, "with cross-view memory")]
     if neighbor: rows.append((None, f"neighbour {neighbor}"))
     box = bbox_union(cam, obj, a, b) if zoom else None
     fw = 3.5 if cols == 3 else 7.16                              # 3 panels: column width; otherwise text width
