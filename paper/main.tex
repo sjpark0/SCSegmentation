@@ -498,9 +498,10 @@ cross at $t=\xrFencingLost$; Breakfast), with a mean gain of
 \xrGainPerInterval\ in \Jscore\ over the interval; no interval goes the other
 way, and the same three recur when the reference camera is changed.
 Fig.~\ref{fig:recovery} shows two of them. Three intervals are too few for a
-statistical claim and we make none; the count itself says that the 21-frame
-clips rarely exercise the mechanism, so its mean effect stays small while
-its effect where it acts is large.
+statistical claim and we make none. The count says that divergences large
+enough to meet the registered rule are rare in the 21-frame clips and that
+where one occurs the gain is large; it does not measure how often the memory
+changes a mask by less than the rule requires.
 
 \begin{figure*}[!t]
 \centering
@@ -1308,8 +1309,9 @@ clip the dancers pass behind one another and reappear: \plenLBothLost\
 (camera, person) pairs lose their mask in both arms from the same frame; of
 those that return, \plenLTie\ are re-acquired by both arms at the same frame,
 \plenLHeadFirst\ earlier with the memory and \plenLCtrlFirst\ earlier without
-(\plenLNeither\ do not return by the last frame), so within this clip the
-memory did not change when a reappearing person is re-acquired. The
+(\plenLNeither\ do not return by the last frame): in \plenLTie\ of the
+\plenLReturned\ pairs that return (\plenLTiePct\%) the memory left the
+re-acquisition frame unchanged. The
 \plenLEventsFor\ qualifying intervals all fall on one pair, camera 16, person
 5 (Fig.~\ref{fig:plenevent}): the single-view arm drops him at
 $t=\plenLEventFrom$ and keeps at most a few hundred pixels on him for the
@@ -1387,8 +1389,9 @@ twofold: a 2D segmentation foundation model already carries most of the
 cross-view consistency a real-world rig demands, and on rigs of
 \gsViewsMin--\gsViewsMax\ wide-baseline cameras the explicit 3D routes we
 tested---structure-from-motion, feed-forward point maps, and per-scene
-3DGS---do not yet add to it. On a dense studio ring, a text prompt on one camera started it as well as
-ground-truth masks did on the first frame.
+3DGS---do not yet add to it. On a dense studio ring, a text prompt on one
+camera started it at a first-frame mean \Jscore\ of \plenJtxt\ on the
+other cameras against \plenJgt\ from ground-truth seeding.
 
 % ===========================================================================
 \section*{Acknowledgment}

@@ -280,6 +280,7 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 | `\plenLJgt` | 0.932 | 540p t=0 Q1 (Z5) |
 | `\plenLEventsFor` | three | Q6 사건(전부 cam_16 p5), 반대 0 |
 | `\plenLBothLost` / `\plenLTie` / `\plenLHeadFirst` / `\plenLCtrlFirst` / `\plenLNeither` | 125 / 71 / two / one / 51 | Q7 |
+| `\plenLReturned` / `\plenLTiePct` | 74 / 95.9 | Q7 돌아온 쌍 = 71+2+1, 71/74 (리뷰 5차) |
 | `\plenLEventFrom` | 137 | cam_16 p5 소실 시작; 이후 63프레임(138~200) 대조군 미회복 |
 | `\plenLRuntimeCtrl` / `\plenLRuntimeHead` | 1511 / 2453 | 초 |
 
@@ -291,3 +292,8 @@ arXiv PDF를 받아 텍스트로 대조. 스크래치의 `papers/*.txt`.
 - "does no harm" → "등록된 면적 규칙에서 역방향 사건 없음"; "재획득을 앞당기지 않는다" → "돌아온 74쌍 중 71쌍이 같은 프레임".
 - 재현 세부: 2단계는 정답 시딩 1단계에서 출발, 텍스트 ID 매칭은 기준 카메라에서 1회(채점용), 기준 카메라 선택은 주석 기반 프로토콜 선택, Table X 장면 점수는 32대 전부.
 
+### 15c. 리뷰 5차(2026-09-17) 반영 — 문장 3곳 (수치 변경 없음)
+
+- p.12 §VIII: "memory did not change when a reappearing person is re-acquired" → "돌아온 `\plenLReturned`(74)쌍 중 `\plenLTie`(71)쌍(`\plenLTiePct` 95.9%)에서 재획득 프레임이 같았다". 매크로 2개 추가.
+- p.4 §IV-B: "21-frame clips rarely exercise the mechanism" → "등록 규칙을 만족하는 큰 divergence가 21프레임 클립에서 드물고, 생기면 이득이 크다; 규칙 미만의 작은 변화 빈도는 재지 않았다".
+- p.13 결론: "as well as ground-truth masks did" → 초록과 같은 관측값 문장(첫 프레임 평균 J `\plenJtxt` 0.937 대 `\plenJgt` 0.939).

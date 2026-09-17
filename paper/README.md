@@ -18,8 +18,9 @@ make final     # final.pdf — \todo 를 숨긴 제출본. 쪽수 확인용
 make clean
 ```
 
-현재 상태: `main.pdf` **5쪽**(TODO 포함), `final.pdf` **2쪽**(표 7개 + 초록만).
-즉 표와 골격이 2쪽을 쓰고 본문에 쓸 수 있는 여유가 남습니다.
+현재 상태(2026-09-17): `final.pdf` **14쪽**(표 10개, 그림 10개, §VIII 32대 스튜디오 링 실험 포함).
+외부 리뷰 5차까지 반영. `make bundle` → `submission/`(제출 PDF, 소스 zip, 번호 매긴 그림 파일 + captions.txt).
+남은 TODO는 저자 정보(ORCID·과제 문구·AI 고지·우편번호·공개 URL)뿐입니다.
 
 ---
 
