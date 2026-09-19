@@ -20,7 +20,7 @@ make clean
 
 현재 상태(2026-09-17): `final.pdf` **14쪽**(표 10개, 그림 10개, §VIII 32대 스튜디오 링 실험 포함).
 외부 리뷰 5차까지 반영. `make bundle` → `submission/`(제출 PDF, 소스 zip, 번호 매긴 그림 파일 + captions.txt).
-남은 TODO는 저자 정보(ORCID·과제 문구·AI 고지·우편번호·공개 URL)뿐입니다.
+남은 TODO는 저자 정보(과제 문구·AI 고지·우편번호·공개 URL)뿐입니다. ORCID는 투고 시스템에 입력(원고에는 넣지 않음, 2026-09-19 결정).
 
 ---
 
@@ -183,7 +183,7 @@ Fig. 4의 장면별 값만 스크립트에 옮겨 적은 것(`docs/muvod-compari
 - **`cover-letter.md`**: CFP 주제 항목에 대응시킨 영문 커버레터 초안 (Atypon Rex 투고 칸용). 이해충돌 문장은 확인 후 유지.
 
 **아직 없는 것**
-- ORCID, 사사의 과제·기관 문장, AI 공개 문구 확정, 우편번호 확인, (선택) 약력.
+- 사사의 과제·기관 문장, AI 공개 문구 확정, 우편번호 확인, (선택) 약력. ORCID는 투고 시스템에서 입력.
 - 참고문헌 31건 전부 arXiv 원문과 대조 완료, `VERIFY` 0건 (WildSeg3D ICCV 2025 DOI 확인, SA3D는 NeurIPS 판 저자 9인).
 - 관련연구 문헌 수치는 arXiv PDF 원문과 대조 완료 — 결과표 `docs/paper-numbers.md` §11. 원문에 없던 두 문장은 뺐음.
 
