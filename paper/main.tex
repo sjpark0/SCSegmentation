@@ -1,20 +1,6 @@
-%% ===========================================================================
-%%  IEEE Transactions on Circuits and Systems for Video Technology (TCSVT)
-%%  Special Issue: Towards Spatial Intelligence: 3D Understanding, Generation,
-%%  and Reasoning from Real-World Videos  (submission deadline 2026-10-31)
-%%
-%%  Class:  IEEEtran.cls V1.8b (2015/08/26), vendored in vendor/IEEEtran/.
-%%  Build:  make        (docker + TeX Live, see README.md)
-%%
-%%  RULE: every number in this file comes from a macro defined in numbers.tex,
-%%        which is kept in step with docs/paper-numbers.md. Do not type a
-%%        numeric result directly into the prose. The one exception is the
-%%        per-scene table (Table III), transcribed from docs/muvod-comparison.md.
-%% ===========================================================================
 \documentclass[journal]{IEEEtran}
 
-% --- IEEE-recommended packages ---------------------------------------------
-\usepackage{cite}                 % IEEE reference style: [1], [2]-[5]
+\usepackage{cite}%
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -22,13 +8,13 @@
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage[caption=false,font=footnotesize]{subfig}   % IEEEtran-recommended
+\usepackage[caption=false,font=footnotesize]{subfig}%
 \usepackage{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
-\usepackage{balance}              % even out the two columns on the last page
+\usepackage{balance}%
 \PassOptionsToPackage{hidelinks}{hyperref}
-\usepackage{hyperref}             % must stay last
+\usepackage{hyperref}%
 \urlstyle{same}
 
 \newcommand{\Jscore}{\ensuremath{\mathcal{J}}}
@@ -38,28 +24,14 @@
 \newcommand{\cini}{\ensuremath{c_{\mathrm{ini}}}}
 \newcommand{\px}{~px}
 
-% --- drafting aids: set \draftfalse before submitting ----------------------
-\newif\ifdraft\drafttrue
-\ifdraft
-  \newcommand{\todo}[1]{\textcolor{red}{\small$\blacktriangleright$\,\textsf{TODO: #1}}}
-  \newcommand{\note}[1]{\textcolor{blue!70!black}{\small$\dagger$\,\textsf{#1}}}
-\else
-  \newcommand{\todo}[1]{}
-  \newcommand{\note}[1]{}
-\fi
-
 \input{numbers}
 
 \begin{document}
 
 \title{Propagating a Single-View Mask Across a Static Camera Rig:\\
 Attribution and Error Budget of a Foundation-Model Pipeline\\for Multiview Video Object Segmentation}
-%% NOTE: working title. \note/\todo must never appear between \title and
-%% \maketitle: IEEEtran's \maketitle issues \twocolumn[...] and any typeset
-%% material before it pushes the whole title block onto the next page.
 
 \author{Seongjin~Park, Dohyung~Kim, Jiwan~Kim, and~Yugu~Jung%
-%% ORCIDs are entered in the submission system, not in the manuscript.
 \thanks{Manuscript received XXX; revised XXX. This work was supported by the
 Institute of Information \& Communications Technology Planning \& Evaluation
 (IITP) grant funded by the Korea government (MSIT) (2022-0-00022,
@@ -75,7 +47,6 @@ Republic of Korea (e-mail: seongjin.park@etri.re.kr).}}
 
 \maketitle
 
-% ===========================================================================
 \begin{abstract}
 Given the masks of the objects of interest in one camera of a static
 multicamera rig at one instant, the task is to produce each object's mask in
@@ -109,7 +80,6 @@ propagation, multiview video object segmentation, preregistration,
 promptable segmentation, spatial intelligence.
 \end{IEEEkeywords}
 
-% ===========================================================================
 \section{Introduction}
 \label{sec:intro}
 \IEEEPARstart{A}{static} multicamera rig---a light-field array, a volumetric
@@ -241,7 +211,6 @@ single text prompt on one camera (Section~\ref{sec:plenoptic}).
         benchmark does not publish, from three independent lines of evidence.
 \end{itemize}
 
-% ===========================================================================
 \section{Related Work}
 \label{sec:related}
 
@@ -306,7 +275,6 @@ benchmark, which we use, includes all \nScenes\ scenes, provides no
 calibration, and carries a single published result. Its reference camera per scene is not published,
 which we address in Section~\ref{sec:cini}.
 
-% ===========================================================================
 \section{Problem Setting and Protocol}
 \label{sec:protocol}
 
@@ -366,7 +334,6 @@ runs---the camera whose frame-0 ground truth carries the largest object index,
 ties going to the first camera listed---selects a different camera from \cini\
 in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
 
-% ===========================================================================
 \section{Method}
 \label{sec:method}
 
@@ -378,7 +345,6 @@ in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
   stage/.style={draw, dashed, rounded corners=3pt, inner sep=5pt},
   arr/.style={-{Latex[length=1.6mm]}, thick},
   node distance=4mm and 6mm]
-  % stage 1
   \node[box] (f0) {first frames\\$c_{1}\dots c_{N}$};
   \node[box, right=of f0] (pv) {pseudo-video\\index order};
   \node[box, right=of pv] (s1) {SAM~3 tracker\\fwd + bwd};
@@ -389,7 +355,6 @@ in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
   \draw[arr] (s1) -- (seed);
   \node[box, above=5mm of s1, fill=black!6] (gt) {$M_{o}$ in \cini};
   \draw[arr] (gt) -- (s1);
-  % stage 2
   \node[box, below=9mm of f0] (t1) {camera $c$\\$t=1\dots T$};
   \node[box, right=of t1] (trk) {SAM~3 tracker\\per camera};
   \node[box, right=of trk] (out) {$\hat M_{o,c,t}$};
@@ -399,7 +364,6 @@ in \nCiniMismatch\ of \nScenes\ scenes, typically one at the edge of the rig.
   \draw[arr] (trk) -- (out);
   \draw[arr] (out) -- (crop);
   \draw[arr] (seed) |- ($(trk.north)+(0,3mm)$) -- (trk.north);
-  % cross-view memory
   \node[box, below=of trk, fill=black!6, yshift=-4mm] (nb) {neighbor $c\pm1$ memory\\gate, pointer, row \xviewRow};
   \draw[arr] (nb) -- (trk);
 \end{tikzpicture}
@@ -594,7 +558,6 @@ documents, the seed sets, and the per-scene results are kept in a
 version-controlled repository and are available from the corresponding author
 on request.
 
-% ===========================================================================
 \section{Experiments}
 \label{sec:exp}
 
@@ -822,7 +785,6 @@ resolution; there is no per-scene optimization and no reconstruction, which
 is the practical difference from the 3DGS family, where a reconstruction of
 several minutes precedes any segmentation.
 
-% ===========================================================================
 \section{What Limits the Remaining Error}
 \label{sec:budget}
 
@@ -991,7 +953,6 @@ gain is not a measurement of the same quantity. Because the round trip uses no
 model, it is a property of the benchmark and applies to any tracker with the
 same output grid.
 
-% ===========================================================================
 \section{Five Seed-Repair Attempts and Where Each Fails Its Gate}
 \label{sec:negative}
 
@@ -1192,7 +1153,6 @@ inequality makes explicit is that on a rig benchmark the damage rate on the
 majority population, not recall on the failing minority, decides the sign, and
 we suggest that future work on seed repair report both rates.
 
-% ===========================================================================
 \section{Beyond the Benchmark: A 32-Camera Studio Ring}
 \label{sec:plenoptic}
 MUVOD scores three cameras per scene and seeds every method from a
@@ -1324,7 +1284,6 @@ one pair and one scene; it illustrates, as the MUVOD intervals of
 Section~\ref{sec:xview} do, where the memory acts---on frames where a neighbor
 still sees what the camera has lost---and not how often.
 
-% ===========================================================================
 \section{Limitations}
 \label{sec:limits}
 \begin{enumerate}
@@ -1368,7 +1327,6 @@ still sees what the camera has lost---and not how often.
         events number one in the 5-s clip and one pair in the 10-s clip.
 \end{enumerate}
 
-% ===========================================================================
 \section{Conclusion}
 On the only public rig benchmark we know of, a two-stage pipeline with a promptable
 foundation model improves on the published baseline by \DeltaBasic\ points,
@@ -1395,23 +1353,9 @@ tested---structure-from-motion, feed-forward point maps, and per-scene
 camera started it at a first-frame mean \Jscore\ of \plenJtxt\ on the
 other cameras against \plenJgt\ from ground-truth seeding.
 
-% ===========================================================================
-%% Acknowledgment: the AI-use disclosure below was removed on 2026-09-22 (user decision, may be restored).
-% \section*{Acknowledgment}
-% In accordance with the IEEE policy on AI-generated content, the authors
-% disclose that the manuscript text, the figure-generation scripts, and parts
-% of the experiment code were drafted with the assistance of Claude
-% (Anthropic), an AI system, under the authors' direction; every numerical
-% claim was checked by the authors against the experimental records, and the
-% experimental design, preregistrations, and conclusions are the authors' own.
-% \todo{keep or drop this disclosure (user decision pending)}
-
-% ===========================================================================
-%\balance   % last page is now the biographies; balancing there breaks the flow
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
 
-%% Author biographies (optional under IEEE policy; photos in figures/bio/, 1 in x 1.25 in).
 \newcommand{\biophoto}[1]{{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{figures/bio/#1}}}
 
 \begin{IEEEbiography}[\biophoto{park.jpg}]{Seongjin Park}

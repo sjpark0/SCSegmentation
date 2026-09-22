@@ -54,10 +54,13 @@ bundle: final fig1
 	rm -rf submission && mkdir -p submission/src/figures
 	cp final.pdf submission/tcsvt-manuscript.pdf
 	cp final.tex submission/src/main.tex
-	cp numbers.tex refs.bib submission/src/
+	python3 strip_comments.py numbers.tex submission/src/numbers.tex
+	cp refs.bib submission/src/
 	cp final.bbl submission/src/main.bbl
 	cp vendor/IEEEtran/IEEEtran.cls vendor/IEEEtran/IEEEtran.bst submission/src/
-	cp figures/fig_*.pdf submission/src/figures/
+	@# only the figure files the manuscript actually includes (plus the biography photos)
+	@for f in $$(grep -o '{figures/fig_[^}]*}' main.tex | tr -d '{}' | sort -u); do cp $$f submission/src/figures/; done
+	mkdir -p submission/src/figures/bio && cp figures/bio/*.jpg submission/src/figures/bio/
 	python3 number_figs.py main.tex submission/figures-numbered
 	cd submission/src && zip -q -r ../tcsvt-source.zip .
 	@echo "submission/tcsvt-manuscript.pdf  $$(du -h submission/tcsvt-manuscript.pdf | cut -f1)"
