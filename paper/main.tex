@@ -58,17 +58,21 @@ Attribution and Error Budget of a Foundation-Model Pipeline\\for Multiview Video
 %% \maketitle: IEEEtran's \maketitle issues \twocolumn[...] and any typeset
 %% material before it pushes the whole title block onto the next page.
 
-\author{Seongjin~Park%
-%% ORCID is entered in the submission system, not in the manuscript.
-\thanks{Manuscript received XXX; revised XXX.}%
-\thanks{S.~Park is with the Electronics and Telecommunications Research Institute
-(ETRI), Daejeon 34129, Republic of Korea (e-mail: seongjin.park@etri.re.kr).
-\todo{confirm postal code}}%
-\thanks{\todo{funding sentence, e.g. ``This work was supported by \ldots\ under
-Grant \ldots''}}}
+\author{Seongjin~Park, Dohyung~Kim, Jiwan~Kim, and~Yugu~Jung%
+%% ORCIDs are entered in the submission system, not in the manuscript.
+\thanks{Manuscript received XXX; revised XXX. This work was supported by the
+Institute of Information \& Communications Technology Planning \& Evaluation
+(IITP) grant funded by the Korea government (MSIT) (2022-0-00022,
+RS-2022-II220022, Development of immersive video spatial computing technology
+for ultra-realistic metaverse services). \emph{(Corresponding author: Seongjin
+Park.)}}%
+\thanks{The authors are with the Spatial Media Platform Research Section,
+Electronics and Telecommunications Research Institute (ETRI), Daejeon 34129,
+Republic of Korea (e-mail: seongjin.park@etri.re.kr).\todo{confirm postal
+code and that all four authors share this affiliation}}}
 
 \markboth{IEEE Transactions on Circuits and Systems for Video Technology,~Vol.~XX, No.~X, XXX~XXXX}%
-{Park: Propagating a Single-View Mask Across a Static Camera Rig}
+{Park \MakeLowercase{\textit{et al.}}: Propagating a Single-View Mask Across a Static Camera Rig}
 
 \maketitle
 
@@ -1393,28 +1397,63 @@ other cameras against \plenJgt\ from ground-truth seeding.
 
 % ===========================================================================
 \section*{Acknowledgment}
-\todo{funding and people, if any.} In accordance with the IEEE policy on
-AI-generated content, the author discloses that the manuscript text, the
-figure-generation scripts, and parts of the experiment code were drafted with
-the assistance of Claude (Anthropic), an AI system, under the author's
-direction; every numerical claim was checked by the author against the
-experimental records, and the experimental design, preregistrations, and
-conclusions are the author's own. \todo{adjust the wording to what you are
-comfortable signing; IEEE requires the AI system to be named and the affected
-parts identified.}
+In accordance with the IEEE policy on AI-generated content, the authors
+disclose that the manuscript text, the figure-generation scripts, and parts
+of the experiment code were drafted with the assistance of Claude
+(Anthropic), an AI system, under the authors' direction; every numerical
+claim was checked by the authors against the experimental records, and the
+experimental design, preregistrations, and conclusions are the authors' own.
+\todo{keep or drop this disclosure (user decision pending)}
 
 % ===========================================================================
-\balance
+%\balance   % last page is now the biographies; balancing there breaks the flow
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
 
-%% Author biography (optional; IEEE cannot require it under GDPR). Uncomment
-%% and fill in. With a photo: \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{figures/park.jpg}}]{Seongjin Park}
-% \begin{IEEEbiographynophoto}{Seongjin Park}
-% received the Ph.D. degree in \ldots\ from \ldots\ in \ldots. He is currently a
-% \ldots\ with the Electronics and Telecommunications Research Institute (ETRI),
-% Daejeon, Republic of Korea. His research interests include multiview video,
-% volumetric capture, and segmentation.
-% \end{IEEEbiographynophoto}
+%% Author biographies (optional under IEEE policy; photos in figures/bio/, 1 in x 1.25 in).
+\newcommand{\biophoto}[1]{{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{figures/bio/#1}}}
+
+\begin{IEEEbiography}[\biophoto{park.jpg}]{Seongjin Park}
+received the B.S. degree from the School of Information and Computer
+Engineering, Hongik University, Seoul, Republic of Korea, in 2004, and the
+integrated M.S.--Ph.D. degree from the School of Computer Science and
+Engineering, Seoul National University, Seoul, in 2012. He is currently a
+Principal Researcher with the Spatial Media Platform Research Section,
+Electronics and Telecommunications Research Institute (ETRI), Daejeon,
+Republic of Korea. His research interests include multiview image and video
+processing, neural rendering, and computer vision.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[\biophoto{kim_dh.jpg}]{Dohyung Kim}
+received the Ph.D. degree from the Graduate School of Culture Technology,
+Korea Advanced Institute of Science and Technology (KAIST), Daejeon, Republic
+of Korea. He is currently with the Spatial Media Platform Research Section,
+Electronics and Telecommunications Research Institute (ETRI), Daejeon. His
+research interests include human--computer interaction, with a particular
+focus on stereoscopic content production technologies for XR and metaverse
+applications, and the technical foundations of immersive media for the next
+generation of interactive virtual experiences.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[\biophoto{kim_jw.jpg}]{Jiwan Kim}
+received the B.S. and M.S. degrees in electrical engineering from Korea
+University, Seoul, Republic of Korea, in 2015 and 2017, respectively, and the
+Ph.D. degree in computer science and engineering from Seoul National
+University, Seoul, in 2023. He is currently a Researcher with the Spatial
+Media Platform Research Section, Electronics and Telecommunications Research
+Institute (ETRI), Daejeon, Republic of Korea. His research interests include
+computer vision, 3D vision, neural rendering, and multiview image and video
+editing.
+\end{IEEEbiography}
+
+\begin{IEEEbiography}[\biophoto{jung.jpg}]{Yugu Jung}
+received the B.S. degree in computer engineering from Gwangju University,
+Gwangju, Republic of Korea, in 2009, and the M.S. degree in media from
+Soongsil University, Seoul, Republic of Korea, in 2012. He is currently a
+Researcher with the Spatial Media Platform Research Section, Electronics and
+Telecommunications Research Institute (ETRI), Daejeon, Republic of Korea. His
+research interests include computer graphics, computer vision, 3D
+reconstruction, neural rendering, and multiview image acquisition systems.
+\end{IEEEbiography}
 
 \end{document}
