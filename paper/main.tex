@@ -1020,6 +1020,37 @@ SeedVote & all above $+$ order   & CI ${>}0$, ${\geq}+\floorPts$ & \voteRule \\
 \end{table}
 
 \subsection{The Generators}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_plenoptic_ring_txt.pdf}
+\caption{Stage 1 on the \plenCams-camera ring from the text prompt ``person''
+on the reference camera (top left), shown at ring distances 2, 4, 8, 12, and 16
+at $t=0$. Filled: the pipeline's masks, colors identify persons; white
+outline: ground truth. No mask was given anywhere.}
+\label{fig:plenring}
+\end{figure*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_plenoptic_curve.pdf}
+\caption{Mean \Jscore\ at $t=0$ by ring distance from the reference camera
+(two cameras per distance, one at 16) for the three seeds of
+Table~\ref{tab:plen}.}
+\label{fig:plencurve}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_plenoptic_event_cam_16_5_zoom.pdf}
+\caption{Occlusion on the ring (10-s clip): camera 16, person 5 passes behind
+the flag and a dancer at $t\approx\plenLEventFrom$. Top: the single-view
+tracker drops him and keeps at most a few hundred pixels on him for the rest
+of the clip although he is fully visible again. Bottom: the same tracker with
+cross-view memory and nothing else changed (no crop retracking) keeps the
+whole person. Crops around the person.}
+\label{fig:plenevent}
+\end{figure*}
 Table~\ref{tab:negative} lists them. In the two appearance arms the mask is
 produced by the frozen SAM~3 and the arms differ in how the object's
 \emph{position} in the target camera is obtained; in the three geometry arms
@@ -1154,7 +1185,7 @@ majority population, not recall on the failing minority, decides the sign, and
 we suggest that future work on seed repair report both rates.
 
 \section{Beyond the Benchmark: A 32-Camera Studio Ring}
-\label{sec:plenoptic}
+
 MUVOD scores three cameras per scene and seeds every method from a
 ground-truth mask. To see the pipeline on a dense rig, and without any mask at
 all, we ran it on one scene from a plenoptic studio: \plenCams\ synchronized 4K
@@ -1194,25 +1225,6 @@ One click per person & \plenSeedJpt & \plenJpt\ / \plenJptMed & \plenFailPt & \p
 \end{tabular}
 \end{table}
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_plenoptic_ring_txt.pdf}
-\caption{Stage 1 on the \plenCams-camera ring from the text prompt ``person''
-on the reference camera (top left), shown at ring distances 2, 4, 8, 12, and 16
-at $t=0$. Filled: the pipeline's masks, colors identify persons; white
-outline: ground truth. No mask was given anywhere.}
-\label{fig:plenring}
-\end{figure*}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig_plenoptic_curve.pdf}
-\caption{Mean \Jscore\ at $t=0$ by ring distance from the reference camera
-(two cameras per distance, one at 16) for the three seeds of
-Table~\ref{tab:plen}.}
-\label{fig:plencurve}
-\end{figure}
-
 \textit{Seeding without a mask.} SAM~3 accepts concept prompts natively;
 the XMem baseline needs a mask, and SAM~2 takes points and boxes, so a text
 start for SAM~2 goes through an external open-vocabulary detector, as in
@@ -1236,18 +1248,6 @@ click selects a shirt or a torso as often as the person (reference-camera
 \Jscore\ \plenSeedJpt), and a part propagates as a part (\plenJpt,
 \plenFailPt\ failures)---the part/whole ambiguity that the text prompt
 resolves.
-
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/fig_plenoptic_event_cam_16_5_zoom.pdf}
-\caption{Occlusion on the ring (10-s clip): camera 16, person 5 passes behind
-the flag and a dancer at $t\approx\plenLEventFrom$. Top: the single-view
-tracker drops him and keeps at most a few hundred pixels on him for the rest
-of the clip although he is fully visible again. Bottom: the same tracker with
-cross-view memory and nothing else changed (no crop retracking) keeps the
-whole person. Crops around the person.}
-\label{fig:plenevent}
-\end{figure*}
 
 \textit{Occlusion during tracking.} Stage~2 was run from the
 ground-truth-seeded Stage~1 in two configurations that differ in the
