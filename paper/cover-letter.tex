@@ -1,0 +1,35 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=22mm]{geometry}
+\usepackage[T1]{fontenc}\usepackage[utf8]{inputenc}\usepackage{times}
+\usepackage{parskip}\usepackage[hidelinks]{hyperref}
+\pagestyle{empty}
+\begin{document}
+\noindent Spatial Media Platform Research Section\\
+Electronics and Telecommunications Research Institute (ETRI)\\
+Daejeon 34129, Republic of Korea\\[1ex]
+\today
+
+\noindent Dr.\ Shan Liu, Editor-in-Chief\\
+and the Guest Editors of the Special Issue on \emph{Towards Spatial Intelligence: 3D Understanding, Generation, and Reasoning from Real-World Videos}\\
+IEEE Transactions on Circuits and Systems for Video Technology
+
+Dear Dr.\ Liu and Guest Editors,
+
+We submit the manuscript \textbf{``Propagating a Single-View Mask Across a Static Camera Rig: Attribution and Error Budget of a Foundation-Model Pipeline for Multiview Video Object Segmentation''} by Seongjin Park, Dohyung Kim, Jiwan Kim, and Yugu Jung for consideration in the Special Issue of the IEEE Transactions on Circuits and Systems for Video Technology.
+
+\textbf{Fit with the Special Issue.} The Call for Papers asks for work on 3D understanding from real-world videos, naming foundation models, temporal and geometric consistency, 3D representations, and new benchmarks among its topics. Our paper studies the input side of every per-object 3D reconstruction pipeline: given one object mask in one camera at one instant, does a 2D segmentation foundation model keep a geometrically and temporally consistent notion of that object across a static rig of 9--46 real cameras, with no calibration, no category label, and no per-scene optimization? We answer on MUVOD, the only public multiview video benchmark of this kind (17 scenes, 459 instances), and on a 32-camera studio ring.
+
+\textbf{Contributions.} (1)~The pipeline reaches 91.0 J\&F against 79.4 for the published baseline; we decompose the margin (87\% is the foundation model inside an unchanged two-stage structure, 1.5 points are our design) and bound the selection optimism of the one tuned element by leave-one-scene-out (0.045 points). (2)~An error budget of the remaining 9 points, measured rather than estimated: passing ground-truth seeds through the pipeline shows that about 4.4 points are initialization and the rest tracking, and a model-free measurement puts the tracker's mask-grid ceiling at 1.8 points. (3)~Five preregistered negative results on repairing the cross-view failures, including explicit 3D on real rigs---structure-from-motion with dense stereo, feed-forward point maps, and per-scene 3D Gaussian Splatting---none of which passes its gate; the 3DGS depth is biased toward the camera on every rig camera and its error is anti-correlated with training-view PSNR. (4)~A reconstruction of the benchmark's unpublished reference-camera protocol and a 1:15 repair-to-protect asymmetry that any future seed-repair method on rigs must be designed against. (5)~On the 32-camera ring, a single text prompt on one camera initializes the pipeline with a first-frame mean J of 0.937 on the other cameras, against 0.939 from ground-truth masks, without an external detector.
+
+\textbf{Scope.} The method builds no 3D representation; its claim is about what a 2D foundation model can and cannot do spatially on real rigs, and about where explicit 3D fails. There is one baseline and one benchmark, because no other method has been evaluated under this protocol; the limitations section states this and eight further caveats.
+
+\textbf{Statements.} The manuscript is original and is not under consideration elsewhere. All confirmatory experiments were preregistered before being run (25 registration documents in a version-controlled repository); the code, registration documents, and per-scene results are available from the corresponding author on request. The authors declare no conflicts of interest.
+
+Thank you for your consideration.
+
+Sincerely,
+
+Seongjin Park (corresponding author)\\
+on behalf of the authors\\
+seongjin.park@etri.re.kr
+\end{document}
