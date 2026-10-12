@@ -1,0 +1,119 @@
+{
+ "note": "S1-E8 descriptive decomposition (docs/stage1-E8-prereg.md section 6; not a registered rule).",
+ "runs": {
+  "A2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoset_rep",
+   "total": 1.1587736608729098,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0676,
+    "N0": 0.3882,
+    "F0": 0.7294,
+    "other_nonref": -0.0265
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  },
+  "B2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_absFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoset_abs",
+   "total": 1.112182560661391,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0684,
+    "N0": 0.3789,
+    "F0": 0.6982,
+    "other_nonref": -0.0332
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  },
+  "C2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoalign_repFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoalign_rep",
+   "total": 1.1982025499776086,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0665,
+    "N0": 0.4201,
+    "F0": 0.7391,
+    "other_nonref": -0.0275
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  },
+  "A1": {
+   "method": "SegMaskSam3XW0MSdgeoset_repFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoset_rep",
+   "total": 1.1621325021477724,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0853,
+    "N0": 0.3365,
+    "F0": 0.7487,
+    "other_nonref": -0.0083
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  },
+  "B1": {
+   "method": "SegMaskSam3XW0MSdgeoset_absFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoset_abs",
+   "total": 1.1867674825528483,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0853,
+    "N0": 0.2587,
+    "F0": 0.8257,
+    "other_nonref": 0.0172
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  },
+  "C1": {
+   "method": "SegMaskSam3XW0MSdgeoalign_repFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoalign_rep",
+   "total": 1.2049915772633402,
+   "weight_mismatch": 0.0,
+   "contrib": {
+    "ref": 0.0853,
+    "N0": 0.3645,
+    "F0": 0.7635,
+    "other_nonref": -0.0084
+   },
+   "n": {
+    "ref": 398,
+    "N0": 623,
+    "F0": 41,
+    "other_nonref": 4
+   }
+  }
+ }
+}

@@ -70,15 +70,20 @@ def main():
         f0 = [r["J"][0] for r in Rm if not r["ref"] and r["gt"][0] and r["J"][0] is not None]
         res["frame0_J_nonref"] = dict(n=len(f0), mean=statistics.mean(f0) if f0 else None)
         # Z1 frame-0 PNG == seed PNG bytes
-        same = diff = missing = 0
+        same = diff = missing = missing_empty_seed = 0
         for r in Rm:
             c = CFG[r["scene"]]; f, s0 = c["folder"], c["start_frame"]
             a = os.path.join(DATA, f, seeds, r["cam"], str(s0), f"{r['obj']}.png"); b = os.path.join(DATA, f, m, r["cam"], str(s0), f"{r['obj']}.png")
             if not os.path.exists(a): continue
-            if not os.path.exists(b): missing += 1; continue
+            if not os.path.exists(b):
+                missing += 1
+                # the runner writes no PNG for an empty mask, so an empty seed leaves no frame-0 file (as in E7 P3)
+                from PIL import Image
+                if Image.open(a).convert("L").histogram()[255] == 0: missing_empty_seed += 1
+                continue
             if hashlib.sha256(open(a, "rb").read()).digest() == hashlib.sha256(open(b, "rb").read()).digest(): same += 1
             else: diff += 1
-        res["Z1_frame0_bytes"] = dict(same=same, different=diff, missing=missing)
+        res["Z1_frame0_bytes"] = dict(same=same, different=diff, missing=missing, missing_empty_seed=missing_empty_seed)
         # Z2 manifest provenance digest == seed folder digest
         z2 = {"ok": 0, "bad": [], "absent": 0}
         for sc in sorted(sm):
@@ -122,7 +127,10 @@ def main():
         v = [g("A2"), g("B2"), g("C2")]; pr["P3"] = max(v) - min(v) <= 0.3
         pr["P4"] = R["B2"]["paired"]["per_scene"].get("Welder", 0) < R["A2"]["paired"]["per_scene"].get("Welder", 0)
     if "A1" in R: pr["P5"] = R["A1"]["pairs_1_20"]["F0"]["recovered"] > R["A1"]["pairs_1_20"]["F0"]["broken"] and R["A1"]["pairs_1_20"]["N0"]["broken"] <= 3
-    if R: pr["P6"] = all(v["Z1_frame0_bytes"]["different"] == 0 and v["Z1_frame0_bytes"]["missing"] == 0 for v in R.values())
+    if R:
+        pr["P6"] = all(v["Z1_frame0_bytes"]["different"] == 0 and v["Z1_frame0_bytes"]["missing"] == 0 for v in R.values())
+        # reading aid, not a rule change: the misses are all empty seeds (no PNG written for an empty mask)
+        pr["P6_misses_all_empty_seeds"] = all(v["Z1_frame0_bytes"]["missing"] == v["Z1_frame0_bytes"]["missing_empty_seed"] for v in R.values())
     out["predictions"] = pr
     print(f"predictions {pr}")
 

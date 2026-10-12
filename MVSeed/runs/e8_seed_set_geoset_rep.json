@@ -1,0 +1,183 @@
+{
+ "prereg": "docs/stage1-E8-prereg.md",
+ "tag": "geoset_rep",
+ "src": "/home/sjpark/Documents/SCSegmentation2D",
+ "src_git_head": "b089577481ce36374ac8972a0b8dfab2aaf04916",
+ "src_git_dirty": false,
+ "result": "geoset_pred_ft_rep_e8",
+ "n_png": 8243,
+ "copied": 6436,
+ "empty": 1807,
+ "scenes": [
+  {
+   "scene": "AlexaMeadeExhibit",
+   "cams": 45,
+   "objects": 33,
+   "copied": 865,
+   "empty": 620,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 0
+  },
+  {
+   "scene": "AlexaMeadeFacePaint",
+   "cams": 46,
+   "objects": 12,
+   "copied": 294,
+   "empty": 258,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 1
+  },
+  {
+   "scene": "Barn",
+   "cams": 15,
+   "objects": 30,
+   "copied": 450,
+   "empty": 0,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 4
+  },
+  {
+   "scene": "Blocks",
+   "cams": 10,
+   "objects": 16,
+   "copied": 153,
+   "empty": 7,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 0
+  },
+  {
+   "scene": "Breakfast",
+   "cams": 15,
+   "objects": 27,
+   "copied": 384,
+   "empty": 21,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 1
+  },
+  {
+   "scene": "CBABasketball",
+   "cams": 30,
+   "objects": 22,
+   "copied": 553,
+   "empty": 107,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 2
+  },
+  {
+   "scene": "Carpark",
+   "cams": 9,
+   "objects": 22,
+   "copied": 198,
+   "empty": 0,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 3
+  },
+  {
+   "scene": "CoffeeMartini",
+   "cams": 18,
+   "objects": 50,
+   "copied": 815,
+   "empty": 85,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 4
+  },
+  {
+   "scene": "Dog",
+   "cams": 41,
+   "objects": 7,
+   "copied": 222,
+   "empty": 65,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 2
+  },
+  {
+   "scene": "Fencing",
+   "cams": 10,
+   "objects": 8,
+   "copied": 80,
+   "empty": 0,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 0
+  },
+  {
+   "scene": "FlameSteak",
+   "cams": 21,
+   "objects": 50,
+   "copied": 887,
+   "empty": 163,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 1
+  },
+  {
+   "scene": "Frog",
+   "cams": 13,
+   "objects": 5,
+   "copied": 65,
+   "empty": 0,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 2
+  },
+  {
+   "scene": "MATF",
+   "cams": 10,
+   "objects": 33,
+   "copied": 217,
+   "empty": 113,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 3
+  },
+  {
+   "scene": "MartialArts",
+   "cams": 15,
+   "objects": 19,
+   "copied": 249,
+   "empty": 36,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 4
+  },
+  {
+   "scene": "Painter",
+   "cams": 16,
+   "objects": 24,
+   "copied": 383,
+   "empty": 1,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 0
+  },
+  {
+   "scene": "PoznanStreet",
+   "cams": 9,
+   "objects": 24,
+   "copied": 213,
+   "empty": 3,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 1
+  },
+  {
+   "scene": "Welder",
+   "cams": 46,
+   "objects": 16,
+   "copied": 408,
+   "empty": 328,
+   "copied_zero": 0,
+   "run_git": "b089577",
+   "fold": 3
+  }
+ ]
+}

@@ -1,0 +1,1057 @@
+{
+ "prereg": "docs/stage1-E8-prereg.md",
+ "runs": {
+  "A2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoset_rep",
+   "n_scenes": 17,
+   "basic": 92.17345286093833,
+   "base_basic": 91.0146792000654,
+   "paired": {
+    "n": 17,
+    "mean": 1.1587736608729136,
+    "ci": [
+     0.43204448346877616,
+     2.1116464203553855
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.4411843764249994,
+     "CoffeeMartini"
+    ],
+    "best": [
+     7.272801689090443,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.833,
+     "AlexaMeadeFacePaint": 0.904,
+     "Barn": 1.425,
+     "Blocks": -0.168,
+     "Breakfast": 0.248,
+     "CBABasketball": 1.396,
+     "Carpark": -0.017,
+     "CoffeeMartini": -0.441,
+     "Dog": 0.022,
+     "Fencing": 0.769,
+     "FlameSteak": 0.606,
+     "Frog": -0.067,
+     "MATF": 3.36,
+     "MartialArts": 0.522,
+     "Painter": 0.202,
+     "PoznanStreet": 0.833,
+     "Welder": 7.273
+    }
+   },
+   "ci_bonferroni3": [
+    0.3270785813575401,
+    2.3741498699617694
+   ],
+   "complete": 87.50680821674084,
+   "base_complete": 86.39916728690119,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.1076409298396461,
+    "ci": [
+     0.4088149726543005,
+     2.053568876262629
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.31656323874430825,
+     "CoffeeMartini"
+    ],
+    "best": [
+     7.272801689090443,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.833,
+     "AlexaMeadeFacePaint": 0.78,
+     "Barn": 1.425,
+     "Blocks": -0.193,
+     "Breakfast": 0.238,
+     "CBABasketball": 1.321,
+     "Carpark": -0.017,
+     "CoffeeMartini": -0.317,
+     "Dog": 0.032,
+     "Fencing": 0.769,
+     "FlameSteak": 0.464,
+     "Frog": -0.067,
+     "MATF": 2.748,
+     "MartialArts": 0.522,
+     "Painter": 0.186,
+     "PoznanStreet": 0.833,
+     "Welder": 7.273
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.16556857504335323,
+     "recovered": 6,
+     "broken": 1,
+     "up": 24,
+     "down": 4
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.004630375499829256,
+     "recovered": 2,
+     "broken": 1,
+     "up": 23,
+     "down": 14
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8713065823007223
+   },
+   "Z1_frame0_bytes": {
+    "same": 1059,
+    "different": 0,
+    "missing": 7,
+    "missing_empty_seed": 7
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   },
+   "rule": {
+    "ci_lower_gt_0": true,
+    "mean_gt_0": true,
+    "defence": true,
+    "worst": -0.441,
+    "complete_ge_0": true,
+    "pass": true
+   }
+  },
+  "B2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_absFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoset_abs",
+   "n_scenes": 17,
+   "basic": 92.1268617607268,
+   "base_basic": 91.0146792000654,
+   "paired": {
+    "n": 17,
+    "mean": 1.1121825606613929,
+    "ci": [
+     0.4324236098023486,
+     1.9466627779291126
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.7568072484315422,
+     "Blocks"
+    ],
+    "best": [
+     6.093143750725957,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.881,
+     "AlexaMeadeFacePaint": 0.884,
+     "Barn": 0.978,
+     "Blocks": -0.757,
+     "Breakfast": 0.28,
+     "CBABasketball": 1.526,
+     "Carpark": -0.007,
+     "CoffeeMartini": -0.262,
+     "Dog": 0.414,
+     "Fencing": 1.048,
+     "FlameSteak": 0.638,
+     "Frog": -0.067,
+     "MATF": 3.696,
+     "MartialArts": 0.535,
+     "Painter": 0.188,
+     "PoznanStreet": 0.838,
+     "Welder": 6.093
+    }
+   },
+   "ci_bonferroni3": [
+    0.32146694553092414,
+    2.1937490225878586
+   ],
+   "complete": 87.4509526749191,
+   "base_complete": 86.39916728690119,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.051785388017899,
+    "ci": [
+     0.39947006830505377,
+     1.860774074097379
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.7376777776299548,
+     "Blocks"
+    ],
+    "best": [
+     6.093143750725957,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.881,
+     "AlexaMeadeFacePaint": 0.762,
+     "Barn": 0.978,
+     "Blocks": -0.738,
+     "Breakfast": 0.267,
+     "CBABasketball": 1.444,
+     "Carpark": -0.007,
+     "CoffeeMartini": -0.192,
+     "Dog": 0.357,
+     "Fencing": 1.048,
+     "FlameSteak": 0.484,
+     "Frog": -0.067,
+     "MATF": 3.023,
+     "MartialArts": 0.535,
+     "Painter": 0.172,
+     "PoznanStreet": 0.838,
+     "Welder": 6.093
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.15754034198940148,
+     "recovered": 6,
+     "broken": 2,
+     "up": 23,
+     "down": 4
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.0042545581960449375,
+     "recovered": 2,
+     "broken": 0,
+     "up": 24,
+     "down": 17
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8714151376267487
+   },
+   "Z1_frame0_bytes": {
+    "same": 1061,
+    "different": 0,
+    "missing": 5,
+    "missing_empty_seed": 5
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   },
+   "rule": {
+    "ci_lower_gt_0": true,
+    "mean_gt_0": true,
+    "defence": true,
+    "worst": -0.757,
+    "complete_ge_0": true,
+    "pass": true
+   }
+  },
+  "C2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoalign_repFsCs10kG2",
+   "base": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "seeds": "MVSeed_geoalign_rep",
+   "n_scenes": 17,
+   "basic": 92.21288175004301,
+   "base_basic": 91.0146792000654,
+   "paired": {
+    "n": 17,
+    "mean": 1.1982025499776103,
+    "ci": [
+     0.4721480563723341,
+     2.1853030991955658
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.49105596569887666,
+     "CoffeeMartini"
+    ],
+    "best": [
+     7.686730714099113,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.526,
+     "AlexaMeadeFacePaint": 0.992,
+     "Barn": 1.358,
+     "Blocks": -0.251,
+     "Breakfast": 1.317,
+     "CBABasketball": 1.227,
+     "Carpark": -0.035,
+     "CoffeeMartini": -0.491,
+     "Dog": 0.236,
+     "Fencing": 0.895,
+     "FlameSteak": 0.317,
+     "Frog": -0.161,
+     "MATF": 3.178,
+     "MartialArts": 0.494,
+     "Painter": 0.298,
+     "PoznanStreet": 0.782,
+     "Welder": 7.687
+    }
+   },
+   "ci_bonferroni3": [
+    0.36955625754580057,
+    2.4418646640154087
+   ],
+   "complete": 87.54127747195528,
+   "base_complete": 86.39916728690119,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.1421101850540945,
+    "ci": [
+     0.4448989589817228,
+     2.1251028931653506
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.34938710165516795,
+     "CoffeeMartini"
+    ],
+    "best": [
+     7.686730714099113,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.526,
+     "AlexaMeadeFacePaint": 0.855,
+     "Barn": 1.358,
+     "Blocks": -0.27,
+     "Breakfast": 1.196,
+     "CBABasketball": 1.159,
+     "Carpark": -0.035,
+     "CoffeeMartini": -0.349,
+     "Dog": 0.207,
+     "Fencing": 0.895,
+     "FlameSteak": 0.203,
+     "Frog": -0.161,
+     "MATF": 2.593,
+     "MartialArts": 0.494,
+     "Painter": 0.276,
+     "PoznanStreet": 0.782,
+     "Welder": 7.687
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.16449699020826017,
+     "recovered": 6,
+     "broken": 3,
+     "up": 23,
+     "down": 3
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.004888748100557756,
+     "recovered": 2,
+     "broken": 1,
+     "up": 25,
+     "down": 11
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8698223650992484
+   },
+   "Z1_frame0_bytes": {
+    "same": 1061,
+    "different": 0,
+    "missing": 5,
+    "missing_empty_seed": 5
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   },
+   "rule": {
+    "ci_lower_gt_0": true,
+    "mean_gt_0": true,
+    "defence": true,
+    "worst": -0.491,
+    "complete_ge_0": true,
+    "pass": true
+   }
+  },
+  "A1": {
+   "method": "SegMaskSam3XW0MSdgeoset_repFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoset_rep",
+   "n_scenes": 17,
+   "basic": 90.71143906699993,
+   "base_basic": 89.54930656485216,
+   "paired": {
+    "n": 17,
+    "mean": 1.162132502147771,
+    "ci": [
+     0.5469468737612355,
+     1.9666634038344715
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.3888029919207838,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.441803496551884,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.25,
+     "AlexaMeadeFacePaint": 0.833,
+     "Barn": 1.329,
+     "Blocks": 0.858,
+     "Breakfast": 0.901,
+     "CBABasketball": 1.46,
+     "Carpark": -0.148,
+     "CoffeeMartini": -0.389,
+     "Dog": 0.01,
+     "Fencing": 2.387,
+     "FlameSteak": 0.815,
+     "Frog": 0.054,
+     "MATF": 1.766,
+     "MartialArts": 0.635,
+     "Painter": 0.162,
+     "PoznanStreet": 0.393,
+     "Welder": 6.442
+    }
+   },
+   "ci_bonferroni3": [
+    0.4552848255705191,
+    2.188867603445409
+   ],
+   "complete": 86.10982290087578,
+   "base_complete": 84.98746058360878,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.1223623172670154,
+    "ci": [
+     0.524342880319237,
+     1.9283059643987122
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.23239714092453312,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.441803496551884,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.25,
+     "AlexaMeadeFacePaint": 0.716,
+     "Barn": 1.329,
+     "Blocks": 0.778,
+     "Breakfast": 0.839,
+     "CBABasketball": 1.378,
+     "Carpark": -0.148,
+     "CoffeeMartini": -0.232,
+     "Dog": 0.023,
+     "Fencing": 2.387,
+     "FlameSteak": 0.628,
+     "Frog": 0.054,
+     "MATF": 1.46,
+     "MartialArts": 0.635,
+     "Painter": 0.15,
+     "PoznanStreet": 0.393,
+     "Welder": 6.442
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.16631741159447705,
+     "recovered": 9,
+     "broken": 2,
+     "up": 23,
+     "down": 3
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.003722381288161615,
+     "recovered": 1,
+     "broken": 3,
+     "up": 25,
+     "down": 15
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8713065823007223
+   },
+   "Z1_frame0_bytes": {
+    "same": 1059,
+    "different": 0,
+    "missing": 7,
+    "missing_empty_seed": 7
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   }
+  },
+  "B1": {
+   "method": "SegMaskSam3XW0MSdgeoset_absFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoset_abs",
+   "n_scenes": 17,
+   "basic": 90.73607404740501,
+   "base_basic": 89.54930656485216,
+   "paired": {
+    "n": 17,
+    "mean": 1.1867674825528474,
+    "ci": [
+     0.5458575695845679,
+     1.9657388632323654
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.7190360504466042,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.0363943989875395,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.281,
+     "AlexaMeadeFacePaint": 0.847,
+     "Barn": 1.016,
+     "Blocks": 0.236,
+     "Breakfast": 1.304,
+     "CBABasketball": 1.525,
+     "Carpark": -0.148,
+     "CoffeeMartini": -0.719,
+     "Dog": 0.382,
+     "Fencing": 2.558,
+     "FlameSteak": 0.86,
+     "Frog": 0.054,
+     "MATF": 2.765,
+     "MartialArts": 0.625,
+     "Painter": 0.16,
+     "PoznanStreet": 0.393,
+     "Welder": 6.036
+    }
+   },
+   "ci_bonferroni3": [
+    0.440071673889952,
+    2.185654333280064
+   ],
+   "complete": 86.11774980503986,
+   "base_complete": 84.98746058360878,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.1302892214310878,
+    "ci": [
+     0.5096615976401592,
+     1.9007152026749368
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.5767802836569587,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.0363943989875395,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 2.281,
+     "AlexaMeadeFacePaint": 0.729,
+     "Barn": 1.016,
+     "Blocks": 0.188,
+     "Breakfast": 1.2,
+     "CBABasketball": 1.439,
+     "Carpark": -0.148,
+     "CoffeeMartini": -0.577,
+     "Dog": 0.332,
+     "Fencing": 2.558,
+     "FlameSteak": 0.66,
+     "Frog": 0.054,
+     "MATF": 2.281,
+     "MartialArts": 0.625,
+     "Painter": 0.148,
+     "PoznanStreet": 0.393,
+     "Welder": 6.036
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.17990940249255252,
+     "recovered": 9,
+     "broken": 1,
+     "up": 24,
+     "down": 2
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.002012011784202686,
+     "recovered": 1,
+     "broken": 4,
+     "up": 25,
+     "down": 19
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8714151376267487
+   },
+   "Z1_frame0_bytes": {
+    "same": 1061,
+    "different": 0,
+    "missing": 5,
+    "missing_empty_seed": 5
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   }
+  },
+  "C1": {
+   "method": "SegMaskSam3XW0MSdgeoalign_repFs",
+   "base": "SegMaskSam3XW0MFs",
+   "seeds": "MVSeed_geoalign_rep",
+   "n_scenes": 17,
+   "basic": 90.7542981421155,
+   "base_basic": 89.54930656485216,
+   "paired": {
+    "n": 17,
+    "mean": 1.2049915772633384,
+    "ci": [
+     0.5342945574147443,
+     2.0642731004683164
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.802016146087368,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.652674853644541,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.979,
+     "AlexaMeadeFacePaint": 0.9,
+     "Barn": 1.335,
+     "Blocks": 0.704,
+     "Breakfast": 2.149,
+     "CBABasketball": 1.304,
+     "Carpark": -0.165,
+     "CoffeeMartini": -0.802,
+     "Dog": 0.227,
+     "Fencing": 3.115,
+     "FlameSteak": 0.492,
+     "Frog": 0.05,
+     "MATF": 1.553,
+     "MartialArts": 0.554,
+     "Painter": 0.172,
+     "PoznanStreet": 0.265,
+     "Welder": 6.653
+    }
+   },
+   "ci_bonferroni3": [
+    0.42403373989374665,
+    2.3070026030366257
+   ],
+   "complete": 86.14817198312095,
+   "base_complete": 84.98746058360878,
+   "paired_complete": {
+    "n": 17,
+    "mean": 1.1607113995121723,
+    "ci": [
+     0.49967320667633014,
+     2.023007263433116
+    ],
+    "wins": 15,
+    "losses": 2,
+    "worst": [
+     -0.6393506967057618,
+     "CoffeeMartini"
+    ],
+    "best": [
+     6.652674853644541,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.979,
+     "AlexaMeadeFacePaint": 0.771,
+     "Barn": 1.335,
+     "Blocks": 0.646,
+     "Breakfast": 1.96,
+     "CBABasketball": 1.23,
+     "Carpark": -0.165,
+     "CoffeeMartini": -0.639,
+     "Dog": 0.198,
+     "Fencing": 3.115,
+     "FlameSteak": 0.338,
+     "Frog": 0.05,
+     "MATF": 1.281,
+     "MartialArts": 0.554,
+     "Painter": 0.159,
+     "PoznanStreet": 0.265,
+     "Welder": 6.653
+    }
+   },
+   "pairs_1_20": {
+    "F0": {
+     "n": 41,
+     "mean_dJF": 0.16655327753532578,
+     "recovered": 9,
+     "broken": 3,
+     "up": 21,
+     "down": 3
+    },
+    "N0": {
+     "n": 623,
+     "mean_dJF": 0.0033825494332195903,
+     "recovered": 1,
+     "broken": 3,
+     "up": 26,
+     "down": 11
+    }
+   },
+   "frame0_J_nonref": {
+    "n": 664,
+    "mean": 0.8698223650992484
+   },
+   "Z1_frame0_bytes": {
+    "same": 1061,
+    "different": 0,
+    "missing": 5,
+    "missing_empty_seed": 5
+   },
+   "Z2_provenance": {
+    "ok": 17,
+    "bad": [],
+    "absent": 0
+   }
+  }
+ },
+ "adoption": {
+  "passed": [
+   "A2",
+   "C2",
+   "B2"
+  ],
+  "adopted": "A2",
+  "adopted_method": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2",
+  "headline_runs_scored": [
+   "A2",
+   "C2",
+   "B2"
+  ]
+ },
+ "predictions": {
+  "P1": true,
+  "P2": true,
+  "P3": true,
+  "P4": true,
+  "P5": true,
+  "P6": false,
+  "P6_misses_all_empty_seeds": true
+ },
+ "table": [
+  {
+   "label": "MUVOD XMem (paper Table III/IV)",
+   "method": null,
+   "basic": 79.3529411764706,
+   "complete": 75.62941176470588,
+   "n": 17
+  },
+  {
+   "label": "Control, G0 seeds",
+   "method": "SegMaskSam3XW0MFs",
+   "basic": 89.54930656485216,
+   "complete": 84.98746058360878,
+   "n": 17
+  },
+  {
+   "label": "Submitted headline, G0 seeds",
+   "method": "SegMaskSam3XW1CGPS4MFsCs10kG2",
+   "basic": 91.0146792000654,
+   "complete": 86.39916728690119,
+   "n": 17
+  },
+  {
+   "label": "A2 (SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2)",
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2",
+   "basic": 92.17345286093833,
+   "complete": 87.50680821674084,
+   "n": 17
+  },
+  {
+   "label": "B2 (SegMaskSam3XW1CGPS4MSdgeoset_absFsCs10kG2)",
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_absFsCs10kG2",
+   "basic": 92.1268617607268,
+   "complete": 87.4509526749191,
+   "n": 17
+  },
+  {
+   "label": "C2 (SegMaskSam3XW1CGPS4MSdgeoalign_repFsCs10kG2)",
+   "method": "SegMaskSam3XW1CGPS4MSdgeoalign_repFsCs10kG2",
+   "basic": 92.21288175004301,
+   "complete": 87.54127747195528,
+   "n": 17
+  },
+  {
+   "label": "A1 (SegMaskSam3XW0MSdgeoset_repFs)",
+   "method": "SegMaskSam3XW0MSdgeoset_repFs",
+   "basic": 90.71143906699993,
+   "complete": 86.10982290087578,
+   "n": 17
+  },
+  {
+   "label": "B1 (SegMaskSam3XW0MSdgeoset_absFs)",
+   "method": "SegMaskSam3XW0MSdgeoset_absFs",
+   "basic": 90.73607404740501,
+   "complete": 86.11774980503986,
+   "n": 17
+  },
+  {
+   "label": "C1 (SegMaskSam3XW0MSdgeoalign_repFs)",
+   "method": "SegMaskSam3XW0MSdgeoalign_repFs",
+   "basic": 90.7542981421155,
+   "complete": 86.14817198312095,
+   "n": 17
+  },
+  {
+   "label": "E7 control + GT seeds (upper bound)",
+   "method": "SegMaskSam3XW0MSdgtFs",
+   "basic": 93.93254319632794,
+   "complete": 89.01994539258774,
+   "n": 17
+  },
+  {
+   "label": "E7 headline + GT seeds (upper bound)",
+   "method": "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2",
+   "basic": 95.27292734368534,
+   "complete": 90.28828100875027,
+   "n": 17
+  }
+ ],
+ "per_scene_basic": {
+  "AlexaMeadeExhibit": {
+   "XMem": 82.8,
+   "G0 ctrl": 85.91511449593926,
+   "G0 head": 90.04709388443382,
+   "A2": 92.88059078607918,
+   "B2": 92.92852405347621,
+   "C2": 92.57300366503813,
+   "A1": 88.1648083405127,
+   "B1": 88.19605130364846,
+   "C1": 87.89426203403391
+  },
+  "AlexaMeadeFacePaint": {
+   "XMem": 64.9,
+   "G0 ctrl": 92.64128572335042,
+   "G0 head": 92.56104018308233,
+   "A2": 93.46460248650489,
+   "B2": 93.44483228431592,
+   "C2": 93.55308508803326,
+   "A1": 93.4742098317985,
+   "B1": 93.48827588947108,
+   "C1": 93.5408872136253
+  },
+  "Barn": {
+   "XMem": 77.3,
+   "G0 ctrl": 88.78312938748107,
+   "G0 head": 89.74391078752217,
+   "A2": 91.16893102607725,
+   "B2": 90.72218713420948,
+   "C2": 91.10212767775259,
+   "A1": 90.11209616529634,
+   "B1": 89.79872824415534,
+   "C1": 90.11815491564953
+  },
+  "Blocks": {
+   "XMem": 80.5,
+   "G0 ctrl": 87.74133967810886,
+   "G0 head": 91.28457354187972,
+   "A2": 91.11665679190523,
+   "B2": 90.52776629344818,
+   "C2": 91.0338538559143,
+   "A1": 88.59919189333316,
+   "B1": 87.97710495205222,
+   "C1": 88.44555815809936
+  },
+  "Breakfast": {
+   "XMem": 68.8,
+   "G0 ctrl": 84.97943077434115,
+   "G0 head": 87.82198249708752,
+   "A2": 88.07007665909968,
+   "B2": 88.10246116494761,
+   "C2": 89.13871398949141,
+   "A1": 85.88032597519194,
+   "B1": 86.28342594370591,
+   "C1": 87.12877962414287
+  },
+  "CBABasketball": {
+   "XMem": 66.4,
+   "G0 ctrl": 88.62007432719335,
+   "G0 head": 88.56374006513819,
+   "A2": 89.95995434744349,
+   "B2": 90.08959782623319,
+   "C2": 89.79042863204752,
+   "A1": 90.07962896693186,
+   "B1": 90.14548618522967,
+   "C1": 89.924552780389
+  },
+  "Carpark": {
+   "XMem": 85.3,
+   "G0 ctrl": 94.25858479913643,
+   "G0 head": 94.4949922995188,
+   "A2": 94.47750725841638,
+   "B2": 94.48805603373219,
+   "C2": 94.4600260168686,
+   "A1": 94.11061982014468,
+   "B1": 94.11061982014468,
+   "C1": 94.09318788702453
+  },
+  "CoffeeMartini": {
+   "XMem": 84.3,
+   "G0 ctrl": 93.77614229356494,
+   "G0 head": 94.62096312171371,
+   "A2": 94.17977874528871,
+   "B2": 94.35861004104909,
+   "C2": 94.12990715601484,
+   "A1": 93.38733930164416,
+   "B1": 93.05710624311834,
+   "C1": 92.97412614747758
+  },
+  "Dog": {
+   "XMem": 75.5,
+   "G0 ctrl": 88.35412969241764,
+   "G0 head": 88.34783000606635,
+   "A2": 88.36937930362915,
+   "B2": 88.76198358338853,
+   "C2": 88.58362926855686,
+   "A1": 88.36441868327228,
+   "B1": 88.73650511263634,
+   "C1": 88.58072546882163
+  },
+  "Fencing": {
+   "XMem": 85.7,
+   "G0 ctrl": 87.71054115281967,
+   "G0 head": 93.19712246290479,
+   "A2": 93.96608086353713,
+   "B2": 94.24480594427584,
+   "C2": 94.09186981939806,
+   "A1": 90.09713999032239,
+   "B1": 90.26827398742448,
+   "C1": 90.82586245766751
+  },
+  "FlameSteak": {
+   "XMem": 84.8,
+   "G0 ctrl": 91.44762805470343,
+   "G0 head": 92.1294643547945,
+   "A2": 92.73559335095995,
+   "B2": 92.76739705734035,
+   "C2": 92.44692831028757,
+   "A1": 92.26277135339895,
+   "B1": 92.30775612469046,
+   "C1": 91.93912868278139
+  },
+  "Frog": {
+   "XMem": 92.3,
+   "G0 ctrl": 97.5791229674327,
+   "G0 head": 97.77843165914142,
+   "A2": 97.71164950741736,
+   "B2": 97.71164950741736,
+   "C2": 97.61769761632812,
+   "A1": 97.63299830233052,
+   "B1": 97.63299830233052,
+   "C1": 97.62923268481197
+  },
+  "Global (17 scenes)": {
+   "XMem": 79.3529411764706,
+   "G0 ctrl": null,
+   "G0 head": null,
+   "A2": null,
+   "B2": null,
+   "C2": null,
+   "A1": null,
+   "B1": null,
+   "C1": null
+  },
+  "MATF": {
+   "XMem": 69.1,
+   "G0 ctrl": 82.56587981487067,
+   "G0 head": 85.39709074517877,
+   "A2": 88.75676544418634,
+   "B2": 89.09336833027804,
+   "C2": 88.57549202631562,
+   "A1": 84.33171046910313,
+   "B1": 85.33077788472482,
+   "C1": 84.11847483797648
+  },
+  "MartialArts": {
+   "XMem": 83.7,
+   "G0 ctrl": 93.56942380021567,
+   "G0 head": 93.78548860725509,
+   "A2": 94.30754999745574,
+   "B2": 94.32070240924853,
+   "C2": 94.2799512250298,
+   "A1": 94.20454226785844,
+   "B1": 94.19462363112035,
+   "C1": 94.12377393852746
+  },
+  "Painter": {
+   "XMem": 82.2,
+   "G0 ctrl": 91.62863517659132,
+   "G0 head": 92.6450918608352,
+   "A2": 92.84697214969725,
+   "B2": 92.83311562722506,
+   "C2": 92.94294448374025,
+   "A1": 91.7902315421396,
+   "B1": 91.78850304327662,
+   "C1": 91.80086296607922
+  },
+  "PoznanStreet": {
+   "XMem": 80.2,
+   "G0 ctrl": 88.72593792125953,
+   "G0 head": 90.36347975256125,
+   "A2": 91.19655765716497,
+   "B2": 91.20119831904576,
+   "C2": 91.14534963381695,
+   "A1": 89.1188161961077,
+   "B1": 89.1188161961077,
+   "C1": 88.9910122221506
+  },
+  "Welder": {
+   "XMem": 85.2,
+   "G0 ctrl": 84.04181154306065,
+   "G0 head": 84.46725057199829,
+   "A2": 91.74005226108874,
+   "B2": 90.56039432272425,
+   "C2": 92.1539812860974,
+   "A1": 90.48361503961253,
+   "B1": 90.07820594204819,
+   "C1": 90.69448639670519
+  }
+ }
+}
