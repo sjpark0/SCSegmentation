@@ -8,7 +8,8 @@ resolution, every camera; no PNG where the prediction is empty.
 For every camera of the scene (Video/ folder) x every basic object (seed_ids_c_ini):
   PNG present  -> format check (mode L, scene resolution, values in {0, 255}), bytes copied
   PNG absent   -> empty PNG (area 0 = "not in this view" by the new stage 1; never G0,
-                  which would mix the treatment with the control seed)
+                  which would mix the treatment with the control seed); a camera with no
+                  source folder at all is one whose every object came out empty
 Layout <cam>/<start_frame>/<obj>.png plus SEED_MANIFEST.json (written_views = all cameras)
 and SEED_BUILD.json (per-scene counts, source RUN.json digest).  Host python (PIL only):
 
@@ -65,9 +66,14 @@ def build(scene, src, out, tag, log):
     if meta["ref_frame"] != start or meta["ref_cam"] != CENSUS[scene]["c_ini"]:
         raise RuntimeError(f"{scene}: source keyframe/c_ini {meta['ref_frame']}/{meta['ref_cam']} "
                            f"!= start_frame/c_ini {start}/{CENSUS[scene]['c_ini']}")
+    # the 2D writer creates <cam>/ lazily, only for non-empty predictions (methods/geomem/run.py write()),
+    # so a camera whose every object came out empty has no folder: that is "all empty", not a skipped view
     src_cams = sorted(d for d in os.listdir(res) if os.path.isdir(os.path.join(res, d)))
-    if src_cams != cams:
-        raise RuntimeError(f"{scene}: source cameras {src_cams} != Video/ cameras {cams}")
+    if not set(src_cams) <= set(cams):
+        raise RuntimeError(f"{scene}: source cameras {sorted(set(src_cams) - set(cams))} not in Video/ cameras")
+    if CENSUS[scene]["c_ini"] not in src_cams:
+        raise RuntimeError(f"{scene}: c_ini {CENSUS[scene]['c_ini']} has no folder in the source")
+    cams_without_folder = sorted(set(cams) - set(src_cams))
     extra = [(cm, p) for cm in src_cams for p in os.listdir(os.path.join(res, cm))
              if not p.endswith(".png") or int(p[:-4]) not in basic]
     if extra:
@@ -94,11 +100,14 @@ def build(scene, src, out, tag, log):
                            run_git=run.get("git"), run_date=run.get("date"), fold=run["config"].get("fold"),
                            ckpt_sha256=run["config"].get("ckpt_sha256"), arm=run["config"].get("arm"), gate=run["config"].get("gate")),
                n_png=n_copy + n_empty, n_copied=n_copy, n_empty=n_empty, n_copied_zero_area=n_copy_zero,
+               cams_without_folder=cams_without_folder,
                generated_at=datetime.datetime.now().isoformat(timespec="seconds"))
     json.dump(man, open(os.path.join(dst, "SEED_MANIFEST.json"), "w"), indent=1)
     log(f"  {scene:20s} {len(cams):2d} cams x {len(basic):2d} objects = {n_copy + n_empty:4d} PNG "
-        f"({n_copy} copied, {n_empty} empty, {n_copy_zero} copied-but-zero)")
+        f"({n_copy} copied, {n_empty} empty, {n_copy_zero} copied-but-zero)"
+        + (f"  cameras with no source folder (all empty): {cams_without_folder}" if cams_without_folder else ""))
     return dict(scene=scene, cams=len(cams), objects=len(basic), copied=n_copy, empty=n_empty, copied_zero=n_copy_zero,
+                cams_without_folder=cams_without_folder,
                 run_git=run.get("git"), fold=run["config"].get("fold"))
 
 
