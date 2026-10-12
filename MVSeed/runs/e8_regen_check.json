@@ -1,0 +1,632 @@
+{
+ "geoset_rep": {
+  "old": "geoset_pred_ft_rep",
+  "new": "geoset_pred_ft_rep_e8",
+  "bytes": {
+   "identical": 6436,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "diff_iou_mean": null,
+   "diff_iou_min": null
+  },
+  "bytes_per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 865,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 294,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Blocks": {
+    "identical": 153,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Breakfast": {
+    "identical": 384,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CBABasketball": {
+    "identical": 553,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CoffeeMartini": {
+    "identical": 815,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Dog": {
+    "identical": 222,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "FlameSteak": {
+    "identical": 887,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MATF": {
+    "identical": 217,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MartialArts": {
+    "identical": 249,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Welder": {
+    "identical": 408,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   }
+  },
+  "scores": {
+   "old": {
+    "J": 0.8776529481862071,
+    "F": 0.9508089537193116,
+    "JF": 0.9142309509527594,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "new": {
+    "J": 0.8776529481862071,
+    "F": 0.9508089537193116,
+    "JF": 0.9142309509527594,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "pairs_common": 664,
+   "pairs_equal": 664,
+   "dJ_mean": 0.0,
+   "dJ_max_abs": 0.0,
+   "only_old": 0,
+   "only_new": 0
+  }
+ },
+ "geoset_abs": {
+  "old": "geoset_pred_ft_abs",
+  "new": "geoset_pred_ft_abs_e8",
+  "bytes": {
+   "identical": 6471,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "diff_iou_mean": null,
+   "diff_iou_min": null
+  },
+  "bytes_per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 878,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 292,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Blocks": {
+    "identical": 157,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Breakfast": {
+    "identical": 387,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CBABasketball": {
+    "identical": 556,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CoffeeMartini": {
+    "identical": 819,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Dog": {
+    "identical": 227,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "FlameSteak": {
+    "identical": 888,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MATF": {
+    "identical": 220,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MartialArts": {
+    "identical": 250,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Welder": {
+    "identical": 408,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   }
+  },
+  "scores": {
+   "old": {
+    "J": 0.8780281933662699,
+    "F": 0.9511681075032378,
+    "JF": 0.9145981504347538,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "new": {
+    "J": 0.8780281933662699,
+    "F": 0.9511681075032378,
+    "JF": 0.9145981504347538,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "pairs_common": 664,
+   "pairs_equal": 664,
+   "dJ_mean": 0.0,
+   "dJ_max_abs": 0.0,
+   "only_old": 0,
+   "only_new": 0
+  }
+ },
+ "geoalign_rep": {
+  "old": "geoalign_ft_x_rep",
+  "new": "geoalign_ft_x_rep_e8",
+  "bytes": {
+   "identical": 6442,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "diff_iou_mean": null,
+   "diff_iou_min": null
+  },
+  "bytes_per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 870,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 283,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Blocks": {
+    "identical": 154,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Breakfast": {
+    "identical": 389,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CBABasketball": {
+    "identical": 555,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "CoffeeMartini": {
+    "identical": 817,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Dog": {
+    "identical": 224,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "FlameSteak": {
+    "identical": 888,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MATF": {
+    "identical": 220,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "MartialArts": {
+    "identical": 249,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   },
+   "Welder": {
+    "identical": 404,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_git": "b089577",
+    "status": "done"
+   }
+  },
+  "scores": {
+   "old": {
+    "J": 0.8768193054706308,
+    "F": 0.9532601757031558,
+    "JF": 0.9150397405868933,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "new": {
+    "J": 0.8768193054706308,
+    "F": 0.9532601757031558,
+    "JF": 0.9150397405868933,
+    "n_scenes": 17,
+    "n_pairs": 664,
+    "status": {
+     "AlexaMeadeExhibit": "ok",
+     "AlexaMeadeFacePaint": "ok",
+     "Barn": "ok",
+     "Blocks": "ok",
+     "Breakfast": "ok",
+     "CBABasketball": "ok",
+     "Carpark": "ok",
+     "CoffeeMartini": "ok",
+     "Dog": "ok",
+     "Fencing": "ok",
+     "FlameSteak": "ok",
+     "Frog": "ok",
+     "MATF": "ok",
+     "MartialArts": "ok",
+     "Painter": "ok",
+     "PoznanStreet": "ok",
+     "Welder": "ok"
+    }
+   },
+   "pairs_common": 664,
+   "pairs_equal": 664,
+   "dJ_mean": 0.0,
+   "dJ_max_abs": 0.0,
+   "only_old": 0,
+   "only_new": 0
+  }
+ }
+}
