@@ -22,6 +22,10 @@ echo "logs -> ${LOGDIR}"
 # Both join the folder name when they are not the default 4 / 256, so two windows never share one:
 #   ... F0SEED=1 CROP=10000 CROPGATE=v2 CROPSCALE=2 ./runMVOptThree.sh Fencing
 #                                                                        # -> SegMaskSam3XW1CGPS4MFsCs10kS2G2
+# FTENC=<2D arm> runs the temporal tracker with stage 1's fine-tuned memory attention (--ft-encoder,
+# docs/stage2-R5-prereg.md; suffix Ft<tag>, after Fs, before Cs):
+#   ... SEEDS=MVSeed_geoset_rep F0SEED=1 FTENC=geoset_pred_ft CROP=10000 CROPGATE=v2 ./runMVOptThree.sh Fencing
+#                                                    # -> SegMaskSam3XW1CGPS4MSdgeoset_repFsFtgpCs10kG2
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
@@ -36,7 +40,8 @@ for ds in "$@"; do
 			${TRACK:+--track-cams "${TRACK}"} ${XREF:+--ref-cam "${XREF}"} ${XREPAIR:+--repair-seeds} \
 			${SEEDS:+--seeds-from "${SEEDS}"} ${F0SEED:+--frame0-seed} \
 			${CROP:+--crop-small "${CROP}"} ${CROPGATE:+--crop-gate "${CROPGATE}"} \
-			${CROPSCALE:+--crop-scale "${CROPSCALE}"} ${CROPMINSIDE:+--crop-min-side "${CROPMINSIDE}"} --overwrite \
+			${CROPSCALE:+--crop-scale "${CROPSCALE}"} ${CROPMINSIDE:+--crop-min-side "${CROPMINSIDE}"} \
+			${FTENC:+--ft-encoder "${FTENC}"} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))

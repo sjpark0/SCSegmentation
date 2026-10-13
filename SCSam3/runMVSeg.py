@@ -105,8 +105,15 @@ CROP_GATE_DEFAULT = "v2"
 CROP_SCALE_DEFAULT = 4.0
 CROP_MIN_SIDE_DEFAULT = 256
 CROP_GATE_SUFFIX = {"none": "", "v1": "G1", "v2": "G2"}
+# Stage-1 fine-tuned memory attention in the stage-2 tracker (S2-R5, docs/stage2-R5-prereg.md):
+# --ft-encoder <2D arm> loads the scene's own-fold checkpoint's memory_attention into the
+# temporal tracker's encoder after the spatial model is retired and before TrackForward, and
+# restores the original weights before the crop pass.  Folder suffix Ft<tag>, after Fs and
+# before Cs.  MVOpt only; excludes the two-pass loop (--xview-mode E).  SCSam3/ft_encoder.py.
+FT_ENCODER_ALGOS = ("MVOpt",)
 _SEEDS_FROM = None
 _CROP_TRACK = None
+_FT_ENCODER = None
 
 
 def seeds_from_module():
@@ -136,6 +143,20 @@ def crop_track_module():
         spec.loader.exec_module(mod)
         _CROP_TRACK = mod
     return _CROP_TRACK
+
+
+def ft_encoder_module():
+    """SCSam3/ft_encoder.py, loaded by path (as crop_track_module).  resolve_run needs its
+    folder rule, so it is torch-free at import."""
+    global _FT_ENCODER
+    if _FT_ENCODER is None:
+        import importlib.util
+        path = os.path.join(HERE, "ft_encoder.py")
+        spec = importlib.util.spec_from_file_location("ft_encoder", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        _FT_ENCODER = mod
+    return _FT_ENCODER
 
 
 def _scale_tag(scale):
@@ -274,6 +295,18 @@ def parse_args():
     ap.add_argument("--crop-min-side", type=int, default=None, metavar="PX",
                     help=f"--crop-small window: side is at least PX (default "
                          f"{CROP_MIN_SIDE_DEFAULT}; capped at min(H, W)). Needs --crop-small.")
+    ap.add_argument("--ft-encoder", default=None, metavar="ARM",
+                    help="S2-R5 (docs/stage2-R5-prereg.md): run the temporal tracker with the "
+                         "memory attention stage 1 fine-tuned (SCSegmentation2D geomem arm ARM, "
+                         "the scene's own-fold checkpoint; memory_attention only, no 3D bias); "
+                         "the original weights come back before the crop pass. Folder suffix "
+                         "Ft<tag> (after Fs); an explicit --out must carry it too. MVOpt only.")
+    ap.add_argument("--ft-runs", default=None, metavar="DIR",
+                    help="--ft-encoder: the 2D runs folder holding <ARM>/fold<k>/ckpt.pt "
+                         "(default ../SCSegmentation2D/geomem/runs next to this repo)")
+    ap.add_argument("--ft-folds", default=None, metavar="JSON",
+                    help="--ft-encoder: the scene -> fold table (default "
+                         "../SCSegmentation2D/geomem/folds.json)")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -550,6 +583,25 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         elif FRAME0_SUFFIX not in out_name:
             sys.exit(f"refusing to write a --frame0-seed run into {out_name}: the name must "
                      f"carry {FRAME0_SUFFIX} (a control folder has no frame-0 marker)")
+    # --ft-encoder: after Fs, before Cs (Sd -> Fs -> Ft -> Cs); same never-overwrite rule
+    ft_encoder = getattr(args, "ft_encoder", None)
+    if ft_encoder is not None:
+        if args.algo not in FT_ENCODER_ALGOS:
+            sys.exit(f"--ft-encoder is wired into {FT_ENCODER_ALGOS} only, not {args.algo}")
+        if two_pass:
+            sys.exit(f"--ft-encoder and --xview-mode {mode_eff} do not combine: the swap and the "
+                     "restore before the crop pass are the one-pass loop's")
+        try:
+            ft_suffix = ft_encoder_module().folder_suffix(ft_encoder)
+        except ValueError as exc:
+            sys.exit(f"--ft-encoder: {exc}")
+        if not args.out:
+            out_name += ft_suffix
+        elif ft_suffix not in out_name:
+            sys.exit(f"refusing to write an --ft-encoder run into {out_name}: the name must "
+                     f"carry {ft_suffix} (a control folder has no fine-tuned-encoder marker)")
+    elif getattr(args, "ft_runs", None) is not None or getattr(args, "ft_folds", None) is not None:
+        sys.exit("--ft-runs / --ft-folds need --ft-encoder ARM")
     # --crop-small: after Fs (Rp/Sd -> Fs -> Cs).  crop = None when off, so main() and the
     # manifest see one value; the settings are resolved here so the folder name, the run
     # and the manifest all carry the same numbers.
@@ -600,7 +652,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
                 xview_mode=mode, xview_mode_eff=(mode_eff if xview_on else None),
-                two_pass=two_pass, frame0_seed=frame0_seed, crop=crop,
+                two_pass=two_pass, frame0_seed=frame0_seed, crop=crop, ft_encoder=ft_encoder,
                 closure_reach=(len(track_idx) if track_mode == "closure" else None),
                 xview_gate=gate, xview_ptr=ptr, xview_tpos_shift=shift)
 
@@ -1146,6 +1198,17 @@ def main():
         except ValueError as exc:
             sys.exit(f"--seeds-from {run['seeds_from']}: {exc}")
 
+    # --ft-encoder: the scene's own-fold checkpoint, found before a model is loaded
+    ft_info = None
+    if run["ft_encoder"]:
+        fm = ft_encoder_module()
+        try:
+            ft_info = fm.resolve(run["ft_encoder"], c["folder"],
+                                 runs_dir=args.ft_runs or fm.DEFAULT_RUNS,
+                                 folds_path=args.ft_folds or fm.DEFAULT_FOLDS)
+        except ValueError as exc:
+            sys.exit(f"--ft-encoder: {exc}")
+
     import cv2
     import numpy as np
 
@@ -1177,6 +1240,9 @@ def main():
                                f"gate {run['crop']['gate']}, scale {run['crop']['scale']:g}, "
                                f"min side {run['crop']['min_side']})" if run["crop"] else "off"),
           flush=True)
+    print("ft encoder     " + (f"on ({run['ft_encoder']} fold{ft_info['fold']}: {ft_info['path']}, "
+                               f"sha256 {ft_info['sha256'][:12]}; restored before the crop pass)"
+                               if ft_info else "off"), flush=True)
     if seed_pre is not None:
         n_png = sum(len(p) for p in seed_pre["pngs"].values())
         cover = ("manifest covers " + ", ".join(seed_pre["written"]) if seed_pre["written"]
@@ -1286,6 +1352,60 @@ def main():
         torch.clear_autocast_cache()
         print("spatial model  retired", flush=True)
 
+    # --ft-encoder (S2-R5): the swap happens before TrackForward, so no memory-attention forward
+    # of the temporal tracker has run on the original weights yet; the autocast clear drops any
+    # bf16 copy keyed on the (in-place updated) parameters all the same.
+    ft_stats, ft_original, ft_enc = None, None, None
+    if ft_info is not None:
+        fm = ft_encoder_module()
+        if torch.cuda.is_available() and torch.cuda.device_count() > 1:
+            sys.exit("--ft-encoder: more than one GPU is visible; the predictor's worker "
+                     "processes would keep the original weights (run with one GPU)")
+        ft_enc = getattr(getattr(tracker, "transformer", None), "encoder", None)
+        if ft_enc is None:
+            sys.exit("--ft-encoder: the temporal tracker has no transformer.encoder")
+        ck = torch.load(ft_info["path"], map_location="cpu")
+        try:
+            train_scenes = fm.check_checkpoint(ck, ft_info)
+        except ValueError as exc:
+            sys.exit(f"--ft-encoder: {exc}")
+        digest_ckpt = fm.state_digest(ck["memory_attention"], torch)
+        # functional probe: what the encoder's linears output through the live autocast cache.
+        # Run on the original weights first, which fills the cache with their bf16 copies --
+        # exactly the state a missing clear would leave -- so the probe after the swap fails
+        # unless the forwards really use the loaded weights.
+        probe_orig, probe_dtypes = fm.probe_digest(ft_enc, torch)
+        try:
+            ft_original = fm.swap_in(ft_enc, ck["memory_attention"], torch)
+        except ValueError as exc:
+            sys.exit(f"--ft-encoder: {exc}")
+        torch.clear_autocast_cache()
+        digest_orig = fm.state_digest(ft_original, torch)
+        digest_loaded = fm.state_digest(ft_enc.state_dict(), torch)
+        if digest_loaded != digest_ckpt or digest_loaded == digest_orig:
+            sys.exit(f"--ft-encoder: encoder digest after the load {digest_loaded[:12]} "
+                     f"(checkpoint {digest_ckpt[:12]}, original {digest_orig[:12]})")
+        probe_loaded, _ = fm.probe_digest(ft_enc, torch)
+        if probe_loaded == probe_orig:
+            sys.exit("--ft-encoder: the encoder's outputs did not change after the load (stale "
+                     "autocast cache?)")
+        ft_stats = {"prereg": "docs/stage2-R5-prereg.md", "arm": ft_info["arm"],
+                    "fold": ft_info["fold"], "checkpoint": ft_info["path"],
+                    "checkpoint_sha256": ft_info["sha256"], "folds": ft_info["folds_path"],
+                    "folds_sha256": ft_info["folds_sha256"], "train_scenes": train_scenes,
+                    "n_tensors": len(ck["memory_attention"]),
+                    "digest_original": digest_orig, "digest_checkpoint": digest_ckpt,
+                    "digest_loaded": digest_loaded,
+                    "probe_original": probe_orig, "probe_loaded": probe_loaded,
+                    "probe_dtypes": probe_dtypes,
+                    "restored_before_crop": False, "digest_restored": None,
+                    "probe_restored": None}
+        del ck
+        print(f"ft encoder     loaded {ft_stats['n_tensors']} tensors from fold{ft_info['fold']} "
+              f"(digest {digest_orig[:12]} -> {digest_loaded[:12]}; probe {probe_orig[:12]} -> "
+              f"{probe_loaded[:12]} {probe_dtypes}; trained on {len(train_scenes)} other scenes)",
+              flush=True)
+
     sc.TrackForward(c["start_frame"], c["num_frame"])
 
     frame0_stats = None
@@ -1332,6 +1452,24 @@ def main():
     crop_stats = None
     if run["crop"]:
         cs = run["crop"]
+        if ft_original is not None:
+            # S2-R5: the crop pass runs on the original weights (prereg section 2), so its
+            # output must equal the base run's byte for byte (watch value Z2)
+            fm = ft_encoder_module()
+            fm.restore(ft_enc, ft_original, torch)
+            torch.clear_autocast_cache()
+            ft_stats["digest_restored"] = fm.state_digest(ft_enc.state_dict(), torch)
+            ft_stats["probe_restored"], _ = fm.probe_digest(ft_enc, torch)
+            if (ft_stats["digest_restored"] != ft_stats["digest_original"]
+                    or ft_stats["probe_restored"] != ft_stats["probe_original"]):
+                sys.exit(f"--ft-encoder: restore failed before the crop pass (digest "
+                         f"{ft_stats['digest_restored'][:12]}, original "
+                         f"{ft_stats['digest_original'][:12]}; probe "
+                         f"{ft_stats['probe_restored'][:12]}, original "
+                         f"{ft_stats['probe_original'][:12]})")
+            ft_stats["restored_before_crop"] = True
+            print(f"ft encoder     original weights restored before the crop pass "
+                  f"(digest {ft_stats['digest_restored'][:12]})", flush=True)
         c_ini_cam = (cam_name(c["c_ini"], c["prefix"], c["prefix1"])
                      if c.get("c_ini") is not None else None)
         crop_stats = sc.CropSmall(ds_dir, out_dir, cam_names, written_cams, c_ini_cam,
@@ -1394,6 +1532,7 @@ def main():
                    "seeds_from": seeds_stats,
                    "frame0_seed": run["frame0_seed"], "frame0_seed_stats": frame0_stats,
                    "crop_small": crop_stats,
+                   "ft_encoder": ft_stats,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run

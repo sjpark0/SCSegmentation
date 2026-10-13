@@ -53,10 +53,10 @@ if has score; then
   echo "$(ts) score"
   docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${ROOT}" scsam3 \
     python eval/eval_jf.py --methods ${METHODS} --out jf_e8.json > "${ROOT}/MVSeed/logs/e8_score.log" 2>&1
-  echo "$(ts) score exit $?  $(tail -n 2 "${ROOT}/MVSeed/logs/e8_score.log" | tr '\n' ' ' | cut -c1-200)"
+  st=$?; echo "$(ts) score exit ${st}  $(tail -n 2 "${ROOT}/MVSeed/logs/e8_score.log" | tr '\n' ' ' | cut -c1-200)"
 fi
 if has judge; then
   python3 "${ROOT}/MVSeed/e8_judge.py" > "${ROOT}/MVSeed/logs/e8_judge.log" 2>&1
-  echo "$(ts) judge exit $?"
+  st=$?; echo "$(ts) judge exit ${st}"
 fi
 echo "$(ts) E8 chain done"
