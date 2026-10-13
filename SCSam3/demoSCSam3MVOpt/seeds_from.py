@@ -239,6 +239,41 @@ def apply_seed_folder(masks_spatial, folder, start_frame, cam_names, track_idx, 
       untracked_views loaded views with PNGs that no session tracks (not applied)
     """
     pngs = list_seed_pngs(folder, start_frame, cam_names)
+
+    def get(path):
+        img = read_png(path)
+        if img is None:
+            raise ValueError(f"cannot read {path}")
+        if tuple(img.shape) != tuple(shape):
+            raise ValueError(f"{path}: shape {tuple(img.shape)} is not the video's {tuple(shape)}")
+        return to_seed(img)
+    return _apply(masks_spatial, pngs, cam_names, track_idx, obj_ids, get)
+
+
+def apply_seeds(masks_spatial, seeds, cam_names, track_idx, obj_ids, shape):
+    """apply_seed_folder for seeds held in memory (--stage1: the in-process stage 1 hands its masks
+    over without a file).  seeds = {cam name: {obj: bool (H, W) array}}, the content an MVSeed_
+    folder holds for start_frame; same rules, same record.  A camera the run does not know is a
+    ValueError, as list_seed_pngs refuses an unknown camera folder."""
+    known = set(cam_names)
+    unknown = sorted(c for c in seeds if c not in known)
+    if unknown:
+        raise ValueError(f"seed cameras {unknown} are not among this run's cameras "
+                         f"({len(cam_names)} loaded): another scene's seeds?")
+
+    def get(item):
+        cam, obj = item
+        m = seeds[cam][obj]
+        if tuple(m.shape) != tuple(shape):
+            raise ValueError(f"{cam}/{obj}: shape {tuple(m.shape)} is not the video's {tuple(shape)}")
+        return m.astype(bool, copy=True)
+    entries = {cam: {int(o): (cam, o) for o in objs} for cam, objs in seeds.items()}
+    return _apply(masks_spatial, entries, cam_names, track_idx, obj_ids, get)
+
+
+def _apply(masks_spatial, entries, cam_names, track_idx, obj_ids, get):
+    """The shared body: entries = {cam: {obj: handle}}, get(handle) -> bool (H, W) mask."""
+    pngs = entries
     tracked = set(track_idx)
     allowed = set(obj_ids)
     index = {name: i for i, name in enumerate(cam_names)}
@@ -256,12 +291,7 @@ def apply_seed_folder(masks_spatial, folder, start_frame, cam_names, track_idx, 
             continue
         seeds = masks_spatial.setdefault(view, {})
         for obj in sorted(per):
-            img = read_png(per[obj])
-            if img is None:
-                raise ValueError(f"cannot read {per[obj]}")
-            if tuple(img.shape) != tuple(shape):
-                raise ValueError(f"{per[obj]}: shape {tuple(img.shape)} is not the video's {tuple(shape)}")
-            new = to_seed(img)
+            new = get(per[obj])
             old = seeds.get(obj)
             new_any = bool(new.any())
             if old is None:

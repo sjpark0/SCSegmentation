@@ -30,6 +30,10 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
                                                                   # -> SegMaskSam3XW0MFs, seed written as frame 0
     python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --frame0-seed --crop-small 10000
                                                                   # -> SegMaskSam3XW0MFsCs10kG2, small objects crop-tracked
+    python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr \
+        --xview-tpos-shift 4 --ref-cam muvod --stage1 geoset_rep --frame0-seed --crop-small 10000 --ref-snap
+                                                                  # -> SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs, the
+                                                                  #    headline in one process (stage 1 in memory)
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -111,9 +115,46 @@ CROP_GATE_SUFFIX = {"none": "", "v1": "G1", "v2": "G2"}
 # restores the original weights before the crop pass.  Folder suffix Ft<tag>, after Fs and
 # before Cs.  MVOpt only; excludes the two-pass loop (--xview-mode E).  SCSam3/ft_encoder.py.
 FT_ENCODER_ALGOS = ("MVOpt",)
+# In-process stage 1 (docs/pipeline-inprocess.md): --stage1 <tag> runs the stage-1 GeoSet-2 decoder
+# (stage1/, preset = a registered MVSeed_<tag> set) inside this process after build_runner and before
+# the stage-2 model is built, frees it, and puts its masks into the --seeds-from slot from memory.  Same
+# seeds as --seeds-from MVSeed_<tag>, so the same folder suffix Sd<tag>.  SCSam3/stage1_supply.py.
+STAGE1_ALGOS = ("MVOpt",)
+# S2-R6 reference-camera static snap in-process (docs/stage2-R6.md): --ref-snap applies the rule to
+# the run's own output after the crop pass.  Folder suffix Rs, last.  Needs --ref-cam muvod (the rule
+# is defined on c_ini, whose frame 0 is the prompt).  SCSam3/ref_snap.py.
+REF_SNAP_SUFFIX = "Rs"
+# --save-stages: also write the intermediate results to <dataset>/<out>_stages/ (stage1/ = stage 1 in
+# its CLI layout, seeds/ = the MVSeed_ folder of the seeds, stage2/ = the output before --ref-snap).
+STAGES_SUFFIX = "_stages"
 _SEEDS_FROM = None
 _CROP_TRACK = None
 _FT_ENCODER = None
+_STAGE1_SUPPLY = None
+_REF_SNAP = None
+
+
+def _load_by_path(name, path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def stage1_supply_module():
+    """SCSam3/stage1_supply.py, loaded by path (torch-free at import; resolve_run needs its tag rule)."""
+    global _STAGE1_SUPPLY
+    if _STAGE1_SUPPLY is None:
+        _STAGE1_SUPPLY = _load_by_path("stage1_supply", os.path.join(HERE, "stage1_supply.py"))
+    return _STAGE1_SUPPLY
+
+
+def ref_snap_module():
+    global _REF_SNAP
+    if _REF_SNAP is None:
+        _REF_SNAP = _load_by_path("ref_snap", os.path.join(HERE, "ref_snap.py"))
+    return _REF_SNAP
 
 
 def seeds_from_module():
@@ -307,6 +348,21 @@ def parse_args():
     ap.add_argument("--ft-folds", default=None, metavar="JSON",
                     help="--ft-encoder: the scene -> fold table (default "
                          "stage1/geomem/folds.json)")
+    ap.add_argument("--stage1", default=None, metavar="TAG",
+                    help="run stage 1 in this process (docs/pipeline-inprocess.md): the stage-1 GeoSet-2 "
+                         "preset TAG (geoset_rep = S1-E8 headline, geoset_abs, geoalign_rep) decodes the "
+                         "reference frame from stage1/Data and its fold checkpoint, and its masks replace "
+                         "the seeds exactly as --seeds-from MVSeed_TAG would, without a file. Folder "
+                         "suffix Sd<TAG> (the same seeds); excludes --seeds-from and --repair-seeds. MVOpt only.")
+    ap.add_argument("--ref-snap", action="store_true",
+                    help="S2-R6 (docs/stage2-R6.md): after the crop pass, replace a reference-camera "
+                         "object's frame-t PNG by its frame-0 PNG when IoU >= 0.8 and the image change "
+                         "around it <= 4 (SCSam3/ref_snap.py). A post-process designed on the test GT: "
+                         "report with LOSO +0.387. Folder suffix Rs (last). Needs --ref-cam muvod.")
+    ap.add_argument("--save-stages", action="store_true",
+                    help="also write the intermediate results to <dataset>/<out>_stages/: stage1/ "
+                         "(--stage1 outputs in the stage-1 CLI layout), seeds/ (an MVSeed_ folder of the "
+                         "seeds) and stage2/ (the output before --ref-snap, hard links)")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",
@@ -553,6 +609,24 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
     if not args.out and repair:
         out_name += "Rp"
     seeds_from = getattr(args, "seeds_from", None)
+    stage1 = getattr(args, "stage1", None)
+    if stage1 is not None:
+        if seeds_from is not None:
+            sys.exit("--stage1 and --seeds-from both supply the seeds: pass one of them")
+        if repair:
+            sys.exit("--stage1 and --repair-seeds both rewrite the first-frame seeds and "
+                     "are different treatments: pass one of them")
+        if args.algo not in STAGE1_ALGOS:
+            sys.exit(f"--stage1 is wired into {STAGE1_ALGOS} only, not {args.algo}")
+        try:
+            seed_suffix = stage1_supply_module().folder_suffix(stage1)
+        except ValueError as exc:
+            sys.exit(f"--stage1: {exc}")
+        if not args.out:
+            out_name += seed_suffix
+        elif seed_suffix not in out_name:
+            sys.exit(f"refusing to write a --stage1 run into {out_name}: the name must "
+                     f"carry {seed_suffix} (a control folder has no seed marker)")
     if seeds_from is not None:
         if repair:
             sys.exit("--seeds-from and --repair-seeds both rewrite the first-frame seeds and "
@@ -640,6 +714,16 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                      f"carry {c_suffix} (a control folder has no crop marker)")
         crop = dict(max_px=int(crop_px), gate=c_gate, scale=c_scale, min_side=c_min_side,
                     suffix=c_suffix)
+    ref_snap = bool(getattr(args, "ref_snap", False))
+    if ref_snap:
+        if getattr(args, "ref_cam", None) != "muvod":
+            sys.exit("--ref-snap is defined on MUVOD's c_ini (its frame 0 is the prompt): "
+                     "pass --ref-cam muvod")
+        if not args.out:
+            out_name += REF_SNAP_SUFFIX
+        elif REF_SNAP_SUFFIX not in out_name:
+            sys.exit(f"refusing to write a --ref-snap run into {out_name}: the name must "
+                     f"carry {REF_SNAP_SUFFIX}")
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -647,7 +731,8 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         sys.exit(f"refusing to write a legacy run into {out_name}: folder names starting "
                  f"with {XVIEW_OUT_PREFIX} are the XW lineage (pass --xview-window, or "
                  "another --out)")
-    return dict(out_name=out_name, repair_seeds=repair, seeds_from=seeds_from,
+    return dict(out_name=out_name, repair_seeds=repair, seeds_from=seeds_from, stage1=stage1,
+                ref_snap=ref_snap, save_stages=bool(getattr(args, "save_stages", False)),
                 track_mode=track_mode, track_idx=track_idx,
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
@@ -836,6 +921,13 @@ def build_runner(algo):
                 read_png=lambda p: cv2.imread(p, cv2.IMREAD_GRAYSCALE))
             report.update(sf.folder_provenance(folder))
             return report
+
+        def LoadSeeds(self, seeds, cam_names, track_idx):
+            """--stage1: LoadSeedsFrom for seeds held in memory ({cam: {obj: bool (H, W)}}), same
+            slot, same rules (seeds_from.apply_seeds)."""
+            return seeds_from_module().apply_seeds(
+                self.masks_spatial, seeds, cam_names, track_idx, self.obj_ids,
+                shape=(self.video_height, self.video_width))
 
         def _seed_areas(self):
             return {view: {obj: int(m.sum().item()) for obj, m in masks.items()}
@@ -1198,6 +1290,17 @@ def main():
         except ValueError as exc:
             sys.exit(f"--seeds-from {run['seeds_from']}: {exc}")
 
+    # --stage1: its inputs, checkpoint and keyframe checked before a model is loaded
+    stage1_pre, c_ini_cam = None, (cam_name(c["c_ini"], c["prefix"], c["prefix1"])
+                                   if c.get("c_ini") is not None else None)
+    if run["stage1"]:
+        try:
+            stage1_pre = stage1_supply_module().preflight(run["stage1"], args.dataset,
+                                                          c["start_frame"], c_ini_cam)
+        except ValueError as exc:
+            sys.exit(f"--stage1 {run['stage1']}: {exc}")
+    stages_dir = os.path.join(ds_dir, out_name + STAGES_SUFFIX) if run["save_stages"] else None
+
     # --ft-encoder: the scene's own-fold checkpoint, found before a model is loaded
     ft_info = None
     if run["ft_encoder"]:
@@ -1243,6 +1346,14 @@ def main():
     print("ft encoder     " + (f"on ({run['ft_encoder']} fold{ft_info['fold']}: {ft_info['path']}, "
                                f"sha256 {ft_info['sha256'][:12]}; restored before the crop pass)"
                                if ft_info else "off"), flush=True)
+    if stage1_pre is not None:
+        print(f"stage 1        in process: {run['stage1']} = {stage1_pre['arm']}, gate {stage1_pre['gate']}, "
+              f"fold{stage1_pre['fold']} ({stage1_pre['checkpoint']}, sha256 "
+              f"{str(stage1_pre['ckpt_sha256'])[:12]})", flush=True)
+    print(f"ref snap       {'on (Rs: S2-R6 rule on c_ini after the crop pass)' if run['ref_snap'] else 'off'}",
+          flush=True)
+    if stages_dir:
+        print(f"save stages    {stages_dir}", flush=True)
     if seed_pre is not None:
         n_png = sum(len(p) for p in seed_pre["pngs"].values())
         cover = ("manifest covers " + ", ".join(seed_pre["written"]) if seed_pre["written"]
@@ -1259,9 +1370,29 @@ def main():
         print("dry run, stopping before the model is built")
         return
 
+    if stages_dir and os.path.isdir(stages_dir):
+        if not args.overwrite:
+            sys.exit(f"{stages_dir} already exists; pass --overwrite")
+        import shutil
+        shutil.rmtree(stages_dir)
+
     MVSegVideo, torch = build_runner(args.algo)
     device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device         {device}", flush=True)
+
+    # --stage1: after build_runner (its sys.path surgery is what lets the SAM 3 package import) and
+    # before the stage-2 model exists; run_stage1 frees the stage-1 model before returning
+    stage1_seeds, stage1_record = None, None
+    if run["stage1"]:
+        video_cams = sorted(d for d in os.listdir(video_root) if os.path.isdir(os.path.join(video_root, d)))
+        first = sorted(os.listdir(os.path.join(video_root, video_cams[0])))[0]
+        hw = cv2.imread(os.path.join(video_root, video_cams[0], first), cv2.IMREAD_GRAYSCALE).shape
+        try:
+            stage1_seeds, stage1_record = stage1_supply_module().run_stage1(
+                run["stage1"], args.dataset, video_cams, hw, c_ini_cam, c["start_frame"], np,
+                save_dir=stages_dir, cv2=cv2, log=lambda m: print(m, flush=True))
+        except ValueError as exc:
+            sys.exit(f"--stage1 {run['stage1']}: {exc}")
 
     track_mode, track_idx = run["track_mode"], run["track_idx"]
 
@@ -1319,17 +1450,24 @@ def main():
     # Stage-1 supply, same slot (docs/stage1-plan.md section 3): masks_spatial must be
     # final before record_seed and TrackForward.  Excludes --repair-seeds (resolve_run).
     seeds_stats = None
-    if run["seeds_from"]:
+    if run["seeds_from"] or run["stage1"]:
         try:
-            seeds_stats = sc.LoadSeedsFrom(seed_dir, c["start_frame"], cam_names, track_idx)
+            if run["stage1"]:
+                seeds_stats = sc.LoadSeeds(stage1_seeds, cam_names, track_idx)
+                seeds_stats.update(stage1_record)
+                del stage1_seeds
+            else:
+                seeds_stats = sc.LoadSeedsFrom(seed_dir, c["start_frame"], cam_names, track_idx)
         except ValueError as exc:
-            sys.exit(f"--seeds-from {run['seeds_from']}: {exc}")
+            sys.exit(f"--{'stage1' if run['stage1'] else 'seeds-from'} "
+                     f"{run['stage1'] or run['seeds_from']}: {exc}")
         print(f"seeds from     {seeds_stats['replaced']} (view, obj) seeds replaced in views "
               f"{sorted(int(v) for v in seeds_stats['replaced_views'])}, "
               f"{sum(len(o) for o in seeds_stats['changed_views'].values())} differ from G0 "
               f"({seeds_stats['added']} added, {seeds_stats['emptied']} emptied); "
               f"{len(seeds_stats['untracked_views'])} untracked views skipped; "
-              f"png digest {seeds_stats['png_digest'][:12]}", flush=True)
+              + (f"mask digest {seeds_stats['mask_digest'][:12]}" if run["stage1"]
+                 else f"png digest {seeds_stats['png_digest'][:12]}"), flush=True)
 
     # The cross-view model is dead weight from here on: ~3.2 GiB of parameters,
     # the N-view pseudo-video, its feature cache and its per-view tracker
@@ -1481,6 +1619,18 @@ def main():
               + (": " + ", ".join(f"{cam}/{obj} ({why})" for cam, obj, why in crop_stats["reverted"])
                  if crop_stats["reverted"] else ""), flush=True)
 
+    # --ref-snap (S2-R6): the last change to the masks, after the crop pass
+    snap_stats = None
+    if run["ref_snap"]:
+        snap_stats = ref_snap_module().snap_in_place(
+            out_dir, os.path.join(video_root, c_ini_cam), c_ini_cam, c["start_frame"], np, cv2,
+            keep_dir=os.path.join(stages_dir, "stage2") if stages_dir else None)
+        print(f"ref snap       {snap_stats['snapped']} / {snap_stats['objects_frames']} (object, frame) "
+              f"PNGs of {c_ini_cam} set to the frame-0 prompt", flush=True)
+    elif stages_dir:
+        import shutil
+        shutil.copytree(out_dir, os.path.join(stages_dir, "stage2"), copy_function=os.link)
+
     # P12 counters (filled only while a knob is on): one summary line, and the manifest.
     xstats = xview_stats_summary(getattr(tracker, "xview_stats", None), eff_gate)
     if xstats is not None:
@@ -1533,6 +1683,7 @@ def main():
                    "frame0_seed": run["frame0_seed"], "frame0_seed_stats": frame0_stats,
                    "crop_small": crop_stats,
                    "ft_encoder": ft_stats,
+                   "stage1": run["stage1"], "ref_snap": snap_stats, "save_stages": stages_dir,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run

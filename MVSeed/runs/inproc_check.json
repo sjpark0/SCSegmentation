@@ -1,0 +1,683 @@
+{
+ "AlexaMeadeExhibit": {
+  "stage1_final": {
+   "identical": 865,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 863,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 1485,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1974,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1974,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "AlexaMeadeFacePaint": {
+  "stage1_final": {
+   "identical": 294,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 281,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 552,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 651,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 651,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Barn": {
+  "stage1_final": {
+   "identical": 450,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 449,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 450,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1890,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1890,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Blocks": {
+  "stage1_final": {
+   "identical": 153,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 151,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 160,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 951,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 951,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Breakfast": {
+  "stage1_final": {
+   "identical": 384,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 383,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 405,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1647,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1647,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "CBABasketball": {
+  "stage1_final": {
+   "identical": 553,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 539,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 660,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1286,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1286,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Carpark": {
+  "stage1_final": {
+   "identical": 198,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 198,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 198,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1386,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1386,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "CoffeeMartini": {
+  "stage1_final": {
+   "identical": 815,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 801,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 900,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 2751,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 2751,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Dog": {
+  "stage1_final": {
+   "identical": 222,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 219,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 287,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 420,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 420,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Fencing": {
+  "stage1_final": {
+   "identical": 80,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 80,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 80,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 504,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 504,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "FlameSteak": {
+  "stage1_final": {
+   "identical": 887,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 882,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 1050,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 2394,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 2394,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Frog": {
+  "stage1_final": {
+   "identical": 65,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 65,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 65,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 315,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 315,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "MATF": {
+  "stage1_final": {
+   "identical": 217,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 217,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 330,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1541,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1541,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "MartialArts": {
+  "stage1_final": {
+   "identical": 249,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 248,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 285,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1075,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1075,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Painter": {
+  "stage1_final": {
+   "identical": 383,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 383,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 384,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1468,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1468,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "PoznanStreet": {
+  "stage1_final": {
+   "identical": 213,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 213,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 216,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 1489,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 1489,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "Welder": {
+  "stage1_final": {
+   "identical": 408,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage1_round1": {
+   "identical": 398,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "seeds": {
+   "identical": 736,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "stage2": {
+   "identical": 987,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "final": {
+   "identical": 987,
+   "different": 0,
+   "only_new": 0,
+   "only_old": 0,
+   "ok": true
+  },
+  "round1_conf": {
+   "ok": true
+  }
+ },
+ "all_ok": true
+}

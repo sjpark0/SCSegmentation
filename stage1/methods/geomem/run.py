@@ -201,7 +201,29 @@ def load_checkpoint_into(wrapper, geo, ckpt_path):
     return ck
 
 
-def decode_scene(scene, args):
+class FileSink:
+    """Where decode_scene puts its outputs: the benchmark layout Data/<scene>/Result/<out>/ (the CLI).
+    stage1.MemorySink is the in-process alternative (the masks stay in memory for stage 2)."""
+
+    def __init__(self, data, scene_name):
+        self.data, self.scene_name = data, scene_name
+
+    def mask(self, out_name, cam, obj, mask_bool):
+        common.write_result(self.data, self.scene_name, out_name, cam, obj, mask_bool)
+
+    def json(self, out_name, filename, obj):
+        os.makedirs(result_dir(self.data, self.scene_name, out_name), exist_ok=True)
+        with open(os.path.join(result_dir(self.data, self.scene_name, out_name), filename), "w") as f:
+            json.dump(obj, f, indent=1)
+
+    def finish_aux(self, scene, out_name, config):
+        """A round-1 folder is complete: the reference GT and its RUN.json (run_all only does both for --out)."""
+        common.copy_reference(scene, self.data, out_name)
+        common.write_run(self.data, scene.name, out_name, None, None, config, None)
+
+
+def decode_scene(scene, args, sink=None):
+    """Decode one scene; masks go to `sink` (default: FileSink, the Result/<out> folders)."""
     import torch
     from geomem import sam3_io
     from geomem.embed import grid_tensors
@@ -241,13 +263,15 @@ def decode_scene(scene, args):
     B = masks.shape[0]
     targets = [c for c in scene.cams if c != scene.ref_cam]
     written = 0
+    if sink is None:
+        sink = FileSink(args.data, scene.name)
 
     def write(out_name, cam, logits_1008):
         n = 0
         pred = (sam3_io.logits_to_original(logits_1008, scene.hw) > 0)[:, 0].cpu().numpy()
         for i, o in enumerate(scene.objects):
             if pred[i].any():
-                common.write_result(args.data, scene.name, out_name, cam, o, pred[i])
+                sink.mask(out_name, cam, o, pred[i])
                 n += 1
         return n
 
@@ -364,9 +388,7 @@ def decode_scene(scene, args):
                                     "overlap": None if np.isnan(r["overlap"][i]) else float(r["overlap"][i]),
                                     "n_valid": int(r["n_valid"][i])}
                            for i, o in enumerate(scene.objects)} for c, r in round1.items()}
-                os.makedirs(result_dir(args.data, scene.name, args.out), exist_ok=True)
-                with open(os.path.join(result_dir(args.data, scene.name, args.out), "round1_conf.json"), "w") as f:
-                    json.dump(rec, f, indent=1)
+                sink.json(args.out, "round1_conf.json", rec)
                 centres = camera_centres(cache, scene.cams)
                 n_mem, written2, n_gated, n_pairs, dropped = [], 0, 0, 0, 0
                 proj_stats = []
@@ -437,8 +459,7 @@ def decode_scene(scene, args):
                                    "views_dropped": int(dropped)})
                 written = written2
                 for r1_out in r1_outs:
-                    common.copy_reference(scene, args.data, r1_out)
-                    common.write_run(args.data, scene.name, r1_out, None, None, dict(config, round=1), None)
+                    sink.finish_aux(scene, r1_out, dict(config, round=1))
     finally:
         if ck is not None and "memory_attention" in ck:
             wrapper.tracker.transformer.encoder.load_state_dict(decode_scene.attn_init)

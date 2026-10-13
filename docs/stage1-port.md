@@ -33,10 +33,11 @@
 2단계 시드: 새 출력으로 `build_geoset_seeds.py --dst-suffix _port`를 돌려 기존 `Data/MVSeg/<scene>/MVSeed_{geoset_rep, geoset_abs, geoalign_rep}`와 비교 → 세 집합 각 **8,243 PNG 전부 동일**(`SEED_MANIFEST.json`만 다름). 임시 폴더는 지움.
 시드가 같으므로 S1-E8·S2-R5·S2-R6의 2단계 결과와 헤드라인 92.538은 이 이전으로 바뀌지 않습니다.
 
-테스트: `stage1/` 호스트 111 통과·3 건너뜀(`stage1/.venv`), 토치 114 통과(`stage1/scripts/test_torch.sh`, scsam3), 본 저장소 `tests/test_ft_encoder.py` 27 통과(등록 체크포인트 표·누출 검사 포함, 이제 `stage1/`을 읽음).
+테스트: `stage1/` 호스트 111 통과·3 건너뜀(`stage1/.venv`), 토치 95 통과·26 건너뜀(`stage1/scripts/test_torch.sh`, scsam3; 건너뛴 것은 옮기지 않은 학습용 특징 캐시·체크포인트가 필요한 시험. 처음에 "114 통과"로 적었던 것은 다른 시험 묶음의 숫자를 잘못 옮긴 것으로, 2026-10-13 정정), 본 저장소 `tests/test_ft_encoder.py` 27 통과(등록 체크포인트 표·누출 검사 포함, 이제 `stage1/`을 읽음).
 
 ## 3. 이제부터
 
-- 1단계 실행: `cd stage1 && scripts/run_geomem.sh all --arm geoset_pred_ft --gate reproj --out <이름> --r1-out <이름>` → `stage1/Data/<scene>/Result/<이름>`, 그다음 `python3 MVSeed/build_geoset_seeds.py --tag … --out <이름>`로 2단계 시드.
+- **기본 실행은 한 프로세스입니다**([pipeline-inprocess.md](pipeline-inprocess.md)): `runMVSeg.py --stage1 geoset_rep …`가 1단계를 같은 프로세스에서 돌려 마스크를 메모리로 2단계에 넘깁니다. 아래 파일 경로는 1단계만 따로 개발·평가할 때 씁니다.
+- 1단계만 실행: `cd stage1 && scripts/run_geomem.sh all --arm geoset_pred_ft --gate reproj --out <이름> --r1-out <이름>` → `stage1/Data/<scene>/Result/<이름>`, 그다음 `python3 MVSeed/build_geoset_seeds.py --tag … --out <이름>`로 2단계 시드.
 - 1단계 개발 이력(GeoSet·GeoAlign·GeoFuse 결과 문서)은 `stage1/docs/`에 있습니다.
 - `SCSegmentation2D`는 참조용으로 남겨 둡니다(E8 원본 출력 보관). 새 작업은 하지 않습니다.

@@ -26,6 +26,13 @@ echo "logs -> ${LOGDIR}"
 # docs/stage2-R5-prereg.md; suffix Ft<tag>, after Fs, before Cs):
 #   ... SEEDS=MVSeed_geoset_rep F0SEED=1 FTENC=geoset_pred_ft CROP=10000 CROPGATE=v2 ./runMVOptThree.sh Fencing
 #                                                    # -> SegMaskSam3XW1CGPS4MSdgeoset_repFsFtgpCs10kG2
+# STAGE1=<tag> runs stage 1 in the same process instead of reading a seed folder (--stage1,
+# docs/pipeline-inprocess.md; same seeds as SEEDS=MVSeed_<tag>, same folder suffix Sd<tag>);
+# REFSNAP=1 applies the S2-R6 reference snap in process (--ref-snap, suffix Rs, needs XREF=muvod);
+# SAVESTAGES=1 also writes the intermediate results to <dataset>/<out>_stages/ (--save-stages).
+# The headline in one process:
+#   XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 \
+#       ./runMVOptThree.sh Fencing                       # -> SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do
@@ -41,7 +48,8 @@ for ds in "$@"; do
 			${SEEDS:+--seeds-from "${SEEDS}"} ${F0SEED:+--frame0-seed} \
 			${CROP:+--crop-small "${CROP}"} ${CROPGATE:+--crop-gate "${CROPGATE}"} \
 			${CROPSCALE:+--crop-scale "${CROPSCALE}"} ${CROPMINSIDE:+--crop-min-side "${CROPMINSIDE}"} \
-			${FTENC:+--ft-encoder "${FTENC}"} --overwrite \
+			${FTENC:+--ft-encoder "${FTENC}"} ${STAGE1:+--stage1 "${STAGE1}"} \
+			${REFSNAP:+--ref-snap} ${SAVESTAGES:+--save-stages} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))
