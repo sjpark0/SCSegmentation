@@ -1,0 +1,977 @@
+{
+ "prereg": "docs/stage2-R6-prereg.md",
+ "runs": {
+  "H": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs",
+   "base": "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2",
+   "n_scenes": 17,
+   "basic": 92.53799750269773,
+   "base_basic": 92.17345286093833,
+   "paired": {
+    "n": 17,
+    "mean": 0.3645446417594221,
+    "ci": [
+     0.21479399143654754,
+     0.5193946755476605
+    ],
+    "wins": 15,
+    "losses": 1,
+    "worst": [
+     -0.05856892016319648,
+     "Fencing"
+    ],
+    "best": [
+     0.9913509272794556,
+     "Dog"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.815,
+     "AlexaMeadeFacePaint": 0.309,
+     "Barn": 0.502,
+     "Blocks": 0.397,
+     "Breakfast": 0.052,
+     "CBABasketball": 0.115,
+     "Carpark": 0.082,
+     "CoffeeMartini": 0.663,
+     "Dog": 0.991,
+     "Fencing": -0.059,
+     "FlameSteak": 0.873,
+     "Frog": 0.0,
+     "MATF": 0.476,
+     "MartialArts": 0.442,
+     "Painter": 0.427,
+     "PoznanStreet": 0.097,
+     "Welder": 0.015
+    }
+   },
+   "complete": 87.86921068803397,
+   "base_complete": 87.50680821674084,
+   "paired_complete": {
+    "n": 17,
+    "mean": 0.3624024712931423,
+    "ci": [
+     0.21287999531321838,
+     0.5173127904718025
+    ],
+    "wins": 15,
+    "losses": 1,
+    "worst": [
+     -0.05856892016319648,
+     "Fencing"
+    ],
+    "best": [
+     0.9913509272794556,
+     "Dog"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.815,
+     "AlexaMeadeFacePaint": 0.309,
+     "Barn": 0.502,
+     "Blocks": 0.397,
+     "Breakfast": 0.049,
+     "CBABasketball": 0.115,
+     "Carpark": 0.082,
+     "CoffeeMartini": 0.663,
+     "Dog": 0.991,
+     "Fencing": -0.059,
+     "FlameSteak": 0.873,
+     "Frog": 0.0,
+     "MATF": 0.476,
+     "MartialArts": 0.442,
+     "Painter": 0.394,
+     "PoznanStreet": 0.097,
+     "Welder": 0.015
+    }
+   },
+   "contrib": {
+    "ref": 0.36454464175942125,
+    "N0": 0.0,
+    "F0": 0.0,
+    "other_nonref": 0.0
+   },
+   "contrib_sum_minus_delta": -0.0,
+   "Z1": {
+    "AlexaMeadeExhibit": {
+     "same": 1314,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "same": 411,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Barn": {
+     "same": 1290,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Blocks": {
+     "same": 631,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Breakfast": {
+     "same": 1107,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "CBABasketball": {
+     "same": 846,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Carpark": {
+     "same": 946,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "same": 1751,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Dog": {
+     "same": 280,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Fencing": {
+     "same": 344,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "FlameSteak": {
+     "same": 1394,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Frog": {
+     "same": 215,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "MATF": {
+     "same": 881,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "MartialArts": {
+     "same": 695,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Painter": {
+     "same": 1002,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "same": 1009,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Welder": {
+     "same": 667,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    }
+   },
+   "Z2": {
+    "AlexaMeadeExhibit": {
+     "changed": 596,
+     "snapped": 596,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "changed": 174,
+     "snapped": 174,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Barn": {
+     "changed": 360,
+     "snapped": 360,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Blocks": {
+     "changed": 174,
+     "snapped": 174,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Breakfast": {
+     "changed": 70,
+     "snapped": 70,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "CBABasketball": {
+     "changed": 103,
+     "snapped": 103,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Carpark": {
+     "changed": 128,
+     "snapped": 128,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "changed": 895,
+     "snapped": 895,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Dog": {
+     "changed": 99,
+     "snapped": 99,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Fencing": {
+     "changed": 33,
+     "snapped": 33,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "FlameSteak": {
+     "changed": 886,
+     "snapped": 886,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Frog": {
+     "changed": 0,
+     "snapped": 0,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "MATF": {
+     "changed": 429,
+     "snapped": 429,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "MartialArts": {
+     "changed": 205,
+     "snapped": 205,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Painter": {
+     "changed": 187,
+     "snapped": 187,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "changed": 83,
+     "snapped": 83,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Welder": {
+     "changed": 155,
+     "snapped": 155,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    }
+   },
+   "Z3": {
+    "AlexaMeadeExhibit": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Barn": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Blocks": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Breakfast": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "CBABasketball": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Carpark": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Dog": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Fencing": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "FlameSteak": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Frog": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "MATF": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "MartialArts": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Painter": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Welder": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    }
+   },
+   "Z_pass": {
+    "Z1": true,
+    "Z2": true,
+    "Z3": true,
+    "Z4": true
+   },
+   "snapped": 4577,
+   "changed": 4577
+  },
+  "C": {
+   "method": "SegMaskSam3XW0MSdgeoset_repFsRs",
+   "base": "SegMaskSam3XW0MSdgeoset_repFs",
+   "n_scenes": 17,
+   "basic": 91.0964851698612,
+   "base_basic": 90.71143906699993,
+   "paired": {
+    "n": 17,
+    "mean": 0.3850461028612587,
+    "ci": [
+     0.22687601233273574,
+     0.5517844684851207
+    ],
+    "wins": 15,
+    "losses": 1,
+    "worst": [
+     -0.06039423512751796,
+     "Fencing"
+    ],
+    "best": [
+     1.0003710640641117,
+     "Dog"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.961,
+     "AlexaMeadeFacePaint": 0.297,
+     "Barn": 0.495,
+     "Blocks": 0.432,
+     "Breakfast": 0.087,
+     "CBABasketball": 0.159,
+     "Carpark": 0.08,
+     "CoffeeMartini": 0.709,
+     "Dog": 1.0,
+     "Fencing": -0.06,
+     "FlameSteak": 0.948,
+     "Frog": 0.0,
+     "MATF": 0.473,
+     "MartialArts": 0.449,
+     "Painter": 0.409,
+     "PoznanStreet": 0.092,
+     "Welder": 0.015
+    }
+   },
+   "complete": 86.49266298964434,
+   "base_complete": 86.10982290087578,
+   "paired_complete": {
+    "n": 17,
+    "mean": 0.3828400887685595,
+    "ci": [
+     0.224611974788236,
+     0.548891661113593
+    ],
+    "wins": 15,
+    "losses": 1,
+    "worst": [
+     -0.06039423512751796,
+     "Fencing"
+    ],
+    "best": [
+     1.0003710640641117,
+     "Dog"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.961,
+     "AlexaMeadeFacePaint": 0.297,
+     "Barn": 0.495,
+     "Blocks": 0.432,
+     "Breakfast": 0.081,
+     "CBABasketball": 0.159,
+     "Carpark": 0.08,
+     "CoffeeMartini": 0.709,
+     "Dog": 1.0,
+     "Fencing": -0.06,
+     "FlameSteak": 0.948,
+     "Frog": 0.0,
+     "MATF": 0.473,
+     "MartialArts": 0.449,
+     "Painter": 0.378,
+     "PoznanStreet": 0.092,
+     "Welder": 0.015
+    }
+   },
+   "contrib": {
+    "ref": 0.38504610286125646,
+    "N0": 0.0,
+    "F0": 0.0,
+    "other_nonref": 0.0
+   },
+   "contrib_sum_minus_delta": -0.0,
+   "Z1": {
+    "AlexaMeadeExhibit": {
+     "same": 1314,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "same": 411,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Barn": {
+     "same": 1290,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Blocks": {
+     "same": 607,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Breakfast": {
+     "same": 1053,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "CBABasketball": {
+     "same": 822,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Carpark": {
+     "same": 946,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "same": 1751,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Dog": {
+     "same": 280,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Fencing": {
+     "same": 344,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "FlameSteak": {
+     "same": 1394,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Frog": {
+     "same": 215,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "MATF": {
+     "same": 882,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "MartialArts": {
+     "same": 695,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Painter": {
+     "same": 980,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "same": 967,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    },
+    "Welder": {
+     "same": 667,
+     "different": 0,
+     "only_one_side": 0,
+     "ok": true
+    }
+   },
+   "Z2": {
+    "AlexaMeadeExhibit": {
+     "changed": 508,
+     "snapped": 508,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "changed": 174,
+     "snapped": 174,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Barn": {
+     "changed": 301,
+     "snapped": 301,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Blocks": {
+     "changed": 174,
+     "snapped": 174,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Breakfast": {
+     "changed": 70,
+     "snapped": 70,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "CBABasketball": {
+     "changed": 102,
+     "snapped": 102,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Carpark": {
+     "changed": 128,
+     "snapped": 128,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "changed": 802,
+     "snapped": 802,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Dog": {
+     "changed": 99,
+     "snapped": 99,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Fencing": {
+     "changed": 33,
+     "snapped": 33,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "FlameSteak": {
+     "changed": 872,
+     "snapped": 872,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Frog": {
+     "changed": 0,
+     "snapped": 0,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "MATF": {
+     "changed": 294,
+     "snapped": 294,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "MartialArts": {
+     "changed": 205,
+     "snapped": 205,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Painter": {
+     "changed": 183,
+     "snapped": 183,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "changed": 83,
+     "snapped": 83,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    },
+    "Welder": {
+     "changed": 154,
+     "snapped": 154,
+     "changed_not_frame0": 0,
+     "changed_not_listed": 0,
+     "noop_snaps": 0,
+     "noop_not_frame0": 0,
+     "ok": true
+    }
+   },
+   "Z3": {
+    "AlexaMeadeExhibit": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "AlexaMeadeFacePaint": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Barn": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Blocks": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Breakfast": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "CBABasketball": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Carpark": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "CoffeeMartini": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Dog": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Fencing": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "FlameSteak": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Frog": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "MATF": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "MartialArts": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Painter": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "PoznanStreet": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    },
+    "Welder": {
+     "rule": true,
+     "source": true,
+     "ref": true,
+     "script": true,
+     "ok": true
+    }
+   },
+   "Z_pass": {
+    "Z1": true,
+    "Z2": true,
+    "Z3": true,
+    "Z4": true
+   },
+   "snapped": 4182,
+   "changed": 4182
+  }
+ },
+ "rule": {
+  "delta": 0.3645446417594221,
+  "ci_lower": 0.21479399143654754,
+  "worst": -0.05856892016319648,
+  "complete_delta": 0.3624024712931423,
+  "control_delta": 0.3850461028612587,
+  "control_ci_lower": 0.22687601233273574,
+  "adopt": true
+ },
+ "verdict": "adopt",
+ "predictions": {
+  "P1": true,
+  "P2": true,
+  "P3": true,
+  "P4": true
+ }
+}
