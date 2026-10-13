@@ -6,7 +6,7 @@
 #   restricts the scenes (smoke runs only -- the registered run is all 17).
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="$(cd "${ROOT}/.." && pwd)/SCSegmentation2D"
+SRC="${ROOT}/stage1"          # was ../SCSegmentation2D (docs/stage1-port.md)
 STAGES="${STAGES:-sweep score judge}"
 # a scene subset is a smoke run: sweep only, so it never writes the registered jf_s2r5.json / judge file
 [[ -n "${SCENES_OVERRIDE:-}" ]] && STAGES="sweep"

@@ -44,6 +44,7 @@ cd ../SCSegmentation-review && git switch -c tcsvt-revision
 - 헤드라인 구성(제출본) `SegMaskSam3XW1CGPS4MFsCs10kG2`: MUVOD basic 91.015 / complete 86.399 (XMem 79.35).
 - **제출 이후(2026-10-13) S1-E8**: 1단계를 `SCSegmentation2D`(브랜치 `geomem`)의 GeoSet-2 `geoset_pred_ft_rep`로 바꾼 새 헤드라인 `SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2` = basic **92.173** / complete **87.507**(+1.16 / +1.11, 17장면 전부 XMem 우위). 1단계가 MUVOD 다른 장면으로 학습(장면 단위 5-fold)했다는 단서를 붙여야 합니다. `docs/stage1-E8.md`.
 - **S2-R6(2026-10-13)**: 기준 카메라 정지 물체에 프레임 0 프롬프트 마스크 유지 후처리 → 헤드라인 `SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs` = basic **92.538** / complete **87.869**. 같은 정답으로 설계했으므로 **LOSO +0.387을 반드시 함께 표기**. `docs/stage2-R6.md`.
+- **1단계 코드 이전(2026-10-13)**: GeoSet-2 1단계는 이제 본 저장소 `stage1/`에 있습니다(SCSegmentation2D에서 이전, 재실행 바이트 동일). 입력·체크포인트는 git 밖 복사본(`stage1/Data`, `stage1/geomem/runs`). `docs/stage1-port.md`.
 - 1단계 시드 교체 노선은 S1-E6(SeedVote 기각, 09-12)에서 닫힘. S1-E7: 정답 시드를 넣으면 +4.38(대조군) — 남은 9점 중 약 4.4점이 1단계.
 - S3-P: ETRI 32대 플레놉틱 링에서 텍스트 프롬프트 "person" 시딩이 정답 시딩과 같은 1단계(J 0.937 대 0.939). 데이터·출력은 `PlenopticServer1/CROOM/SegResult/`.
 - 상세: `docs/ROADMAP.md`(↔ 노션 "구현 계획"), `docs/stage1-plan.md`(↔ 노션 "1단계 구현 계획"), `docs/stage1-E7.md`, `docs/plenoptic-P.md`.

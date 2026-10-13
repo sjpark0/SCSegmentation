@@ -14,7 +14,7 @@ Per arm, two levels:
 import argparse, hashlib, json, os, statistics, subprocess, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(os.path.dirname(REPO), "SCSegmentation2D")
+SRC = os.path.join(os.path.dirname(REPO), "SCSegmentation2D")   # historical E8 check: compares old vs regenerated folders inside the 2D repo; the port itself is MVSeed/stage1_port_check.py
 ARMS = {"geoset_rep": ("geoset_pred_ft_rep", "geoset_pred_ft_rep_e8"),
         "geoset_abs": ("geoset_pred_ft_abs", "geoset_pred_ft_abs_e8"),
         "geoalign_rep": ("geoalign_ft_x_rep", "geoalign_ft_x_rep_e8")}

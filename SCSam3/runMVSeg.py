@@ -297,16 +297,16 @@ def parse_args():
                          f"{CROP_MIN_SIDE_DEFAULT}; capped at min(H, W)). Needs --crop-small.")
     ap.add_argument("--ft-encoder", default=None, metavar="ARM",
                     help="S2-R5 (docs/stage2-R5-prereg.md): run the temporal tracker with the "
-                         "memory attention stage 1 fine-tuned (SCSegmentation2D geomem arm ARM, "
+                         "memory attention stage 1 fine-tuned (stage1/ geomem arm ARM, "
                          "the scene's own-fold checkpoint; memory_attention only, no 3D bias); "
                          "the original weights come back before the crop pass. Folder suffix "
                          "Ft<tag> (after Fs); an explicit --out must carry it too. MVOpt only.")
     ap.add_argument("--ft-runs", default=None, metavar="DIR",
                     help="--ft-encoder: the 2D runs folder holding <ARM>/fold<k>/ckpt.pt "
-                         "(default ../SCSegmentation2D/geomem/runs next to this repo)")
+                         "(default stage1/geomem/runs in this repo)")
     ap.add_argument("--ft-folds", default=None, metavar="JSON",
                     help="--ft-encoder: the scene -> fold table (default "
-                         "../SCSegmentation2D/geomem/folds.json)")
+                         "stage1/geomem/folds.json)")
     ap.add_argument("--overwrite", action="store_true",
                     help="rerun even if the output folder already holds masks")
     ap.add_argument("--dry-run", action="store_true",

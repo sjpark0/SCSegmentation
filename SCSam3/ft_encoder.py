@@ -1,5 +1,5 @@
 """S2-R5 (docs/stage2-R5-prereg.md): run the stage-2 temporal tracker with the memory attention
-that stage 1 fine-tuned (SCSegmentation2D, branch geomem, arm geoset_pred_ft).
+that stage 1 fine-tuned (stage1/, ported from SCSegmentation2D branch geomem; arm geoset_pred_ft).
 
 The module swapped is `sc.predictor.model.tracker.transformer.encoder` -- the 4-layer
 TransformerEncoderCrossAttention built by build_scsam3._create_tracker_transformer, the same
@@ -17,7 +17,7 @@ import json
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SIBLING = os.path.normpath(os.path.join(HERE, "..", "..", "SCSegmentation2D"))
+SIBLING = os.path.normpath(os.path.join(HERE, "..", "stage1"))   # was ../../SCSegmentation2D (docs/stage1-port.md)
 DEFAULT_RUNS = os.path.join(SIBLING, "geomem", "runs")
 DEFAULT_FOLDS = os.path.join(SIBLING, "geomem", "folds.json")
 SUFFIX_PREFIX = "Ft"

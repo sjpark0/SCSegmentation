@@ -1,6 +1,6 @@
 """S2-R5 (docs/stage2-R5-prereg.md): --ft-encoder folder rule, refusals, the checkpoint lookup and
 leak check of SCSam3/ft_encoder.py, the swap / restore digests, and the registered checkpoint
-table against the sibling repo's files (skipped when SCSegmentation2D is not next to this repo).
+table against stage1/'s files (skipped when stage1/geomem is missing).
 """
 import argparse
 import hashlib
@@ -202,7 +202,7 @@ def test_probe_follows_the_weights():
 
 
 # ------------------------------------------------------------------ the registered checkpoints
-@pytest.mark.skipif(not SIBLING, reason="SCSegmentation2D is not next to this repo")
+@pytest.mark.skipif(not SIBLING, reason="stage1/geomem/folds.json is missing")
 def test_registered_checkpoint_table():
     assert fm.sha256_file(fm.DEFAULT_FOLDS) == REGISTERED_FOLDS_SHA256
     folds = json.load(open(fm.DEFAULT_FOLDS))
@@ -212,7 +212,7 @@ def test_registered_checkpoint_table():
         assert info["sha256"] == REGISTERED_SHA256[info["fold"]], sc
 
 
-@pytest.mark.skipif(not SIBLING, reason="SCSegmentation2D is not next to this repo")
+@pytest.mark.skipif(not SIBLING, reason="stage1/geomem/folds.json is missing")
 def test_registered_checkpoints_pass_the_leak_check_and_load():
     torch = pytest.importorskip("torch")
     build = pytest.importorskip("build_scsam3")

@@ -7,7 +7,7 @@
 #   before the sweeps: run STAGES="regen", check, then STAGES="seeds sweep score judge".
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="$(cd "${ROOT}/.." && pwd)/SCSegmentation2D"
+SRC="${ROOT}/stage1"          # was ../SCSegmentation2D; stage 1 ported 2026-10-13 (docs/stage1-port.md)
 STAGES="${STAGES:-regen seeds sweep score judge}"
 SCENES="AlexaMeadeExhibit AlexaMeadeFacePaint Barn Blocks Breakfast CBABasketball Carpark CoffeeMartini Dog Fencing FlameSteak Frog MATF MartialArts Painter PoznanStreet Welder"
 ts() { date '+%F %T'; }

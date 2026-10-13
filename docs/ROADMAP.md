@@ -2,7 +2,7 @@
 
 **기준**: [analysis/REPORT.md](analysis/REPORT.md)의 개선 제안 P1~P14와 실험 계획 11행.
 **갱신**: 상태가 바뀔 때마다 이 파일과 노션(개발 › SCSegmentation › 구현 계획)을 함께 갱신합니다.
-**최종 갱신**: 2026-10-13 (**S2-R6 정지 물체 프롬프트 유지 — 헤드라인 92.54, 채택(LOSO +0.387 병기)** · **S2-R5 1단계 기억 어텐션 이식 — +0.04, 후속 열림** · **S1-E8 새 1단계(GeoSet-2) 시드 실측 — 헤드라인 92.17, +1.16** — 아래 "제출 이후" 절; 그 앞 09-17: S1-E7 시드 실측 · S3-P 32대 플레놉틱 링 시연 · TCSVT 특집호 원고) · 갱신 이력은 문서 끝. 결과: [stage1-E8.md](stage1-E8.md) · [stage1-E7.md](stage1-E7.md) · [plenoptic-P.md](plenoptic-P.md) · [paper-numbers.md](paper-numbers.md) · [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md) · **[muvod-protocol.md](muvod-protocol.md)**
+**최종 갱신**: 2026-10-13 (**1단계 코드 `stage1/`로 이전, 바이트 동일** · **S2-R6 정지 물체 프롬프트 유지 — 헤드라인 92.54, 채택(LOSO +0.387 병기)** · **S2-R5 1단계 기억 어텐션 이식 — +0.04, 후속 열림** · **S1-E8 새 1단계(GeoSet-2) 시드 실측 — 헤드라인 92.17, +1.16** — 아래 "제출 이후" 절; 그 앞 09-17: S1-E7 시드 실측 · S3-P 32대 플레놉틱 링 시연 · TCSVT 특집호 원고) · 갱신 이력은 문서 끝. 결과: [stage1-E8.md](stage1-E8.md) · [stage1-E7.md](stage1-E7.md) · [plenoptic-P.md](plenoptic-P.md) · [paper-numbers.md](paper-numbers.md) · [phase1-measurement.md](phase1-measurement.md) · [phase2-control.md](phase2-control.md) · [phase3-neighbourhood.md](phase3-neighbourhood.md) · **[muvod-protocol.md](muvod-protocol.md)**
 
 상태 기호 — ✅ 완료 · 🔶 부분 · ⬜ 미착수 · ❌ 기각(근거 있음) · 🔒 선행 조건 대기
 
@@ -280,6 +280,7 @@ SCSegmentation › "1단계 구현 계획"과 동기화합니다. v2(09-10)는 �
 | S1-E8 새 1단계(GeoSet-2) 시드 실측 (10-12~13) | ✅ 채택 | 등록 8662068. 2D 저장소 `b089577`의 세 구성(`geoset_pred_ft_rep`·`geoset_pred_ft_abs`·`geoalign_ft_x_rep`)을 재생성(기존 출력과 PNG 바이트 동일)해 `--seeds-from`으로 2단계에 통과, 6 스윕 GPU 7시간 11분. 헤드라인 92.173 / 92.127 / 92.213(제출본 91.015), 대조군 90.711 / 90.736 / 90.754(89.549). 세 구성 모두 통과, C − A 0.040 < 0.05 동률 → 등록 순서로 **`geoset_pred_ft_rep` 채택**. 예측 5/6(P6는 빈 시드로 설명). 기여: 기준 카메라 +0.07(c_ini 정답 그대로 넣기, 방법 기여 아님) / F0 +0.73 / N0 +0.39 — 정답 시드(E7)와 달리 이득이 실패 쌍에 집중. 대조군 Δ ≈ 헤드라인 Δ(가산적). 단서: MUVOD 다른 장면으로 학습한 1단계 |
 | S2-R5 1단계 미세조정 기억 어텐션을 2단계 추적기에 (10-13) | ⏸ 후속 열림 | 등록 255c8fb. `geoset_pred_ft` fold별 기억 어텐션(바이어스 없이)을 시간 추적기에 넣음. 헤드라인 92.173 → **92.216(+0.042, CI [−0.167, +0.227], 최악 Welder −1.25)**, 대조군 +0.037. 출력은 바뀌지만(Z4 PNG 대부분 변경) 점수는 그대로, 기준 카메라 잔차도 그대로 → 채택 안 함, 해롭지 않아 후속(바이어스 동반 이식) 열림. 예측 4/4 ([stage2-R5.md](stage2-R5.md)) |
 | S2-R6 기준 카메라 정지 물체 프롬프트 유지 (10-13) | ✅ 채택 | 진단 [stage2-D-refloss.md](stage2-D-refloss.md)(기준 카메라 손실 1.52 = 작은 오차 81 %, 격자 천장 41 %, 경계 ±2 px 오라클 → 0.47, 정지 물체 재렌더 손실 0.49). 등록 2a5d2ee, CPU 14분. IoU(예측, 프레임 0) ≥ 0.8 이고 밝기 변화 ≤ 4이면 프레임 0 마스크 유지. 헤드라인 92.173 → **92.538(+0.365, CI [+0.215, +0.519], 15↑/1↓, 최악 Fencing −0.06)**, complete 87.869, 대조군 +0.385. Z1~Z4 통과, 예측 4/4. **시험 정답으로 설계 — LOSO +0.387을 함께 표기** ([stage2-R6.md](stage2-R6.md)) |
+| 1단계 코드 이전 (10-13) | ✅ | 사용자 지시로 SCSegmentation2D(`geomem` 5f40bf4)의 GeoSet-2 1단계를 `stage1/`로 이전(경로만 수정, 이전 커밋 2c2b7bc). 입력 838 MB·체크포인트 231 MB는 git 밖 복사본. 재실행한 세 구성과 round-1 폴더 PNG **38,486개 전부 바이트 동일**, 2단계 시드 3 × 8,243 PNG 동일 — 헤드라인 불변. 이후 1단계 작업은 본 저장소에서 ([stage1-port.md](stage1-port.md)) |
 
 ---
 
@@ -287,6 +288,7 @@ SCSegmentation › "1단계 구현 계획"과 동기화합니다. v2(09-10)는 �
 
 | 일자 | 내용 |
 |---|---|
+| 2026-10-13 | **1단계 코드 이전** ([stage1-port.md](stage1-port.md)): SCSegmentation2D → `stage1/`, 재실행 바이트 동일(PNG 38,486 · 시드 24,729), 본 저장소 호출부(시드 빌더·ft_encoder·실행 체인) 재지정, 테스트 stage1 호스트 111·토치 114·ft_encoder 27 통과. SCSegmentation2D는 참조용으로만 보관 |
 | 2026-10-13 | **S2-R6 — 기준 카메라 정지 물체에 프레임 0 프롬프트 마스크 유지, 채택** ([stage2-R6.md](stage2-R6.md); 진단 [stage2-D-refloss.md](stage2-D-refloss.md); 등록 2a5d2ee, 실행 전 12-에이전트 반박 검토로 판정 스크립트 차단 결함·대조군의 독립성 과장 바로잡음). 새 헤드라인 `…Cs10kG2Rs` **92.538 / 87.869**(+0.365 / +0.362), 대조군 +0.385. 시뮬레이션과 넷째 자리까지 일치. 시험 정답으로 설계한 후처리 — 정직한 추정 LOSO +0.387, 이득은 정지 물체 프롬프트 재사용 |
 | 2026-10-13 | **S2-R5 — 1단계 미세조정 기억 어텐션을 2단계 추적기에, 후속 열림** ([stage2-R5.md](stage2-R5.md); 등록 255c8fb, H-FT 89분 + C-FT 56분, 재부팅으로 C-FT 재실행). 헤드라인 +0.042(CI [−0.167, +0.227], 12↑/5↓, 최악 Welder −1.249), 대조군 +0.037. Z1~Z4 통과, 크롭 5560 PNG 동일. 가중치만으로는 이득 없음 — 1단계 이득은 거리 바이어스·시점 간 기억 구성 쪽. 헤드라인 S1-E8 유지 |
 | 2026-10-13 | **S1-E8 — 새 1단계(GeoSet-2) 시드를 본류 2단계에 통과, 채택** ([stage1-E8.md](stage1-E8.md); 등록 8662068 → 재현 확인 a6b5b44 → 변환 수정 8f6ec74 → 6 스윕). 제출 뒤 별도 저장소 `SCSegmentation2D`에서 만든 1단계(c_ini 기억 star 디코딩 + π³ 거리 어텐션 미세조정 + 이웃 예측 2라운드)를 사용자 요청으로 본류에 대체. 1단계 재생성은 2D 저장소 결과와 PNG 바이트 동일(Z0). 헤드라인 A `geoset_pred_ft_rep` **92.173(+1.159, CI [+0.432, +2.112], 13↑/4↓, 최악 CoffeeMartini −0.44)**, B `geoset_pred_ft_abs` 92.127(+1.112, 최악 Blocks −0.76), C `geoalign_ft_x_rep` 92.213(+1.198); 대조군 +1.162 / +1.187 / +1.205. 세 팔 모두 통과, C − A = 0.040 동률 → A 채택(1단계 시간도 절반). Welder 84.47 → 91.74로 17장면 전부 XMem 우위. 정답 시드 이득의 약 27 % 회수; 이득은 F0 실패 쌍 +0.73, N0 +0.39(정답 시드는 N0 +2.66) — 다음 표적은 정상 쌍의 작은 오차. 예측 5/6(P6는 빈 시드 PNG 미작성으로 설명). 단서: 1단계가 MUVOD 다른 장면으로 학습(장면 단위 5-fold, 같은 장면 누출 없음) |

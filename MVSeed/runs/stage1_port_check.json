@@ -1,0 +1,966 @@
+{
+ "geoset_pred_ft_rep_e8": {
+  "total": {
+   "identical": 6436,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 17,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 865,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 294,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 153,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 384,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 553,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 815,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 222,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 887,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 217,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 249,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 408,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "geoset_pred_ft_r1_e8": {
+  "total": {
+   "identical": 6370,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 0,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 863,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 281,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 449,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 151,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 539,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 801,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 219,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 882,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 217,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 248,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 398,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "geoset_pred_ft_abs_e8": {
+  "total": {
+   "identical": 6471,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 17,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 878,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 292,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 157,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 387,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 556,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 819,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 227,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 888,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 220,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 250,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 408,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "geoset_pred_ft_r1_e8b": {
+  "total": {
+   "identical": 6370,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 0,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 863,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 281,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 449,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 151,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 539,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 801,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 219,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 882,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 217,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 248,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 398,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "geoalign_ft_x_rep_e8": {
+  "total": {
+   "identical": 6442,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 17,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 870,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 283,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 154,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 389,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 555,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 817,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 224,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 888,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 220,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 249,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 404,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "round1_conf_same": true,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "geoalign_ft_x_r1_e8": {
+  "total": {
+   "identical": 6397,
+   "different": 0,
+   "only_old": 0,
+   "only_new": 0,
+   "conf_same": 0,
+   "conf_diff": 0,
+   "run_same": 17,
+   "run_diff": 0,
+   "diff_iou_min": null,
+   "ok": true
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "identical": 864,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "AlexaMeadeFacePaint": {
+    "identical": 274,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Barn": {
+    "identical": 450,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Blocks": {
+    "identical": 153,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Breakfast": {
+    "identical": 387,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CBABasketball": {
+    "identical": 549,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Carpark": {
+    "identical": 198,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "CoffeeMartini": {
+    "identical": 808,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Dog": {
+    "identical": 223,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Fencing": {
+    "identical": 80,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "FlameSteak": {
+    "identical": 885,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Frog": {
+    "identical": 65,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MATF": {
+    "identical": 220,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "MartialArts": {
+    "identical": 248,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Painter": {
+    "identical": 383,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "PoznanStreet": {
+    "identical": 213,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   },
+   "Welder": {
+    "identical": 397,
+    "different": 0,
+    "only_old": 0,
+    "only_new": 0,
+    "run_stable_same": true,
+    "new_git": "2c2b7bc-dirty"
+   }
+  }
+ },
+ "all_ok": true
+}

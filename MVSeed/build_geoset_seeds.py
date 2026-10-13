@@ -24,7 +24,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(REPO, "Data", "MVSeg")
 CFG = json.load(open(os.path.join(REPO, "SCSam3", "demo", "MVSeg.json"), encoding="utf-8"))
 CENSUS = json.load(open(os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")))
-SRC_DEFAULT = os.path.join(os.path.dirname(REPO), "SCSegmentation2D")
+SRC_DEFAULT = os.path.join(REPO, "stage1")             # was ../SCSegmentation2D; ported 2026-10-13 (docs/stage1-port.md)
 TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep")    # the three registered arms
 
 
@@ -54,7 +54,7 @@ def check_png(path, size):
     return hist[255]
 
 
-def build(scene, src, out, tag, log):
+def build(scene, src, out, tag, log, suffix=""):
     c = CFG[scene]; folder, start = c["folder"], c["start_frame"]
     cams = sorted(os.listdir(os.path.join(DATA, folder, "Video")))
     basic = sorted(set(int(v) for v in CENSUS[scene]["seed_ids_c_ini"]))
@@ -80,7 +80,7 @@ def build(scene, src, out, tag, log):
         raise RuntimeError(f"{scene}: source PNGs outside the basic set: {extra[:5]}")
     size = Image.open(os.path.join(DATA, folder, "Video", cams[0], sorted(os.listdir(os.path.join(DATA, folder, "Video", cams[0])))[0])).size
 
-    dst = os.path.join(DATA, folder, f"MVSeed_{tag}")
+    dst = os.path.join(DATA, folder, f"MVSeed_{tag}{suffix}")
     if os.path.isdir(dst):
         shutil.rmtree(dst)
     n_copy = n_empty = n_copy_zero = 0
@@ -113,20 +113,21 @@ def build(scene, src, out, tag, log):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--src", default=SRC_DEFAULT, help="SCSegmentation2D checkout")
+    ap.add_argument("--src", default=SRC_DEFAULT, help="stage-1 tree (stage1/, or an SCSegmentation2D checkout)")
+    ap.add_argument("--dst-suffix", default="", help="write MVSeed_<tag><suffix> (a scratch copy for checks) instead of MVSeed_<tag>")
     ap.add_argument("--tag", required=True, choices=TAGS, help="seed folder MVSeed_<tag>")
     ap.add_argument("--out", required=True, help="Result/<out> folder name in the source repo")
     ap.add_argument("--scenes", default="")
     a = ap.parse_args()
     scenes = a.scenes.split(",") if a.scenes else sorted(CENSUS)
     log = lambda m: print(m, flush=True)
-    rows = [build(s, a.src, a.out, a.tag, log) for s in scenes]
+    rows = [build(s, a.src, a.out, a.tag, log, a.dst_suffix) for s in scenes]
     head, dirty = src_git(a.src)
     summary = dict(prereg="docs/stage1-E8-prereg.md", tag=a.tag, src=a.src, src_git_head=head, src_git_dirty=dirty, result=a.out,
                    n_png=sum(r["copied"] + r["empty"] for r in rows), copied=sum(r["copied"] for r in rows),
                    empty=sum(r["empty"] for r in rows), scenes=rows)
     log(json.dumps({k: v for k, v in summary.items() if k != "scenes"}))
-    json.dump(summary, open(os.path.join(REPO, "MVSeed", "runs", f"e8_seed_set_{a.tag}.json"), "w"), indent=1)
+    json.dump(summary, open(os.path.join(REPO, "MVSeed", "runs", f"e8_seed_set_{a.tag}{a.dst_suffix}.json"), "w"), indent=1)
 
 
 if __name__ == "__main__":
