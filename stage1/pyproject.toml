@@ -1,0 +1,9 @@
+[project]
+name = "mvseg2d"
+version = "0.1.0"
+description = "Reference-frame multi-view object segmentation benchmark on MVSeg"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

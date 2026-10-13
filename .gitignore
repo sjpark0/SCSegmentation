@@ -198,3 +198,9 @@ paper/fig1.aux
 paper/fig1.log
 paper/fig1.fls
 paper/fig1.fdb_latexmk
+
+# stage 1 (GeoSet-2, ported from SCSegmentation2D): checkpoints and score outputs stay out of git
+stage1/geomem/runs/
+stage1/geomem/runs_*/
+stage1/scores/
+*.pt
