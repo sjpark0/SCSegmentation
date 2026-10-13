@@ -14,3 +14,6 @@ large JSONs, ~40 MB, are not committed).  Container scripts take `<method> <out.
 | `sim2.py` | host | stdout | snap-rule grid, LOSO estimate (reads `anat2_H.json`, `snap2_H.json`) |
 
 `refmap.py`/`ceil.py` read `refmap.json` from the cwd; `sim2.py` expects the two container outputs there.
+| `nonref.py` | host | stdout | non-reference loss: E8 headline vs GT-seed headline (E7), F0/N0, seed bins, per-frame curve (docs/stage2-D-nonref.md) |
+
+The static/moving split of docs/stage2-D-nonref.md §3 reads `anat2_H.json` (non-reference rows, `Jc`/`Fc` = copy-GT0).
