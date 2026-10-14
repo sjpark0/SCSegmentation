@@ -28,7 +28,7 @@ def tree(d):
     for root, _, files in os.walk(d):
         for f in files:
             rel = os.path.relpath(os.path.join(root, f), d)
-            if rel in ("MANIFEST.json", "RUN.json", "config.json", "round1_conf.json", "zoom_conf.json") or not f.endswith((".png", ".json")):
+            if rel in ("MANIFEST.json", "RUN.json", "config.json", "round1_conf.json", "zoom_conf.json", "xcl_conf.json") or not f.endswith((".png", ".json")):
                 continue
             out[rel] = hashlib.sha256(open(os.path.join(root, f), "rb").read()).hexdigest()
     return out

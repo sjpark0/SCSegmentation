@@ -73,11 +73,80 @@ def object_conf(presence, ious, tau=TAU_CONF):
     return (presence > 0) & (ious >= tau)
 
 
-def check_gate_out(arm, gate, out, round2="pred", zoom=None):
-    """`--gate obj` / `--round2 proj_*` / `--zoom` must not write under the arm's own name: that is the view-gate,
-    predicted-memory, full-view result."""
-    if (gate != "view" or round2 != "pred" or zoom is not None) and out == arm:
-        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} with --out {out}: that name is the default result (pass another --out)")
+def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none"):
+    """`--gate obj` / `--round2 proj_*` / `--zoom` / `--xcl` must not write under the arm's own name: that is the
+    view-gate, predicted-memory, full-view, non-exclusive result."""
+    if (gate != "view" or round2 != "pred" or zoom is not None or xcl != "none") and out == arm:
+        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} --xcl {xcl} with --out {out}: that name is the default result (pass another --out)")
+
+
+# S1-E11 (docs/stage1-E11-prereg.md section 2): in-view object exclusivity by the decoder's own logits.
+XCL_MODES = ("none", "out", "outmem", "out_nocap")
+XCL_TAU_KEEP = 0.5          # nested-mask cap: a mask that would lose >= this fraction of its pixels is exempt (kept whole)
+XCL_MEM_CLAMP = -10.0       # the clamp SAM 3 uses in _apply_non_overlapping_constraints (sigmoid(-10) = 4.5e-5)
+
+
+def exclusive_masks(L, tau_keep=XCL_TAU_KEEP):
+    """X1 / D rule on output-resolution logits L [B,h,w] float -> (keep [B,h,w] bool, counts, per-object records).
+
+    pos = L > 0; w = per-pixel argmax over objects (exact ties -> the lowest index; absent objects carry
+    NO_OBJ_SCORE and never win); a mask that would lose >= tau_keep of its pixels is exempt and kept whole
+    (tau_keep None = no cap, D); keep = pos & (win | exempt).  keep is a subset of pos; only pixels claimed by
+    >= 2 masks can change; at most one non-exempt mask survives at a contested pixel."""
+    import torch
+    B = L.shape[0]
+    pos = L > 0
+    w = L.argmax(0)                                                            # [h,w]
+    win = w[None] == torch.arange(B, device=L.device)[:, None, None]           # [B,h,w]
+    del w
+    npos = pos.flatten(1).sum(1)                                               # [B]
+    lost = (pos & ~win).flatten(1).sum(1)                                      # [B]
+    if tau_keep is None:
+        exempt = torch.zeros(B, dtype=torch.bool, device=L.device)
+    else:
+        exempt = (npos > 0) & (lost.float() >= tau_keep * npos.float())
+    keep = pos & (win | exempt[:, None, None])
+    del win
+    removed = pos & ~keep
+    contested = pos.sum(0) >= 2
+    nkeep = keep.flatten(1).sum(1)
+    counts = dict(contested_px=int(contested.sum()), removed_entries=int(removed.sum()),
+                  masks_changed=int(removed.flatten(1).any(1).sum()), masks_exempt=int(exempt.sum()),
+                  masks_emptied=int(((npos > 0) & (nkeep == 0)).sum()), masks_present=int((npos > 0).sum()))
+    recs = [dict(px=int(npos[b]), lost=int(lost[b]), exempt=bool(exempt[b]), kept=int(nkeep[b]),
+                 removed=int(removed[b].sum())) for b in range(B)]
+    del removed, contested
+    return keep, counts, recs
+
+
+def exclusive_logits_1008(logits, eligible, tau_keep=XCL_TAU_KEEP):
+    """X2 rule on round-1 logits [B,1,1008,1008] before they are encoded as round-2 memory: the X1 rule among the
+    ELIGIBLE objects only (the reproj-confident ones); a losing, non-exempt pixel is clamped to XCL_MEM_CLAMP
+    (= background for the memory encoder); non-eligible objects' logits are untouched.  -> (logits_mem, counts)."""
+    import torch
+    from sam3.model.sam3_tracker_base import NO_OBJ_SCORE
+    B = logits.shape[0]
+    elig = torch.as_tensor(eligible, dtype=torch.bool, device=logits.device)
+    zero = dict(contested_cells=0, clamped_cells=0, masks_exempt=0, eligible=int(elig.sum()))
+    if B < 2 or int(elig.sum()) < 2:
+        return logits, zero
+    Lm = logits[:, 0]
+    e3 = elig[:, None, None]
+    pos = (Lm > 0) & e3
+    w = torch.where(e3, Lm, torch.full_like(Lm, NO_OBJ_SCORE)).argmax(0)
+    win = w[None] == torch.arange(B, device=logits.device)[:, None, None]
+    del w
+    npos = pos.flatten(1).sum(1)
+    lost = (pos & ~win).flatten(1).sum(1)
+    exempt = torch.zeros(B, dtype=torch.bool, device=logits.device) if tau_keep is None else \
+        (npos > 0) & (lost.float() >= tau_keep * npos.float())
+    clamp = pos & ~win & ~exempt[:, None, None]
+    del win
+    out = torch.where(clamp, Lm.clamp(max=XCL_MEM_CLAMP), Lm)[:, None]
+    counts = dict(contested_cells=int((pos.sum(0) >= 2).sum()), clamped_cells=int(clamp.sum()),
+                  masks_exempt=int(exempt.sum()), eligible=int(elig.sum()))
+    del clamp, pos
+    return out, counts
 
 
 def object_conf_mode(mode, presence, ious, overlap, tau=TAU_CONF, theta=THETA_REPROJ):
@@ -253,6 +322,12 @@ def decode_scene(scene, args, sink=None):
         assert zoom == zoom_mod.ZOOM and zoom_rope in ("grid", "remap"), (zoom, zoom_rope)
         assert two_round and round2 == "pred" and not pair_mode and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
             f"--zoom is registered for the two-round predicted-memory arms only, not {arm}"
+    xcl = getattr(args, "xcl", "none") or "none"           # S1-E11 in-view exclusivity: none | out | outmem | out_nocap
+    assert xcl in XCL_MODES, xcl
+    if xcl != "none":
+        assert zoom is None, "--xcl and --zoom are registered separately (no combination arm)"
+        assert two_round and round2 == "pred" and not pair_mode and gate in OBJ_GATES and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
+            f"--xcl is registered for the two-round predicted-memory arms with an object gate only, not {arm}/{gate}"
     config = {"arm": arm, "untrained": bool(args.untrained), **flags, "two_round": two_round}
     wrapper = build_wrapper(model, arm)
     geo = wrapper.geo_embed
@@ -409,6 +484,7 @@ def decode_scene(scene, args, sink=None):
                 n_mem, written2, n_gated, n_pairs, dropped = [], 0, 0, 0, 0
                 proj_stats = []
                 zoom_recs, zoom_counts = {}, Counter()
+                xcl_recs, xcl_counts, xmem_counts = {}, Counter(), Counter()
                 if round2 != "pred":
                     # GeoProj: prediction-free second-round memory — the neighbour's OWN features with the reference GT
                     # masks PROJECTED into it (pixels not visible from the reference: background in proj_bin, logit 0 in
@@ -445,9 +521,15 @@ def decode_scene(scene, args, sink=None):
                     for c, r in round1.items():
                         conf = object_conf_mode(gate, r["presence"].float().cpu().numpy(), r["ious"].float().cpu().numpy(),
                                                 r["overlap"], tau=tau)
+                        logits_mem = r["logits"]
+                        if xcl == "outmem":
+                            # S1-E11 X2: exclusivity among this view's confident objects before the memory encoding
+                            logits_mem, xm = exclusive_logits_1008(r["logits"], conf, XCL_TAU_KEEP)
+                            xmem_counts.update(xm)
                         mem_views[c] = wrapper.encode_memory_from_prediction(
-                            r["bb"], B, r["logits"], r["presence"], r["obj_ptr"], r["p"], r["valid"], c,
+                            r["bb"], B, logits_mem, r["presence"], r["obj_ptr"], r["p"], r["valid"], c,
                             conf=torch.from_numpy(conf).to(r["presence"].device))
+                        del logits_mem
                 for cam in targets:
                     if gate == "view" and round2 == "pred":
                         neigh = select_neighbours(cam, centres, confident, k)
@@ -464,8 +546,18 @@ def decode_scene(scene, args, sink=None):
                     aligned = align_for(round1[cam]["p"], round1[cam]["valid"], cam) if fuse else None
                     out = wrapper.decode_view(round1[cam]["bb"], B, mem, round1[cam]["p"], round1[cam]["valid"], chunk=OBJ_CHUNK,
                                               aligned=aligned)
-                    if zoom is None:
+                    if zoom is None and xcl == "none":
                         written2 += write(args.out, cam, out["logits_1008"])
+                    elif zoom is None:
+                        # S1-E11 X1 / D: per-pixel logit argmax at the output resolution (the to_bool tensor), nested-mask cap
+                        L = sam3_io.logits_to_original(out["logits_1008"], scene.hw)[:, 0]
+                        del out
+                        keep, xc, xr = exclusive_masks(L, None if xcl == "out_nocap" else XCL_TAU_KEEP)
+                        del L
+                        xcl_counts.update(xc)
+                        xcl_recs[cam] = {str(int(o)): xr[i] for i, o in enumerate(scene.objects)}
+                        written2 += write_bool(args.out, cam, keep.cpu().numpy())
+                        del keep
                     else:
                         # S1-E10: the crop-zoom pass on the round-2 masks (same memory set), band-clipped paste
                         pred = to_bool(out["logits_1008"])
@@ -482,6 +574,13 @@ def decode_scene(scene, args, sink=None):
                 config.update({"gate": gate, "tau": tau, "k": k, "mem_per_view_mean": float(np.mean(n_mem)),
                                "views_with_ref_only_frac": float(np.mean([n == 1 for n in n_mem])),
                                "n_targets": len(targets), "masks_written_r1": written})
+                if xcl != "none":
+                    sink.json(args.out, "xcl_conf.json", xcl_recs)
+                    config.update({"xcl": xcl, "xcl_tau_keep": None if xcl == "out_nocap" else XCL_TAU_KEEP})
+                    config.update({f"n_xcl_{key}": int(xcl_counts[key]) for key in
+                                   ("contested_px", "removed_entries", "masks_changed", "masks_exempt", "masks_emptied", "masks_present")})
+                    if xcl == "outmem":
+                        config.update({f"n_xmem_{key}": int(xmem_counts[key]) for key in ("contested_cells", "clamped_cells", "masks_exempt", "eligible")})
                 if zoom is not None:
                     sink.json(args.out, "zoom_conf.json", zoom_recs)
                     config.update({"zoom": zoom, "zoom_rope": zoom_rope, "zoom_margin": zoom_mod.MARGIN, "zoom_tau_iou": zoom_mod.TAU_IOU,
@@ -542,6 +641,9 @@ def _extra(ap):
                     help="S1-E10: 2x crop-zoom re-decode of every round-2 mask, band-clipped paste (docs/stage1-E10-prereg.md)")
     ap.add_argument("--zoom-rope", choices=("grid", "remap"), default="grid", dest="zoom_rope",
                     help="S1-E10: query RoPE of the crop decode: the crop lattice as is (C1) or remapped to full-view cells (C2)")
+    ap.add_argument("--xcl", choices=XCL_MODES, default="none",
+                    help="S1-E11: in-view object exclusivity by the decoder logits: out (X1, capped), outmem (X2, + round-1 memories), "
+                         "out_nocap (D, diagnostic without the nested-mask cap); docs/stage1-E11-prereg.md")
     ap.add_argument("--round2", choices=("pred", "proj_bin", "proj_soft"), default="pred",
                     help="GeoProj: second-round memory from round-1 predictions (pred) or from the reference GT masks projected "
                          "into the neighbour (binary mask / soft logits with unknown = 0); no prediction, 'absent'-style conf")
@@ -552,7 +654,7 @@ def main():
     from methods import sam3_single
     decode_scene.model = sam3_single.load_model()
     decode_scene.init_state = snapshot_init(decode_scene.model)
-    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom)
+    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom, args.xcl)
     common.run_all(args, decode_scene, aux_outs=r1_aux_outs(args.out, args.r1_out) if args.arm in SET_ARMS else [])
 
 

@@ -20,7 +20,8 @@ REPO = os.path.dirname(HERE)
 STAGE1_ROOT = os.path.join(REPO, "stage1")
 CENSUS_PATH = os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")
 TAGS = ("geoset_rep", "geoset_abs", "geoset_dec_rep", "geoset_decb_rep", "geoalign_rep",
-        "geoset_rep_z2", "geoset_rep_z2r")   # == stage1/methods/geomem/stage1.py PRESETS (ordered); S1-E10 crop-zoom tags last
+        "geoset_rep_z2", "geoset_rep_z2r",   # S1-E10 crop-zoom tags
+        "geoset_rep_x", "geoset_rep_xm")     # S1-E11 exclusivity tags; == stage1/methods/geomem/stage1.py PRESETS (ordered)
 SUFFIX = "Sd"                                           # the --seeds-from MVSeed_<tag> suffix: same seeds, same name
 
 
@@ -135,7 +136,9 @@ def run_stage1(tag, dataset, video_cams, shape, c_ini_cam, start_frame, np, save
     record = dict(mode="stage1-inprocess", tag=tag, arm=cfg.get("arm"), gate=cfg.get("gate"), fold=cfg.get("fold"),
                   ckpt_sha256=cfg.get("ckpt_sha256"), stage1_seconds=seconds, mask_digest=mask_digest(seeds, np),
                   stage1_config=cfg, **counts,
-                  **{k: cfg[k] for k in ("zoom", "zoom_rope", "n_zoom_run", "n_zoom_changed") if k in cfg})   # S1-E10 presets only
+                  **{k: cfg[k] for k in ("zoom", "zoom_rope", "n_zoom_run", "n_zoom_changed",                       # S1-E10 presets
+                                         "xcl", "n_xcl_contested_px", "n_xcl_masks_changed", "n_xcl_masks_exempt",   # S1-E11 presets
+                                         "n_xcl_masks_emptied") if k in cfg})
     if save_dir is not None:
         s1.save(res, os.path.join(save_dir, "stage1"))
         man = dict(schema="MVSeed stage1_supply", schema_version=1, set=tag, dataset=dataset, start_frame=start_frame,

@@ -26,7 +26,7 @@ CFG = json.load(open(os.path.join(REPO, "SCSam3", "demo", "MVSeg.json"), encodin
 CENSUS = json.load(open(os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")))
 SRC_DEFAULT = os.path.join(REPO, "stage1")             # was ../SCSegmentation2D; ported 2026-10-13 (docs/stage1-port.md)
 TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep", "geoset_dec_rep", "geoset_decb_rep",
-        "geoset_rep_z2", "geoset_rep_z2r")   # E8 arms + S1-E9 arms + S1-E10 crop-zoom tags (== set(stage1_supply.TAGS))
+        "geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm")   # E8 + E9 + E10 + E11 tags (== set(stage1_supply.TAGS))
 
 
 def sha256_file(path):

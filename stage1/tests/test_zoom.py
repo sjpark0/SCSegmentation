@@ -151,7 +151,7 @@ def test_presets_and_tag_registries():
     assert S.PRESETS["geoset_rep"] == dict(arm="geoset_pred_ft", gate="reproj")
     assert S.PRESETS["geoset_rep_z2"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="grid")
     assert S.PRESETS["geoset_rep_z2r"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="remap")
-    assert list(S.PRESETS)[-2:] == ["geoset_rep_z2", "geoset_rep_z2r"]
+    assert list(S.PRESETS)[-4:] == ["geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm"]
     main = os.path.dirname(ROOT)
     spec = importlib.util.spec_from_file_location("stage1_supply", os.path.join(main, "SCSam3", "stage1_supply.py"))
     supply = importlib.util.module_from_spec(spec); spec.loader.exec_module(supply)
@@ -168,7 +168,7 @@ def test_check_gate_out_refuses_the_arms_own_folder_with_zoom():
         R.check_gate_out("geoset_pred_ft", "view", "geoset_pred_ft", "pred", 2)
 
 
-@pytest.mark.parametrize("tag", ["geoset_rep", "geoset_rep_z2", "geoset_rep_z2r"])
+@pytest.mark.parametrize("tag", ["geoset_rep", "geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm"])
 def test_stage1_run_forwards_every_preset_key(tag, monkeypatch):
     captured = {}
 
@@ -177,6 +177,8 @@ def test_stage1_run_forwards_every_preset_key(tag, monkeypatch):
         sink.json("final", "round1_conf.json", {})
         if getattr(args, "zoom", None) is not None:
             sink.json("final", "zoom_conf.json", {"cam": {}})
+        if getattr(args, "xcl", "none") != "none":
+            sink.json("final", "xcl_conf.json", {"cam": {}})
         return {"arm": args.arm}
 
     scene = SimpleNamespace(name="X", ref_cam="c0", objects=[], ref_labels=np.zeros((4, 4), np.int32), hw=(4, 4))
@@ -188,7 +190,9 @@ def test_stage1_run_forwards_every_preset_key(tag, monkeypatch):
     p = S.PRESETS[tag]
     assert a.arm == p["arm"] and a.gate == p["gate"] and a.out == S.FINAL and a.r1_out == S.ROUND1 and a.round2 == "pred"
     assert getattr(a, "zoom", None) == p.get("zoom") and getattr(a, "zoom_rope", None) == p.get("zoom_rope")
+    assert getattr(a, "xcl", "none") == p.get("xcl", "none")
     assert (res["zoom_conf"] is not None) == ("zoom" in p)
+    assert (res["xcl_conf"] is not None) == ("xcl" in p)
 
 
 def test_check_preflight_reports_zoom(monkeypatch, tmp_path):

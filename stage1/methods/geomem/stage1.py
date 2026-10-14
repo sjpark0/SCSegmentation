@@ -32,6 +32,9 @@ PRESETS = {
     # S1-E10 (docs/stage1-E10-prereg.md): the adopted preset + the 2x crop-zoom pass; appended last (TAGS order is pinned)
     "geoset_rep_z2": dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="grid"),     # C1
     "geoset_rep_z2r": dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="remap"),   # C2
+    # S1-E11 (docs/stage1-E11-prereg.md): in-view object exclusivity by the decoder logits; appended last
+    "geoset_rep_x": dict(arm="geoset_pred_ft", gate="reproj", xcl="out"),        # X1: output, nested-mask cap
+    "geoset_rep_xm": dict(arm="geoset_pred_ft", gate="reproj", xcl="outmem"),    # X2: + round-1 memories
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
 DEFAULT_RUNS = os.path.join(common.REPO, "geomem", "runs")
@@ -79,7 +82,7 @@ def check_preflight(tag, scene_name, data=DEFAULT_DATA, runs=DEFAULT_RUNS):
     except RuntimeError as exc:
         raise ValueError(str(exc))
     return dict(arm=p["arm"], gate=p["gate"], checkpoint=ckpt, fold=cfg.get("fold"), ckpt_sha256=cfg.get("ckpt_sha256"),
-                zoom=p.get("zoom"), zoom_rope=p.get("zoom_rope"))
+                zoom=p.get("zoom"), zoom_rope=p.get("zoom_rope"), xcl=p.get("xcl", "none"))
 
 
 class Stage1:
@@ -108,7 +111,7 @@ class Stage1:
         base = dict(data=self.data, out=FINAL, r1_out=ROUND1, untrained=False, runs=self.runs,
                     tau=R.TAU_CONF, k=R.K_NEIGHBOURS, round2="pred")
         args = SimpleNamespace(**{**base, **self.preset})      # the preset's keys (arm, gate, zoom, ...) win
-        R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None))
+        R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None), getattr(args, "xcl", "none"))
         sink = MemorySink()
         config = R.decode_scene(scene, args, sink=sink)
         ref = reference_masks(scene)
@@ -118,7 +121,8 @@ class Stage1:
             per[scene.ref_cam] = {o: m.copy() for o, m in ref.items()}   # copy_reference overwrites the GT in place
             out[key] = per
         return dict(final=out[FINAL], round1=out[ROUND1], round1_conf=sink.files.get((FINAL, "round1_conf.json")),
-                    zoom_conf=sink.files.get((FINAL, "zoom_conf.json")), config=config, scene=scene, tag=self.tag)
+                    zoom_conf=sink.files.get((FINAL, "zoom_conf.json")), xcl_conf=sink.files.get((FINAL, "xcl_conf.json")),
+                    config=config, scene=scene, tag=self.tag)
 
     @staticmethod
     def save(result, folder):
@@ -135,6 +139,9 @@ class Stage1:
         if result.get("zoom_conf") is not None:
             with open(os.path.join(folder, "zoom_conf.json"), "w") as f:
                 json.dump(result["zoom_conf"], f, indent=1)
+        if result.get("xcl_conf") is not None:
+            with open(os.path.join(folder, "xcl_conf.json"), "w") as f:
+                json.dump(result["xcl_conf"], f, indent=1)
         with open(os.path.join(folder, "config.json"), "w") as f:
             json.dump(dict(result["config"], tag=result["tag"], scene=result["scene"].name), f, indent=1)
 
