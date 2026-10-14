@@ -192,6 +192,8 @@ def load_checkpoint_into(wrapper, geo, ckpt_path):
         wrapper.geo_bias.load_state_dict(ck["geo_bias"])
     if "memory_attention" in ck:
         wrapper.tracker.transformer.encoder.load_state_dict(ck["memory_attention"])
+    if "mask_decoder" in ck:                 # S1-E9 DEC_ARMS
+        wrapper.tracker.sam_mask_decoder.load_state_dict(ck["mask_decoder"])
     if "fusion" in ck:
         assert getattr(wrapper, "fusion", None) is not None, "checkpoint has a fusion module but the wrapper has none"
         wrapper.fusion.load_state_dict(ck["fusion"])
@@ -461,8 +463,8 @@ def decode_scene(scene, args, sink=None):
                 for r1_out in r1_outs:
                     sink.finish_aux(scene, r1_out, dict(config, round=1))
     finally:
-        if ck is not None and "memory_attention" in ck:
-            wrapper.tracker.transformer.encoder.load_state_dict(decode_scene.attn_init)
+        if ck is not None:
+            restore_init(model, decode_scene.init_state, ck)
         wrapper.close()
     torch.cuda.empty_cache()
     config["masks_written"] = written
@@ -471,7 +473,26 @@ def decode_scene(scene, args, sink=None):
 
 
 decode_scene.model = None
-decode_scene.attn_init = None
+decode_scene.init_state = None
+
+# the tracker modules a checkpoint may overwrite (checkpoint key -> module); their initial weights are snapshotted once
+# per process and put back after every scene (the next scene's fold, and stage 2 of the in-process pipeline, need them)
+INIT_MODULES = {"memory_attention": lambda model: model.tracker.transformer.encoder,
+                "mask_decoder": lambda model: model.tracker.sam_mask_decoder}
+
+
+def snapshot_init(model):
+    """{checkpoint key: deep-copied initial state_dict} of INIT_MODULES."""
+    import copy
+    return {k: copy.deepcopy(get(model).state_dict()) for k, get in INIT_MODULES.items()}
+
+
+def restore_init(model, init_state, ck):
+    """Put the initial weights back for every INIT_MODULES key the checkpoint `ck` carried."""
+    assert init_state is not None, "decode_scene.init_state was never snapshotted (call snapshot_init after load_model)"
+    for k, get in INIT_MODULES.items():
+        if k in ck:
+            get(model).load_state_dict(init_state[k])
 
 
 def _extra(ap):
@@ -491,10 +512,9 @@ def _extra(ap):
 
 def main():
     args = common.parse_args(__doc__, _extra)
-    import copy
     from methods import sam3_single
     decode_scene.model = sam3_single.load_model()
-    decode_scene.attn_init = copy.deepcopy(decode_scene.model.tracker.transformer.encoder.state_dict())
+    decode_scene.init_state = snapshot_init(decode_scene.model)
     check_gate_out(args.arm, args.gate, args.out, args.round2)
     common.run_all(args, decode_scene, aux_outs=r1_aux_outs(args.out, args.r1_out) if args.arm in SET_ARMS else [])
 

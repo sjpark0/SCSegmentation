@@ -25,7 +25,8 @@ from geomem.cache import pi3_frame_cache  # noqa: E402
 from geomem.data import (MAX_OBJECTS, SampleIterator, choose_objects, enumerate_pairs, enumerate_samples,  # noqa: E402
                          hub_views, load_sample, load_sample_pair, objects_for, objects_for_pair, pair_targets,
                          unannotated_views)
-from geomem.arms import ALIGN_ARMS, CONTINUE_ARMS, FUSE_ARMS, NO_EMBED_ARMS, PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm  # noqa: E402
+from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, DEC_ARMS, FUSE_ARMS, NO_EMBED_ARMS, PRED_MEM_ARMS,  # noqa: E402
+                         PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
 from geomem.folds import load_folds, train_scenes  # noqa: E402
 from geomem.pointmap import CONF_MIN, local_points, to_reference, view_grid  # noqa: E402
 from methods import common  # noqa: E402
@@ -41,8 +42,9 @@ EXTRA_MEM_PROB = 0.5     # geoset arms: probability of adding a second memory vi
 PRED_MEM_TAU = 0.7       # geoset_pred_ft: object gate on the predicted memory (= methods/geomem/run.TAU_CONF, spec 2.1)
 HUB_RANDOM_VIEWS = 5     # GeoQuery spec 3: hub subset K = ref + 2 targets + 5 random
 LR_EMBED, LR_ATTN, WEIGHT_DECAY = 1e-3, 1e-5, 0.01
+LR_DECODER = 1e-5        # S1-E9 (docs/stage1-E9-prereg.md section 2): the mask decoder at the memory-attention rate
 LOG_COLUMNS = ["step", "epoch", "loss", "focal", "dice", "iou", "presence", "ssl", "lr", "seconds", "n_mem", "n_views", "n_targets",
-               "gated_frac", "g", "self_mass", "align_valid"]
+               "gated_frac", "g", "self_mass", "align_valid", "band"]
 
 
 def cosine_lr(step, total):
@@ -55,7 +57,8 @@ def cosine_lr(step, total):
 def arm_flags(arm):
     b = base_arm(arm)
     return {"use_bias": b in BIAS_ARMS, "no_rope": b == "geobias_norope_ft", "use_geometry": b not in NO_EMBED_ARMS,
-            "extra_mem_prob": EXTRA_MEM_PROB if b in SET_ARMS else 0.0, "extra_mem_pred": b in ("geoset_pred_ft",) + FUSE_ARMS,
+            "extra_mem_prob": EXTRA_MEM_PROB if b in SET_ARMS else 0.0, "extra_mem_pred": b in PRED_MEM_ARMS + FUSE_ARMS,
+            "train_decoder": b in DEC_ARMS, "band_loss": b in BAND_ARMS,
             "use_fusion": b in FUSE_ARMS, "extra_mem_aligned": b in ALIGN_ARMS,
             "fuse_two_sided": b == "geofuse2_ft", "fuse_exclude_self": b == "geofuse2_ft",
             "use_hub": arm in QUERY_ARMS, "use_objbias": arm in ("geoquery_ft",) + PTR_ARMS,
@@ -101,6 +104,10 @@ def build_optimizer(wrapper, arm):
     if arm in FT_ARMS:
         groups.append({"params": [p for p in wrapper.tracker.transformer.encoder.parameters() if p.requires_grad],
                        "lr": LR_ATTN, "name": "memory_attention"})
+    if arm in DEC_ARMS:                      # S1-E9: the mask decoder (conv_s0 / conv_s1 excluded by freeze)
+        from geomem.wrapper import decoder_parameters
+        groups.append({"params": [p for _, p in decoder_parameters(wrapper.tracker) if p.requires_grad],
+                       "lr": LR_DECODER, "name": "mask_decoder"})
     return torch.optim.AdamW(groups, weight_decay=WEIGHT_DECAY)
 
 
@@ -224,7 +231,7 @@ def train_one_step(wrapper, batch, arm, rng, data=None, sample=None, model=None,
                 gated_frac = 1.0 - float(view.conf.float().mean())
         out = wrapper.decode_view(batch["tgt_backbone"], B, ref, batch["p_tgt"], batch["valid_tgt"],
                                   aligned=aligned_for(batch["p_tgt"], batch["valid_tgt"], batch["tgt_cam"]))
-    loss, terms = losses.supervised_loss(out, batch["tgt_masks"])
+    loss, terms = losses.supervised_loss(out, batch["tgt_masks"], band=base_arm(arm) in BAND_ARMS)
     terms["ssl"] = 0.0
     terms["n_mem"] = len(ref.views)
     terms["gated_frac"] = gated_frac
@@ -342,7 +349,8 @@ def main(argv=None):
                              "gated_frac": "" if terms.get("gated_frac") is None else f"{terms['gated_frac']:.4f}",
                              "g": "" if terms.get("g") is None else f"{terms['g']:.5f}",
                              "self_mass": "" if terms.get("self_mass") is None else f"{terms['self_mass']:.4f}",
-                             "align_valid": "" if terms.get("align_valid") is None else f"{terms['align_valid']:.4f}"})
+                             "align_valid": "" if terms.get("align_valid") is None else f"{terms['align_valid']:.4f}",
+                             "band": f"{terms.get('band', 0.0):.5f}"})
                 if step % 50 == 0 or step == total_steps:
                     f.flush()
                     print(f"step {step}/{total_steps} epoch {epoch} loss {terms['loss']:.4f} "
@@ -356,6 +364,8 @@ def main(argv=None):
         ckpt["geo_bias"] = wrapper.geo_bias.state_dict()
     if a.arm in FT_ARMS or a.arm in PAIR_ARMS:
         ckpt["memory_attention"] = wrapper.tracker.transformer.encoder.state_dict()
+    if a.arm in DEC_ARMS:                    # S1-E9: the whole decoder state (conv_s0 / conv_s1 unchanged, stored for an exact load)
+        ckpt["mask_decoder"] = wrapper.tracker.sam_mask_decoder.state_dict()
     if getattr(wrapper, "hub", None) is not None:
         ckpt["query_hub"] = wrapper.hub.state_dict()
     if getattr(wrapper, "fusion", None) is not None:

@@ -8,6 +8,25 @@ from geomem.warp_torch import sample_reference
 
 W_FOCAL, W_DICE, W_IOU, W_PRESENCE = 20.0, 1.0, 1.0, 1.0
 W_SSL = 0.5
+W_BAND, R_BAND = 1.0, 4      # S1-E9 D2 (docs/stage1-E9-prereg.md section 2): BCE on the GT boundary band, +-R_BAND px at original resolution
+
+
+def boundary_band(targets, r=R_BAND):
+    """[B,1,h,w] {0,1} float -> [B,1,h,w] bool: dilate(GT, r) \\ erode(GT, r) with a (2r+1)^2 square (max-pool)."""
+    k = 2 * int(r) + 1
+    dil = F.max_pool2d(targets, k, stride=1, padding=k // 2)
+    ero = 1.0 - F.max_pool2d(1.0 - targets, k, stride=1, padding=k // 2)
+    return (dil > 0.5) & (ero < 0.5)
+
+
+def band_bce(logits, targets, r=R_BAND):
+    """Mean BCE over the boundary-band pixels of each object (0 for an object without a band, i.e. absent), averaged
+    over objects.  logits/targets [B,1,h,w]."""
+    band = boundary_band(targets, r).float()
+    ce = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+    n = band.flatten(1).sum(1)
+    per = (ce * band).flatten(1).sum(1) / n.clamp(min=1.0)
+    return per.mean()
 
 
 def sigmoid_focal(logits, targets, alpha=0.25, gamma=2.0):
@@ -45,8 +64,9 @@ def presence_bce(presence_logits, present_bool):
     return F.binary_cross_entropy_with_logits(presence_logits.float(), present_bool.float())
 
 
-def supervised_loss(out, tgt_masks):
-    """out from GeoMemStar.decode_view, tgt_masks [B,h,w] bool -> (total, {term: float})."""
+def supervised_loss(out, tgt_masks, band=False):
+    """out from GeoMemStar.decode_view, tgt_masks [B,h,w] bool -> (total, {term: float}).  `band` (S1-E9 D2) adds
+    W_BAND * band_bce; the "band" term is reported either way (0.0 when off)."""
     hw = tuple(tgt_masks.shape[-2:])
     logits = logits_to_original(out["logits_1008"], hw).float()
     targets = tgt_masks.unsqueeze(1).float()
@@ -54,6 +74,11 @@ def supervised_loss(out, tgt_masks):
              "iou": iou_l1(logits, targets, out["ious"].float()),
              "presence": presence_bce(out["presence"], tgt_masks.flatten(1).any(1))}
     total = W_FOCAL * terms["focal"] + W_DICE * terms["dice"] + W_IOU * terms["iou"] + W_PRESENCE * terms["presence"]
+    if band:
+        terms["band"] = band_bce(logits, targets)
+        total = total + W_BAND * terms["band"]
+    else:
+        terms["band"] = torch.zeros(())
     return total, {k: float(v.detach()) for k, v in terms.items()}
 
 

@@ -14,7 +14,7 @@
 - **git 밖 복사본**(`.gitignore`: `Data`, `stage1/geomem/runs/`, `*.pt`):
   - 입력 `stage1/Data/<scene>/{meta.json, objects_labels.json, images, masks, Cache/pi3}` 17장면 838 MB. π³ 캐시는 다시 만들지 않고 복사(카메라 순서에 의존하는 결합 추정이라 재생성하면 달라질 수 있음).
   - 체크포인트 `stage1/geomem/runs/{geoset_pred_ft, geoalign_ft}/fold0~4` 231 MB. 10개 모두 `config.json`의 `ckpt_sha256`과 일치. `folds.json` sha256 `ab12356d…` 동일.
-  - 재학습에 필요한 특징 캐시(`Cache/sam3_feats*` 84 GB, `frames/`, `pi3_frames` 등)와 다른 팔의 체크포인트는 옮기지 않았습니다. 재학습할 때 가져옵니다.
+  - 재학습에 필요한 특징 캐시(`Cache/sam3_feats*` 84 GB, `frames/`, `pi3_frames` 등)와 다른 팔의 체크포인트는 처음에는 옮기지 않았습니다. **2026-10-14(S1-E9 학습)**: `frames/`(8 820 파일), `Cache/sam3_feats`(4 586), `Cache/pi3_frames`(8 106), `Cache/sam3_feats72`(187)를 2D 저장소에서 **하드 링크**(`cp -al`, 같은 파일시스템, 용량 0)로 가져와 학습 입력이 채택 체크포인트를 만든 파일과 동일합니다. 다른 팔의 체크포인트는 여전히 없음.
 - **본 저장소 호출부 재지정**: `MVSeed/build_geoset_seeds.py`(기본 원본 = `stage1`, 검증용 `--dst-suffix` 추가), `MVSeed/run_e8.sh`, `MVSeed/run_s2r5.sh`, `SCSam3/ft_encoder.py`(체크포인트·folds), `SCSam3/runMVSeg.py` 도움말, `tests/test_ft_encoder.py`. `MVSeed/e8_regen_check.py`는 2D 저장소 안의 과거 대조라 그대로 둠.
 
 ## 2. 재현 확인

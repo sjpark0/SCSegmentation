@@ -15,10 +15,18 @@ from geomem.attn_patch import attn_mask, patch_cross_attention, unpatch_cross_at
 
 PTR_TOKENS = 4          # a 256-d object pointer is split into 4 tokens of mem_dim 64
 PTR_MAX_ABS_POS = 16    # tracker default max_obj_ptrs_in_encoder
-from geomem.arms import ALIGN_ARMS, CONTINUE_ARMS, FUSE_ARMS, NO_EMBED_ARMS, QUERY_ARMS, SET2_ARMS, base_arm  # noqa: E402,F401  (re-exported)
+from geomem.arms import ALIGN_ARMS, CONTINUE_ARMS, DEC_ARMS, FUSE_ARMS, NO_EMBED_ARMS, QUERY_ARMS, SET2_ARMS, base_arm  # noqa: E402,F401  (re-exported)
 
 BIAS_ARMS = ("geobias_ft", "geobias_norope_ft", "geobias_only_ft", "geoset_ft") + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS
 FT_ARMS = ("geomem_ft",) + BIAS_ARMS
+# S1-E9: decoder parameters that stay frozen in DEC_ARMS.  conv_s0 / conv_s1 are applied to the backbone output when
+# the feature cache is written (sam3_io.backbone_features), so training them would change inference only.
+DECODER_FROZEN = ("conv_s0", "conv_s1")
+
+
+def decoder_parameters(tracker):
+    """(name, parameter) of the SAM mask decoder that S1-E9 trains: everything except DECODER_FROZEN."""
+    return [(n, p) for n, p in tracker.sam_mask_decoder.named_parameters() if not n.startswith(DECODER_FROZEN)]
 
 
 @dataclass
@@ -145,6 +153,10 @@ class GeoMemStar(torch.nn.Module):
                 names.append(f"tracker.transformer.encoder.{n}")
         elif arm not in ("geomem", "geomem_ssl"):
             raise ValueError(arm)
+        if arm in DEC_ARMS:                              # S1-E9: the mask decoder too (conv_s0 / conv_s1 stay frozen)
+            for n, p in decoder_parameters(self.tracker):
+                p.requires_grad_(True)
+                names.append(f"tracker.sam_mask_decoder.{n}")
         if self.fusion is not None:
             for n, p in self.fusion.named_parameters():
                 p.requires_grad_(arm in FUSE_ARMS)

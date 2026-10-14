@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 STAGE1_ROOT = os.path.join(REPO, "stage1")
 CENSUS_PATH = os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")
-TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep")     # == stage1/methods/geomem/stage1.py PRESETS
+TAGS = ("geoset_rep", "geoset_abs", "geoset_dec_rep", "geoset_decb_rep", "geoalign_rep")   # == stage1/methods/geomem/stage1.py PRESETS
 SUFFIX = "Sd"                                           # the --seeds-from MVSeed_<tag> suffix: same seeds, same name
 
 

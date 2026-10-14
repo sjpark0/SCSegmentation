@@ -33,7 +33,7 @@ def test_supervised_loss_absent_object_finite():
            "presence": torch.tensor([0.0, 0.0], requires_grad=True)}
     tgt = torch.zeros(2, 20, 30, dtype=torch.bool)                 # both objects absent in the target view
     loss, terms = supervised_loss(out, tgt)
-    assert torch.isfinite(loss) and set(terms) == {"focal", "dice", "iou", "presence"}
+    assert torch.isfinite(loss) and set(terms) == {"focal", "dice", "iou", "presence", "band"} and terms["band"] == 0.0
     loss.backward()
     assert torch.isfinite(out["logits_1008"].grad).all()
 

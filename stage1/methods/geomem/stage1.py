@@ -13,7 +13,6 @@ this class runs the same decode_scene on one scene and hands the masks back, so 
 `final` and `round1` hold exactly what the CLI's <out> and <r1_out> folders hold: the reference camera's GT
 masks plus every non-empty predicted mask (an absent (cam, obj) = empty prediction).
 """
-import copy
 import gc
 import json
 import os
@@ -27,6 +26,8 @@ from mvseg2d.io import labelmap_to_mask, write_mask
 PRESETS = {
     "geoset_rep": dict(arm="geoset_pred_ft", gate="reproj"),      # S1-E8 adopted (headline)
     "geoset_abs": dict(arm="geoset_pred_ft", gate="absent"),
+    "geoset_dec_rep": dict(arm="geoset_dec_ft", gate="reproj"),    # S1-E9 D1: + mask decoder trained
+    "geoset_decb_rep": dict(arm="geoset_decb_ft", gate="reproj"),  # S1-E9 D2: + decoder + boundary-band BCE
     "geoalign_rep": dict(arm="geoalign_ft", gate="reproj"),
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
@@ -94,7 +95,7 @@ class Stage1:
         from methods import sam3_single
         self._cache_was = torch.is_autocast_cache_enabled()
         R.decode_scene.model = sam3_single.load_model()
-        R.decode_scene.attn_init = copy.deepcopy(R.decode_scene.model.tracker.transformer.encoder.state_dict())
+        R.decode_scene.init_state = R.snapshot_init(R.decode_scene.model)
 
     def run(self, scene_name):
         self.load()
@@ -132,7 +133,7 @@ class Stage1:
         """Free the model (stage 2 needs the GPU) and put the autocast-cache setting back."""
         import torch
         R.decode_scene.model = None
-        R.decode_scene.attn_init = None
+        R.decode_scene.init_state = None
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
