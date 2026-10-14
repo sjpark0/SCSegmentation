@@ -133,6 +133,13 @@ def test_decode_view_with_full_window_rope_table_is_identical(model):
         for k in ("logits_1008", "ious", "presence"):
             assert torch.equal(a[k], b[k]), k
         assert model.tracker._geo_rope_q is None
+        # the remap branch is live: a table for a genuine 2x window (half-spaced, offset positions) changes the output
+        with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
+            t_x2, t_y2 = zoom.cell_positions(zoom.window_for((scene.hw[0] // 2 - 20, scene.hw[0] // 2 + 20,
+                                                              scene.hw[1] // 2 - 20, scene.hw[1] // 2 + 20), scene.hw), scene.hw)
+            e = wrapper.decode_view(bb, 1, mem, p_v, v_v, rope_q=attn_patch.axial_cis_at(model.tracker, t_x2, t_y2))
+        assert not torch.equal(a["logits_1008"], e["logits_1008"]), "a different query RoPE table left the output unchanged (dead branch?)"
+        assert model.tracker._geo_rope_q is None
     finally:
         if ck is not None:
             R.restore_init(model, R.decode_scene.init_state, ck)

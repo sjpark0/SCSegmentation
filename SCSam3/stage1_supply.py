@@ -134,7 +134,8 @@ def run_stage1(tag, dataset, video_cams, shape, c_ini_cam, start_frame, np, save
     cfg = res["config"]
     record = dict(mode="stage1-inprocess", tag=tag, arm=cfg.get("arm"), gate=cfg.get("gate"), fold=cfg.get("fold"),
                   ckpt_sha256=cfg.get("ckpt_sha256"), stage1_seconds=seconds, mask_digest=mask_digest(seeds, np),
-                  stage1_config=cfg, **counts)
+                  stage1_config=cfg, **counts,
+                  **{k: cfg[k] for k in ("zoom", "zoom_rope", "n_zoom_run", "n_zoom_changed") if k in cfg})   # S1-E10 presets only
     if save_dir is not None:
         s1.save(res, os.path.join(save_dir, "stage1"))
         man = dict(schema="MVSeed stage1_supply", schema_version=1, set=tag, dataset=dataset, start_frame=start_frame,

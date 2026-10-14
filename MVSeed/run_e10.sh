@@ -8,6 +8,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 S1="${ROOT}/stage1"
 PY="${S1}/.venv/bin/python"
 STAGES="${STAGES:-z4 timing c3 decode eval judge1}"
+if [[ -z "${ROPES+x}" && -f "${ROOT}/MVSeed/runs/e10/timing.json" ]] && python3 -c "import json,sys;sys.exit(0 if json.load(open('${ROOT}/MVSeed/runs/e10/timing.json')).get('drop_remap') else 1)"; then
+  ROPES="grid"      # the registered budget rule already fired in an earlier timing stage (timing.json: drop_remap)
+fi
 ROPES="${ROPES:-grid remap}"
 SCENES="AlexaMeadeExhibit AlexaMeadeFacePaint Barn Blocks Breakfast CBABasketball Carpark CoffeeMartini Dog Fencing FlameSteak Frog MATF MartialArts Painter PoznanStreet Welder"
 OUTDIR="${ROOT}/MVSeed/runs/e10"; LOG="${ROOT}/MVSeed/logs"; mkdir -p "${OUTDIR}" "${LOG}"
@@ -59,10 +62,11 @@ if has timing; then
   done
   per=$(echo "${tot} / ${n}" | bc -l); printf -v per "%.3f" "${per}"
   echo "$(ts) timing: ${n} crops, ${per} s per crop"
-  echo "{\"crops\": ${n}, \"seconds\": ${tot}, \"per_crop\": ${per}}" > "${OUTDIR}/timing.json"
+  drop=false
   if (( $(echo "${per} > 0.8" | bc -l) )); then
-    echo "$(ts) budget rule: ${per} s per crop > 0.8 -> C2 (remap) dropped from this chain (prereg section 3.3)"; ROPES="grid"
+    echo "$(ts) budget rule: ${per} s per crop > 0.8 -> C2 (remap) dropped from this chain (prereg section 3.3)"; ROPES="grid"; drop=true
   fi
+  echo "{\"crops\": ${n}, \"seconds\": ${tot}, \"per_crop\": ${per}, \"drop_remap\": ${drop}}" > "${OUTDIR}/timing.json"
 fi
 if has c3; then
   echo "$(ts) c3: guided-filter control on the C0 PNGs (host)"
@@ -115,12 +119,15 @@ if has sweep; then
 fi
 if has score; then
   TAGS="${TAGS-$(python3 -c "import json;print(' '.join(json.load(open('${OUTDIR}/e10_judge.json'))['stage1']['passing_tags']))")}" || exit 1
-  [[ -n "${TAGS}" ]] || { echo "$(ts) score: no passing tag, nothing to score"; exit 0; }
-  METHODS=$(for tag in ${TAGS}; do echo "SegMaskSam3XW1CGPS4MSd${tag}FsCs10kG2Rs"; done)
-  echo "$(ts) score ${METHODS}"
-  docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${ROOT}" scsam3 \
-    python eval/eval_jf.py --methods ${METHODS} --out jf_e10.json > "${LOG}/e10_score.log" 2>&1
-  st=$?; echo "$(ts) score exit ${st}  $(tail -n 2 "${LOG}/e10_score.log" | tr '\n' ' ' | cut -c1-200)"
+  if [[ -z "${TAGS}" ]]; then
+    echo "$(ts) score: no passing tag, nothing to score (judge2 still records the 'no effect' outcome)"
+  else
+    METHODS=$(for tag in ${TAGS}; do echo "SegMaskSam3XW1CGPS4MSd${tag}FsCs10kG2Rs"; done)
+    echo "$(ts) score ${METHODS}"
+    docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${ROOT}" scsam3 \
+      python eval/eval_jf.py --methods ${METHODS} --out jf_e10.json > "${LOG}/e10_score.log" 2>&1
+    st=$?; echo "$(ts) score exit ${st}  $(tail -n 2 "${LOG}/e10_score.log" | tr '\n' ' ' | cut -c1-200)"
+  fi
 fi
 if has judge2; then
   "${PY}" "${ROOT}/MVSeed/e10_judge.py" --stage 2 > "${LOG}/e10_judge2.log" 2>&1

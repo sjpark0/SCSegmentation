@@ -67,7 +67,7 @@ def _bytes_equal(a, b):
         return fa.read() == fb.read()
 
 
-def z2_round1(r1_folder):
+def z2_round1(r1_folder, rep_folder):
     """Round 1 untouched: every PNG of Result/<r1_folder> byte-identical to Result/geoset_pred_ft_r1_e8 and the
     rep folder's round1_conf.json identical to C0's (scene counts)."""
     out = dict(scenes_ok=0, png_same=0, png_diff=0, key_mismatch=0, conf_same=0, missing=[])
@@ -75,12 +75,16 @@ def z2_round1(r1_folder):
         a, b = _pngs(_result(sc, r1_folder)), _pngs(_result(sc, D0_R1))
         if not a:
             out["missing"].append(sc); continue
+        ca, cb = os.path.join(_result(sc, rep_folder), "round1_conf.json"), os.path.join(_result(sc, D0), "round1_conf.json")
+        if os.path.isfile(ca) and os.path.isfile(cb) and _bytes_equal(ca, cb):
+            out["conf_same"] += 1
         if set(a) != set(b):
             out["key_mismatch"] += 1; continue
         same = sum(_bytes_equal(a[k], b[k]) for k in a)
         out["png_same"] += same; out["png_diff"] += len(a) - same
         if same == len(a):
             out["scenes_ok"] += 1
+    out["ok"] = out["scenes_ok"] == 17 and out["conf_same"] == 17 and out["png_diff"] == 0 and out["key_mismatch"] == 0 and not out["missing"]
     return out
 
 
@@ -111,6 +115,19 @@ def z5_band(folder, ref_cams, r_of):
                 out["outside_band_px"] += bad; out["outside_band_pngs"] += 1
     out["ok"] = not out["key_mismatch"] and out["outside_band_pngs"] == 0 and not out["missing"]
     return out
+
+
+def _kind(r):
+    """Failure type of a seed (MVSeed/refloss/seedcat.py rules, docs/stage1-seedfail.md section 2)."""
+    if r["seed_px"] == 0 or (r["recall"] or 0) < 0.05:
+        return "miss" if r["seed_px"] == 0 or r["gt_px"] < 50 else "wrong-object"
+    if (r["precision"] or 0) < 0.3:
+        return "wrong-object"
+    if r["frac_other"] >= 0.2:
+        return "spill-onto-other" + ("(twin)" if r["twin"] else "")
+    if r["recall"] < 0.85 and r["precision"] >= 0.85:
+        return "under-cover" + ("(beyond c_ini)" if r["vis_ratio"] > 1.2 else "")
+    return "boundary/mixed"
 
 
 def stage1():
@@ -190,13 +207,23 @@ def stage1():
                       fitted=None if fitted is None else split(fitted), skipped=None if fitted is None else split(k for k in k0 if k not in fitted),
                       fitted_good=None if fitted is None else split(fitted & good),
                       twin=split(k for k in k0 if sf0.get(k, {}).get("twin")), not_twin=split(k for k in k0 if not sf0.get(k, {}).get("twin")),
+                      fitted_twin=None if fitted is None else split(k for k in fitted if sf0.get(k, {}).get("twin")),
+                      **{f"vd_{b}": split(k for k, r in k0.items() if lo <= r["view_dist"] <= hi) for b, lo, hi in
+                         (("<=1", 0, 1), ("2", 2, 2), ("3-4", 3, 4), (">=5", 5, 10 ** 6))},
                       **{f"otype_{t}": split(k for k, r in k0.items() if r["type"] == t) for t in ("dynamic", "static", "env")},
                       **{f"rig_{t}": split(k for k, r in k0.items() if r["rig"] == t) for t in ("pinhole", "hemisphere")})
         # P3 proxy: band-oracle gap (oracle_r2 - J&F) on the fitted good seeds, C0 (seedfail.json) vs this arm (sf_<folder>.json)
         sfp = os.path.join(OUT_DIR, f"sf_{folder}.json")
-        band = None
-        if os.path.isfile(sfp) and fitted is not None:
+        band = kinds = None
+        if os.path.isfile(sfp):
             sfa = {(r["scene"], r["cam"], r["obj"]): r for r in _load_json(sfp)}
+            kinds = dict(C0={}, arm={})
+            for k in k0:
+                if k in sf0 and sf0[k]["JF"] < 0.8:
+                    kinds["C0"][sf0[k].get("kind") or _kind(sf0[k])] = kinds["C0"].get(sf0[k].get("kind") or _kind(sf0[k]), 0) + 1
+                if k in sfa and sfa[k]["JF"] < 0.8:
+                    kinds["arm"][_kind(sfa[k])] = kinds["arm"].get(_kind(sfa[k]), 0) + 1
+        if os.path.isfile(sfp) and fitted is not None:
             sel = [k for k in fitted & good if k in sfa and k in sf0]
             band = dict(n=len(sel), gap_C0=_mean(sf0[k]["oracle_r2"] - sf0[k]["JF"] for k in sel), gap=_mean(sfa[k]["oracle_r2"] - sfa[k]["JF"] for k in sel),
                         recall_C0=_mean(sf0[k]["recall"] for k in sel), recall=_mean(sfa[k]["recall"] for k in sel),
@@ -224,11 +251,15 @@ def stage1():
             z1["kept_iou_rate"] = z1["kept_iou"] / z1["run"] if z1["run"] else None
             z1["ok"] = z1["scenes"] == 17 and z1["candidates_eq_masks_written"] == 17 and z1["sums_ok"] == 17
             z7["per_crop"] = z7["zoom_seconds"] / z1["run"] if z1["run"] else None
-        z2 = z2_round1(r1_folder) if r1_folder else None
+            z7["ok"] = z1["scenes"] == 17 and z7["seconds"] <= 45 * 60 and z7["gpu_mb_max"] <= z7["gpu_mb_max_C0"] + 1500
+        z2 = z2_round1(r1_folder, folder) if r1_folder else None
         z5 = z5_band(folder, ref_cams, r_of)
+        if rid in GATED and fitted is not None:
+            z5["skipped_delta_zero"] = splits["skipped"]["nonzero"] == 0
+            z5["ok"] = z5["ok"] and z5["skipped_delta_zero"]
         r = dict(name=folder, tag=tag, **summary(rs), hallucinations=hallu(folder), fails=sum(x["J"] < 0.5 for x in rs),
                  paired={k: dict(delta=v["delta"], ci=list(v["ci"]), per_scene=v["per_scene"]) for k, v in st.items()},
-                 gate=gate, splits=splits, by_size=by_size, by_size4=by_size4, band_proxy=band, Z1=z1, Z2=z2, Z5=z5, Z7=z7)
+                 gate=gate, splits=splits, by_size=by_size, by_size4=by_size4, band_proxy=band, failure_kinds=kinds, Z1=z1, Z2=z2, Z5=z5, Z7=z7)
         res[rid] = r
         if rid in GATED and gate["pass"]:
             passing.append(tag)
@@ -238,9 +269,9 @@ def stage1():
               f"  gate {'PASS' if gate['pass'] else 'FAIL'}" + ("" if rid in GATED else " (control, not gated)"))
         print(f"   good {splits['good']['dJF']:+.4f} (n={splits['good']['n']}, ↑{splits['good']['up']} ↓{splits['good']['down']})  fail {splits['fail']['dJF']:+.4f}"
               + ("" if fitted is None else f"  | fitted {splits['fitted']['dJF']:+.4f} (n={splits['fitted']['n']}, nonzero {splits['fitted']['nonzero']})  skipped {splits['skipped']['dJF']:+.4f} (n={splits['skipped']['n']}, nonzero {splits['skipped']['nonzero']})")
-              + f"  | size {{{', '.join(f'{b}: {v['dJF']:+.4f}' for b, v in by_size4.items())}}}  twin {splits['twin']['dJF']:+.4f}"
+              + f"  | size {{{', '.join(f'{b}: {v['dJF']:+.4f}' for b, v in by_size4.items())}}}  twin {splits['twin']['dJF']:+.4f} fitted-twin {(splits['fitted_twin'] or {}).get('dJF')}  vd {{{', '.join(f'{b}: {splits[f'vd_{b}']['dJF']:+.4f}' for b in ('<=1', '2', '3-4', '>=5'))}}}"
               + ("" if band is None else f"  | band gap {band['gap_C0']:.4f}→{band['gap']:.4f} recall {band['recall_C0']:.4f}→{band['recall']:.4f} prec {band['precision_C0']:.4f}→{band['precision']:.4f}"))
-        print(f"   Z1 {z1}\n   Z2 {z2}\n   Z5 {z5}\n   Z7 {z7}")
+        print(f"   kinds {kinds}\n   Z1 {z1}\n   Z2 {z2}\n   Z5 {z5}\n   Z7 {z7}")
     # predictions (section 4)
     pr = {}
     if "C1" in res:
@@ -258,17 +289,29 @@ def stage1():
         if rid in res:
             pr[f"P4_{rid}"] = dict(fails_delta=res[rid]["fails"] - res["C0"]["fails"], halluc_delta=res[rid]["hallucinations"] - res["C0"]["hallucinations"],
                                    ok=res[rid]["fails"] - res["C0"]["fails"] <= 1)
-            pr[f"P6_{rid}"] = dict(worst=res[rid]["gate"]["worst_delta"], twin=res[rid]["splits"]["twin"]["dJF"],
-                                   ok=res[rid]["gate"]["G2_no_scene_below"] and res[rid]["splits"]["twin"]["dJF"] >= -0.005)
-            for z in ("Z1", "Z2", "Z5"):
+            tw = res[rid]["splits"]["fitted_twin"] or res[rid]["splits"]["twin"]
+            pr[f"P6_{rid}"] = dict(worst=res[rid]["gate"]["worst_delta"], fitted_twin=tw["dJF"], n_twin=tw["n"],
+                                   ok=res[rid]["gate"]["G2_no_scene_below"] and tw["dJF"] >= -0.005)
+            for z in ("Z1", "Z2", "Z5", "Z7"):
                 v = res[rid][z]
-                pr[f"{z}_{rid}"] = bool(v and (v.get("ok") if "ok" in v else (v["scenes_ok"] == 17 and v["png_diff"] == 0 and v["key_mismatch"] == 0 and not v["missing"])))
+                pr[f"{z}_{rid}"] = bool(v and v.get("ok"))
+    if "C1" in res and "C2" in res:
+        # the remap path must be live: C1 and C2 differ somewhere (a silent no-op would make them byte-identical)
+        n_diff = n_all = 0
+        for sc in SCENES:
+            a, b = _pngs(_result(sc, res["C1"]["name"])), _pngs(_result(sc, res["C2"]["name"]))
+            for k in set(a) & set(b):
+                n_all += 1; n_diff += int(not _bytes_equal(a[k], b[k]))
+        pr["Z6b_remap_live"] = dict(pngs_differ=n_diff, pngs=n_all, ok=n_diff > 0)
     if "C1" in res and "C2" in res:
         dd = res["C2"]["paired"]["JF"]["delta"] - res["C1"]["paired"]["JF"]["delta"]
         pr["P5"] = dict(C2_minus_C1=dd, ok=0 <= dd <= 0.004)
     if "C3" in res:
         d3 = res["C3"]["paired"]["JF"]["delta"]
         pr["P7"] = dict(delta=d3, ok=-0.004 <= d3 <= 0.003 and ("C1" not in res or res["C1"]["paired"]["JF"]["delta"] - d3 >= 0.001))
+        if "C1" in res and res["C3"]["splits"]["fitted"] is not None:      # same-population sensitivity: C3 refines every pair, C1 only the fitted ones
+            pr["P7"]["fitted_C3"] = res["C3"]["splits"]["fitted"]["dJF"]; pr["P7"]["fitted_C1"] = res["C1"]["splits"]["fitted"]["dJF"]
+            pr["P7"]["ok_fitted"] = res["C1"]["splits"]["fitted"]["dJF"] - res["C3"]["splits"]["fitted"]["dJF"] >= 0.001
         pr["Z5_C3"] = bool(res["C3"]["Z5"]["ok"])
     out = _load_json(OUT) if os.path.isfile(OUT) else {}
     out.update({"prereg": "docs/stage1-E10-prereg.md", "stage1": dict(arms=res, passing_tags=passing, predictions=pr)})
@@ -323,10 +366,10 @@ def stage2():
         ref0 = [E7.jf(r, 0) for r in Rm if r["ref"] and r["gt"][0]]
         p9 = all(x is not None and x > 0.999 for x in ref0)
         res[rid] = dict(method=m, tag=tag, base=HEADLINE, n_scenes=len(sm), basic=statistics.mean(sm.values()), base_basic=statistics.mean(sb.values()),
-                        paired=st, ci_bonferroni2=ci_at(sb, sm, 1 - 0.05 / 2), complete=statistics.mean(cm.values()), base_complete=statistics.mean(cb.values()),
+                        paired=st, ci_bonferroni3=ci_at(sb, sm, 1 - 0.05 / 3), complete=statistics.mean(cm.values()), base_complete=statistics.mean(cb.values()),
                         paired_complete=stc, rule=rule, Z3_mask_digest=z3, Z3b_frame0_pixels=z3b, P9_ref_frame0_is_gt=p9)
         print(f"{rid} {m}\n   basic {res[rid]['basic']:.3f} vs {res[rid]['base_basic']:.3f}  Δ {st['mean']:+.3f}  CI [{st['ci'][0]:+.3f}, {st['ci'][1]:+.3f}]"
-              f"  (97.5% [{res[rid]['ci_bonferroni2'][0]:+.3f}, {res[rid]['ci_bonferroni2'][1]:+.3f}])  {st['wins']}↑/{st['losses']}↓  worst {st['worst'][1]} {st['worst'][0]:+.2f}"
+              f"  (98.33% [{res[rid]['ci_bonferroni3'][0]:+.3f}, {res[rid]['ci_bonferroni3'][1]:+.3f}])  {st['wins']}↑/{st['losses']}↓  worst {st['worst'][1]} {st['worst'][0]:+.2f}"
               f"\n   complete {res[rid]['complete']:.3f} vs {res[rid]['base_complete']:.3f}  Δ {stc['mean']:+.3f}  rule {rule}\n   Z3 {z3}  Z3b {z3b}  P9 {p9}")
     passed = [r for r in GATED if r in res and res[r]["rule"]["pass"]]
     adopted = None
