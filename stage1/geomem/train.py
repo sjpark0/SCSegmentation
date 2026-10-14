@@ -230,7 +230,7 @@ def train_one_step(wrapper, batch, arm, rng, data=None, sample=None, model=None,
                 ref = ref.with_view(view)
                 gated_frac = 1.0 - float(view.conf.float().mean())
         out = wrapper.decode_view(batch["tgt_backbone"], B, ref, batch["p_tgt"], batch["valid_tgt"],
-                                  aligned=aligned_for(batch["p_tgt"], batch["valid_tgt"], batch["tgt_cam"]))
+                                  aligned=aligned_for(batch["p_tgt"], batch["valid_tgt"], batch.get("tgt_cam")))
     loss, terms = losses.supervised_loss(out, batch["tgt_masks"], band=base_arm(arm) in BAND_ARMS)
     terms["ssl"] = 0.0
     terms["n_mem"] = len(ref.views)
