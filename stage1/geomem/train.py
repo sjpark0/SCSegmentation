@@ -25,8 +25,8 @@ from geomem.cache import pi3_frame_cache  # noqa: E402
 from geomem.data import (MAX_OBJECTS, SampleIterator, choose_objects, enumerate_pairs, enumerate_samples,  # noqa: E402
                          hub_views, load_sample, load_sample_pair, objects_for, objects_for_pair, pair_targets,
                          unannotated_views)
-from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, DEC_ARMS, FUSE_ARMS, NO_EMBED_ARMS, PRED_MEM_ARMS,  # noqa: E402
-                         PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
+from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, CUT_ARMS, CUT_PROB, DEC_ARMS, FUSE_ARMS,  # noqa: E402
+                         NO_EMBED_ARMS, PRED_MEM_ARMS, PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
 from geomem.folds import load_folds, train_scenes  # noqa: E402
 from geomem.pointmap import CONF_MIN, local_points, to_reference, view_grid  # noqa: E402
 from methods import common  # noqa: E402
@@ -44,7 +44,11 @@ HUB_RANDOM_VIEWS = 5     # GeoQuery spec 3: hub subset K = ref + 2 targets + 5 r
 LR_EMBED, LR_ATTN, WEIGHT_DECAY = 1e-3, 1e-5, 0.01
 LR_DECODER = 1e-5        # S1-E9 (docs/stage1-E9-prereg.md section 2): the mask decoder at the memory-attention rate
 LOG_COLUMNS = ["step", "epoch", "loss", "focal", "dice", "iou", "presence", "ssl", "lr", "seconds", "n_mem", "n_views", "n_targets",
-               "gated_frac", "g", "self_mass", "align_valid", "band"]
+               "gated_frac", "g", "self_mass", "align_valid", "band",
+               "objs", "mem_coin", "mem_cam", "cut", "n_cut", "cut_frac"]   # S1-E12: rng-stream identity + cut statistics
+CUT_KEEP = (0.3, 0.7)    # S1-E12 (docs/stage1-E12-prereg.md section 2): kept fraction of an object's reference cells ~ U(0.3, 0.7)
+CUT_MIN_CELLS = 20       # objects with fewer reference cells (72x72 grid) are never cut and draw nothing
+CUT_MIN_KEPT = 6         # implied by 0.3 x 20; asserted per cut object
 
 
 def cosine_lr(step, total):
@@ -64,7 +68,8 @@ def arm_flags(arm):
             "use_hub": arm in QUERY_ARMS, "use_objbias": arm in ("geoquery_ft",) + PTR_ARMS,
             "init_from_arm": b if arm in PAIR_ARMS else None,
             "inject": "ptr" if arm in PTR_ARMS else "prompt", "g_cross_init": 0.1 if arm in PTR_ARMS else 0.0,
-            "objbias_from_geobias": arm in PTR_ARMS}
+            "objbias_from_geobias": arm in PTR_ARMS,
+            **({"cut_prob": CUT_PROB[b], "cut_keep": list(CUT_KEEP), "cut_min_cells": CUT_MIN_CELLS} if b in CUT_ARMS else {})}
 
 
 def build_wrapper(model, arm, device="cuda"):
@@ -206,6 +211,10 @@ def train_one_step(wrapper, batch, arm, rng, data=None, sample=None, model=None,
     with torch.autocast("cuda", dtype=torch.bfloat16):
         ref = wrapper.encode_reference(batch["ref_image"], batch["ref_backbone"], batch["ref_masks"],
                                        batch["p_ref"], batch["valid_ref"])
+        if "ref_drop" in batch:                          # S1-E12: the reference memory tokens cut away for this step;
+            from dataclasses import replace              # every later read of `ref` (memory-camera prediction, target) sees it
+            from geomem.wrapper import MemorySet
+            ref = MemorySet([replace(ref.views[0], drop=batch["ref_drop"])])
         gated_frac, align_valid = None, None
         if "mem_view" in batch:                          # geoalign_ft (GeoAlign spec 3): a neighbour aligned to the reference grid
             from geomem.align import align_views
@@ -275,7 +284,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     import torch
-    from geomem.data import memory_rng, random_memory_camera, third_camera
+    from geomem.data import cut_rng, fov_cut, memory_rng, random_memory_camera, third_camera
+    from geomem.sam3_io import object_cells
     from methods import sam3_single
     torch.manual_seed(a.seed)
     rng = np.random.default_rng(a.seed)
@@ -332,6 +342,21 @@ def main(argv=None):
                     batch = load_sample(a.data, sample, objects, device, extra_mem_cam=extra,
                                         extra_mem_gt=not (flags["extra_mem_pred"] or flags["extra_mem_aligned"]),
                                         aligned=flags["use_fusion"], aligned_mem=flags["extra_mem_aligned"])
+                cut_log = {"cut": "", "n_cut": "", "cut_frac": ""}
+                if "cut_prob" in flags and not pair_mode:
+                    # S1-E12 (docs/stage1-E12-prereg.md section 2): one generator per step, coin first, then the cuts
+                    cg = cut_rng(a.seed, step)
+                    cut = bool(cg.random() < flags["cut_prob"])
+                    n_cut, fracs = 0, []
+                    if cut:
+                        cells = object_cells(batch["ref_masks"]).cpu().numpy()
+                        drop, recs = fov_cut(cells, cg, keep=tuple(flags["cut_keep"]), min_cells=flags["cut_min_cells"],
+                                             min_kept=CUT_MIN_KEPT)
+                        n_cut = sum(1 for r in recs if r["dropped"])
+                        fracs = [r["dropped"] / r["n"] for r in recs if r["dropped"]]
+                        if drop.any():
+                            batch["ref_drop"] = torch.from_numpy(drop).to(device)
+                    cut_log = {"cut": int(cut), "n_cut": n_cut, "cut_frac": f"{np.mean(fracs):.4f}" if fracs else ""}
                 mult = cosine_lr(step, total_steps)
                 for g, lr0 in zip(opt.param_groups, base_lrs):
                     g["lr"] = lr0 * mult
@@ -350,7 +375,10 @@ def main(argv=None):
                              "g": "" if terms.get("g") is None else f"{terms['g']:.5f}",
                              "self_mass": "" if terms.get("self_mass") is None else f"{terms['self_mass']:.4f}",
                              "align_valid": "" if terms.get("align_valid") is None else f"{terms['align_valid']:.4f}",
-                             "band": f"{terms.get('band', 0.0):.5f}"})
+                             "band": f"{terms.get('band', 0.0):.5f}",
+                             "objs": " ".join(str(int(o)) for o in objects),
+                             "mem_coin": "" if pair_mode else int(extra is not None), "mem_cam": "" if pair_mode or extra is None else extra,
+                             **cut_log})
                 if step % 50 == 0 or step == total_steps:
                     f.flush()
                     print(f"step {step}/{total_steps} epoch {epoch} loss {terms['loss']:.4f} "

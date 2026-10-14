@@ -61,6 +61,12 @@ def mask_inputs(masks_bool, size=1008):
     return F.interpolate(m, size=(size, size), mode="nearest")
 
 
+def object_cells(masks_bool, size=1008, cell=14):
+    """S1-E12: [B,h,w] bool -> [B,72,72] bool, the cells of the memory-token grid an object covers (>= half of a 14x14
+    cell of the 1008 mask the tracker sees, same nearest resize as mask_inputs)."""
+    return F.avg_pool2d(mask_inputs(masks_bool, size), cell)[:, 0] >= 0.5
+
+
 def logits_to_original(high_res, hw):
     """[B,1,1008,1008] logits -> [B,1,h,w] (bilinear, as the tracker's video-resolution output)."""
     return F.interpolate(high_res.float(), size=tuple(hw), mode="bilinear", align_corners=False)

@@ -35,6 +35,8 @@ PRESETS = {
     # S1-E11 (docs/stage1-E11-prereg.md): in-view object exclusivity by the decoder logits; appended last
     "geoset_rep_x": dict(arm="geoset_pred_ft", gate="reproj", xcl="out"),        # X1: output, nested-mask cap
     "geoset_rep_xm": dict(arm="geoset_pred_ft", gate="reproj", xcl="outmem"),    # X2: + round-1 memories
+    # S1-E12 (docs/stage1-E12-prereg.md): M+ = memory-token half-plane dropout training, adopted decode path; appended last
+    "geoset_cutall_rep_x": dict(arm="geoset_cutall_ft", gate="reproj", xcl="out"),
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
 DEFAULT_RUNS = os.path.join(common.REPO, "geomem", "runs")

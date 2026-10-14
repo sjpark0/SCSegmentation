@@ -80,6 +80,50 @@ def memory_rng(seed, step):
     return np.random.default_rng([int(seed), int(step)])
 
 
+def cut_rng(seed, step):
+    """S1-E12: the generator of one step's memory-token cut (coin first, then (side, f) per eligible object); separate
+    from the shared training `rng` and from memory_rng(seed, step), so object subsets, the memory coin and the memory
+    camera of geoset_pred_ft are unchanged by the cut arms."""
+    return np.random.default_rng([int(seed), int(step), 1])
+
+
+GRID = 72
+_YY, _XX = np.mgrid[0:GRID, 0:GRID]
+_SIDE_COORD = (_XX, -_XX, _YY, -_YY)        # side 0 left, 1 right, 2 top, 3 bottom: drop the cells with coord < cut
+
+
+def fov_cut(cells, g, keep=(0.3, 0.7), min_cells=20, min_kept=6):
+    """S1-E12 M+ rule (docs/stage1-E12-prereg.md section 2, steps 3-5) on object cells [B,72,72] bool (the reference
+    GT on the memory-token grid) -> (drop [B, 5184] bool, records).
+
+    For each object b in order with n_b >= min_cells: side = g.integers(4), f = g.uniform(*keep), k = floor((1-f) n_b),
+    a = the side's coordinate over the object cells, a_c = sorted(a)[k]; every grid cell (object or background) with
+    coordinate < a_c is dropped.  Ties at the cut line are kept, so the kept fraction of the object is >= f; an object
+    with nothing dropped counts as not cut.  Objects under min_cells draw nothing.  Token index = y * 72 + x."""
+    cells = np.asarray(cells, bool)
+    B = cells.shape[0]
+    assert cells.shape[1:] == (GRID, GRID), cells.shape
+    drop = np.zeros((B, GRID * GRID), bool)
+    recs = []
+    for b in range(B):
+        n = int(cells[b].sum())
+        if n < min_cells:
+            recs.append(dict(eligible=False, n=n, side=None, f=None, dropped=0))
+            continue
+        side = int(g.integers(4))
+        f = float(g.uniform(keep[0], keep[1]))
+        k = int(np.floor((1.0 - f) * n))
+        coord = _SIDE_COORD[side]
+        a_c = np.sort(coord[cells[b]])[k]
+        d = coord < a_c
+        dropped = int((d & cells[b]).sum())
+        if dropped:
+            assert n - dropped >= min_kept, (n, dropped, f)
+            drop[b] = d.reshape(-1)
+        recs.append(dict(eligible=True, n=n, side=side, f=f, dropped=dropped))
+    return drop, recs
+
+
 def random_memory_camera(data, sample, rng):
     """A memory-source camera for predicted-memory training (GeoSet-2 spec 4.2): uniform over the scene's cameras
     other than the reference and the target, annotated or not."""

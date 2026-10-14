@@ -41,6 +41,7 @@ class MemoryView:
     valid: torch.Tensor           # [5184] bool
     name: str = "ref"
     conf: torch.Tensor = None     # [B] bool per-object confidence (GeoSet-2 spec 2.1); None = all confident
+    drop: torch.Tensor = None     # [B, 5184] bool per-object dropped memory tokens (S1-E12 training only); None = none
 
 
 @dataclass
@@ -66,7 +67,8 @@ class MemorySet:
             i = idx.to(v.feats.device)
             return replace(v, feats=v.feats[:, i], pos=v.pos[:, i], obj_ptr_tokens=v.obj_ptr_tokens[:, i],
                            obj_ptr_pos=v.obj_ptr_pos[:, i], object_score_logits=v.object_score_logits[i],
-                           conf=None if v.conf is None else v.conf[i.to(v.conf.device)])
+                           conf=None if v.conf is None else v.conf[i.to(v.conf.device)],
+                           drop=None if v.drop is None else v.drop[i.to(v.drop.device)])      # object axis
         return MemorySet([cut(v) for v in self.views])
 
     def _gated(self):
@@ -78,11 +80,17 @@ class MemorySet:
     def n_gated(self):
         return int(sum(g.sum().item() for _, g in self._gated()))
 
+    def _dropped(self):
+        """(view index, drop [B, L] bool) for every view carrying a token drop with at least one True (S1-E12)."""
+        return [(i, v.drop) for i, v in enumerate(self.views) if v.drop is not None and bool(v.drop.any())]
+
     def gate_mask(self, dtype, device):
         """Additive attention mask [B,1,1,ΣL] (spec 2.2): -inf on view v's 5184 feature columns and its 4 pointer
-        columns for every object whose conf_v is False; 0 elsewhere.  None when nothing is gated."""
+        columns for every object whose conf_v is False; S1-E12: -inf on the feature columns a view's `drop` marks
+        for that object (pointer columns never); 0 elsewhere.  None when nothing is gated and nothing is dropped."""
         gated = self._gated()
-        if not gated:
+        dropped = self._dropped()
+        if not gated and not dropped:
             return None
         V, B = len(self.views), self.views[0].feats.shape[1]
         L = self.views[0].feats.shape[0]
@@ -91,6 +99,9 @@ class MemorySet:
             rows = g.to(device)
             m[rows, 0, 0, i * L:(i + 1) * L] = float("-inf")
             m[rows, 0, 0, V * L + PTR_TOKENS * i:V * L + PTR_TOKENS * (i + 1)] = float("-inf")
+        for i, d in dropped:
+            assert d.shape == (B, L), (d.shape, B, L)
+            m[:, 0, 0, i * L:(i + 1) * L] = m[:, 0, 0, i * L:(i + 1) * L].masked_fill(d.to(device), float("-inf"))
         return m
 
     # backwards-compatible single-view accessors

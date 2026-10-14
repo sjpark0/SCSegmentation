@@ -21,7 +21,8 @@ STAGE1_ROOT = os.path.join(REPO, "stage1")
 CENSUS_PATH = os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")
 TAGS = ("geoset_rep", "geoset_abs", "geoset_dec_rep", "geoset_decb_rep", "geoalign_rep",
         "geoset_rep_z2", "geoset_rep_z2r",   # S1-E10 crop-zoom tags
-        "geoset_rep_x", "geoset_rep_xm")     # S1-E11 exclusivity tags; == stage1/methods/geomem/stage1.py PRESETS (ordered)
+        "geoset_rep_x", "geoset_rep_xm",     # S1-E11 exclusivity tags
+        "geoset_cutall_rep_x")               # S1-E12 M+; == stage1/methods/geomem/stage1.py PRESETS (ordered)
 SUFFIX = "Sd"                                           # the --seeds-from MVSeed_<tag> suffix: same seeds, same name
 
 
