@@ -116,7 +116,7 @@ def refine_camera(wrapper, model, mem, image_path, cache, cam, ref_cam, hw, pred
     assert bgr is not None and bgr.shape[:2] == (H, W), (image_path, None if bgr is None else bgr.shape, hw)
     src = pointmap.ref_frame_points(cache, cam, ref_cam)
     records, n = {}, Counter()
-    others_cache = None
+    others_count = None            # per-pixel count of round-2 masks over all objects (diagnostic steal_px; review 2026-10-14)
     for i, o in enumerate(objects):
         if not pred[i].any():
             continue
@@ -153,9 +153,10 @@ def refine_camera(wrapper, model, mem, image_path, cache, cam, ref_cam, hw, pred
         rec.update(verdict=v, presence_crop=presence_c, iou_head_crop=iou_c, iou_crop_vs_full=iou,
                    rides_edge=rides_edge(canvas, win, hw))
         if v == "accepted":
-            if others_cache is None:
-                others_cache = pred.copy()                       # the round-2 masks of every object, before any paste
-            others = others_cache[[j for j in range(len(objects)) if j != i]].any(0) if len(objects) > 1 else np.zeros_like(final)
+            if others_count is None:
+                others_count = pred.sum(0, dtype=np.int16)       # the round-2 masks of every object, before any paste
+                round2_masks = pred.copy()
+            others = (others_count - round2_masks[i].astype(np.int16)) > 0     # O(HW) per object instead of O(B HW)
             added, removed = final & ~pred[i], pred[i] & ~final
             rec.update(px_final=int(final.sum()), added=int(added.sum()), removed=int(removed.sum()),
                        steal_px=int((added & others).sum()))

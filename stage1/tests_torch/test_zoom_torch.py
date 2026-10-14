@@ -193,3 +193,8 @@ def test_zoomed_decode_changes_only_the_band(model, rope):
         diff = ma != mb
         assert diff[~zoom.band_mask(mb, r)].sum() == 0, k
     assert changed == n["changed"]
+    # determinism / mask invariance across code revisions: the chain's own Blocks output of this arm (when present)
+    chain = os.path.join(DATA, "Blocks", "Result", "geoset_pred_ft_rep_z2_e10" if rope == "grid" else "geoset_pred_ft_rep_z2r_e10")
+    if os.path.isdir(chain):
+        c = _pngs(chain, skip=(scene.ref_cam,))
+        assert set(c) == set(a) and all(c[k] == a[k] for k in a), "zoomed Blocks output differs from the E10 chain's"
