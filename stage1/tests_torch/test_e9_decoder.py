@@ -71,13 +71,27 @@ def test_dec_arm_flags_are_the_pred_recipe_plus_decoder():
 
 
 # ---------------------------------------------------------------- freezing / optimizer / restore (GPU model)
-@pytest.fixture(scope="module")
+@pytest.fixture(autouse=True)
+def _free_gpu_between_tests():
+    """As in test_train_smoke.py: the subprocess smokes below need the GPU; release whatever an in-process test loaded."""
+    yield
+    import gc
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
+@pytest.fixture
 def model():
+    """Function-scoped on purpose: a module-scoped model kept ~29 GB in the pytest process and starved the training
+    subprocess of test_train_smoke_dec_arms (OOM, 2026-10-14)."""
     pytest.importorskip("sam3")
     if not torch.cuda.is_available():
         pytest.skip("GPU")
     from methods import sam3_single
-    return sam3_single.load_model()
+    m = sam3_single.load_model()
+    yield m
+    del m
 
 
 def _n(params):
