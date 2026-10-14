@@ -20,6 +20,21 @@ def load_image(path):
     return img, h, w
 
 
+def load_image_array(bgr_uint8):
+    """S1-E10: a BGR uint8 array (e.g. a crop of cv2.imread's output) -> [1,3,1008,1008] float32 cuda through the
+    same package transform as `load_image` (cv2 BGR->RGB, 1008x1008 bilinear resize, /255, (x-0.5)/0.5), so the
+    full image gives a tensor equal to load_image(path)[0]."""
+    import sys
+    from methods import common
+    sys.path.insert(0, common.SAM3_PKG)
+    from io_utils import AsyncVideoFrameCPUToGPU
+    frame = AsyncVideoFrameCPUToGPU([bgr_uint8], offload_video_to_cpu=True)[0]
+    img = frame.cuda().float()
+    if img.dim() == 3:
+        img = img.unsqueeze(0)
+    return img
+
+
 @torch.no_grad()
 def backbone_features(model, image):
     """image [1,3,1008,1008] -> dict(backbone_fpn: [3 maps], vision_pos_enc: [3 maps]) for the tracker."""

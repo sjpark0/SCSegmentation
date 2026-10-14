@@ -29,6 +29,9 @@ PRESETS = {
     "geoset_dec_rep": dict(arm="geoset_dec_ft", gate="reproj"),    # S1-E9 D1: + mask decoder trained
     "geoset_decb_rep": dict(arm="geoset_decb_ft", gate="reproj"),  # S1-E9 D2: + decoder + boundary-band BCE
     "geoalign_rep": dict(arm="geoalign_ft", gate="reproj"),
+    # S1-E10 (docs/stage1-E10-prereg.md): the adopted preset + the 2x crop-zoom pass; appended last (TAGS order is pinned)
+    "geoset_rep_z2": dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="grid"),     # C1
+    "geoset_rep_z2r": dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="remap"),   # C2
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
 DEFAULT_RUNS = os.path.join(common.REPO, "geomem", "runs")
@@ -75,7 +78,8 @@ def check_preflight(tag, scene_name, data=DEFAULT_DATA, runs=DEFAULT_RUNS):
         R.assert_no_leak(cfg, scene_name)
     except RuntimeError as exc:
         raise ValueError(str(exc))
-    return dict(arm=p["arm"], gate=p["gate"], checkpoint=ckpt, fold=cfg.get("fold"), ckpt_sha256=cfg.get("ckpt_sha256"))
+    return dict(arm=p["arm"], gate=p["gate"], checkpoint=ckpt, fold=cfg.get("fold"), ckpt_sha256=cfg.get("ckpt_sha256"),
+                zoom=p.get("zoom"), zoom_rope=p.get("zoom_rope"))
 
 
 class Stage1:
@@ -83,7 +87,8 @@ class Stage1:
         if tag not in PRESETS:
             raise ValueError(f"stage-1 preset {tag!r} is not one of {sorted(PRESETS)}")
         self.tag, self.data, self.runs = tag, data, runs
-        self.arm, self.gate = PRESETS[tag]["arm"], PRESETS[tag]["gate"]
+        self.preset = dict(PRESETS[tag])                      # every key reaches decode_scene's args (S1-E10 review)
+        self.arm, self.gate = self.preset["arm"], self.preset["gate"]
         self._cache_was = None
 
     def load(self):
@@ -100,9 +105,10 @@ class Stage1:
     def run(self, scene_name):
         self.load()
         scene = common.load_scene(self.data, scene_name)
-        args = SimpleNamespace(data=self.data, out=FINAL, r1_out=ROUND1, arm=self.arm, gate=self.gate,
-                               untrained=False, runs=self.runs, tau=R.TAU_CONF, k=R.K_NEIGHBOURS, round2="pred")
-        R.check_gate_out(args.arm, args.gate, args.out, args.round2)
+        base = dict(data=self.data, out=FINAL, r1_out=ROUND1, untrained=False, runs=self.runs,
+                    tau=R.TAU_CONF, k=R.K_NEIGHBOURS, round2="pred")
+        args = SimpleNamespace(**{**base, **self.preset})      # the preset's keys (arm, gate, zoom, ...) win
+        R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None))
         sink = MemorySink()
         config = R.decode_scene(scene, args, sink=sink)
         ref = reference_masks(scene)
@@ -112,7 +118,7 @@ class Stage1:
             per[scene.ref_cam] = {o: m.copy() for o, m in ref.items()}   # copy_reference overwrites the GT in place
             out[key] = per
         return dict(final=out[FINAL], round1=out[ROUND1], round1_conf=sink.files.get((FINAL, "round1_conf.json")),
-                    config=config, scene=scene, tag=self.tag)
+                    zoom_conf=sink.files.get((FINAL, "zoom_conf.json")), config=config, scene=scene, tag=self.tag)
 
     @staticmethod
     def save(result, folder):
@@ -126,6 +132,9 @@ class Stage1:
         if result["round1_conf"] is not None:
             with open(os.path.join(folder, "round1_conf.json"), "w") as f:
                 json.dump(result["round1_conf"], f, indent=1)
+        if result.get("zoom_conf") is not None:
+            with open(os.path.join(folder, "zoom_conf.json"), "w") as f:
+                json.dump(result["zoom_conf"], f, indent=1)
         with open(os.path.join(folder, "config.json"), "w") as f:
             json.dump(dict(result["config"], tag=result["tag"], scene=result["scene"].name), f, indent=1)
 

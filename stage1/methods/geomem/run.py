@@ -11,6 +11,7 @@ training scenes include the scene is refused.  Runs inside `scsam3`.
 import json
 import os
 import sys
+from collections import Counter
 from dataclasses import replace
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -72,10 +73,11 @@ def object_conf(presence, ious, tau=TAU_CONF):
     return (presence > 0) & (ious >= tau)
 
 
-def check_gate_out(arm, gate, out, round2="pred"):
-    """`--gate obj` / `--round2 proj_*` must not write under the arm's own name: that is the view-gate, predicted-memory result."""
-    if (gate != "view" or round2 != "pred") and out == arm:
-        raise SystemExit(f"--gate {gate} --round2 {round2} with --out {out}: that name is the default result (pass another --out)")
+def check_gate_out(arm, gate, out, round2="pred", zoom=None):
+    """`--gate obj` / `--round2 proj_*` / `--zoom` must not write under the arm's own name: that is the view-gate,
+    predicted-memory, full-view result."""
+    if (gate != "view" or round2 != "pred" or zoom is not None) and out == arm:
+        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} with --out {out}: that name is the default result (pass another --out)")
 
 
 def object_conf_mode(mode, presence, ious, overlap, tau=TAU_CONF, theta=THETA_REPROJ):
@@ -242,9 +244,15 @@ def decode_scene(scene, args, sink=None):
     tau, k = getattr(args, "tau", TAU_CONF), getattr(args, "k", K_NEIGHBOURS)
     gate = getattr(args, "gate", "view")
     round2 = getattr(args, "round2", "pred")           # GeoProj: pred | proj_bin | proj_soft
+    zoom, zoom_rope = getattr(args, "zoom", None), getattr(args, "zoom_rope", "grid")   # S1-E10 crop-zoom pass (None = off)
     r1_outs = r1_aux_outs(args.out, getattr(args, "r1_out", None))
     two_round = arm in SET_ARMS
     pair_mode = arm in PAIR_ARMS
+    if zoom is not None:
+        from geomem import zoom as zoom_mod
+        assert zoom == zoom_mod.ZOOM and zoom_rope in ("grid", "remap"), (zoom, zoom_rope)
+        assert two_round and round2 == "pred" and not pair_mode and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
+            f"--zoom is registered for the two-round predicted-memory arms only, not {arm}"
     config = {"arm": arm, "untrained": bool(args.untrained), **flags, "two_round": two_round}
     wrapper = build_wrapper(model, arm)
     geo = wrapper.geo_embed
@@ -269,14 +277,19 @@ def decode_scene(scene, args, sink=None):
     if sink is None:
         sink = FileSink(args.data, scene.name)
 
-    def write(out_name, cam, logits_1008):
+    def to_bool(logits_1008):
+        return (sam3_io.logits_to_original(logits_1008, scene.hw) > 0)[:, 0].cpu().numpy()
+
+    def write_bool(out_name, cam, pred):
         n = 0
-        pred = (sam3_io.logits_to_original(logits_1008, scene.hw) > 0)[:, 0].cpu().numpy()
         for i, o in enumerate(scene.objects):
             if pred[i].any():
                 sink.mask(out_name, cam, o, pred[i])
                 n += 1
         return n
+
+    def write(out_name, cam, logits_1008):
+        return write_bool(out_name, cam, to_bool(logits_1008))
 
     try:
         with torch.no_grad(), torch.autocast("cuda", dtype=torch.bfloat16):
@@ -395,6 +408,7 @@ def decode_scene(scene, args, sink=None):
                 centres = camera_centres(cache, scene.cams)
                 n_mem, written2, n_gated, n_pairs, dropped = [], 0, 0, 0, 0
                 proj_stats = []
+                zoom_recs, zoom_counts = {}, Counter()
                 if round2 != "pred":
                     # GeoProj: prediction-free second-round memory — the neighbour's OWN features with the reference GT
                     # masks PROJECTED into it (pixels not visible from the reference: background in proj_bin, logit 0 in
@@ -450,13 +464,31 @@ def decode_scene(scene, args, sink=None):
                     aligned = align_for(round1[cam]["p"], round1[cam]["valid"], cam) if fuse else None
                     out = wrapper.decode_view(round1[cam]["bb"], B, mem, round1[cam]["p"], round1[cam]["valid"], chunk=OBJ_CHUNK,
                                               aligned=aligned)
-                    written2 += write(args.out, cam, out["logits_1008"])
+                    if zoom is None:
+                        written2 += write(args.out, cam, out["logits_1008"])
+                    else:
+                        # S1-E10: the crop-zoom pass on the round-2 masks (same memory set), band-clipped paste
+                        pred = to_bool(out["logits_1008"])
+                        pres_full, iou_full = out["presence"].float().cpu().numpy(), out["ious"].float().cpu().numpy()
+                        del out
+                        pred, zoom_recs[cam], zc = zoom_mod.refine_camera(
+                            wrapper, model, mem, scene.image_paths[cam], cache, cam, scene.ref_cam, scene.hw, pred,
+                            pres_full, iou_full, scene.objects, zoom=zoom, zoom_rope=zoom_rope)
+                        zoom_counts.update(zc)
+                        written2 += write_bool(args.out, cam, pred)
                 if fuse:
                     config.update({f"fuse_{k2}" if k2 != "valid_align_frac" else k2: float(np.mean([f[k2] for f in fstats]))
                                    for k2 in ("self_mass", "view_entropy", "valid_views_mean", "valid_align_frac")})
                 config.update({"gate": gate, "tau": tau, "k": k, "mem_per_view_mean": float(np.mean(n_mem)),
                                "views_with_ref_only_frac": float(np.mean([n == 1 for n in n_mem])),
                                "n_targets": len(targets), "masks_written_r1": written})
+                if zoom is not None:
+                    sink.json(args.out, "zoom_conf.json", zoom_recs)
+                    config.update({"zoom": zoom, "zoom_rope": zoom_rope, "zoom_margin": zoom_mod.MARGIN, "zoom_tau_iou": zoom_mod.TAU_IOU,
+                                   "band_px": zoom_mod.band_px(scene.hw), "zoom_seconds": float(zoom_counts["seconds"])})
+                    config.update({f"n_zoom_{key}": int(zoom_counts[key]) for key in
+                                   ("candidates", "run", "skipped_large", "kept_absent", "kept_iou", "kept_empty", "accepted", "changed")})
+                    config.update({"zoom_px_added": int(zoom_counts["px_added"]), "zoom_px_removed": int(zoom_counts["px_removed"])})
                 if gate in OBJ_GATES or round2 != "pred":
                     config.update({"gated_pairs_frac": float(n_gated / n_pairs) if n_pairs else 0.0,
                                    "views_dropped": int(dropped)})
@@ -506,6 +538,10 @@ def _extra(ap):
                     help="round-2 memory gate: per view (mean IoU >= tau), or per object by IoU (obj), presence only "
                          "(absent) or reprojection overlap with the reference GT (reproj) — GeoSet-2 spec 3.1 / §8")
     ap.add_argument("--r1-out", default=None, help="round-1 result folder (default <out>_r1; 'none' writes no round-1 masks)")
+    ap.add_argument("--zoom", type=int, choices=(2,), default=None,
+                    help="S1-E10: 2x crop-zoom re-decode of every round-2 mask, band-clipped paste (docs/stage1-E10-prereg.md)")
+    ap.add_argument("--zoom-rope", choices=("grid", "remap"), default="grid", dest="zoom_rope",
+                    help="S1-E10: query RoPE of the crop decode: the crop lattice as is (C1) or remapped to full-view cells (C2)")
     ap.add_argument("--round2", choices=("pred", "proj_bin", "proj_soft"), default="pred",
                     help="GeoProj: second-round memory from round-1 predictions (pred) or from the reference GT masks projected "
                          "into the neighbour (binary mask / soft logits with unknown = 0); no prediction, 'absent'-style conf")
@@ -516,7 +552,7 @@ def main():
     from methods import sam3_single
     decode_scene.model = sam3_single.load_model()
     decode_scene.init_state = snapshot_init(decode_scene.model)
-    check_gate_out(args.arm, args.gate, args.out, args.round2)
+    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom)
     common.run_all(args, decode_scene, aux_outs=r1_aux_outs(args.out, args.r1_out) if args.arm in SET_ARMS else [])
 
 

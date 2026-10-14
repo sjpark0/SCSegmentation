@@ -59,8 +59,9 @@ def _load(cache_dir, cam):
     return z["depth"], z["conf"], z["K"], z["c2w"]
 
 
-def view_grid(cache_dir, cam, ref_cam, grid=GRID):
-    """One view's pooled 3D grid in the reference frame, scale-normalised: dict(p, valid, scale)."""
+def ref_frame_points(cache_dir, cam, ref_cam):
+    """One view's full work-resolution point field in the reference frame, scale-normalised:
+    (p [h_w,w_w,3] float64, valid [h_w,w_w] bool, scale) -- exactly what `view_grid` pools."""
     d_ref, c_ref, K_ref, c2w_ref = _load(cache_dir, ref_cam)
     valid_ref = (c_ref > CONF_MIN) & (d_ref > 0)
     p_ref = to_reference(local_points(d_ref, K_ref), c2w_ref, c2w_ref)
@@ -71,7 +72,33 @@ def view_grid(cache_dir, cam, ref_cam, grid=GRID):
         d, c, K, c2w = _load(cache_dir, cam)
         valid = (c > CONF_MIN) & (d > 0)
         p = to_reference(local_points(d, K), c2w, c2w_ref)
-    g, cell_valid = pool_grid(p / scale, valid, grid)
+    return p / scale, valid, scale
+
+
+def view_grid(cache_dir, cam, ref_cam, grid=GRID):
+    """One view's pooled 3D grid in the reference frame, scale-normalised: dict(p, valid, scale)."""
+    p, valid, scale = ref_frame_points(cache_dir, cam, ref_cam)
+    g, cell_valid = pool_grid(p, valid, grid)
+    return {"p": g.astype(np.float32), "valid": cell_valid, "scale": scale}
+
+
+def window_to_work(window, orig_hw, work_hw):
+    """A window (y0, y1, x0, x1), exclusive, in original pixels -> the same window in the work resolution (rounded)."""
+    y0, y1, x0, x1 = window
+    H, W = orig_hw
+    h, w = work_hw
+    wy0, wy1 = int(round(y0 * h / H)), int(round(y1 * h / H))
+    wx0, wx1 = int(round(x0 * w / W)), int(round(x1 * w / W))
+    assert wy1 > wy0 and wx1 > wx0, (window, orig_hw, work_hw)
+    return wy0, wy1, wx0, wx1
+
+
+def window_grid(src, window, orig_hw, grid=GRID):
+    """S1-E10: the pooled grid of a window of the view (src = ref_frame_points(...)): the window's work-resolution
+    slice of the same point field, pooled to grid x grid.  The full-image window reproduces `view_grid` exactly."""
+    p, valid, scale = src
+    wy0, wy1, wx0, wx1 = window_to_work(window, orig_hw, p.shape[:2])
+    g, cell_valid = pool_grid(p[wy0:wy1, wx0:wx1], valid[wy0:wy1, wx0:wx1], grid)
     return {"p": g.astype(np.float32), "valid": cell_valid, "scale": scale}
 
 

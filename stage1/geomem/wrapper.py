@@ -11,7 +11,7 @@ from dataclasses import dataclass, field, replace
 import torch
 
 from geomem import sam3_io
-from geomem.attn_patch import attn_mask, patch_cross_attention, unpatch_cross_attention
+from geomem.attn_patch import attn_mask, patch_cross_attention, rope_queries, unpatch_cross_attention
 
 PTR_TOKENS = 4          # a 256-d object pointer is split into 4 tokens of mem_dim 64
 PTR_MAX_ABS_POS = 16    # tracker default max_obj_ptrs_in_encoder
@@ -233,15 +233,17 @@ class GeoMemStar(torch.nn.Module):
         return replace(view, conf=conf)
 
     # ------------------------------------------------------------------ target decoding
-    def decode_view(self, backbone_out, B, memory, p_v, valid_v, chunk=None, aligned=None, **kw):
+    def decode_view(self, backbone_out, B, memory, p_v, valid_v, chunk=None, aligned=None, rope_q=None, **kw):
         """Target view features + memory set -> dict(logits_1008 [B,1,1008,1008], ious [B], presence [B], low_res, obj_ptr [B,256]).
         Extra keyword arguments go to `_heads` (GeoQuery passes `query=`).  `chunk` decodes at most that many objects
         at a time when the set is gated (the per-object mask [B,1,Lq,ΣL] grows with B; GeoSet-2 OOM guard).
         `aligned = (W [N,5184,256], valid [N,5184])` (geomem.align) feeds the fusion module (GeoFuse spec 2.3): the
-        memory-attention input `src` becomes fusion(src, W, valid); ignored when the wrapper has no fusion."""
+        memory-attention input `src` becomes fusion(src, W, valid); ignored when the wrapper has no fusion.
+        `rope_q` (S1-E10 C2): a query RoPE table (attn_patch.axial_cis_at) used by the memory cross-attention in
+        place of the layers' own; None = the layers' table (unchanged path)."""
         tr = self.tracker
         if chunk is not None and B > chunk and memory.gate_mask(torch.float32, p_v.device) is not None:
-            outs = [self.decode_view(backbone_out, len(i), memory.subset(i), p_v, valid_v, aligned=aligned, **kw)
+            outs = [self.decode_view(backbone_out, len(i), memory.subset(i), p_v, valid_v, aligned=aligned, rope_q=rope_q, **kw)
                     for i in torch.arange(B, device=p_v.device).split(chunk)]
             return {k: torch.cat([o[k] for o in outs], dim=0) for k in outs[0]}
         vision_feats, vision_pos, feat_sizes = sam3_io.expand_features(tr, backbone_out, B)
@@ -258,7 +260,8 @@ class GeoMemStar(torch.nn.Module):
         gate = memory.gate_mask(mask.dtype if mask is not None else torch.float32, p_v.device)   # [B,1,1,ΣL] or None
         if gate is not None:
             mask = gate if mask is None else mask + gate                                  # -> [B,1,Lq,ΣL]
-        with attn_mask(tr, mask) if (mask is not None or self.no_rope) else _nullctx():
+        with attn_mask(tr, mask) if (mask is not None or self.no_rope) else _nullctx(), \
+                rope_queries(tr, rope_q) if rope_q is not None else _nullctx():
             enc = tr.transformer.encoder(
                 src=vision_feats[-1:], src_key_padding_mask=[None], src_pos=[src_pos],
                 prompt=prompt, prompt_pos=prompt_pos, prompt_key_padding_mask=None,
