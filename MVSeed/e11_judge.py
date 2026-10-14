@@ -210,7 +210,9 @@ def output_invariants(folder, ref_cams):
             exempt = np.array([bool(recs.get(cam, {}).get(f[:-4], {}).get("exempt", False)) for f in objs])
             if (~exempt).any():
                 out["double_survivor_px"] += int((A[~exempt].sum(0) > 1).sum())
-    out["ok"] = out["scenes"] == 17 and out["double_survivor_px"] == 0 and out["emptied"] == 0 and out["key_mismatch"] == 0
+    # the registered X1 output invariants are "<= 1 non-exempt survivor" and "no emptied mask"; the key set vs C0 is
+    # reported only (X2's round-2 logits differ from C0's, so an object may legitimately appear or vanish there)
+    out["ok"] = out["scenes"] == 17 and out["double_survivor_px"] == 0 and out["emptied"] == 0
     return out
 
 

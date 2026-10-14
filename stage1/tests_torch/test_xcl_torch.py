@@ -159,15 +159,27 @@ def test_xcl_invariants_on_blocks(model, mode):
             assert survivors.max() <= 1, "two non-exempt masks still overlap"
             n_removed += int((B0 & ~A).sum()); n_changed += int(diff.reshape(len(objs), -1).any(1).sum())
         assert n_removed == cfg["n_xcl_removed_entries"] and n_changed == cfg["n_xcl_masks_changed"]
+        # all five registered counters against the PNGs / records (Z1)
+        n_contested = sum(int((np.stack([base[(cam, f)] for f in sorted(k[1] for k in base if k[0] == cam)]).sum(0) >= 2).sum()) for cam in {k[0] for k in base})
+        n_exempt = sum(1 for cam in recs for o, r in recs[cam].items() if r["exempt"])
+        n_emptied = sum(1 for cam in recs for o, r in recs[cam].items() if r["px"] > 0 and r["kept"] == 0)
+        assert n_contested == cfg["n_xcl_contested_px"] and n_exempt == cfg["n_xcl_masks_exempt"] and n_emptied == cfg["n_xcl_masks_emptied"]
         if mode == "out":
             assert set(arm) == set(base) and cfg["n_xcl_masks_emptied"] == 0
         else:
-            assert cfg["n_xcl_masks_emptied"] == len(set(base) - set(arm))
+            assert cfg["n_xcl_masks_emptied"] == len(set(base) - set(arm)) and cfg["n_xcl_masks_exempt"] == 0
         print(f"\n[{mode}] contested px {cfg['n_xcl_contested_px']} removed {cfg['n_xcl_removed_entries']} masks changed {cfg['n_xcl_masks_changed']} "
               f"exempt {cfg['n_xcl_masks_exempt']} emptied {cfg['n_xcl_masks_emptied']}")
     else:
         # X2: the output rule holds (as for X1) and the memory rule is live: counters non-zero, output differs from X1 somewhere
         assert cfg["n_xmem_contested_cells"] > 0 and cfg["n_xmem_eligible"] > 0
+        assert set(arm) == set(base) and cfg["n_xcl_masks_emptied"] == 0
+        for cam in sorted({k[0] for k in arm}):
+            objs = sorted(k[1] for k in arm if k[0] == cam)
+            A = np.stack([arm[(cam, f)] for f in objs])
+            exempt = np.array([recs[cam][f[:-4]]["exempt"] for f in objs])
+            if (~exempt).any():
+                assert (A[~exempt].sum(0) > 1).sum() == 0, "two non-exempt masks overlap in the X2 output"
         x1 = os.path.join(DATA, "Blocks", "Result", "dbg_x_out")
         if os.path.isdir(x1):
             p1, p2 = _pngs(x1, skip=(scene.ref_cam,)), _pngs(d, skip=(scene.ref_cam,))
