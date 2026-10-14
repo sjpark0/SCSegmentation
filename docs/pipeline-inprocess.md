@@ -13,7 +13,7 @@ XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep F0SEED=1 CR
     ./runMVOptThree.sh Fencing             # -> Data/MVSeg/Fencing/SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs
 ```
 
-`runMVSeg.py` 플래그로는 `--stage1 geoset_rep --ref-snap`(+ 기존 헤드라인 플래그)입니다. 중간 결과가 필요하면 `SAVESTAGES=1`(`--save-stages`):
+`runMVSeg.py` 플래그로는 `--stage1 geoset_rep --ref-snap`(+ 기존 헤드라인 플래그)입니다. (2026-10-15 S1-E11 채택 뒤 헤드라인 프리셋은 `geoset_rep_x`입니다 — 같은 경로에 1단계 뷰 안 배타가 더해진 것; 아래의 바이트 검증은 `geoset_rep`로 한 것이고 `geoset_rep_x`의 CLI 대 한 프로세스 일치는 [stage1-E11.md](stage1-E11.md) Z3/Z3b로 확인했습니다.) 중간 결과가 필요하면 `SAVESTAGES=1`(`--save-stages`):
 
 | `<dataset>/<out>_stages/` | 내용 |
 |---|---|

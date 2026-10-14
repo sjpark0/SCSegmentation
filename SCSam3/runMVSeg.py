@@ -31,9 +31,10 @@ Only step 5 needs a GPU.  Nothing here writes outside the dataset directory.
     python runMVSeg.py Fencing --algo MVOpt --xview-window 0 --ref-cam muvod --frame0-seed --crop-small 10000
                                                                   # -> SegMaskSam3XW0MFsCs10kG2, small objects crop-tracked
     python runMVSeg.py Fencing --algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr \
-        --xview-tpos-shift 4 --ref-cam muvod --stage1 geoset_rep --frame0-seed --crop-small 10000 --ref-snap
-                                                                  # -> SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs, the
-                                                                  #    headline in one process (stage 1 in memory)
+        --xview-tpos-shift 4 --ref-cam muvod --stage1 geoset_rep_x --frame0-seed --crop-small 10000 --ref-snap
+                                                                  # -> SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs, the
+                                                                  #    headline in one process (stage 1 in memory; S1-E11
+                                                                  #    adopted geoset_rep_x; geoset_rep = the S1-E8 preset)
 
 Both demos carry their own copy of the model code, so the algorithm is selected
 by putting its directory first on sys.path.
@@ -350,7 +351,8 @@ def parse_args():
                          "stage1/geomem/folds.json)")
     ap.add_argument("--stage1", default=None, metavar="TAG",
                     help="run stage 1 in this process (docs/pipeline-inprocess.md): the stage-1 GeoSet-2 "
-                         "preset TAG (geoset_rep = S1-E8 headline, geoset_abs, geoalign_rep) decodes the "
+                         "preset TAG (geoset_rep_x = the S1-E11 headline, geoset_rep = S1-E8, geoset_abs, "
+                         "geoalign_rep, geoset_rep_z2/z2r, geoset_rep_xm) decodes the "
                          "reference frame from stage1/Data and its fold checkpoint, and its masks replace "
                          "the seeds exactly as --seeds-from MVSeed_TAG would, without a file. Folder "
                          "suffix Sd<TAG> (the same seeds); excludes --seeds-from and --repair-seeds. MVOpt only.")
