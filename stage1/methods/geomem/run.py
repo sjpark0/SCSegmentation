@@ -236,6 +236,7 @@ def decode_scene(scene, args, sink=None):
     if model is None:
         model = sam3_single.load_model()
         decode_scene.model = model
+        decode_scene.init_state = snapshot_init(model)      # the lazy path must restore too (review 2026-10-14)
     arm = args.arm
     flags = arm_flags(arm)
     tau, k = getattr(args, "tau", TAU_CONF), getattr(args, "k", K_NEIGHBOURS)

@@ -164,6 +164,37 @@ def test_decoder_receives_gradient_in_the_real_loop(model):
 
 
 @gpu_blocks
+@pytest.mark.parametrize("arm", ["geoset_pred_ft", "geoset_dec_ft", "geoset_decb_ft"])
+def test_decode_scene_restores_initial_weights(arm):
+    """Z2 wiring: after decode_scene with a real checkpoint (Blocks is held out of fold 0) the memory attention and the
+    mask decoder are back at the initial weights, through the lazy-load path and the finally block of decode_scene."""
+    import argparse
+    import shutil
+    from methods import common
+    from methods.geomem import run as R
+    ckpt = os.path.join(REPO, "geomem", "runs", arm, "fold0", "ckpt.pt")
+    if not os.path.isfile(ckpt):
+        pytest.skip(f"needs {ckpt}")
+    R.decode_scene.model, R.decode_scene.init_state = None, None
+    out = f"dbg_e9_restore_{arm}"
+    shutil.rmtree(os.path.join(DATA, "Blocks", "Result", out), ignore_errors=True)
+    args = argparse.Namespace(data=DATA, out=out, arm=arm, untrained=False, runs=os.path.join(REPO, "geomem", "runs"),
+                              tau=0.7, k=3, gate="reproj", r1_out="none", round2="pred")
+    cfg = R.decode_scene(common.load_scene(DATA, "Blocks"), args)
+    assert cfg["fold"] == 0 and len(cfg["ckpt_sha256"]) == 64
+    model, init = R.decode_scene.model, R.decode_scene.init_state
+    assert init is not None and set(init) == set(R.INIT_MODULES)
+    for key, get in R.INIT_MODULES.items():
+        now = get(model).state_dict()
+        assert all(torch.equal(now[k], init[key][k]) for k in init[key]), f"{arm}: {key} not restored after decode_scene"
+    ck = torch.load(ckpt, map_location="cuda")
+    attn = model.tracker.transformer.encoder.state_dict()
+    assert any(not torch.equal(attn[k], ck["memory_attention"][k].to(attn[k].device)) for k in attn), "checkpoint == init?"
+    R.decode_scene.model, R.decode_scene.init_state = None, None
+    shutil.rmtree(os.path.join(DATA, "Blocks", "Result", out), ignore_errors=True)
+
+
+@gpu_blocks
 @pytest.mark.parametrize("arm", ["geoset_dec_ft", "geoset_decb_ft"])
 def test_train_smoke_dec_arms(tmp_path, arm):
     cmd = [sys.executable, "-m", "geomem.train", "--arm", arm, "--fold", "0", "--max-steps", "20",
@@ -176,8 +207,8 @@ def test_train_smoke_dec_arms(tmp_path, arm):
     assert len(rows) == 20 and all(float(r["loss"]) == float(r["loss"]) for r in rows)
     assert cfg["train_decoder"] is True and cfg["band_loss"] == (arm == "geoset_decb_ft")
     assert cfg["extra_mem_pred"] is True and cfg["extra_mem_prob"] == 0.5 and cfg["use_geometry"] is False
-    assert cfg["trainable_params"] > 5_922_321 + 1_000_000 and cfg["lr"]["mask_decoder"] == 1e-5
-    assert not any("conv_s" in n for n in cfg["trainable_names"])
+    # Z1: exactly the geoset_pred_ft budget + the decoder without conv_s0/conv_s1 (4 190 437 of its 4 215 109)
+    assert cfg["trainable_params"] == 5_922_321 + 4_190_437 and cfg["lr"]["mask_decoder"] == 1e-5
     assert "mask_decoder" in ck and "memory_attention" in ck and "geo_bias" in ck
     assert any(k.startswith("conv_s0") for k in ck["mask_decoder"])                   # the full decoder state (exact load)
     assert {int(r["n_mem"]) for r in rows} == {1, 2}

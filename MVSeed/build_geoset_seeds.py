@@ -25,7 +25,7 @@ DATA = os.path.join(REPO, "Data", "MVSeg")
 CFG = json.load(open(os.path.join(REPO, "SCSam3", "demo", "MVSeg.json"), encoding="utf-8"))
 CENSUS = json.load(open(os.path.join(REPO, "docs", "raw", "muvod_object_sets.json")))
 SRC_DEFAULT = os.path.join(REPO, "stage1")             # was ../SCSegmentation2D; ported 2026-10-13 (docs/stage1-port.md)
-TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep")    # the three registered arms
+TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep", "geoset_dec_rep", "geoset_decb_rep")   # E8 arms + S1-E9 arms (== stage1_supply.TAGS)
 
 
 def sha256_file(path):

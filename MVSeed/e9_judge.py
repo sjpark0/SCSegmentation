@@ -15,7 +15,8 @@ OUT_DIR = os.path.join(REPO, "MVSeed", "runs", "e9")
 OUT = os.path.join(OUT_DIR, "e9_judge.json")
 D0 = "geoset_pred_ft_rep_e8"
 ARMS = [("D1", "geoset_dec_ft", "geoset_dec_rep"), ("D2", "geoset_decb_ft", "geoset_decb_rep")]
-BASE_PARAMS = 5_922_321                     # geoset_pred_ft trainable parameters (Z1)
+BASE_PARAMS = 5_922_321                     # geoset_pred_ft trainable parameters
+DECODER_PARAMS = 4_190_437                  # sam_mask_decoder without conv_s0 / conv_s1 (Z1 = BASE + this = 10 112 758)
 HEADLINE = "SegMaskSam3XW1CGPS4MSdgeoset_repFsCs10kG2Rs"
 DEFENCE, TIE = -1.0, 0.05
 SAFETY = -0.01                              # G2: no scene below D0 - 0.01 (keyframe J&F)
@@ -56,7 +57,9 @@ def stage1():
         if not os.path.isfile(p):
             print(f"{rid}: {p} missing (not decoded / scored yet)"); continue
         rs = rows_of(name); kk = {key(r): r for r in rs}
-        assert set(kk) == set(k0), f"{rid}: pair set differs from D0 ({len(kk)} vs {len(k0)})"
+        if set(kk) != set(k0):
+            st_ = {sc: v["status"] for sc, v in _load_json(p)["scenes"].items() if v["status"] != "ok"}
+            raise SystemExit(f"{rid}: pair set differs from D0 ({len(kk)} vs {len(k0)}); scenes not ok: {st_} -- fix the decode first")
         st = {k: paired_scene_bootstrap(r0, rs, key=k) for k in ("J", "F", "JF")}
         worst = min(st["JF"]["per_scene"].items(), key=lambda x: x[1])
         gate = dict(G1_mean_gt_0=st["JF"]["delta"] > 0, G1_ci_lower_gt_0=st["JF"]["ci"][0] > 0,
@@ -98,13 +101,49 @@ def stage1():
         if r in res:
             pr[f"P3_{r}"] = abs(res[r]["fail_seeds"]["dJF"]) < 0.02 and res[r]["good_seeds"]["dJF"] >= res[r]["fail_seeds"]["dJF"]
             pr[f"P4_{r}"] = res[r]["fails"] - res["D0"]["fails"] <= 3
-            z1 = res[r]["fold0_config"]
-            pr[f"Z1_{r}"] = z1 is not None and z1["trainable_params"] > BASE_PARAMS + 1_000_000 and not z1["conv_s_in_names"]
+            z1 = res[r]["fold0_config"]        # exact count: the names list in config.json is truncated to 8, so only the count is informative
+            pr[f"Z1_{r}"] = z1 is not None and z1["trainable_params"] == BASE_PARAMS + DECODER_PARAMS
     out = _load_json(OUT) if os.path.isfile(OUT) else {}
     out.update({"prereg": "docs/stage1-E9-prereg.md", "stage1": dict(arms=res, passing_tags=passing, predictions=pr)})
     os.makedirs(OUT_DIR, exist_ok=True)
     json.dump(out, open(OUT, "w"), indent=1)
     print(f"stage-1 gate: passing {passing}   predictions {pr}")
+
+
+def z3_digest(arm, method, result=None):
+    """Watch value Z3 (prereg section 7): per scene, MANIFEST.json provenance.seeds_from.mask_digest of the in-process
+    run == stage1_supply.mask_digest over the seeds rebuilt from the stage-1 CLI folder stage1/Data/<scene>/Result/<arm>_rep_e9
+    (to_seeds: every Video camera x basic object, missing PNG = empty; the reference camera's GT is in that folder too)."""
+    import importlib.util
+    import numpy as np
+    from PIL import Image
+    spec = importlib.util.spec_from_file_location("stage1_supply", os.path.join(REPO, "SCSam3", "stage1_supply.py"))
+    SF = importlib.util.module_from_spec(spec); spec.loader.exec_module(SF)
+    cfg = _load_json(os.path.join(REPO, "SCSam3", "demo", "MVSeg.json"))
+    census = _load_json(os.path.join(REPO, "docs", "raw", "muvod_object_sets.json"))
+    out = dict(ok=0, bad=[], absent=[])
+    for sc in sorted(census):
+        c = cfg[sc]; f = c["folder"]
+        man = os.path.join(REPO, "Data", "MVSeg", f, method, "MANIFEST.json")
+        if not os.path.exists(man):
+            out["absent"].append(sc); continue
+        want = _load_json(man).get("provenance", {}).get("seeds_from", {}).get("mask_digest")
+        res_dir = os.path.join(REPO, "stage1", "Data", sc, "Result", result or f"{arm}_rep_e9")
+        video_cams = sorted(x for x in os.listdir(os.path.join(REPO, "Data", "MVSeg", f, "Video")) if os.path.isdir(os.path.join(REPO, "Data", "MVSeg", f, "Video", x)))
+        basic = census[sc]["seed_ids_c_ini"]; c_ini = census[sc]["c_ini"]
+        shape = np.asarray(Image.open(os.path.join(REPO, "Data", "MVSeg", f, "Mask", c_ini, "%06d.png" % c["start_frame"]))).shape[:2]
+        final = {}
+        for cam in os.listdir(res_dir):
+            d = os.path.join(res_dir, cam)
+            if not os.path.isdir(d): continue
+            for fn in os.listdir(d):
+                if fn.endswith(".png"):
+                    final.setdefault(cam, {})[int(fn[:-4])] = np.asarray(Image.open(os.path.join(d, fn)).convert("L")) > 127
+        seeds, _ = SF.to_seeds(final, video_cams, basic, tuple(shape), c_ini, np)
+        got = SF.mask_digest(seeds, np)
+        if got == want: out["ok"] += 1
+        else: out["bad"].append(sc)
+    return out
 
 
 # ---------------------------------------------------------------- stage 2
@@ -113,8 +152,14 @@ def stage2():
     import e7_judge as E7
     from e8_judge import ci_at
     out = _load_json(OUT) if os.path.isfile(OUT) else {}
-    s1 = out.get("stage1", {})
-    tags = s1.get("passing_tags") or [t for _, _, t in ARMS]
+    s1 = out.get("stage1")
+    if s1 is None or "passing_tags" not in s1:
+        raise SystemExit("stage-1 judgement missing (run --stage 1 first)")
+    tags = s1["passing_tags"]
+    if not tags:
+        out["stage2"] = dict(runs={}, passed=[], adopted=None, adopted_tag=None, predictions={}, note="no arm passed the stage-1 gate")
+        json.dump(out, open(OUT, "w"), indent=1)
+        print("stage-2: no arm passed the stage-1 gate; nothing to judge (prereg section 5-1)"); return
     d = E7.load(["jf_e9.json"])
     res = {}
     for rid, arm, tag in ARMS:
@@ -130,8 +175,11 @@ def stage2():
         worst = min(st["per_scene"].values())
         rule = dict(mean_gt_0=st["mean"] > 0, ci_lower_gt_0=st["ci"][0] > 0, defence=worst >= DEFENCE, worst=worst, complete_ge_0=stc["mean"] >= 0)
         rule["pass"] = all(rule[k] for k in ("mean_gt_0", "ci_lower_gt_0", "defence", "complete_ge_0"))
-        # Z3: stage-2 frame-0 PNGs of the scored non-reference pairs == the stage-1 CLI PNGs (pixels), basic objects
-        z3 = dict(same=0, different=0, missing=0)
+        # Z3 (registered): the in-process MANIFEST's seeds_from.mask_digest == the digest of the stage-1 CLI output,
+        # rebuilt through the same to_seeds rules (every Video camera x basic object, missing = empty)
+        z3 = z3_digest(arm, m)
+        # Z3b: stage-2 frame-0 PNGs of the scored non-reference pairs == the stage-1 CLI PNGs (pixels), basic objects
+        z3b = dict(same=0, different=0, missing=0)
         try:
             from PIL import Image
             import numpy as np
@@ -141,20 +189,20 @@ def stage2():
                 a = os.path.join(REPO, "stage1", "Data", r["scene"], "Result", f"{arm}_rep_e9", r["cam"], f"{r['obj']}.png")
                 b = os.path.join(E7.DATA, f, m, r["cam"], str(s0), f"{r['obj']}.png")
                 if not os.path.exists(a) and not os.path.exists(b): continue           # empty seed: no PNG on either side
-                if not os.path.exists(a) or not os.path.exists(b): z3["missing"] += 1; continue
+                if not os.path.exists(a) or not os.path.exists(b): z3b["missing"] += 1; continue
                 ma = np.asarray(Image.open(a).convert("L")) > 127; mb = np.asarray(Image.open(b).convert("L")) > 127
-                z3["same" if ma.shape == mb.shape and bool((ma == mb).all()) else "different"] += 1
-        except ImportError:
-            z3 = "PIL/numpy unavailable"
+                z3b["same" if ma.shape == mb.shape and bool((ma == mb).all()) else "different"] += 1
+        except ImportError as e:
+            raise SystemExit(f"stage 2 needs numpy + PIL (run under stage1/.venv): {e}")
         # P6: the reference camera's frame 0 is the given GT in both runs (J&F 1 on every scored reference pair)
         ref0 = [E7.jf(r, 0) for r in Rm if r["ref"] and r["gt"][0]]
         p6 = all(x is not None and x > 0.999 for x in ref0)
         res[rid] = dict(method=m, tag=tag, base=HEADLINE, n_scenes=len(sm), basic=statistics.mean(sm.values()), base_basic=statistics.mean(sb.values()),
                         paired=st, ci_bonferroni3=ci_at(sb, sm, 1 - 0.05 / 3), complete=statistics.mean(cm.values()), base_complete=statistics.mean(cb.values()),
-                        paired_complete=stc, rule=rule, Z3_frame0_pixels=z3, P6_ref_frame0_is_gt=p6)
+                        paired_complete=stc, rule=rule, Z3_mask_digest=z3, Z3b_frame0_pixels=z3b, P6_ref_frame0_is_gt=p6)
         print(f"{rid} {m}\n   basic {res[rid]['basic']:.3f} vs {res[rid]['base_basic']:.3f}  Δ {st['mean']:+.3f}  CI [{st['ci'][0]:+.3f}, {st['ci'][1]:+.3f}]"
               f"  (98.33% [{res[rid]['ci_bonferroni3'][0]:+.3f}, {res[rid]['ci_bonferroni3'][1]:+.3f}])  {st['wins']}↑/{st['losses']}↓  worst {st['worst'][1]} {st['worst'][0]:+.2f}"
-              f"\n   complete {res[rid]['complete']:.3f} vs {res[rid]['base_complete']:.3f}  Δ {stc['mean']:+.3f}  rule {rule}\n   Z3 {z3}  P6 {p6}")
+              f"\n   complete {res[rid]['complete']:.3f} vs {res[rid]['base_complete']:.3f}  Δ {stc['mean']:+.3f}  rule {rule}\n   Z3 {z3}  Z3b {z3b}  P6 {p6}")
     passed = [r for r in ("D1", "D2") if r in res and res[r]["rule"]["pass"]]
     adopted = None
     if passed:
@@ -167,6 +215,7 @@ def stage2():
             ratio = res[r]["paired"]["mean"] / (66.7 * kf)
             pr[f"P5_{r}"] = dict(ratio=ratio, ok=0.4 <= ratio <= 1.0)
         pr[f"P6_{r}"] = res[r]["P6_ref_frame0_is_gt"]
+        pr[f"Z3_{r}"] = isinstance(res[r]["Z3_mask_digest"], dict) and res[r]["Z3_mask_digest"]["bad"] == [] and res[r]["Z3_mask_digest"]["ok"] == 17
     out["stage2"] = dict(runs=res, passed=passed, adopted=adopted, adopted_tag=res[adopted]["tag"] if adopted else None, predictions=pr)
     json.dump(out, open(OUT, "w"), indent=1)
     print(f"\nstage-2: passed {passed} -> adopted {adopted} ({out['stage2']['adopted_tag']})   predictions {pr}")
