@@ -1,0 +1,6 @@
+row mismatches vs null_compose.json (counts of 664 rows): {"geoset_dec_ft_rep_e9": {"add": 0, "add_tp": 0, "J": 0.0, "F": 0.0, "max_add_diff": 0, "max_J_diff": 0.0}, "geoset_decb_ft_rep_e9": {"add": 0, "add_tp": 0, "J": 0.0, "F": 0.0, "max_add_diff": 0, "max_J_diff": 0.0}, "geoset_pred_ft_r1_x_e11": {"add": 0, "add_tp": 0, "J": 0.0, "F": 0.0, "max_add_diff": 0, "max_J_diff": 0.0}}
+pixels added to >= 2 scored objects (U from rows): {'geoset_dec_ft_rep_e9': 7743, 'geoset_decb_ft_rep_e9': 45557, 'geoset_pred_ft_r1_x_e11': 3369}  (U from all C0 PNGs): {'geoset_dec_ft_rep_e9': 7742, 'geoset_decb_ft_rep_e9': 45546, 'geoset_pred_ft_r1_x_e11': 3356}
+geoset_dec_ft_rep_e9: recomputed composed dJ&F +0.0011 [+0.0005, +0.0018]  | registered U (all C0 PNGs) +0.0011 [+0.0005, +0.0018]  added px rows-U 562,753 allU 559,404  rows changed by allU 19
+geoset_decb_ft_rep_e9: recomputed composed dJ&F +0.0015 [+0.0008, +0.0023]  | registered U (all C0 PNGs) +0.0014 [+0.0007, +0.0022]  added px rows-U 1,033,162 allU 1,022,586  rows changed by allU 21
+geoset_pred_ft_r1_x_e11: recomputed composed dJ&F +0.0010 [-0.0000, +0.0021]  | registered U (all C0 PNGs) +0.0008 [-0.0002, +0.0018]  added px rows-U 573,157 allU 559,756  rows changed by allU 19
+seconds 132

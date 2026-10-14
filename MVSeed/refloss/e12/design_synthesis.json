@@ -1,0 +1,412 @@
+{
+ "verdicts": [
+  {
+   "scores": [
+    {
+     "design": 0,
+     "arm": "A geoset_fov_ft (global FOV rectangle crop: memory mask AND tokens outside R dropped, p=0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "About 150 lines across augment.py, wrapper drop field, train hook and arms/preset/TAG append. The decode path is untouched and the Z4 Fencing --xcl out byte check covers the adopted path. Training is about 3.0-3.2 h. Today 34.8 % of steps (4,679 of 13,464) already build the per-object [B,1,Lq,SumL] mask, and those 2-view steps average 1.03 s against 0.79 s ungated; A adds that mask on about 1/3 more steps. Two spec slips to fix first. (1) code_changes re-creates aug_rng(seed, step) for sample_cut while calling it 'the second draw', so the coin u<0.5 is reused as the first rectangle draw. (2) MemorySet.subset slices drop[:, i], which is the wrong axis; it is dead code in training. Gain: P(G1) about 0.3; the 22-pair reachable share is at most +0.0045. Safety: the cropped mask changes the memory pointer and presence, so there is presence drift and invisible-region FP spill risk; G1/G2/E8 guard adoption."
+    },
+    {
+     "design": 0,
+     "arm": "B geoset_cut_ft (FOV crop or interior HOLE, 1/2 each at p=0.5)",
+     "feasibility": 3,
+     "expected_gain": 2,
+     "safety": 2,
+     "note": "About 25 lines over A. If the re-seeded aug_rng in code_changes is implemented literally, the mode draw reuses u<0.5 and is always 'fov', so B silently equals A. That would only show in the P7 cut_mode histogram after about 3 h of training; it needs a host histogram test before training. Hole mode is the less faithful simulation, and it dilutes FOV steps. Hole-filling risk: depth-separated interiors (tables, rigs, handrails) and stronger presence/IoU drift (hallucinations up to 18 by its own bound)."
+    },
+    {
+     "design": 1,
+     "arm": "C0 geoset_rep_x (adopted, not retrained)",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "Already decoded and scored (geoset_pred_ft_rep_x_e11, J&F 0.9148). It is only re-scored in the chain, at zero GPU cost."
+    },
+    {
+     "design": 1,
+     "arm": "M geoset_cut_ft (per-object axis-aligned half-plane token dropout, mask whole, p=0.5)",
+     "feasibility": 5,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "The cleanest engineering. One new MemoryView.drop field that only MemorySet.gate_mask reads; with drop=None the bytes are identical. object_cells is avg_pool14 of mask_inputs, row-major like _pack_view. cut_rng [seed,step,1] is separate from memory_rng [seed,step] and the shared rng. Stage1 PRESETS and stage1_supply TAGS are append-only, with no new decode path, so in-process parity is untouched. Training about 3.0-3.1 h (+5-8 %; E9 trained arms took 2.98-3.05 h), decode 8 min. Test (d) as written cannot see object/coin streams: log.csv does not record them, and n_mem depends on model state. Use a host stream test (test_geomem_data.py:117 pattern) plus logged draws. Gain: P(G1) about 0.3. Behaviour risks: FP spill and presence drift under weak memory."
+    },
+    {
+     "design": 1,
+     "arm": "M+ geoset_cutall_ft (same cut, p=1.0, dose arm)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 2,
+     "note": "No extra code. It shares M's cut parameters on M's cut steps, so it gives dose-response and replication. It costs about 3.2-3.4 h GPU (mask on every step, +12-15 %). The stage-1 half of {M, M+} is about 6.9 h; with one sweep about 8.6 h, with both sweeps about 10.3 h (the second sweep can be deferred). Cuttable objects never train on a whole reference. The tau 0.7 predicted-memory gate fires more often, which weakens the round-2 training signal the adopted method relies on. FP and presence drift are about double M's."
+    },
+    {
+     "design": 2,
+     "arm": "C0 geoset_rep_x (base of every composed arm)",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "Byte reference for the composition invariants. Re-score only."
+    },
+    {
+     "design": 2,
+     "arm": "N0 geoset_rep_xc_dec = C0 + E9-D1 add-only composition in INV and unclaimed region (decode-only)",
+     "feasibility": 3,
+     "expected_gain": 3,
+     "safety": 4,
+     "note": "No training, but it needs a new two-checkpoint path in decode_scene/Stage1.run: a full base two-round+xcl decode held in host RAM, then the ext decode, then compose. It also needs a CLI _raw aux folder in run_all, check_preflight and leak guard for both checkpoints, and a stage1_supply record/MANIFEST that today carries a single arm and ckpt_sha256. restore_init after DEC arms is already tested (test_e9_decoder.py:168), but the registered Z3 checks only Fencing, so 'base after the previous scene's ext decode' is never byte-checked. RAM is about 2-3x per scene (AlexaMeadeExhibit has 865 masks at 2560x1920; 125 GB host RAM, OK). Gain: it is the only arm with a measured G1-passing effect, +0.0011 [+0.0005, +0.0018]. But that number comes from a neighbouring rule: null_compose.py builds U from scored objects only (13 C0 masks in 10 of 34 cams left out) and uses the non-xcl D1 folder. The null was also chosen after viewing 3 nulls. It is not a training mechanism, and adoption would turn the headline into a two-checkpoint ensemble. Safety: the add-only invariants structurally protect visible pixels, key sets and the hallucination count."
+    },
+    {
+     "design": 2,
+     "arm": "M_c geoset_rep_xc_mdrop = C0 + geoset_mdrop_ft (random-angle half-plane token dropout, p=0.5) under the shell",
+     "feasibility": 2,
+     "expected_gain": 3,
+     "safety": 4,
+     "note": "Needs both the token-drop infrastructure (as M) and the compose infrastructure, so realistically about 2 days of implementation. Its 'no extra compute' claim does not hold: expect about 3.05 h, not 2.85 h. Decode about 16 min. Because N0's sweep is near-certain, the N0 + M_c sweeps push the chain to about 10.8 h or more. Gain is roughly N0 plus a small mechanism margin (registered M_c - N0 point +0.001). The shell bounds harm to INV-and-unclaimed additions."
+    },
+    {
+     "design": 2,
+     "arm": "W_c geoset_rep_xc_vwl = C0 + geoset_vwl_ft (region weight lambda=2 on reference-invisible target pixels) under the shell",
+     "feasibility": 2,
+     "expected_gain": 1,
+     "safety": 4,
+     "note": "Needs the losses weight= path, an in-loop Pi3 reprojection in data.load_sample (+35 ms per step, +4.5 %), and the compose infrastructure. The design-minimal loss-mass measurement already puts 76 % (in-sample) and 95 % (held-out) of the focal mass in the invisible region, and lambda=2 only moves that to about 0.88, so a null is expected. The registered tie order (N0 > M_c > W_c) makes it practically unadoptable over N0. The change is training-only; decode is untouched."
+    }
+   ],
+   "refuted_claims": [
+    "Design 2 M_c cost: 'training about 2.85 h, no extra compute; the per-object mask is already paid in today's gated steps'. The geoset_pred_ft logs (5 folds) show 2-view steps with a per-object gate mask average 1.03 s against 0.79 s ungated. Only 34.8 % of steps carry that mask today, so p=0.5 dropout adds it on about 1/3 more steps, giving about +5-8 % (about 3.0-3.1 h). That matches E9's trained arms at 2.98-3.05 h.",
+    "Design 1 cost basis: the mask is 'already materialised on the ~20 % conf-gated steps today'. The 0.18-0.22 figure is gated_frac, the per-object fraction. The per-step share with a materialised [B,1,Lq,SumL] mask is 34.8 % (4,679 of 13,464 steps). Design 1's overall estimate (+8 % for M, +15 % for M+) still holds.",
+    "Train-pipeline analyst: 'tests_torch/test_train_smoke.py:168-223 already tests this kind of [rng-stream byte] identity'. Those lines are the set2 smoke test, the all-gated test and the no-grad-into-prediction test. The only stream-identity test is the host-side tests/test_geomem_data.py:117 (memory_rng leaves the main stream alone). No test asserts that loss columns reproduce across runs, so design 0's 'pre/post 20-step loss/n_mem/gated_frac columns identical' check assumes bit-deterministic bf16 training, which nothing has established.",
+    "Design 2: 'vis is already computed per target camera for the reproj gate, so the rule costs ~0 beyond the second decode'. run.reproj_overlap computes valid internally but returns only (overlap, n_valid). vis must be recomputed (project_reference_masks, about 35 ms per camera), or reproj_overlap's return signature changed. The latter touches the adopted decode function and needs a byte check.",
+    "Design 2: N0 is 'measured at design time' at +0.0011 [+0.0005, +0.0018]. The measurement used a different rule from the registered one. null_compose.py builds U only from the scored objects of each camera, which leaves out 13 C0 masks in 10 of 34 cameras; the registered U is all C0 masks, hallucinations included. It also used the non-xcl geoset_dec_ft_rep_e9 folder, while the registered N0 uses an xcl decode. And the null was chosen after measuring three nulls on the same 664 pairs.",
+    "Design 0 spec: 'MemorySet.subset(): slice drop[:, i] like conf'. drop is [B, 5184], so selecting objects means drop[i]. Harmless in practice, because the chunked subset path runs only at decode, where drop is None."
+   ],
+   "blocking_issues": [
+    "Design 2 as registered does not fit a one-day implementation plus a chain of 10 h or less. Training M_c and W_c takes about 6.1-6.4 h. Three composed decodes (base + ext each, about 16 min) add about 0.8 h. N0 passes G1 almost certainly, so its stage-2 sweep (about 1.9 h with the doubled in-process stage 1) is effectively guaranteed. Add M_c's sweep and the chain is about 10.8 h; with all three, about 12.7 h. The compose path also needs decode_scene/Stage1.run support for two checkpoints, a CLI _raw aux folder in run_all, check_preflight and leak guard for both checkpoints, a two-checkpoint stage1_supply record/MANIFEST, and tests. That is more than a day.",
+    "Design 2's two-model in-process path: the registered Z3 byte check uses Fencing only, so it never exercises 'base geoset_pred_ft decode after the previous scene's ext (DEC-arm) decode in the same process'. That ordering is what the CLI run_all and the 17-scene stage-2 sweep do. A cross-order check on two or more scenes is required, plus two-checkpoint provenance, before any composed preset reaches STAGE1=<tag>.",
+    "Design 0's rng spec is self-contradictory. code_changes calls sample_cut(aug_rng(a.seed, step)) and labels it 'the second draw from the same generator', but that re-creates the generator. Implemented literally, the coin u<0.5 becomes sample_cut's first draw: arm B's mode draw is then always 'fov' (B silently equals A), and A's first side draw is biased. This must be fixed, with a host histogram test of mode and side, before any training."
+   ],
+   "recommendation": "From the engineering side, register design 1's arm set {C0, M (p=0.5), M+ (p=1.0)} as S1-E12.\n\nWhy it fits:\n- It touches one shared inference symbol: MemoryView.drop, read only by MemorySet.gate_mask (stage1/geomem/wrapper.py:81-94). With drop=None the adopted path stays byte-identical by construction; the decode path (methods/geomem/run.py) is unchanged.\n- Stage1 PRESETS (stage1/methods/geomem/stage1.py) and SCSam3/stage1_supply.py TAGS are append-only, so in-process parity needs no new code path.\n- M+ costs no extra code and gives dose-response.\n- About 120 lines plus tests is realistic for one day.\n- Chain timing, from the E9/E11 logs: the stage-1 half is about 6.9 h (train M about 3.05 h, M+ about 3.3 h, two 8-min decodes, eval/seedfail/visibility about 0.3 h). One passing arm adds a 1 h 42 min sweep, about 8.6 h in total. If both pass (P about 0.1-0.15) it is about 10.3 h, so run the second sweep separately.\n\nFixes before registering:\n1. Replace design 1's test (d) and design 0's 'pre/post loss columns identical' check. Nothing establishes that bf16 training is bit-deterministic, and log.csv records neither object subsets nor coins. Use:\n   - a host test that cut_rng [seed, step, 1] leaves memory_rng and the shared rng untouched (the tests/test_geomem_data.py:117 pattern);\n   - per-step logged cut, n_cut, cut_frac and the drawn object ids;\n   - an in-process forward-identity test with drop=None on the Blocks _pred_batch;\n   - a gate_mask test with -inf exactly on the dropped feature columns and never on pointer columns.\n2. Keep Z4 as an actual run: Fencing --arm geoset_pred_ft --gate reproj --xcl out against geoset_pred_ft_rep_x_e11 (final, r1, round1_conf, xcl_conf). MVSeed/inproc_check.py only compares existing _ip folders and does not run the modified code.\n3. Abort guards: any fold wall above 1.15 x the adopted fold (about 2,560 s), trainable_params other than 5,922,321, or decode not 17/17.\n4. Expect a modest effect. Raw trained arms have P(G1) about 0.3 against a retrain-noise half-width of about 0.0025. Report the visibility-recall and FP-split diagnostics (move train_vis.py to MVSeed/refloss/e12) as mechanism evidence, not as gates.\n\nWhat to drop or defer:\n- Drop design 0 arm B (hole spill, and the rng spec bug that can silently turn it into A).\n- Drop design 2 arm W_c (the loss-mass measurement already closes it).\n- Design 0 arm A is a reasonable alternative to M+ (a global rectangle more faithful to a narrower FOV), but it needs the extra mask-crop path and fixes to its rng and subset spec slips.\n- Keep design 2's composition shell (N0, M_c) out of this chain. It is an untrained two-checkpoint ensemble, and its +0.0011 was measured post hoc on a neighbouring rule. Adopting it would add a permanent second-model path to the in-process pipeline. If the user wants it, register it as its own decode-only experiment (about 16 min decode plus one sweep). Do that only after implementing compose with a two-scene cross-order byte check, two-checkpoint preflight and provenance, and U taken from all C0 masks."
+  },
+  {
+   "scores": [
+    {
+     "design": 0,
+     "arm": "A geoset_fov_ft (rectangle FOV crop: mask cropped + tokens outside R dropped, p=0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "About 150 lines on the verified gate_mask path (wrapper.py:81-94, decode_view:259-262, attn_patch:60-64). The planned Z/P9 check (20-step training reproduces the loss columns) cannot pass: training is nondeterministic (measured: two identical seed-0 runs diverge at step 2, 0.97702 vs 0.96150). Cropping the mask brings back a band of the 2a contradiction: inside R, the fuser (2 CXBlocks 7x7, about 6 cells) sees object features beyond R labelled 0. MIN_RETAIN 0.1 allows 90 % cuts, which risks presence drift. The point +0.002 depends on +0.015 invisible recall on the 605, which is 24 % of their 2.53M missed invisible px; E8's round 2, which added real information, moved it only +0.006. The 'outside' oracle the cut targets is only +0.0094 J over 664. Realistic: about 0 to +0.0015, P(G1) about 0.15. No zero-dose control, so a pass cannot be attributed."
+    },
+    {
+     "design": 0,
+     "arm": "B geoset_cut_ft (FOV crop or occluder hole, 1/2 each at p=0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 2,
+     "note": "Same code as A plus about 20 lines. The hole mode simulates 'no evidence', but at test time an occluded cell has occluder tokens that contradict it. The 'occluded' headroom on good seeds is large (+0.0225 J) but partly Pi3 depth noise on small objects, so the gain is doubtful. It halves A's FOV dose and adds a hole-filling bias, risking spill into depth-separated objects and twins in layered scenes (Breakfast, CoffeeMartini, Barn). B-A is unresolvable at a paired CI of about ±0.003."
+    },
+    {
+     "design": 1,
+     "arm": "C0 adopted baseline geoset_rep_x (not trained)",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "The correct adoption reference. It is not a mechanism control: a same-seed retrain does not reproduce it (measured divergence at step 2 vs the stored fold-0 log), and the 22 under-cover pairs were selected on its own failures (regression-to-mean bias in any arm-C0 contrast on the 22)."
+    },
+    {
+     "design": 1,
+     "arm": "M geoset_cut_ft (per-object axis-aligned half-plane token drop, mask and pointer whole, objects >= 20 cells, keep 0.3-0.7, p=0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 4,
+     "note": "The most faithful simulation: tokens are removed, not relabelled. The memory stays truthful and small objects are never cut. Leakage is at most about 6 cells, and the whole-object pointer is a mild mismatch. About 120 lines. Rng-identity test (d) needs coin, objects and camera logged explicitly, because n_mem/gated_frac depend on predictions. The point +0.0015 assumes 5-15 % recovery of the full reachable ceiling, but the mechanism mainly targets 'outside' (+0.0094 J); net of a 10 % invisible-FP growth (-0.0015 J) the realistic value is about +0.0005. Paired CI for a raw trained arm is about ±0.0025-0.003 (D1 raw vs e11 [-0.0038, +0.0012]), so P(G1) is about 0.15. G2 can fail from one presence flip (D1: CBABasketball -0.0138)."
+    },
+    {
+     "design": 1,
+     "arm": "M+ geoset_cutall_ft (same cut, p=1.0)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "The best single-dose arm for detecting the mechanism. Large objects never train with a whole reference; the predicted-memory recipe drifts (gated_frac and n_mem); G2 risk is higher. It is not a replication of M: it shares M's cut draws and differs in dose. Without a zero-dose retrain, a monotone M < M+ pattern still cannot be separated from retrain draws."
+    },
+    {
+     "design": 2,
+     "arm": "C0 adopted baseline geoset_rep_x",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "As in design 1. It is the base of every composed arm."
+    },
+    {
+     "design": 2,
+     "arm": "N0 geoset_rep_xc_dec = C0 (+) E9-D1 in INV&U (decode-only null composition)",
+     "feasibility": 3,
+     "expected_gain": 2,
+     "safety": 4,
+     "note": "Test-set design, the S2-R6 situation. It was measured on the same 664 keyframe pairs with three candidate nulls (D1 +0.0011 pass, D2 +0.0015 pass, r1 +0.0010 fail at -0.0000), and D1 was declared the null afterwards. Its P1/G1 is a post-diction, not a test. As a null it is wrong: D1 trains the decoder too (10.1M vs 5.9M params), so it is not a same-recipe retrain. It is a two-model ensemble that doubles stage-1 decode. A +0.001 keyframe fill with no ownership change transfers like E10 (ratio about 0.5 gives basic about +0.04-0.07; E10's +0.0025 gave +0.088 with CI [-0.034, +0.212]), so E8 adoption is unlikely. Add-only invariants make it safe."
+    },
+    {
+     "design": 2,
+     "arm": "M_c = C0 (+) geoset_mdrop_ft (random-angle half-plane token drop, objects >= 4 cells, kept 0.3-0.9, p=0.5) under the shell",
+     "feasibility": 2,
+     "expected_gain": 2,
+     "safety": 4,
+     "note": "Needs the most code: drop training plus compose path, raw, composed and r1 folders, and an in-process compose route. G1 pass is likely but mostly the shell's own +0.001, so the gate stops testing the mechanism. The mechanism margin M_c - N0 is confounded: decoder-trained D1 vs memory-attention-only M, one nondeterministic draw each. The stated '+0.224 on the 22' ceiling ignores the shell's U and 8-connected rules; measured reach is 42.8 % of missed px and a J&F oracle of at most +0.146 on the 22, before the INV restriction. The 4-cell minimum exposes small objects and twins in the raw model, though the shell confines the damage."
+    },
+    {
+     "design": 2,
+     "arm": "W_c = C0 (+) geoset_vwl_ft (region weight lambda=2 on reference-invisible target, both classes) under the shell",
+     "feasibility": 3,
+     "expected_gain": 1,
+     "safety": 4,
+     "note": "Its own prediction is about null. In-sample focal mass is already 76 % invisible (design-minimal lossmass_train: 0.726 to 0.883 per-object share at lambda=2), so it rebalances an existing signal. It needs reprojection inside data.load_sample (+35 ms/step) and moving reproj helpers into geomem/. A 2.9 h training to close hypothesis (i) is not worth it in E12."
+    }
+   ],
+   "refuted_claims": [
+    "Design 0 Z/P9 ('20-step Blocks geoset_pred_ft training reproduces the loss columns of the pre-change run') and design 2 test (a) ('train_one_step loss/grads byte-identical'): training is nondeterministic. Measured: geoset_pred_ft fold 0, seed 0, run twice with unchanged code (40 steps) gives identical step-1 loss 0.13690 but step 2 = 0.97702 vs 0.96150, and the stored adopted log has 0.96201. Any multi-step training loss or grad identity check fails whatever the code change; only rng-stream identity (logged object subsets, coin, memory camera) and single-step forward identity are checkable. (scratchpad/e12-judge-measure/retrain40.out, retrain40b.out)",
+    "'E9 D1 = recipe-level retrain / retrain-noise proxy' (design 1 risks, design 0 risks): D1 also trains the mask decoder (config trainable_params 10,112,758 vs 5,922,321; git 645b8b0/b418be0). Its ±0.0023 is the pair-sampling CI of one model pair, not retrain variance. Retrain variance is unmeasured but nonzero.",
+    "Design 2 'upper bound of ANY composed arm: +0.041 J over 664 / +0.030 / +0.224 on the 22': this ignores the shell's own U (unclaimed) and 8-connected continuation rules. Measured (host, e12-judge-measure/shell_reach.py): only 42.8 % of the 22 pairs' missed px (61.2 % over 664, 62.9 % on the 605) are in U and connected. Adding ALL missed px there gives J&F +0.146 on the 22, +0.0217 on the 605, +0.0292 on 664, before the INV restriction.",
+    "Design 2 'N0 is the required control; the mechanism claim rests on M_c - N0': N0's second model is decoder-trained D1, chosen after three nulls were scored on the test keyframe, so M_c - N0 confounds token dropout with decoder training and with one nondeterministic training draw.",
+    "Design 0 'a realistic +0.015 recall_inv on the 605 with unchanged precision (~+0.003 on 664)': +0.015 of their 41.0M invisible GT px is 615k px, 24 % of their 2.53M missed invisible px. E8's round 2, which added real information, moved good-seed invisible recall only +0.006 (0.872 to 0.878). The point estimate is about 2-3x optimistic.",
+    "Implicit in designs 0 and 1 (gain driven by the 22 plus the 605 invisible recall): the class a FOV/half-plane cut simulates ('outside') has an oracle of only +0.0094 J over 664 (+0.0052 on the 605) of the +0.041 J invisible oracle (oracle.py on keyframe_vis.json). Most good-seed headroom is 'occluded' (+0.0225 J), partly small-object Pi3 depth noise."
+   ],
+   "blocking_issues": [
+    "No design has a zero-dose retrained control. Training is nondeterministic (measured divergence at step 2), and the 22 under-cover pairs are selected on C0's own failures (regression to the mean), so no arm-C0 difference, and especially no under-22 'mechanism signature', can be attributed to token dropout. Add C0' = the new code path with p_cut = 0, same seed and recipe, not adoptable. Contrast arms with it.",
+    "The composition shell (design 2: N0, M_c, W_c) was designed and measured on the test keyframe (664 pairs, three nulls, null chosen afterwards), so its G1 pass is a post-diction. Registering it as adoptable in E12 is test-set design like S2-R6. It also hides the mechanism: any second model passes G1 under it. At most it can be a non-adoptable diagnostic lens with a same-recipe null (C0 composed with C0'). Any adoptable shell needs its own registration with the S2-R6 disclosure, G1 declared non-evidential, and stage 2 as the only test.",
+    "Training byte/loss identity Z checks (design 0 multi-step loss columns; design 2 grads) are infeasible because training is nondeterministic. As written, the z4/Z4 stage would abort the chain. Replace them with logged rng-stream identity (object subset, extra-memory coin, memory camera, cut draws per step) plus single-step forward-loss identity, and keep the decode byte-identity check (drop=None)."
+   ],
+   "recommendation": "Register E12 as a mechanism test, not a headline attempt. Use design 1's cut: per-object axis-aligned half-plane token removal on the 72x72 reference grid, mask and pointer kept whole, objects >= 20 cells, keep 0.3-0.7, applied to the predicted-memory decode and the target decode, nothing at inference. Train three arms through one code path: C0' (p_cut 0, zero-dose retrain control, not adoptable), M (p 0.5) and M+ (p 1.0). If only two trainings fit, use C0' + M+. Budget about 8.7 h of training plus 3 x 8 min decode, one GPU job at a time.\n\nAdoption stays as registered: G1/G2 against C0, then the E8 stage-2 rule. Also require the arm's point Δ against C0' to be > 0, so a lucky retrain draw is not adopted. Report C0' - C0 as the measured retrain draw; it calibrates both G1 and G2's false-fail rate (D1 failed G2 from one lost object).\n\nPre-register the mechanism verdict on low-noise, pixel-level contrasts arm - C0' with the pair-to-camera-to-scene bootstrap:\n- round-1 and final 'outside'-class invisible-GT recall (pixel-weighted and pair-mean, pairs where both masks are present) on the 605 and 664\n- invisible-FP px on the 605\n- pred/GT px\n- dose monotonicity C0' <= M <= M+\n\nCount presence and gate flips separately and keep them out of the mechanism read. Report the under-22 J&F, but do not use it as the signature: one flip moves the 22-pair mean by about ±0.02.\n\nRegister realistic predictions: 664 ΔJ&F about 0 to +0.0015 (point about +0.0007), P(G1) about 0.15, P(adoption) under 0.1. The 'outside' ceiling is +0.0094 J. The raw trained-arm CI half-width is about 0.0025-0.003, so the 664-pair gate cannot resolve these arms on J&F alone; the pixel contrasts against C0' can.\n\nLeave out of E12:\n- the composition shell as an adoptable arm (test-designed post-diction; D1 is not a same-recipe null; reach on the 22 at most +0.146)\n- W_c, since in-sample focal mass is already 76 % invisible\n- design 0's mask crop (reintroduces a 2a band) and hole mode (spill-prone, targets noisy 'occluded' pixels)\n\nReplace all training identity checks with rng-stream logging."
+  },
+  {
+   "scores": [
+    {
+     "design": 0,
+     "arm": "A geoset_fov_ft (global FOV rectangle crop of mask + token drop, p 0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "Gate path verified (GPU probe: per-object per-cell -inf on view 0 changes only that object; pointer-only rows finite). Plumbing correct (SET2_ARMS + PRED_MEM_ARMS), drop passed into encode_reference reaches both reads (train.py:224, :232; with_view keeps views[0], wrapper.py:52-53). Spec bugs: aug_rng constructed twice yet called 'second draw of the same generator'; subset() slices drop[:, i] (wrong axis, should be drop[idx]); Z4's '20-step training reproduces loss columns' is an abort criterion that GPU nondeterminism can trip (grads differ run-to-run). It also CROPS the GT mask (m' = m AND R_full), so the 7x7x2 CXBlock fuser (model_builder.py:349-357) writes 'object features = background' into kept tokens within ~6 cells of the cut and the pointer becomes a part descriptor: a bounded form of the 2a contradiction the design rejects. Objects entirely inside R (r_b = 1) only lose background tokens, so the effective completion dose is lower than the 44 % dropped area suggests. Cost: measured +0.075 s on a 1-memory step with a materialised mask, so about +4 % per fold, within the 1.15x watch."
+    },
+    {
+     "design": 0,
+     "arm": "B geoset_cut_ft (FOV crop or occluder HOLE, 1/2 each at p 0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 2,
+     "note": "Same code path and same spec bugs as A. The occluded class holds the larger J oracle over 664 (+0.0283 vs outside +0.0094, oracle.py reproduced). But HOLE is a poor simulation: at test time, occluded target cells face existing tokens that show the occluder under another label, not missing tokens. The interior mask crop also puts 'background' labels inside the object's own silhouette band, the strongest 2a-type contradiction of any arm. Hole-filling across depth-separated objects in dense label maps is a real spill risk."
+    },
+    {
+     "design": 1,
+     "arm": "C0 geoset_rep_x (baseline, not trained)",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "Baseline. Numbers verified: J&F 0.9148 re-scored, invisible recall 0.913 / visible 0.971, under22 0.611 (vis_report.txt:188-195)."
+    },
+    {
+     "design": 1,
+     "arm": "M geoset_cut_ft (per-object half-plane token drop, whole mask and target, p 0.5)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "Most correct as written. CUT_ARMS added to BOTH SET2_ARMS and PRED_MEM_ARMS (arms.py:7-8). The drop is attached to ref.views[0] right after encode_reference, so both the memory-camera prediction (train.py:224) and the target decode (:232) see it in all 4 layers. Token index y*72+x matches _pack_view's flatten (wrapper.py:203). The per-object quantile cut guarantees the cut intersects the object, and MIN_KEPT 6 is meaningful (probe: pointer-only gives empty masks). Weak spots: test (d) 'rng identity via 20-step logs' is confounded because n_mem=2 also needs view.conf.any() (train.py:229), which depends on the model, and log.csv has no object/coin/camera columns, so these must be logged explicitly. The kept-fraction test bound [0.3-1/extent, 0.7+1/extent] can fail for irregular shapes (ties per column). The whole-object pointer and the ~6-cell fuser peek leak dropped-side information (acknowledged). Cost estimate (+8 %) is consistent with the measured mask cost."
+    },
+    {
+     "design": 1,
+     "arm": "M+ geoset_cutall_ft (same cut, p 1.0, dose arm)",
+     "feasibility": 4,
+     "expected_gain": 2,
+     "safety": 2,
+     "note": "Same code as M. The claim that its cut parameters equal M's on M's cut steps holds: the coin is drawn first from cut_rng in both arms, and object subsets come from the untouched shared rng. No clean whole-reference steps for objects of 20 cells or more is a larger train/test shift. Expect more n_mem drop and IoU-head drift. Cost about +8 % (measured +0.075 s per 1-memory masked step)."
+    },
+    {
+     "design": 2,
+     "arm": "C0 geoset_rep_x (baseline)",
+     "feasibility": 5,
+     "expected_gain": 1,
+     "safety": 5,
+     "note": "Baseline; the re-score of 0.9148 reproduced."
+    },
+    {
+     "design": 2,
+     "arm": "N0 geoset_rep_xc_dec (decode-only C0 + E9-D1 add-only composition)",
+     "feasibility": 3,
+     "expected_gain": 3,
+     "safety": 4,
+     "note": "Numbers reproduced: null_report.txt regenerates byte-identically from null_compose.json, and an independent numpy re-implementation matches all 664 rows x 3 nulls exactly; D1 composed +0.0011 [+0.0005, +0.0018]. With the REGISTERED U (all C0 PNGs incl. the 13 hallucinated masks, which null_compose.py:100 omitted) D1 is unchanged; D2 becomes +0.0014, R1 +0.0008 [-0.0002, +0.0018]. Not measured: the registered E is X1-resolved D1 (the folder used is non-xcl). The Z2 invariant 'no overlapping added pixels' fails in the measurement (7,743 px for D1) and is not guaranteed by X1, which keeps exempt masks whole (run.py:104-108). Implementation needs two full decodes per scene in decode_scene with restore_init in between, plus the MemorySink path. reproj_overlap must return its valid map, since project_reference_masks is not called on the pred path (run.py:166-181, 474). Add-only structure is genuinely protective."
+    },
+    {
+     "design": 2,
+     "arm": "M_c geoset_rep_xc_mdrop (global half-plane token drop, composed)",
+     "feasibility": 2,
+     "expected_gain": 3,
+     "safety": 3,
+     "note": "BLOCKING as written: 'SET2_ARMS += DROP_ARMS (so PRED_MEM_ARMS ... follow)' is false. PRED_MEM_ARMS = ('geoset_pred_ft',) + DEC_ARMS (arms.py:8), so arm_flags gives extra_mem_pred False (train.py:60) and main() loads third_camera with GT masks (train.py:329-334): the geoset_only_ft recipe. Test (a) uses _pred_batch, which builds a predicted-memory batch directly, and train_one_step branches on batch keys (train.py:218-222), so the bug would pass the tests. The dose spec contradicts itself: cutting at the q-quantile with q ~ U[0.2, 0.6] and dropping s > cut removes 40-80 % of cells, not the stated 20-60 %. The in-process 'grads byte-identical' test fails even for the unchanged arm (probe). 'No extra compute' is wrong: about +4 %. The M_c - N0 contrast is confounded because D1 also trained the decoder. The shell would still bound output damage."
+    },
+    {
+     "design": 2,
+     "arm": "W_c geoset_rep_xc_vwl (invisible-region loss weight lambda 2, composed)",
+     "feasibility": 2,
+     "expected_gain": 2,
+     "safety": 3,
+     "note": "Same PRED_MEM_ARMS plumbing bug (would train with GT third-camera memory). The loss change itself is simple, and the in-loop vis costs about 35 ms per step (measured by the analyst). Loss-mass numbers verified: in-sample invisible focal share 0.761, rising to 0.837 / 0.883 for lambda 1 / 2. That re-weights an existing signal, so the expected outcome is about N0, and the tie rule then adopts N0. 'lambda = 1 gives bytes identical' holds for the loss only, not for gradients."
+    }
+   ],
+   "refuted_claims": [
+    "Design 2 (M_c, W_c code_changes): 'SET2_ARMS += DROP_ARMS (so PRED_MEM_ARMS / NO_EMBED_ARMS / ... follow)'. PRED_MEM_ARMS = ('geoset_pred_ft',) + DEC_ARMS (stage1/geomem/arms.py:8) does not derive from SET2_ARMS. train.arm_flags sets extra_mem_pred = b in PRED_MEM_ARMS + FUSE_ARMS (train.py:60), and main() then uses third_camera + extra_mem_gt=True (train.py:329-334), i.e. the geoset_only_ft GT-memory recipe.",
+    "Design 2 M_c rule: 'cut at the q-quantile of s with q ~ U[0.2,0.6] -> drop_cells = {i : s_i > cut} (20-60 % of ALL reference cells)'. Cells above the q-quantile are 1-q = 40-80 % of the grid; the stated range and the formula disagree, so the registered dose is undefined.",
+    "Design 2 N0: 'turns three existing mechanism-free models into small G1-passing gains'. null_report.txt marks the round-1 composition 'G1 fail' (+0.0010 [-0.0000, +0.0021]); with the registered U it is +0.0008 [-0.0002, +0.0018]. Only D1 and D2 pass.",
+    "Design 2 N0 invariant 'no overlap added between masks (U is disjoint from every C0 mask; E is X1-resolved)'. Measured overlap of added pixels between scored objects is 7,743 px (D1), 45,557 (D2) and 3,369 (R1). X1 keeps exempt masks whole (run.py:104-108), so X1-resolved E does not guarantee disjoint additions either.",
+    "Design 2 N0 rule vs its evidence: the registered U is 'claimed by NO C0 mask (hallucinated masks included)', but null_compose.py:100 built U from the scored rows' objects only. The C0 folder holds 13 extra PNGs (the hallucinations) outside seedfail rows. The effect is small: D1 unchanged at +0.0011 [+0.0005, +0.0018], D2 +0.0015 becomes +0.0014.",
+    "Design 2: 'vis is already computed per target camera for the reproj gate ... keep vis from project_reference_masks in round1[c] at the overlap step'. The pred path calls reproj_overlap (run.py:474), which computes valid&valid_full internally but returns only (overlap, n) (run.py:166-181), and project_reference_masks is not called there. The cost is near zero, but it needs a code change.",
+    "Byte-identical TRAINING when the cut/drop is off (Design 0: 'geoset_pred_ft must reproduce byte-for-byte with the cut disabled', Z4 '20-step Blocks training reproduces loss columns of the pre-change run' as an abort criterion, 'steps with aug.random() >= P_AUG are byte-identical to geoset_pred_ft steps'; Design 2 test (a) 'loss/grads byte-identical'). GPU probe: two identical train_one_step calls on the same batch and weights give bitwise-equal loss terms but different gradients (107/108 tensors, max |diff| 4.9e-4). No use_deterministic_algorithms anywhere in stage1.",
+    "Analyst/design citation 'byte-identity / rng-stream identity test pattern in tests_torch/test_train_smoke.py:168-223'. Those lines are the set2 smoke test (flags, n_mem in {1,2}, gated_frac range), _pred_batch, and the all-gated and no-grad tests; none is an identity test. The actual rng-stream test is tests/test_geomem_data.py:117-125.",
+    "Design 1 test (d): rng identity read from 20-step logs. n_mem = 2 also requires view.conf.any() (train.py:229), which depends on model predictions, and log.csv has no object/coin/memory-camera columns. Log-level comparison therefore cannot isolate the rng streams.",
+    "Design 0: 'Tokens are REMOVED rather than relabelled'. The arm also crops the GT mask (m'_b = m_b AND R_full) before encode_reference. SAM 3's fuser (2 CXBlocks, 7x7 depthwise; model_builder.py:349-357; memory.py x = pix_feat_proj + mask) therefore stores 'object features = background' in kept tokens within about 6 cells of the cut. The pointer is recomputed from the cropped mask (sam3_tracker_base.py:409-424).",
+    "Design 2 cost: 'no extra compute; the per-object mask ... already paid in today's gated steps'. Today the [B,1,Lq,ΣL] mask is built only on two-memory steps with a gated object (about 34 % of steps; those average 1.02 s vs 0.79 s ungated in fold0-4 log.csv). The probe measured +0.075 s (0.407 to 0.482 s, +18 %) on a 1-memory step when the mask is materialised. Design 1's '~20 % conf-gated steps today' is also low (about 34 %).",
+    "Design 0 ceiling 'reachable part from the 22 is <= +0.0045' and Design 1 '+0.134 on the 22 without nodepth'. Both scale by pixel share. The per-class J oracle (oracle.py on keyframe_vis.json) gives nodepth only +0.021 of +0.224 J on the 22 (the Dog tree is one pair), so the non-nodepth ceiling is about +0.20 J on the 22 (about +0.0066 on 664). This understates the ceiling rather than overstating it.",
+    "Literature-prior / Design 0 line citations attn_patch.py:245-286, :261, :279-284 and bias.py:70-79 do not exist: attn_patch.py has 146 lines (SDPA mask at 60-64, RoPE pointer exclusion at 41) and bias.py has 46 lines (GeoBias.forward 34-43). The described behaviour is correct."
+   ],
+   "blocking_issues": [
+    "Design 2 (M_c and W_c): the new arms must also be added to PRED_MEM_ARMS (arms.py:8). As written they would silently train the geoset_only_ft GT-memory recipe (train.py:60, 329-334). The registered tests would not catch it, because _pred_batch bypasses arm_flags and train_one_step branches on batch keys (train.py:218-222). Add a config.json check extra_mem_pred == true and gated_frac non-empty on two-memory steps.",
+    "Design 2 M_c dose spec contradicts itself: q-quantile with s > cut drops 40-80 %, but the stated range is 20-60 %. It must be fixed before registration, because the dose cannot be re-picked after results.",
+    "Design 2 N0 / composed arms: the Z2 invariant 'no overlapping added pixels' already fails in the design-time null (7,743 px for D1) and is not guaranteed by X1 (exempt masks stay whole). Before registration, either add a contested-pixel rule (e.g. add only where exactly one object's E claims the pixel) or drop the invariant. Also register U explicitly as all C0 PNGs, which is what the rule text says but not what was measured.",
+    "All designs: any training-side 'byte-identical' check (Design 0 Z4 20-step loss-column identity as a chain-abort criterion, Design 2 test (a) grads identity) is unattainable. Backward on this GPU is nondeterministic (probe: identical calls give equal loss, different grads). Replace it with: step-1 loss/terms bitwise identity in-process; explicit logging of object ids, memory coin, memory camera and cut parameters for rng-stream identity; the decode-side Z4 Fencing byte identity (plausible: a materialised zero gate gave logits bitwise equal to the None path)."
+   ],
+   "recommendation": "Pre-register design 1 (M, with M+ as the dose arm), with design-0 and design-2 elements only where they survive verification.\n\n1. **Core claim is sound.** A per-object, per-cell memory-token drop works through the existing additive attention-mask path, for both the reference view and the predicted view. GPU probe: only the dropped object's logits change, the other 15 stay bitwise identical, and pointer-only rows stay finite. Attached to ref.views[0] right after encode_reference, the drop reaches both reads in a training step (train.py:224 and :232) in all 4 memory-attention layers. The decode path stays byte-identical when off (drop=None). Design 1 is the only one whose plumbing (SET2_ARMS + PRED_MEM_ARMS) and cut rule (relative to each object's own cells, so the cut always hits the object) are correct as written.\n\n2. **Before registering:**\n   - (a) Replace every training-side byte-identity check with three things: step-1 loss identity; explicit rng-stream logging (object ids, coin, memory camera, cut parameters) instead of comparing n_mem; and the decode-side Z4 Fencing byte check. Backward is nondeterministic on this GPU, so the training checks as written can abort the chain for nothing.\n   - (b) Do not adopt design 0's mask crop. Keep the GT mask whole and drop tokens only. The crop writes background labels into tokens next to the cut through the 7x7x2 fuser, a bounded form of the 2a contradiction design 0 itself rejects. If design 0's rectangle is kept, count as 'cut' only objects that actually lose object cells (r_b < 1).\n   - (c) Watch values are fine: the measured mask cost is +0.075 s per 1-memory step, so about +4 % per fold for M and +8 % for M+.\n\n3. **Design 2's composition shell is real** (+0.0011 [+0.0005, +0.0018] for D1, reproduced exactly by an independent re-implementation, and robust to the U correction). It is a decode-only ensemble, outside E12's training goal. If the user wants it, register it as its own decode-only arm. That needs three fixes: U = all C0 PNGs; a rule for contested additions (or drop the overlap invariant); and a decode of D1 with xcl, which has not been measured yet. Its M_c/W_c trained arms are not usable as written: the PRED_MEM_ARMS bug, the 40-80 % vs 20-60 % dose contradiction, and an M_c − N0 contrast confounded by D1's decoder training.\n\n4. **Expected gain is small for every trained arm.** Point estimates are about +0.0015 to +0.0025 on the 664-pair mean, with P(G1) around 0.3. A retrained control would be needed to tell the effect apart from retrain noise (E9 D1 CI half-width about 0.0023).\n\nEvidence: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/judge-e12-correctness/{gpu_probe.py, gpu_probe.out, host_compose_check.py, host_compose_check.out, null_report_rerun.txt}."
+  }
+ ],
+ "final": {
+  "arms": [
+   {
+    "name": "C0: adopted baseline, preset geoset_rep_x (not trained in E12)",
+    "tag": "geoset_rep_x",
+    "mechanism": "Arm geoset_pred_ft: memory attention plus GeoBias, 5,922,321 trainable parameters. Trained in the 2D repo at git 2662a84 (5 scene folds, seed 0). Decoded with --gate reproj --xcl out. Keyframe (664 pairs): J&F 0.9148. Recall of GT pixels the reference camera cannot see ('invisible GT'), pixel-weighted: 0.913 (visible 0.971; outside 0.918 / occluded 0.930 / nodepth 0.852). On the 605 good seeds 0.938; on the 22 under-cover pairs 0.611, with pred/GT 0.750 on those 22. Headline SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs: basic 92.626 / complete 87.954.",
+    "rule": "Unchanged. It is the reference for G1 and G2, and the headline for stage 2. Folders stage1/Data/<scene>/Result/geoset_pred_ft_rep_x_e11 and geoset_pred_ft_r1_x_e11 are re-scored into MVSeed/runs/e12/kf_geoset_pred_ft_rep_x_e11.json with the same mvseg2d.evaluate call.",
+    "code_changes": [
+     "None. After the E12 change the adopted path must still decode byte-identically (Z4: CLI Fencing --arm geoset_pred_ft --gate reproj --xcl out against the _x_e11 folders, including round1_conf.json and xcl_conf.json)."
+    ],
+    "cost": "0 GPU. Re-score takes 17 s; the visibility diagnostic on the final and r1 folders takes about 1 min of GPU.",
+    "expected_gain": "0 by definition."
+   },
+   {
+    "name": "C0': zero-dose retrained control, arm geoset_cut0_ft (not adoptable)",
+    "tag": "none. No stage-1 preset or TAG, so it can never reach stage 2. Result folders geoset_cut0_ft_rep_x_e12 and geoset_cut0_ft_r1_x_e12.",
+    "mechanism": "The E12 code path with cut probability 0, i.e. the geoset_pred_ft recipe retrained in this repo. Why it is needed:\n- Training is not reproducible. Step-1 loss is identical (0.13690), but step 2 gives 0.97702 vs 0.96150 vs the stored 0.96201. Backward is nondeterministic: 107 of 108 gradient tensors differ, max 4.9e-4.\n- The adopted checkpoint comes from another repo (2D-repo 2662a84).\n- The 22 under-cover pairs were selected on the baseline's own failures, so any arm-minus-C0 difference there carries a regression-to-the-mean term.\nC0' - C0 measures one retrain draw plus port drift. M+ - C0' is the mechanism contrast, free of selection bias and with matched retraining.",
+    "rule": "Constants:\n- CUT_PROB = 0.0. cut_rng is never created, no drop is attached, and the batch is identical to geoset_pred_ft's.\n- Recipe identical to geoset_pred_ft: focal 20 / dice 1 / IoU 1 / presence 1; alpha 0.25, gamma 2; lr GeoBias 1e-3 / memory attention 1e-5; wd 0.01; cosine to 0; clip 1.0; 3 epochs; stride 2; seed 0; MAX_OBJECTS 16; p = 0.5 predicted second memory via memory_rng(seed, step); tau 0.7; decoder frozen; 5 folds.\n\nDecode: scripts/run_geomem.sh all --arm geoset_cut0_ft --gate reproj --xcl out --out geoset_cut0_ft_rep_x_e12 --r1-out geoset_cut0_ft_r1_x_e12 --overwrite.\n\nNever adoptable, even if it passes G1/G2 against C0. Never sent to stage 2.",
+    "code_changes": [
+     "Shared with M+: 'geoset_cut0_ft' in arms.CUT_ARMS with CUT_PROB 0.0 (see M+). No preset or TAG."
+    ],
+    "cost": "Training about 2.84 h, the same as the adopted 10,207 s: with cut_prob 0 no extra attention mask is built. Decode about 8 min (C0 took 465 s).",
+    "expected_gain": "ΔJ&F vs C0 about 0 (range [-0.003, +0.003]). P(passes G1 by chance) about 0.1. P(fails G2) about 0.3: E9 D1 failed G2 from one object, CBABasketball -0.0138."
+   },
+   {
+    "name": "M+: per-object half-plane memory-token dropout on every step, arm geoset_cutall_ft (the only adoptable trained arm)",
+    "tag": "geoset_cutall_rep_x",
+    "mechanism": "Simulates a narrower reference camera for each object.\n\nHow: all reference-view memory tokens in an axis-aligned half-plane of the 72x72 grid that cuts through the object are removed from the memory cross-attention. Removal is an additive -inf through MemorySet.gate_mask, the path the predicted-memory confidence gate already uses (SDPA mask, attn_patch.py:60-64). The GT memory mask, the 4 pointer tokens and the target GT stay whole.\n\nEffect: target cells whose 3D counterpart lies in the dropped half-plane have no matching key, as an out-of-FOV cell does at test time. The unchanged whole-GT loss then teaches continuation in both directions, because dropped background tokens must still be predicted as background.\n\nWhy tokens and not a mask crop: the memory encoder fuses features and label (x = pix_feat_proj + mask; fuser 2 CXBlocks 7x7). A cropped mask would write 'object features = background' into kept tokens near the cut.\n\nWhy p = 1.0: it is the maximum dose of the registered distribution. A null here closes the mechanism with no 'dose too low' escape, and together with C0' it gives a clean zero-vs-maximum dose contrast.\n\nTarget classes: the outside class (J oracle +0.0094 over 664) faithfully; occlusion only approximately; no-depth pixels not at all.\n\nGPU probe: a per-object, per-cell -inf changes only that object's logits (the other 15 stay bitwise identical), pointer-only rows stay finite, and a materialised zero gate gives logits bitwise equal to the None path.",
+    "rule": "Constants (module level, not CLI knobs): CUT_PROB 1.0; CUT_KEEP (0.3, 0.7); CUT_MIN_CELLS 20; CUT_MIN_KEPT 6 (asserted, implied by 0.3 x 20); sides {left, right, top, bottom}.\n\nPer optimiser step (the step counter memory_rng uses), after load_sample and before train_one_step:\n1. Create ONE generator per step: g = cut_rng(seed, step) = np.random.default_rng([seed, step, 1]). It is distinct from memory_rng(seed, step) = default_rng([seed, step]). The shared rng (object subsets, the p = 0.5 memory coin) is never touched.\n2. u = g.random(); cut iff u < CUT_PROB. The coin is kept so a later p < 1 arm shares the cut parameters.\n3. Object cells: C_b = sam3_io.object_cells(ref_masks) = avg_pool2d(mask_inputs(ref_masks, 1008), 14)[:, 0] >= 0.5 on the 72x72 grid. Token index l = y*72 + x, the _pack_view flatten order.\n4. For each object b in batch order with n_b = |C_b| >= 20:\n   - side = g.integers(4)\n   - f = g.uniform(0.3, 0.7), the target kept fraction\n   - k = floor((1-f) n_b)\n   - coordinate a = x (left), -x (right), y (top), -y (bottom)\n   - a_c = sorted(a over C_b)[k]\n   - drop[b, l] = True for EVERY grid cell, object or background, with a(l) < a_c.\n5. Ties at the cut line are kept, so the realised kept fraction lies in [f, f + max_line_b / n_b]. If no object cell is dropped, the object counts as not cut. Objects under 20 cells draw nothing and are never cut.\n6. MemoryView.drop ([B, 5184] bool) is set on ref.views[0] right after encode_reference (train.py:207-208). Both reads in the step therefore see it, in all memory-attention layers: the no-grad memory-camera prediction (train.py:223-225) and the target decode (train.py:232-233).\n7. The predicted second memory view carries no drop; its tau 0.7 confidence gate is unchanged. Pointer columns are never dropped. Recipe identical to C0'. Nothing at inference (drop = None).\n\nLogged per step: cut, n_cut, cut_frac (mean realised dropped fraction of object cells), objs, mem_coin, mem_cam.\n\nDecode: scripts/run_geomem.sh all --arm geoset_cutall_ft --gate reproj --xcl out --out geoset_cutall_ft_rep_x_e12 --r1-out geoset_cutall_ft_r1_x_e12 --overwrite.\n\nMeasured on the training reference label maps (host):\n- 61.3 % of object rows are eligible (15,220 / 24,834), holding 98.3 % of reference GT pixels.\n- 100 % of samples have at least one eligible object.\n- Realised dropped fraction of object cells: mean 0.442 (p10/50/90 0.28/0.44/0.62; nominal 0.50, ties lower it).\n- Dropped share of the whole grid: mean 0.49 (p10/90 0.13/0.86).\n- No-cut draws: 0.6 %.",
+    "code_changes": [
+     "stage1/geomem/arms.py: CUT_ARMS = ('geoset_cut0_ft', 'geoset_cutall_ft'); SET2_ARMS += CUT_ARMS. PRED_MEM_ARMS += CUT_ARMS must be added explicitly, because PRED_MEM_ARMS does not derive from SET2_ARMS. Without it, arm_flags gives extra_mem_pred False and main() trains with GT third-camera memory. Also CUT_PROB = {'geoset_cut0_ft': 0.0, 'geoset_cutall_ft': 1.0}. NO_EMBED, train.ARMS/BIAS/SET/FT, wrapper.BIAS/FT and run.ARMS/SET_ARMS follow through SET2_ARMS.",
+     "stage1/geomem/data.py: cut_rng(seed, step) next to memory_rng; a pure numpy fov_cut(cells [B,72,72] bool, g, keep, min_cells, min_kept) -> (drop [B,5184] bool, records of side, f, n, dropped).",
+     "stage1/geomem/sam3_io.py: object_cells(masks_bool) = F.avg_pool2d(mask_inputs(masks_bool, 1008), 14)[:, 0] >= 0.5, the same nearest resize the tracker sees.",
+     "stage1/geomem/wrapper.py, MemoryView: new field drop: torch.Tensor = None ([B, 5184] bool).",
+     "stage1/geomem/wrapper.py, MemorySet.subset: slices drop[i] on the OBJECT axis (axis 0).",
+     "stage1/geomem/wrapper.py, MemorySet.gate_mask: builds the [B,1,1,ΣL] mask iff some view is conf-gated OR some view's drop has a True; adds -inf on columns i*L + l where drop[b, l]; pointer columns untouched; still returns None (the literal current path) when nothing is gated and no drop is set. _gated is unchanged, so the 'reference never conf-gated' assert stands.",
+     "stage1/geomem/train.py arm_flags: adds cut_prob, cut_keep and cut_min_cells, so they land in config.json.",
+     "stage1/geomem/train.py main(): after load_sample, if cut_prob > 0, create one cut_rng per step, draw the coin, then batch['ref_drop'] = fov_cut(object_cells(batch['ref_masks'])). train_one_step: right after encode_reference, if 'ref_drop' in batch, ref = MemorySet([replace(ref.views[0], drop=batch['ref_drop'])]).",
+     "stage1/geomem/train.py: LOG_COLUMNS += ['objs', 'mem_coin', 'mem_cam', 'cut', 'n_cut', 'cut_frac'] for all arms; the stream columns make rng identity checkable.",
+     "stage1/methods/geomem/stage1.py PRESETS: append 'geoset_cutall_rep_x': dict(arm='geoset_cutall_ft', gate='reproj', xcl='out').",
+     "SCSam3/stage1_supply.py TAGS and MVSeed/build_geoset_seeds.py TAGS: append 'geoset_cutall_rep_x' in the same order.",
+     "stage1/tests/test_zoom.py:154: update the pinned last-presets assertion, which currently checks list(S.PRESETS)[-4:].",
+     "Analysis scripts in MVSeed/refloss/e12/: cut_stats.py and kf_elig.py (the host cut measurements behind the watch values); keyframe_vis.py (from scratchpad visibility-signal/train_vis.py keyframe part; folders as arguments, plus pairwise added/removed pixel counts by visibility class); oracle.py.",
+     "MVSeed/e12_judge.py (from e11_judge.py) and MVSeed/run_e12.sh (run_e11.sh plus run_e9.sh's train stage); see measurement.",
+     "docs/stage1-E12-prereg.md committed before implementation; docs/ROADMAP.md and Notion 구현 계획 updated at registration and at the result."
+    ],
+    "cost": "Training about 3.1-3.3 h:\n- The attention mask is now built on every step. Today only 34.8 % of steps build it (4,679 / 13,464).\n- Measured cost of building it: +0.075 s on a 1-memory step (0.407 to 0.482 s), about +0.24 s on 2-memory steps (1.03 vs 0.79 s).\n- Net about +9-15 % over 2.84 h.\nGPU peak about 23.5 GB (probe), on a 48 GB card. Decode about 8 min. Stage 2 only if G1-G3 pass: 1 h 43 min plus 1 min scoring.\nImplementation: about 150 lines of code, about 250 lines of tests, plus judge, chain and visibility-script copies; about 1 day.",
+    "expected_gain": "Ceiling. J oracle on the adopted seeds (oracle.py on keyframe_vis.json), adding ALL missed reference-invisible GT:\n- +0.0410 J over 664 (outside +0.0094, occluded +0.0283, nodepth +0.0034)\n- +0.0303 on the 605 good seeds\n- +0.2241 on the 22 (outside +0.0901)\nThe cut simulates outside faithfully, occlusion only approximately (test-time occluded cells see occluder tokens), and no-depth not at all. Only eligible objects are trained with cuts: 437/664 keyframe pairs (407/605 good, 15/22 under-cover).\n\nRealistic:\n- Recover 10-20 % of the outside misses: +0.0009 to +0.0019 J.\n- Recover at most 5 % of the occluded misses: at most +0.0014 J.\n- Minus invisible-FP growth: each +25 % of today's 1.51 M invisible FP pixels costs -0.0038 J over 664 (risk grid).\n- Precedent: E8's round 2, which added real information, moved good-seed invisible recall only 0.872 to 0.878.\n\nRegistered:\n- ΔJ&F(M+ - C0) on 664: point +0.0010, 80 % range [-0.004, +0.005]. The CI half-width of a trained arm is about 0.0025-0.003.\n- P(G1) about 0.2; P(G1 and G2 and G3 and E8) < 0.1.\n- Under-22 ΔJ&F vs C0': +0.02, range [-0.02, +0.06].\n- Above +0.012 is implausible and triggers a leak check; above +0.025 is treated as a bug."
+   }
+  ],
+  "measurement": "**Chain.** MVSeed/run_e12.sh, built from run_e11.sh with run_e9.sh's train stage.\n- Stage-1 half: STAGES = 'z4 train zt decode eval vis judge1'. Then 'sweep score judge2'.\n- ARMS = 'geoset_cutall_ft geoset_cut0_ft'. M+ trains first, so zt stops a broken cut path after M+ fold 0.\n- One GPU job at a time. Logs in MVSeed/logs/e12_*.log, outputs in MVSeed/runs/e12/. E11 folders untouched; all new results go to *_e12 folders.\n\n**z4** (before any training).\n- Decode Fencing with --arm geoset_pred_ft --gate reproj --xcl out into z4_check / z4_check_r1.\n- PNG bytes must be identical to geoset_pred_ft_rep_x_e11 / geoset_pred_ft_r1_x_e11, and round1_conf.json and xcl_conf.json must be cmp-identical. Abort otherwise.\n\n**train.** scripts/run_geomem_train.sh <arm> <k> for k = 0-4; skip a fold when both ckpt.pt and config.json exist.\n\n**zt** (after every fold).\n- config.json:\n  - trainable_params == 5,922,321\n  - cut_prob 1.0 / 0.0\n  - extra_mem_pred true; extra_mem_prob 0.5; train_decoder false\n  - epochs 3; frame_stride 2; seed 0\n  - steps 2574/2574/2772/2772/2772\n  - git = chain HEAD\n- log.csv watch values (see watch_values).\n- C0': step-1 loss equals the stored adopted fold's step 1 (0.13690 folds 0-1, 0.21118 folds 2-4).\n- For every fold present in both arms, the objs, mem_coin and mem_cam columns are identical at every step (rng-stream identity; n_mem may differ, since it depends on predictions).\n- Abort if any of these fails, or if a fold's wall time exceeds 1.30x the adopted fold.\n\n**decode.** Both arms; abort unless 17/17 scenes are ok.\n\n**eval.**\n- mvseg2d.evaluate on C0, C0' and M+, producing kf_<folder>.json.\n- seedfail.py per arm, producing sf_<folder>.json.\n\n**vis.** MVSeed/refloss/e12/keyframe_vis.py (docker scsam3, about 30 s per folder) on the 3 final and 3 round-1 folders.\n- Per pair and object: GT, hit and FP pixels by class (visible / outside / occluded / nodepth / on-ref-GT). Classes are built from reproj_inputs + project_reference_masks + reproject_coords(depth_ref=None), with OCC_TOL 0.01 and Pi3 conf > 0.1, as in MVSeed/refloss/e11/extent_vis.py.\n- Plus pairwise added/removed pixel counts by class and their GT overlap, for (M+ vs C0') and (C0' vs C0).\n\n**judge1** (MVSeed/e12_judge.py, from e11_judge.py).\n- D0 = geoset_pred_ft_rep_x_e11. HEADLINE = SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs.\n- ARMS: C0p (geoset_cut0_ft_rep_x_e12, no tag, r1 geoset_cut0_ft_r1_x_e12) and Mp (geoset_cutall_ft_rep_x_e12, geoset_rep tag geoset_cutall_rep_x, r1 geoset_cutall_ft_r1_x_e12). GATED = ('Mp',).\n- E11-specific Z1/Z5x xcl invariants are replaced by Z1t: the training config and log checks.\n- Contrasts:\n  - M+ - C0: the gate\n  - C0' - C0: the retrain draw\n  - M+ - C0': the mechanism\n- Each contrast is computed with mvseg2d.paired.paired_scene_bootstrap on J, F and J&F. Means are taken pair -> view -> scene; scenes are resampled as clusters; 10,000 resamples, seed 0.\n\n**Gate for M+ only.**\n- G1: Δ(M+ - C0) > 0 with 95 % CI lower > 0.\n- G2: no scene below C0 - 0.01.\n- G3: point Δ(M+ - C0') > 0.\n\n**P1 sanity.** Above +0.012: leak check (fold assignment, assert_no_leak, held-out lists) before stage 2. Above +0.025: bug; no passing arm, exit 2.\n\n**Splits** (every contrast).\n- From MVSeed/runs/seedfail.json E8 C0 rows: good 605 / failing 59 / under-cover 22. The 22 split into 9 beyond c_ini and 13 within, and a 21-pair set without the Dog camera_0004 tree.\n- spill 14; twin; size bins; rig; view distance; object type.\n- Cut-eligible (object has ≥ 20 reference cells: 437/664, 407/605, 15/22) vs not.\n- Reference-invisible GT fraction bins, fixed from C0's keyframe_vis.json: [0,.2) / [.2,.5) / [.5,.8) / [.8,1] = 229/229/124/82, and ≥ 0.2 = 435.\n\n**Visibility block** (C0, C0', M+; round 1 and final; 664 / 605 / 22).\n- Recall per class, pixel-weighted: ratio of sums, with a scene-cluster bootstrap of the ratio.\n- Recall per class, pair-mean: pairs with ≥ 100 px in the class.\n- FP pixels and their invisible share; pred/GT.\n- Added/removed pixels by class with their GT precision.\n\n**Mechanism verdict** (M+ - C0'; pre-registered, non-gating).\n- V1: round-1 outside-class recall on the 605, pixel-weighted. Δ > 0 with CI lower > 0, AND Δ larger than |C0' - C0| on the same statistic.\n- V2: the same test on final outside-class recall over 664.\n- V3: GT precision of the net-added reference-invisible pixels ≥ 0.5.\n- V4: visible recall |Δ| ≤ 0.003 and visible FP growth ≤ 10 %.\n- Outcomes:\n  - 'completes' = V1-V4 all hold.\n  - 'extends but cannot localise' = V1/V2 hold but V3 < 0.5.\n  - 'no mechanism effect' = V1 fails.\n- Under-22 J&F is reported against C0' but is not the signature: one flip moves the 22-pair mean by about ±0.02.\n\n**Also reported.**\n- Hallucinations; fails (J < 0.5); failure kinds.\n- round1_conf overlap / iou / n_valid and the confident share (C0 0.618); views_with_ref_only_frac.\n- Training records: fold times, loss curves, cut statistics, n_mem, gated_frac.\n- Z7: decode time and GPU peak.\n- No composed (shell) number is computed in E12.\n\n**Stage 2** (M+ only, if G1-G3 pass).\n- Run: XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_cutall_rep_x F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 ./runMVOptThree.sh <17 scenes>, producing SegMaskSam3XW1CGPS4MSdgeoset_cutall_rep_xFsCs10kG2Rs.\n- Score with eval/eval_jf.py --out jf_e12.json against SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs (92.626 / 87.954).\n- E8 rule: basic Δ > 0 with CI lower > 0, no scene basic Δ < -1.0, complete Δ ≥ 0. With one arm there is no Bonferroni correction.\n- Z3/Z3b checks: seed digest and frame-0 pixels.\n- The under-cover stage-2 cost is recomputed with coupling.py section A.\n- On adoption, geoset_cutall_rep_x becomes the headline preset, and ROADMAP and Notion are synced.\n\n**Report.**\n- §3.1 table: C0, C0', M+.\n- All splits; the visibility table (by class, r1 and final); added/removed precision.\n- Retrain-draw section (C0' - C0); training records; stage-2 table if run; cost.\n\n**Composition shell: NOT included in E12.** Reasons:\n- It was designed and measured on the same 664 test keyframe pairs, and the null was chosen after viewing three candidates (D1 +0.0011 [+0.0005, +0.0018]; r1 +0.0008 [-0.0002, +0.0018] with the registered U).\n- D1 is not a same-recipe null: it trains the decoder, 10,112,758 vs 5,922,321 parameters.\n- Its no-overlap invariant already fails (7,743 px for D1).\n- Under the shell any second model passes G1, which would hide the mechanism.\n- It needs two-checkpoint plumbing in decode_scene, Stage1, run_all, preflight and MANIFEST.\n\nA later separate decode-only registration is possible, with:\n- the S2-R6 disclosure;\n- G1 declared non-evidential, and stage 2 as the only test;\n- U = all C0 PNGs;\n- a contested-pixel rule;\n- an xcl decode of the second model;\n- a two-scene cross-order byte check.",
+  "predictions": [
+   "P1 (gate):\n- ΔJ&F(M+ - C0) on 664: point +0.0010, 80 % range [-0.004, +0.005]. P(G1) about 0.2. P(adoption through G1-G3 and the E8 rule) < 0.1.\n- ΔJ&F(C0' - C0): point 0.000, range [-0.003, +0.003]. P(C0' passes G1) about 0.1; P(C0' fails G2) about 0.3.\n- M+ above +0.012: leak check. Above +0.025: bug, exit 2.",
+   "P2 (mechanism, M+ - C0'):\n- Round-1 outside-class recall on the 605 (pixel-weighted) rises by +0.005 to +0.03, and V1 holds.\n- Final outside recall over 664 (C0 0.918) rises by +0.003 to +0.02.\n- Occluded: +0.00 to +0.01. Nodepth (C0 0.852): within ±0.03.\n- Visible recall (C0 0.971): within ±0.003.\n- Pred/GT over 664 (C0 0.964): 0.97-1.00.",
+   "P3 (precision of the extension): GT precision of the net-added reference-invisible pixels lies in 0.35-0.60. This is genuinely uncertain, and it decides the 'completes' vs 'extends but cannot localise' verdict. Invisible FP pixels on the 605 (C0 938,487) grow by 10-50 %.",
+   "P4 (under-cover 22, against C0'):\n- ΔJ&F +0.02, range [-0.02, +0.06].\n- At least 3 of the 6 eligible, outside-dominated pairs rise by > 0.02: CBABasketball v06 and v24 grandstand, MartialArts v13 rig, Welder camera_0003 ground, FlameSteak cam01 wall, Painter v15 painting.\n- Dog camera_0004 tree: |Δ| ≤ 0.02.\n- The 7 ineligible objects (< 20 reference cells): |Δ| ≤ 0.02 each.\n- C0' - C0 on the 22 is reported as the regression-to-the-mean term.",
+   "P5 (good 605, against C0'):\n- ΔJ&F in [-0.004, +0.004].\n- Hallucinations: 13 to ≤ 16. Fails (J < 0.5): 14 to ≤ 17.\n- spill-14 and twin splits within ±0.02.",
+   "P6 (where the change is):\n- ΔJ > ΔF (extent, not boundary).\n- The gain concentrates in eligible objects and in the invisible-fraction bins ≥ 0.5.\n- The 435 pairs with ≥ 20 % invisible GT carry ≥ 70 % of the summed ΔJ&F.\n- Ineligible pairs: |mean Δ| ≤ 0.002.",
+   "P7 (round 1 / round 2):\n- The effect is visible at round 1, before any neighbour memory.\n- The round1_conf confident share (C0 0.618) stays within ±0.05; views_with_ref_only_frac within ±0.05.",
+   "P8 (training):\n- trainable_params 5,922,321 in all 10 folds.\n- C0': step-1 loss equals the adopted log; last-100-step loss within ±0.03 of the adopted fold (0.174/0.147/0.221/0.141/0.148); n_mem=2 share 0.48-0.52.\n- M+: last-100 loss ≤ adopted + 0.10, and above C0'; n_mem=2 share 0.40-0.50; gated_frac mean 0.20-0.35.",
+   "P9 (stage 2, M+ only if it passes):\n- basic Δ / (66.7 x keyframe ΔJ&F) in [0.5, 1.5]. This is an extent change, so E10's ratio of 0.52 applies, not E11's ownership ratio of 2.0.\n- basic Δ in [0, +0.30]; complete Δ ≥ 0.\n- If keyframe ΔJ&F < +0.004, the E8 rule is expected to fail.",
+   "P10 (scope): no arm moves the no-depth pixels (Dog tree) or the twin/spill confusions. If V1 fails at p = 1.0 against C0', reference-only completion through training is closed. The 0.6 under-cover headline points then need new information, such as other cameras' labels."
+  ],
+  "watch_values": [
+   "Z1 (config.json, all 10 folds):\n- trainable_params == 5,922,321\n- cut_prob 1.0 (M+) / 0.0 (C0'); cut_keep [0.3, 0.7]; cut_min_cells 20\n- extra_mem_pred true; extra_mem_prob 0.5; train_decoder false\n- epochs 3; frame_stride 2; seed 0\n- steps 2574/2574/2772/2772/2772\n- git = chain HEAD",
+   "Z4 (before training): Fencing decode --arm geoset_pred_ft --gate reproj --xcl out must be byte-identical to geoset_pred_ft_rep_x_e11 / geoset_pred_ft_r1_x_e11, with round1_conf.json and xcl_conf.json cmp-identical. Any mismatch aborts.",
+   "Z6: all host tests and torch tests pass before the chain starts; results recorded in the implementation commit.",
+   "zt stream identity: per fold, the objs, mem_coin and mem_cam columns of M+ and C0' are identical at every step. C0' step-1 loss = 0.13690 (folds 0-1) / 0.21118 (folds 2-4), as in the stored adopted logs.",
+   "M+ log.csv:\n- cut coin share 1.000\n- steps with n_cut ≥ 1: ≥ 0.98 (measured: 100 % of samples hold an eligible object)\n- n_cut / batch objects: mean 0.55-0.68 (measured eligible row share 0.613)\n- cut_frac on cut objects: mean 0.40-0.48 (measured 0.442 under the registered rule; nominal 0.50)\n- no-cut draws: ≤ 2 % (measured 0.6 %)",
+   "C0' log.csv: cut share 0; n_cut 0.",
+   "n_mem=2 share: C0' 0.48-0.52 (adopted 0.484-0.513); M+ ≥ 0.40.",
+   "gated_frac mean: C0' 0.18-0.23 (adopted 0.180-0.224); M+ ≤ 0.35. Share of steps with a gated object: adopted 0.33-0.38.",
+   "Last-100-step loss: C0' within ±0.03 of the adopted fold (0.174/0.147/0.221/0.141/0.148); M+ ≤ adopted + 0.10.",
+   "Fold wall time vs the same adopted fold (1946/1920/2227/2066/2048 s): C0' 0.90-1.10x; M+ 1.05-1.20x. Abort above 1.30x.",
+   "Z7 decode: per arm ≤ 45 min and ≤ 1.15 x C0's 465 s. GPU peak ≤ C0 + 1 GB. 17/17 scenes ok.",
+   "Leak guard: every scene is decoded by the fold that held it out (assert_no_leak), for both new arms.",
+   "Decode-side outputs vs C0, reported per arm:\n- hallucinations (13); fails J < 0.5 (14)\n- round1_conf confident share (0.618); views_with_ref_only_frac\n- invisible FP pixels on the 605 (938,487); pred/GT (0.964 over 664, 0.750 on the 22)"
+  ],
+  "non_variables": [
+   "Training recipe, identical in both trained arms and equal to geoset_pred_ft:\n- Loss focal 20 / dice 1 / IoU-L1 1 / presence 1; alpha 0.25; gamma 2; loss at the original label-map resolution.\n- lr GeoBias 1e-3, memory attention 1e-5; AdamW wd 0.01; cosine to 0; clip 1.0.\n- 3 epochs; frame stride 2; seed 0; MAX_OBJECTS 16; 5 scene folds (geomem/folds.json).\n- Predicted second memory with p 0.5 through memory_rng; tau 0.7; mask decoder and heads frozen; 5,922,321 trainable parameters.",
+   "Cut constants:\n- CUT_KEEP (0.3, 0.7); CUT_MIN_CELLS 20; CUT_MIN_KEPT 6\n- 4 axis-aligned sides; the per-object quantile rule with ties kept\n- one cut_rng([seed, step, 1]) per step, coin drawn first\n- pointer tokens never dropped; GT memory mask whole (no crop); target GT whole\n- drop on both reads of the reference (memory-camera prediction and target decode)\n- no cut at inference",
+   "Doses: 0.0 (C0') and 1.0 (M+) only. No p = 0.5 arm, no third trained arm, no second seed, no extra epoch, no model selection across steps or folds.",
+   "Decode preset: --gate reproj --xcl out; k 3; tau 0.7; theta 0.5; MIN_VALID 64; OBJ_CHUNK 8; XCL_TAU_KEEP 0.5. The same for all arms.",
+   "Populations: good 605 / failing 59 / under-cover 22 / spill 14 / twin, from MVSeed/runs/seedfail.json (E8 C0 rows). Invisible-fraction bins from C0's keyframe_vis.json. Eligibility from the reference label maps. None of these are re-derived from the new arms.",
+   "Statistics: paired_scene_bootstrap, 10,000 resamples, seed 0. G1/G2/G3 as registered. E8 stage-2 rule. Stage-2 command and headline reference unchanged.",
+   "Not added as rescues; each would be a new registration:\n- visibility- or region-weighted loss (W_c)\n- reference-mask erosion or crop, rectangle or hole cuts (design 0)\n- random-angle cuts\n- query-side visibility flag\n- extent token\n- two-stage curriculum\n- decode-time logit bias\n- composition shell (N0 / M_c)\n- X2 / zoom combinations",
+   "E11 result folders and tracked data stay untouched; new outputs go only to *_e12 folders."
+  ],
+  "tests": [
+   "Host stage1/tests/test_e12_cut.py, arm plumbing:\n- CUT_ARMS are members of SET2_ARMS, PRED_MEM_ARMS (explicit), NO_EMBED_ARMS, train.ARMS/SET_ARMS/FT_ARMS and run.ARMS/SET_ARMS.\n- arm_flags(geoset_cutall_ft) and arm_flags(geoset_cut0_ft) equal arm_flags(geoset_pred_ft) except cut_prob, cut_keep and cut_min_cells. In particular extra_mem_pred True (this is the regression test for the PRED_MEM_ARMS bug) and extra_mem_prob 0.5.",
+   "Host, presets and TAGS:\n- PRESETS, stage1_supply.TAGS and build_geoset_seeds TAGS are equal and in the same order, with 'geoset_cutall_rep_x' last.\n- geoset_rep_x is unchanged.\n- geoset_cut0_ft has no preset or TAG.\n- test_zoom.py's pinned-tail assertion is updated.",
+   "Host, fov_cut on synthetic cell maps:\n- Every grid cell (object and background) on the dropped side is dropped, none on the kept side.\n- Realised kept fraction lies in [f, f + max_line/n].\n- Objects under 20 cells draw nothing and are untouched; kept ≥ 6 always.\n- No cut when nothing is dropped.\n- drop shape [B, 5184]; index y*72 + x matches a [72,72].reshape(-1).",
+   "Host, rng:\n- cut_rng(seed, step) is deterministic and does not consume the shared rng or memory_rng (pattern of tests/test_geomem_data.py:117-125).\n- Draw order from ONE generator is coin, then (side, f) per eligible object. This is a regression test for the re-seeding bug in design 0.\n- Over 10,000 synthetic draws, side frequencies are 0.25 ± 0.02 and mean f is 0.50 ± 0.01.",
+   "Host, cut statistics: MVSeed/refloss/e12/cut_stats.py reproduces the registered realised-cut statistics on the training label maps (eligible 0.613 of rows, cut_frac mean 0.442 ± 0.005).",
+   "Torch, gate_mask (extend tests_torch/test_gate.py):\n- With drop = None, or a drop with no True, it returns exactly what it returns today: None when nothing is gated, the same tensor when gated.\n- With a synthetic drop, -inf appears exactly on view 0's dropped feature columns, never on pointer columns, and only on the dropped objects' rows; the result combines correctly with conf-gating of view 1.\n- subset() slices drop along the object axis.",
+   "Torch tests_torch/test_e12_cut.py, decode identity: a Blocks decode with arm geoset_pred_ft and --xcl out is byte-identical before and after the change (E11 Z6 pattern). Separately, logits for drop = None vs a materialised zero gate are bitwise equal (the probe property).",
+   "Torch, isolation:\n- A per-object drop changes only that object's logits; the others stay bitwise identical.\n- A row with only pointer keys and a few kept cells stays finite.",
+   "Torch, in-process train_one_step on the _pred_batch Blocks batch with batch['ref_drop']:\n- loss is finite\n- memory-attention and GeoBias gradients are non-zero\n- n_mem ∈ {1, 2}\n- a monkeypatched decode_view records the same view-0 drop in the memory-camera prediction decode and in the target decode",
+   "Torch, training forward identity: step-1 loss and loss terms are bitwise identical between geoset_pred_ft and geoset_cut0_ft on the same batch, and between drop = None and an all-False drop. Gradients and multi-step losses are NOT compared: backward is nondeterministic on this GPU (measured: 107 of 108 gradient tensors differ, max 4.9e-4; 40-step retrain diverges at step 2).",
+   "Torch subprocess smoke (--max-steps 20) for geoset_pred_ft, geoset_cut0_ft and geoset_cutall_ft:\n- objs, mem_coin and mem_cam columns identical across all three\n- step-1 loss identical for geoset_pred_ft and geoset_cut0_ft\n- cut column all 1 (M+) / all 0 (C0')\n- config.json has trainable_params 5,922,321, the right cut_prob and extra_mem_pred true",
+   "Chain-level (not unit tests): Z4 on Fencing and zt after every fold, as listed in measurement. Training-side 'byte identity' is limited to: step-1 loss identity against the stored adopted logs, plus logged rng-stream identity."
+  ],
+  "open_risks": [
+   "Retrain variance rests on one draw (C0' - C0), and that draw mixes GPU nondeterminism with any 2D-repo-to-stage1 port drift. G3 (point Δ against C0' > 0) and the requirement that V1/V2 exceed |C0' - C0| are weak guards. The scene-bootstrap CIs cover pair sampling, not retrain variance.",
+   "The 664-pair J&F gate cannot resolve effects of this size: expected +0.001 against a CI half-width of about 0.0025-0.003. Adoption is therefore unlikely even if the mechanism works; the pixel-level verdict carries the scientific result.",
+   "M+ never trains eligible objects on a whole reference, while at test the reference is always whole. Possible effects:\n- presence or IoU drift (hallucinations, fails)\n- a lower n_mem=2 share, which weakens the round-2 training the adopted method relies on\n- more over-extension on the 605 good seeds\nBecause of the two-arm limit there is no p = 0.5 arm, so a harmful M+ cannot tell whether a lower dose would have been net positive. M at p = 0.5 would need a new registration.",
+   "Memory-fuser leak: 2 CXBlocks 7x7 give kept tokens within about 6 cells of the cut information from the dropped side. The whole-object pointer also carries a global descriptor. For mid-size objects the effective cut is therefore shallower than registered.",
+   "Occlusion (the largest good-seed oracle: +0.0225 J on the 605, +0.0283 J over 664) is only approximately simulated, and part of it is small-object Pi3 depth noise. No-depth pixels, including the Dog camera_0004 tree (38 % of the 22 pairs' missed pixels), are out of reach.",
+   "7 of the 22 under-cover objects have fewer than 20 reference cells and are never cut. Even full success leaves most of the 0.664 under-cover headline points in place.",
+   "Over-extension cost: the risk grid says +25 % invisible FP costs -0.0038 J over 664. Precision of the added pixels (V3) is the deciding unknown, with a predicted range of 0.35-0.60.",
+   "The M+ fold wall is predicted at 1.05-1.20x; the abort threshold of 1.30x leaves little margin if mask materialisation costs more than probed.",
+   "New log.csv columns apply to every arm. Any external parser that assumes the old column set must be checked; e9/e11 judges read only config.json."
+  ],
+  "go_no_go": "GO: pre-register and implement S1-E12 with two trained arms, {C0' zero-dose control, M+ p = 1.0}, plus the adopted C0 (geoset_rep_x).\n\nIt is a mechanism test with low odds of adoption:\n- Expected keyframe ΔJ&F(M+ - C0): +0.001 (80 % range -0.004 to +0.005).\n- P(G1) about 0.2; P(adoption) < 0.1.\n- Even a full success recovers only a small part of the 0.664 under-cover headline points.\n\nCost:\n- About 6.5 h for the stage-1 half: training 2.84 h + about 3.2 h, two 8-min decodes, about 0.2 h eval and diagnostics.\n- About 1.8 h of stage 2 only if M+ passes.\n- About 1 day of implementation.\n\nValue: one chain settles whether training on reference-only memory can learn to complete objects beyond the reference FOV. If V1 fails at the maximum dose against a zero-dose control, the route is closed with no rescue variants, and the remaining under-cover cost is assigned to new information (other cameras' labels).\n\nNO-GO triggers before or early in the chain:\n- any Z4 byte mismatch\n- any host or torch test failing\n- zt failing on M+ fold 0 or on any later fold\n\nComposition shell: left out of E12, and no composed number is computed.\n\nEvery claim the judges refuted has been dropped. In particular:\n- no training-side gradient or multi-step identity checks\n- PRED_MEM_ARMS is extended explicitly\n- no mask crop\n- no ceiling numbers built on pixel shares\n- E9 D1 is not used as a retrain-noise proxy",
+  "key_numbers": [
+   "Adopted C0 (geoset_pred_ft_rep_x_e11): keyframe J&F 0.9148 over 664 pairs; headline 92.626 / 87.954. Source: MVSeed/runs/e11/kf_geoset_pred_ft_rep_x_e11.json, docs/stage1-E11.md.",
+   "C0 invisible-GT recall:\n- pixel-weighted 0.913 (visible 0.971; outside 0.918 / occluded 0.930 / nodepth 0.852)\n- good 605: 0.938\n- under-22: 0.611 (outside 0.698 / occluded 0.733 / nodepth 0.268); pred/GT 0.750\n- FP 2,098,537 px (72.0 % invisible); good-605 FP 1,411,361 px (66.5 % invisible)\nSource: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/visibility-signal/vis_report.txt and keyframe_vis.json",
+   "Under-22 missed pixels: 1,331,152, of which 90.9 % are invisible from the reference: outside 36.5 %, occluded 16.1 %, nodepth 38.2 % (almost all Dog camera_0004 tree). Source: same vis_report.txt.",
+   "J oracle (add all missed invisible GT, adopted seeds):\n- 664: +0.0410 (outside +0.0094, occluded +0.0283, nodepth +0.0034)\n- 605: +0.0303 (outside +0.0052, occluded +0.0225)\n- 22: +0.2241 (outside +0.0901)\n- risk: +25 % invisible FP = -0.0038 J over 664\nSource: oracle.py re-run on keyframe_vis.json (/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/e12-design-safety/oracle.py)",
+   "Training target: 47.9 % of supervised target-GT pixels are invisible from the reference; 34 % of (sample, object) rows are ≥ 50 % invisible; projected reference GT covers 47.4 % of target GT. Source: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/train-pipeline/vis_cost.out",
+   "Loss mass already on invisible pixels: per-object focal invisible share 0.726, rising to 0.837 / 0.883 at lambda 1 / 2; region focal share 0.761. This is why W_c is dropped. Source: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/design-minimal/lossmass_train_report.txt",
+   "NEW, registered cut rule on training label maps:\n- 15,220 / 24,834 rows eligible (0.613), holding 98.3 % of reference GT pixels; every sample has an eligible object\n- realised dropped object-cell fraction: mean 0.442 (p10/50/90 0.28/0.44/0.62)\n- dropped grid share: mean 0.49\n- no-cut draws: 0.6 %\nSource: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/e12-synth/cut_stats.out (cut_stats.py)",
+   "NEW, cut-eligible keyframe pairs (object ≥ 20 reference cells): 437/664, good 407/605, failing 30/59, under-cover 15/22, ≥ 20 %-invisible bin 272/435. Source: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/e12-synth/kf_elig.out",
+   "Training nondeterminism: step-1 loss 0.13690 is identical across retrains; step 2 gives 0.97702 vs 0.96150, and the stored log has 0.96201. Repeated train_one_step: loss equal, 107/108 gradient tensors differ (max 4.9e-4). Source: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/e12-judge-measure/retrain40.out, retrain40b.out, and judge-e12-correctness/gpu_probe.out",
+   "Gate-path probe:\n- per-object drop leaves the other objects' logits bitwise unchanged\n- pointer-only rows stay finite\n- zero gate vs None: logits bitwise equal\n- mask cost +0.075 s on a 1-memory step (0.407 to 0.482 s); peak 23.5 GB\nSource: judge-e12-correctness/gpu_probe.out (same scratchpad)",
+   "Adopted recipe cost and logs:\n- 10,207 s = 2.84 h; 0.74-0.80 s per step\n- 34.8 % of steps (4,679 / 13,464) carry the gate mask; gated 2-view steps 1.03 s vs ungated 0.79 s\n- step-1 loss 0.13690 (folds 0-1) / 0.21118 (folds 2-4)\n- last-100 loss 0.174/0.147/0.221/0.141/0.148\n- n_mem=2 share 0.484-0.513\nSource: stage1/geomem/runs/geoset_pred_ft/fold*/{config.json, log.csv}",
+   "Composition shell (left out):\n- D1 +0.0011 [+0.0005, +0.0018]; r1 +0.0008 [-0.0002, +0.0018] with the registered U\n- D1 added-pixel overlap 7,743 px\n- shell reach: 42.8 % of the 22 pairs' missed pixels, at most +0.146 J&F on the 22\nSource: e12-design-safety/null_report.txt, judge-e12-correctness/host_compose_check.out, e12-judge-measure/shell_reach.py",
+   "Priors:\n- E9 D1 (decoder trained, 10,112,758 parameters): -0.0004 [-0.0028, +0.0018]; failed G2 (CBABasketball -0.0138)\n- E10: +0.0025 keyframe, giving +0.088 headline; not adopted\n- E11 X1: +0.0007 [+0.0001, +0.0013], giving +0.088 [+0.019, +0.185]; adopted\n- C0 decode 465 s for 17 scenes"
+  ]
+ }
+}

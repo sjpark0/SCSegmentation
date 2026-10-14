@@ -1,0 +1,359 @@
+### PART 1 -- training samples of the adopted recipe (meta: {'part': 'train', 'frame_stride': 2, 'device': 'cuda', 'occ_tol': 0.01, 'n_samples': 1122, 'n_rows': 24834, 'seconds': 212.634840965271, 'gpu_mb': 3368.6025390625})
+samples 1122 = 17 scenes x 11 frames (stride 2) x 6 ordered pairs of the 3 annotated cameras; (sample,object) rows 24834 (objects of the reference label map), of which 20990 have GT in the target and 3844 are absent from the target (presence-negative); samples with > 16 objects: 678 / 1122 (trainer draws 16 uniformly); objects labelled in the target but not in the reference map (never supervised): 3844 over all samples
+target image visible from the reference (fraction of all pixels), sample-mean 0.544 (p10/25/50/75/90 = 0.271 0.375 0.538 0.726 0.817); outside 0.227 occluded 0.178 nodepth 0.051
+
+== ALL rows (every object of the reference map, unweighted): 20990 (sample,object) rows with GT in the target; GT px 3,378,225,723
+   pixel-weighted:  invisible 0.479  = outside 0.224 + occluded 0.189 + nodepth 0.066;  visible 0.521 of which on ref GT same obj 0.474, on ref other label 0.047, on ref background 0.000
+   row-mean invisible fraction 0.391 (p10/25/50/75/90 = 0.035 0.127 0.326 0.623 0.867); rows with invisible frac == 0: 0.034, >= 0.2: 0.650, >= 0.5: 0.340, >= 0.8: 0.137, == 1: 0.018
+   row-mean 'not on ref GT of same obj' fraction 0.526 (p10/25/50/75/90 = 0.120 0.264 0.505 0.796 0.961); pixel-weighted 0.526
+   rows with outside frac >= 0.5: 0.078 (GT px share 0.150); occluded frac >= 0.5: 0.178; nodepth frac >= 0.5: 0.017
+   rows by invisible-fraction bin [0,.2) [.2,.5) [.5,.8) [.8,1]: rows 0.350 0.310 0.203 0.137; GT px share 0.208 0.318 0.307 0.167; invisible px share 0.042 0.231 0.413 0.314
+== ALL rows, trainer-weighted: 20990 (sample,object) rows with GT in the target; GT px 3,378,225,723; weights = min(1, 16/n_obj), effective rows 13,699.4
+   pixel-weighted:  invisible 0.496  = outside 0.218 + occluded 0.198 + nodepth 0.080;  visible 0.504 of which on ref GT same obj 0.453, on ref other label 0.050, on ref background 0.000
+   row-mean invisible fraction 0.395 (p10/25/50/75/90 = 0.037 0.130 0.336 0.629 0.875); rows with invisible frac == 0: 0.033, >= 0.2: 0.657, >= 0.5: 0.341, >= 0.8: 0.140, == 1: 0.018
+   row-mean 'not on ref GT of same obj' fraction 0.529 (p10/25/50/75/90 = 0.117 0.263 0.511 0.802 0.965); pixel-weighted 0.547
+   rows with outside frac >= 0.5: 0.079 (GT px share 0.139); occluded frac >= 0.5: 0.175; nodepth frac >= 0.5: 0.019
+   rows by invisible-fraction bin [0,.2) [.2,.5) [.5,.8) [.8,1]: rows 0.343 0.315 0.201 0.140; GT px share 0.184 0.331 0.305 0.181; invisible px share 0.036 0.236 0.396 0.331
+== ALL rows, frame t = first labelled frame only (the keyframe's frame): 1898 (sample,object) rows with GT in the target; GT px 306,895,249
+   pixel-weighted:  invisible 0.477  = outside 0.223 + occluded 0.189 + nodepth 0.065;  visible 0.523 of which on ref GT same obj 0.476, on ref other label 0.047, on ref background 0.000
+   row-mean invisible fraction 0.386 (p10/25/50/75/90 = 0.033 0.129 0.328 0.613 0.847); rows with invisible frac == 0: 0.033, >= 0.2: 0.649, >= 0.5: 0.332, >= 0.8: 0.125, == 1: 0.017
+   row-mean 'not on ref GT of same obj' fraction 0.524 (p10/25/50/75/90 = 0.116 0.265 0.508 0.794 0.961); pixel-weighted 0.524
+   rows with outside frac >= 0.5: 0.077 (GT px share 0.155); occluded frac >= 0.5: 0.175; nodepth frac >= 0.5: 0.015
+   rows by invisible-fraction bin [0,.2) [.2,.5) [.5,.8) [.8,1]: rows 0.351 0.317 0.207 0.125; GT px share 0.212 0.322 0.302 0.163; invisible px share 0.042 0.238 0.411 0.309
+== ALL rows, reference = the scene's keyframe reference camera (meta ref_cam): 7335 (sample,object) rows with GT in the target; GT px 1,146,163,207
+   pixel-weighted:  invisible 0.477  = outside 0.201 + occluded 0.201 + nodepth 0.075;  visible 0.523 of which on ref GT same obj 0.477, on ref other label 0.047, on ref background 0.000
+   row-mean invisible fraction 0.388 (p10/25/50/75/90 = 0.043 0.135 0.322 0.605 0.865); rows with invisible frac == 0: 0.025, >= 0.2: 0.663, >= 0.5: 0.325, >= 0.8: 0.136, == 1: 0.018
+   row-mean 'not on ref GT of same obj' fraction 0.521 (p10/25/50/75/90 = 0.121 0.276 0.487 0.786 0.954); pixel-weighted 0.523
+   rows with outside frac >= 0.5: 0.057 (GT px share 0.114); occluded frac >= 0.5: 0.188; nodepth frac >= 0.5: 0.016
+   rows by invisible-fraction bin [0,.2) [.2,.5) [.5,.8) [.8,1]: rows 0.337 0.338 0.189 0.136; GT px share 0.224 0.287 0.311 0.178; invisible px share 0.042 0.197 0.428 0.333
+
+   per-SAMPLE invisible fraction (all objects of the sample pooled): mean 0.438 (p10/25/50/75/90 = 0.181 0.270 0.427 0.587 0.716); samples >= 0.5: 0.365, >= 0.2: 0.856
+
+   scene                    rows         GT px  inv pw    out    occ    nod  onrefGT inv rowmean rows>=0.5  rows==0
+   Dog                       440   323,597,472   0.732  0.186  0.198  0.348    0.132       0.674     0.752    0.000
+   AlexaMeadeExhibit        1914   320,969,880   0.611  0.274  0.259  0.078    0.318       0.464     0.445    0.089
+   Welder                   1004   318,291,134   0.603  0.301  0.272  0.029    0.361       0.490     0.431    0.010
+   AlexaMeadeFacePaint       572   302,893,842   0.632  0.294  0.218  0.121    0.306       0.530     0.552    0.002
+   CoffeeMartini            2332   321,483,959   0.453  0.305  0.148  0.001    0.515       0.399     0.347    0.033
+   FlameSteak               1804   301,770,295   0.413  0.298  0.115  0.000    0.561       0.377     0.351    0.050
+   MATF                      886   116,327,558   0.702  0.298  0.145  0.260    0.270       0.534     0.518    0.015
+   Blocks                    952   128,489,802   0.536  0.217  0.319  0.000    0.443       0.435     0.404    0.142
+   MartialArts               946   134,505,205   0.475  0.179  0.295  0.000    0.491       0.502     0.442    0.014
+   Barn                     1980   136,857,578   0.436  0.143  0.288  0.004    0.511       0.422     0.405    0.010
+   CBABasketball            1076   142,148,781   0.408  0.268  0.139  0.001    0.553       0.365     0.262    0.017
+   Fencing                   528   136,857,600   0.352  0.122  0.230  0.000    0.612       0.287     0.157    0.015
+   Frog                      330   136,857,600   0.277  0.144  0.131  0.002    0.708       0.247     0.136    0.000
+   Breakfast                1666   135,645,503   0.259  0.129  0.130  0.000    0.727       0.309     0.236    0.024
+   Painter                  1612   146,524,873   0.231  0.131  0.099  0.000    0.726       0.275     0.180    0.030
+   PoznanStreet             1496   137,133,281   0.167  0.049  0.064  0.054    0.817       0.295     0.191    0.003
+   Carpark                  1452   137,871,360   0.162  0.084  0.072  0.007    0.824       0.268     0.222    0.042
+
+   size (GT/image)          rows         GT px  inv pw    out    occ    nod  onrefGT inv rowmean rows>=0.5  rows==0
+   <0.1%                    2904     5,179,130   0.420  0.022  0.368  0.030    0.301       0.422     0.410    0.123
+   0.1-1%                   8357   118,278,975   0.366  0.080  0.267  0.019    0.484       0.364     0.304    0.027
+   1-5%                     5250   328,795,784   0.408  0.134  0.248  0.026    0.502       0.375     0.314    0.025
+   5-20%                    2820   997,299,481   0.447  0.181  0.217  0.048    0.492       0.421     0.348    0.000
+   >=20%                    1659 1,928,672,353   0.515  0.271  0.159  0.085    0.460       0.469     0.468    0.000
+
+   object type              rows         GT px  inv pw    out    occ    nod  onrefGT inv rowmean rows>=0.5  rows==0
+   env                      2970 2,114,088,796   0.550  0.274  0.176  0.100    0.416       0.562     0.544    0.000
+   static                  12474   827,129,316   0.362  0.170  0.181  0.011    0.585       0.384     0.341    0.047
+   dynamic                  5546   437,007,611   0.359  0.085  0.267  0.007    0.546       0.314     0.230    0.022
+
+   label (top by inv px)    rows         GT px  inv pw    out    occ    nod  onrefGT inv rowmean rows>=0.5  rows==0
+   wall                      792   945,387,214   0.563  0.297  0.189  0.076    0.419       0.513     0.520    0.000
+   ground                    550   371,063,502   0.543  0.329  0.180  0.034    0.436       0.528     0.505    0.000
+   person                   3028   318,339,933   0.383  0.094  0.284  0.005    0.530       0.313     0.230    0.024
+   ceiling                   308   159,284,700   0.688  0.413  0.174  0.101    0.292       0.637     0.562    0.000
+   sky                       132    79,519,468   0.998  0.000  0.001  0.997    0.001       0.992     1.000    0.000
+   shelf                     498   103,156,090   0.602  0.302  0.297  0.002    0.353       0.487     0.480    0.056
+   floor                     242   128,350,926   0.433  0.285  0.147  0.001    0.552       0.698     0.736    0.000
+   tree                      660    70,472,424   0.669  0.061  0.224  0.385    0.295       0.399     0.311    0.000
+   table_or_desk             550   101,571,080   0.425  0.243  0.181  0.002    0.543       0.465     0.433    0.020
+   handrail_or_fence          66    82,753,170   0.489  0.337  0.125  0.028    0.112       0.458     0.500    0.000
+   textiles                  198    75,315,350   0.472  0.280  0.192  0.000    0.513       0.346     0.222    0.000
+   painting_or_poster       1102   129,908,221   0.269  0.049  0.180  0.040    0.693       0.318     0.259    0.064
+   curtain                   154   183,055,062   0.180  0.136  0.044  0.000    0.812       0.190     0.071    0.000
+   pillar                    154    55,097,781   0.537  0.169  0.361  0.007    0.372       0.488     0.331    0.000
+   window                    132    47,203,368   0.543  0.372  0.171  0.000    0.444       0.501     0.508    0.015
+   cushion_or_carpet         132    50,643,178   0.390  0.089  0.301  0.000    0.593       0.513     0.424    0.000
+   dog                       110    25,551,556   0.530  0.106  0.404  0.020    0.209       0.465     0.409    0.000
+   bottle_or_cup            2536    33,056,027   0.362  0.077  0.283  0.001    0.475       0.394     0.355    0.021
+   building                  132   113,248,196   0.100  0.017  0.069  0.013    0.894       0.099     0.000    0.000
+   other_plant               158    20,222,255   0.542  0.336  0.171  0.036    0.327       0.333     0.215    0.025
+   chair_or_seat             770    23,626,704   0.442  0.148  0.293  0.000    0.499       0.387     0.349    0.000
+   toy                       446    50,769,548   0.185  0.057  0.127  0.001    0.788       0.332     0.220    0.016
+   car                       990    32,812,646   0.236  0.125  0.111  0.000    0.742       0.267     0.211    0.005
+   grandstand                 66     7,521,876   0.922  0.912  0.008  0.002    0.063       0.912     1.000    0.000
+   stand                     330    22,644,632   0.263  0.141  0.120  0.002    0.596       0.284     0.218    0.000
+   lamp                      462    14,318,108   0.385  0.086  0.220  0.078    0.316       0.477     0.394    0.000
+   sofa                      132     6,530,194   0.726  0.022  0.697  0.006    0.182       0.646     0.750    0.000
+   wood                      264     6,280,018   0.751  0.106  0.538  0.106    0.183       0.628     0.670    0.000
+   palette                   132     8,225,982   0.572  0.222  0.342  0.009    0.307       0.545     0.576    0.000
+   helmet                    132     5,675,400   0.494  0.080  0.350  0.064    0.335       0.599     0.515    0.000
+   ladder                    132     8,645,238   0.311  0.063  0.244  0.004    0.483       0.369     0.250    0.000
+   grass                     132     5,177,416   0.494  0.360  0.133  0.001    0.470       0.437     0.356    0.000
+   rig                        66     3,157,608   0.791  0.612  0.179  0.000    0.107       0.755     0.667    0.000
+   box                       396     7,578,948   0.323  0.026  0.291  0.005    0.611       0.443     0.437    0.000
+   utensils                  220     7,497,538   0.326  0.040  0.286  0.000    0.554       0.328     0.245    0.050
+   refrigerator              132     5,853,546   0.389  0.000  0.389  0.000    0.570       0.367     0.333    0.000
+   clock                      66     5,525,584   0.349  0.007  0.342  0.000    0.540       0.369     0.000    0.000
+   door                      132     3,106,753   0.605  0.010  0.493  0.102    0.351       0.706     0.644    0.000
+   tub_or_bowl_or_pot        594     6,782,771   0.274  0.048  0.225  0.002    0.562       0.286     0.205    0.064
+   fire                      132     4,068,422   0.421  0.051  0.328  0.043    0.344       0.305     0.212    0.008
+   cart                      132     2,552,110   0.648  0.411  0.237  0.000    0.263       0.622     0.727    0.000
+   book                      330     6,419,776   0.223  0.038  0.186  0.000    0.710       0.304     0.176    0.033
+   other_machine              66     2,452,676   0.529  0.284  0.244  0.000    0.396       0.507     0.667    0.000
+   tissue                     88     4,336,959   0.292  0.012  0.280  0.000    0.658       0.317     0.250    0.000
+   tool                      352     2,557,050   0.434  0.100  0.313  0.021    0.352       0.447     0.509    0.051
+   handicrafts               346     3,787,176   0.293  0.240  0.049  0.004    0.620       0.341     0.292    0.324
+   screen_or_television       66     4,332,130   0.177  0.000  0.177  0.000    0.775       0.175     0.015    0.000
+   flower                     66     1,562,594   0.383  0.000  0.359  0.024    0.363       0.364     0.439    0.000
+   other_animal               44     1,315,996   0.429  0.092  0.080  0.257    0.149       0.402     0.250    0.000
+   barrel                    132     2,345,156   0.219  0.001  0.218  0.000    0.734       0.236     0.083    0.000
+   other_electronic_product    110     1,515,668   0.332  0.000  0.318  0.014    0.302       0.326     0.209    0.091
+   bag_or_package            264       831,908   0.589  0.000  0.589  0.000    0.245       0.584     0.670    0.087
+   food                      132     1,525,078   0.225  0.000  0.225  0.000    0.664       0.218     0.197    0.280
+   backboard                  44       991,969   0.334  0.131  0.203  0.000    0.639       0.344     0.341    0.000
+   plate                     164       772,581   0.365  0.000  0.365  0.000    0.461       0.382     0.354    0.024
+   pen_or_pencil             152       796,387   0.274  0.000  0.274  0.000    0.107       0.261     0.237    0.033
+   traffic_sign               88     1,007,706   0.202  0.170  0.032  0.000    0.711       0.089     0.000    0.000
+   tube                      188       962,606   0.206  0.003  0.202  0.001    0.626       0.217     0.138    0.011
+   microphone                 88       387,796   0.505  0.204  0.180  0.120    0.183       0.521     0.602    0.000
+   basket                     66       467,566   0.399  0.006  0.393  0.000    0.157       0.395     0.288    0.000
+   tableware                  66       394,090   0.405  0.091  0.314  0.000    0.506       0.419     0.212    0.000
+   weapon                    132       407,994   0.300  0.000  0.300  0.000    0.081       0.282     0.197    0.061
+   fan                        88       506,880   0.204  0.074  0.130  0.000    0.597       0.249     0.125    0.000
+   checkerboard              220     5,040,080   0.019  0.001  0.018  0.000    0.932       0.016     0.000    0.609
+   metal_part                 66       121,170   0.397  0.000  0.397  0.000    0.078       0.376     0.394    0.152
+   ball                       52        35,365   0.217  0.000  0.217  0.000    0.402       0.205     0.173    0.250
+
+   per (scene, reference camera): invisible fraction pixel-weighted / row-mean / rows
+      AlexaMeadeExhibit    camera_0001  0.635 / 0.448 / 660
+      AlexaMeadeExhibit    camera_0003  0.481 / 0.357 / 638
+      AlexaMeadeExhibit    camera_0004  0.721 / 0.592 / 616
+      AlexaMeadeFacePaint  camera_0007  0.657 / 0.522 / 198
+      AlexaMeadeFacePaint  camera_0008  0.640 / 0.629 / 187
+      AlexaMeadeFacePaint  camera_0009  0.599 / 0.441 / 187
+      Barn                 v0           0.424 / 0.334 / 660
+      Barn                 v10          0.380 / 0.375 / 660
+      Barn                 v7           0.503 / 0.558 / 660
+      Blocks               cam0         0.560 / 0.482 / 313
+      Blocks               cam4         0.498 / 0.398 / 325
+      Blocks               cam9         0.549 / 0.427 / 314
+      Breakfast            v5           0.301 / 0.349 / 556
+      Breakfast            v7           0.231 / 0.277 / 570
+      Breakfast            v9           0.245 / 0.300 / 540
+      CBABasketball        v06          0.410 / 0.375 / 344
+      CBABasketball        v20          0.450 / 0.345 / 378
+      CBABasketball        v24          0.363 / 0.377 / 354
+      Carpark              v0           0.187 / 0.260 / 484
+      Carpark              v4           0.130 / 0.209 / 484
+      Carpark              v8           0.170 / 0.335 / 484
+      CoffeeMartini        cam02        0.400 / 0.355 / 792
+      CoffeeMartini        cam10        0.512 / 0.413 / 693
+      CoffeeMartini        cam16        0.442 / 0.427 / 847
+      Dog                  camera_0002  0.691 / 0.592 / 143
+      Dog                  camera_0003  0.730 / 0.690 / 154
+      Dog                  camera_0004  0.774 / 0.741 / 143
+      Fencing              v0           0.408 / 0.418 / 176
+      Fencing              v4           0.330 / 0.223 / 176
+      Fencing              v9           0.318 / 0.219 / 176
+      FlameSteak           cam01        0.360 / 0.366 / 418
+      FlameSteak           cam10        0.485 / 0.342 / 682
+      FlameSteak           cam16        0.387 / 0.418 / 704
+      Frog                 v10          0.271 / 0.212 / 110
+      Frog                 v4           0.350 / 0.351 / 110
+      Frog                 v7           0.211 / 0.177 / 110
+      MATF                 S1_CAM_1     0.701 / 0.665 / 344
+      MATF                 S1_CAM_10    0.730 / 0.384 / 183
+      MATF                 S1_CAM_4     0.685 / 0.486 / 359
+      MartialArts          v13          0.658 / 0.599 / 297
+      MartialArts          v5           0.375 / 0.448 / 308
+      MartialArts          v9           0.396 / 0.467 / 341
+      Painter              v0           0.264 / 0.338 / 531
+      Painter              v15          0.256 / 0.267 / 541
+      Painter              v6           0.173 / 0.220 / 540
+      PoznanStreet         v0           0.168 / 0.304 / 492
+      PoznanStreet         v4           0.158 / 0.283 / 503
+      PoznanStreet         v8           0.174 / 0.300 / 501
+      Welder               camera_0001  0.704 / 0.496 / 337
+      Welder               camera_0003  0.557 / 0.537 / 339
+      Welder               camera_0004  0.544 / 0.435 / 328
+
+
+### PART 2 -- keyframe, 664 scored pairs (meta: {'part': 'keyframe', 'seeds': ['geoset_pred_ft_rep_x_e11', 'geoset_pred_ft_rep_e8'], 'rows_src': '/host/home/sjpark/Documents/SCSegmentation/MVSeed/runs/seedfail.json', 'device': 'cuda', 'occ_tol': 0.01, 'n_rows': 664, 'seconds': 26.642099618911743, 'gpu_mb': 3357.4638671875})
+recall on a class = |pred & GT & class| / |GT & class|; groups follow seedfail.json (kinds and failing = JF < 0.8 of the e8 seeds)
+
+== all 664: 664 pairs, GT px 104,195,501 = visible 0.525 (on ref GT same obj 0.479) + invisible 0.475 (outside 0.200 occluded 0.200 nodepth 0.074); pair-mean invisible fraction 0.378
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9134 |                        0.971 0.913 0.918 0.930 0.852   0.985 |                       0.913  645 0.863  626 | 2,098,537 0.280 0.720 | 0.964
+   geoset_pred_ft_rep_e8        0.9126 |                        0.972 0.914 0.919 0.931 0.853   0.985 |                       0.915  645 0.868  626 | 2,355,731 0.285 0.715 | 0.967
+
+== under-cover failing (22): 22 pairs, GT px 4,641,806 = visible 0.331 (on ref GT same obj 0.183) + invisible 0.669 (outside 0.346 occluded 0.173 nodepth 0.150); pair-mean invisible fraction 0.592
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.6831 |                        0.921 0.611 0.698 0.733 0.268   0.970 |                       0.714   20 0.607   22 |   171,650 0.177 0.823 | 0.750
+   geoset_pred_ft_rep_e8        0.6859 |                        0.922 0.612 0.699 0.736 0.268   0.970 |                       0.721   20 0.617   22 |   178,782 0.179 0.821 | 0.753
+
+== under-cover failing without Dog camera_0004 tree (21): 21 pairs, GT px 3,378,879 = visible 0.395 (on ref GT same obj 0.202) + invisible 0.605 (outside 0.460 occluded 0.134 nodepth 0.010); pair-mean invisible fraction 0.580
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.6837 |                        0.910 0.665 0.696 0.596 0.240   0.963 |                       0.699   19 0.612   21 |   163,738 0.182 0.818 | 0.811
+   geoset_pred_ft_rep_e8        0.6865 |                        0.911 0.668 0.697 0.602 0.243   0.964 |                       0.707   19 0.622   21 |   170,793 0.184 0.816 | 0.814
+
+== all failing (59): 59 pairs, GT px 12,114,541 = visible 0.305 (on ref GT same obj 0.238) + invisible 0.695 (outside 0.394 occluded 0.221 nodepth 0.081); pair-mean invisible fraction 0.520
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.6617 |                        0.919 0.788 0.840 0.867 0.315   0.956 |                       0.726   52 0.672   52 |   687,176 0.167 0.833 | 0.884
+   geoset_pred_ft_rep_e8        0.6578 |                        0.920 0.789 0.840 0.869 0.315   0.956 |                       0.733   52 0.679   52 |   795,816 0.172 0.828 | 0.894
+
+== good seeds (605): 605 pairs, GT px 92,080,960 = visible 0.554 (on ref GT same obj 0.510) + invisible 0.446 (outside 0.175 occluded 0.197 nodepth 0.073); pair-mean invisible fraction 0.364
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9379 |                        0.975 0.938 0.941 0.939 0.930   0.987 |                       0.929  593 0.881  574 | 1,411,361 0.335 0.665 | 0.974
+   geoset_pred_ft_rep_e8        0.9375 |                        0.976 0.940 0.943 0.940 0.931   0.987 |                       0.931  593 0.885  574 | 1,559,915 0.343 0.657 | 0.977
+
+== size <0.1%: 91 pairs, GT px 171,660 = visible 0.584 (on ref GT same obj 0.319) + invisible 0.416 (outside 0.008 occluded 0.393 nodepth 0.014); pair-mean invisible fraction 0.384
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.8311 |                        0.878 0.822 0.001 0.841 0.788   0.945 |                       0.869   76 0.813   66 |    22,666 0.612 0.388 | 0.987
+   geoset_pred_ft_rep_e8        0.8294 |                        0.883 0.829 0.001 0.847 0.798   0.949 |                       0.875   76 0.822   66 |    24,993 0.613 0.387 | 1.006
+
+== size 0.1-1%: 279 pairs, GT px 4,099,101 = visible 0.641 (on ref GT same obj 0.498) + invisible 0.359 (outside 0.062 occluded 0.275 nodepth 0.022); pair-mean invisible fraction 0.372
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9221 |                        0.940 0.887 0.867 0.896 0.832   0.975 |                       0.905  275 0.852  270 |   177,485 0.474 0.526 | 0.964
+   geoset_pred_ft_rep_e8        0.9215 |                        0.942 0.891 0.871 0.900 0.836   0.976 |                       0.908  275 0.857  270 |   194,620 0.469 0.531 | 0.971
+
+== size 1-5%: 158 pairs, GT px 9,939,730 = visible 0.606 (on ref GT same obj 0.512) + invisible 0.394 (outside 0.117 occluded 0.253 nodepth 0.024); pair-mean invisible fraction 0.355
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9462 |                        0.960 0.916 0.907 0.918 0.946   0.983 |                       0.932  158 0.872  154 |   220,673 0.554 0.446 | 0.965
+   geoset_pred_ft_rep_e8        0.9462 |                        0.961 0.919 0.910 0.921 0.947   0.984 |                       0.934  158 0.876  154 |   241,784 0.554 0.446 | 0.969
+
+== size 5-20%: 84 pairs, GT px 29,522,865 = visible 0.582 (on ref GT same obj 0.513) + invisible 0.418 (outside 0.162 occluded 0.222 nodepth 0.034); pair-mean invisible fraction 0.383
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9145 |                        0.970 0.914 0.923 0.931 0.761   0.985 |                       0.931   84 0.888   84 |   624,696 0.258 0.742 | 0.968
+   geoset_pred_ft_rep_e8        0.9132 |                        0.970 0.915 0.923 0.932 0.762   0.985 |                       0.932   84 0.890   84 |   676,546 0.266 0.734 | 0.970
+
+== size >=20%: 52 pairs, GT px 60,462,145 = visible 0.477 (on ref GT same obj 0.456) + invisible 0.523 (outside 0.243 occluded 0.175 nodepth 0.105); pair-mean invisible fraction 0.464
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9092 |                        0.978 0.913 0.918 0.936 0.863   0.986 |                       0.931   52 0.920   52 | 1,053,017 0.196 0.804 | 0.961
+   geoset_pred_ft_rep_e8        0.9076 |                        0.978 0.914 0.920 0.937 0.864   0.986 |                       0.931   52 0.921   52 | 1,217,788 0.206 0.794 | 0.965
+
+== scene AlexaMeadeExhibit: 60 pairs, GT px 9,830,400 = visible 0.370 (on ref GT same obj 0.294) + invisible 0.630 (outside 0.272 occluded 0.289 nodepth 0.069); pair-mean invisible fraction 0.440
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9096 |                        0.948 0.921 0.923 0.921 0.912   0.967 |                       0.904   53 0.870   50 |   195,000 0.327 0.673 | 0.951
+   geoset_pred_ft_rep_e8        0.9093 |                        0.949 0.921 0.923 0.922 0.913   0.967 |                       0.909   53 0.879   50 |   215,880 0.356 0.644 | 0.954
+
+== scene AlexaMeadeFacePaint: 18 pairs, GT px 8,887,671 = visible 0.341 (on ref GT same obj 0.289) + invisible 0.659 (outside 0.295 occluded 0.210 nodepth 0.154); pair-mean invisible fraction 0.526
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9206 |                        0.973 0.930 0.898 0.964 0.944   0.987 |                       0.861   18 0.864   18 |   232,040 0.117 0.883 | 0.971
+   geoset_pred_ft_rep_e8        0.9190 |                        0.973 0.935 0.909 0.964 0.944   0.987 |                       0.865   18 0.871   18 |   236,903 0.118 0.882 | 0.975
+
+== scene Barn: 60 pairs, GT px 4,147,199 = visible 0.511 (on ref GT same obj 0.464) + invisible 0.489 (outside 0.140 occluded 0.343 nodepth 0.006); pair-mean invisible fraction 0.539
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9065 |                        0.916 0.891 0.887 0.891 0.973   0.956 |                       0.892   60 0.912   60 |   161,829 0.425 0.575 | 0.943
+   geoset_pred_ft_rep_e8        0.9056 |                        0.917 0.895 0.890 0.896 0.973   0.957 |                       0.894   60 0.917   60 |   194,618 0.386 0.614 | 0.953
+
+== scene Blocks: 29 pairs, GT px 3,919,772 = visible 0.504 (on ref GT same obj 0.479) + invisible 0.496 (outside 0.220 occluded 0.276 nodepth 0.000); pair-mean invisible fraction 0.389
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9228 |                        0.984 0.973 0.977 0.969 0.833   0.993 |                       0.917   28 0.902   24 |    25,198 0.461 0.539 | 0.985
+   geoset_pred_ft_rep_e8        0.9224 |                        0.984 0.973 0.977 0.970 0.833   0.993 |                       0.921   28 0.904   24 |    28,233 0.479 0.521 | 0.986
+
+== scene Breakfast: 51 pairs, GT px 4,146,942 = visible 0.768 (on ref GT same obj 0.754) + invisible 0.232 (outside 0.099 occluded 0.133 nodepth 0.000); pair-mean invisible fraction 0.265
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.8579 |                        0.980 0.908 0.985 0.850 0.869   0.988 |                       0.932   47 0.792   43 |    28,109 0.458 0.542 | 0.970
+   geoset_pred_ft_rep_e8        0.8574 |                        0.981 0.912 0.987 0.855 0.869   0.988 |                       0.934   47 0.796   43 |    30,936 0.475 0.525 | 0.972
+
+== scene CBABasketball: 35 pairs, GT px 4,447,735 = visible 0.548 (on ref GT same obj 0.513) + invisible 0.452 (outside 0.256 occluded 0.195 nodepth 0.001); pair-mean invisible fraction 0.316
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.8925 |                        0.970 0.918 0.898 0.944 0.895   0.985 |                       0.870   35 0.808   33 |    45,458 0.447 0.553 | 0.956
+   geoset_pred_ft_rep_e8        0.8890 |                        0.970 0.918 0.898 0.945 0.957   0.985 |                       0.874   35 0.809   33 |    49,323 0.449 0.551 | 0.958
+
+== scene Carpark: 44 pairs, GT px 4,177,920 = visible 0.871 (on ref GT same obj 0.857) + invisible 0.129 (outside 0.068 occluded 0.055 nodepth 0.006); pair-mean invisible fraction 0.215
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9495 |                        0.985 0.952 0.979 0.928 0.850   0.992 |                       0.944   43 0.840   42 |    31,464 0.602 0.398 | 0.988
+   geoset_pred_ft_rep_e8        0.9496 |                        0.985 0.952 0.980 0.929 0.852   0.992 |                       0.945   43 0.842   42 |    33,619 0.603 0.397 | 0.989
+
+== scene CoffeeMartini: 77 pairs, GT px 10,351,704 = visible 0.565 (on ref GT same obj 0.536) + invisible 0.435 (outside 0.280 occluded 0.155 nodepth 0.000); pair-mean invisible fraction 0.418
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9381 |                        0.974 0.928 0.924 0.936   nan   0.985 |                       0.948   74 0.900   75 |   231,239 0.157 0.843 | 0.976
+   geoset_pred_ft_rep_e8        0.9363 |                        0.974 0.929 0.924 0.938   nan   0.985 |                       0.949   74 0.903   75 |   316,256 0.176 0.824 | 0.985
+
+== scene Dog: 13 pairs, GT px 9,808,264 = visible 0.299 (on ref GT same obj 0.145) + invisible 0.701 (outside 0.065 occluded 0.218 nodepth 0.418); pair-mean invisible fraction 0.599
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.8567 |                        0.963 0.843 0.885 0.894 0.809   0.979 |                       0.806   13 0.833   13 |   377,965 0.186 0.814 | 0.917
+   geoset_pred_ft_rep_e8        0.8582 |                        0.964 0.843 0.885 0.895 0.809   0.980 |                       0.808   13 0.835   13 |   390,391 0.193 0.807 | 0.919
+
+== scene Fencing: 16 pairs, GT px 4,147,200 = visible 0.677 (on ref GT same obj 0.648) + invisible 0.323 (outside 0.125 occluded 0.198 nodepth 0.000); pair-mean invisible fraction 0.229
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9424 |                        0.981 0.977 0.984 0.973   nan   0.989 |                       0.914   16 0.871   16 |    20,278 0.610 0.390 | 0.985
+   geoset_pred_ft_rep_e8        0.9437 |                        0.981 0.978 0.985 0.974   nan   0.989 |                       0.919   16 0.872   16 |    22,159 0.613 0.387 | 0.986
+
+== scene FlameSteak: 64 pairs, GT px 9,613,526 = visible 0.618 (on ref GT same obj 0.595) + invisible 0.382 (outside 0.259 occluded 0.123 nodepth 0.000); pair-mean invisible fraction 0.410
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9135 |                        0.976 0.882 0.875 0.896 0.936   0.989 |                       0.919   64 0.894   64 |   323,120 0.214 0.786 | 0.974
+   geoset_pred_ft_rep_e8        0.9131 |                        0.977 0.882 0.875 0.897 0.936   0.990 |                       0.923   64 0.901   64 |   331,413 0.220 0.780 | 0.975
+
+== scene Frog: 10 pairs, GT px 4,147,200 = visible 0.795 (on ref GT same obj 0.781) + invisible 0.205 (outside 0.103 occluded 0.099 nodepth 0.002); pair-mean invisible fraction 0.164
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9843 |                        0.993 0.983 0.996 0.972 0.820   0.996 |                       0.993   10 0.943   10 |    18,101 0.671 0.329 | 0.995
+   geoset_pred_ft_rep_e8        0.9833 |                        0.993 0.984 0.996 0.974 0.820   0.996 |                       0.993   10 0.944   10 |    21,767 0.652 0.348 | 0.997
+
+== scene MATF: 31 pairs, GT px 3,986,632 = visible 0.320 (on ref GT same obj 0.284) + invisible 0.680 (outside 0.285 occluded 0.164 nodepth 0.231); pair-mean invisible fraction 0.478
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.8693 |                        0.965 0.966 0.986 0.901 0.989   0.982 |                       0.877   29 0.820   30 |    81,691 0.228 0.772 | 0.986
+   geoset_pred_ft_rep_e8        0.8672 |                        0.966 0.967 0.986 0.905 0.989   0.983 |                       0.880   29 0.826   30 |    88,141 0.238 0.762 | 0.989
+
+== scene MartialArts: 31 pairs, GT px 4,147,200 = visible 0.608 (on ref GT same obj 0.567) + invisible 0.392 (outside 0.194 occluded 0.198 nodepth 0.000); pair-mean invisible fraction 0.469
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9437 |                        0.978 0.934 0.909 0.960 0.601   0.991 |                       0.920   30 0.922   31 |    64,375 0.373 0.627 | 0.977
+   geoset_pred_ft_rep_e8        0.9436 |                        0.979 0.935 0.910 0.961 0.601   0.991 |                       0.922   30 0.925   31 |    68,993 0.374 0.626 | 0.978
+
+== scene Painter: 48 pairs, GT px 4,427,816 = visible 0.835 (on ref GT same obj 0.792) + invisible 0.165 (outside 0.101 occluded 0.063 nodepth 0.001); pair-mean invisible fraction 0.200
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9094 |                        0.961 0.885 0.892 0.878 0.452   0.979 |                       0.938   48 0.846   43 |   134,565 0.500 0.500 | 0.979
+   geoset_pred_ft_rep_e8        0.9090 |                        0.962 0.886 0.892 0.881 0.466   0.980 |                       0.940   48 0.848   43 |   142,124 0.507 0.493 | 0.982
+
+== scene PoznanStreet: 46 pairs, GT px 4,177,920 = visible 0.843 (on ref GT same obj 0.828) + invisible 0.157 (outside 0.041 occluded 0.061 nodepth 0.055); pair-mean invisible fraction 0.271
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9248 |                        0.984 0.918 0.918 0.871 0.969   0.993 |                       0.893   46 0.801   46 |    43,653 0.571 0.429 | 0.984
+   geoset_pred_ft_rep_e8        0.9255 |                        0.985 0.921 0.918 0.879 0.970   0.994 |                       0.896   46 0.808   46 |    56,008 0.555 0.445 | 0.989
+
+== scene Welder: 31 pairs, GT px 9,830,400 = visible 0.294 (on ref GT same obj 0.261) + invisible 0.706 (outside 0.281 occluded 0.390 nodepth 0.036); pair-mean invisible fraction 0.470
+   seeds                            JF | recall pixel-weighted:   vis invis   out   occ   nod onrefGT | pair-mean (>= 100 px):   vis    n invis    n | FP px:     total   vis invis | pred px / GT px
+   geoset_pred_ft_rep_x_e11     0.9117 |                        0.957 0.908 0.905 0.952 0.448   0.975 |                       0.908   31 0.851   28 |    84,452 0.339 0.661 | 0.931
+   geoset_pred_ft_rep_e8        0.9097 |                        0.957 0.908 0.905 0.952 0.448   0.975 |                       0.911   31 0.853   28 |   128,967 0.305 0.695 | 0.936
+
+=== per under-cover failing pair, seeds = geoset_pred_ft_rep_x_e11 (sorted by stage-2 cost) ===
+scene cam obj label | cost | GT px: invis frac (out/occ/nod) | recall vis / invis (out/occ/nod) | FP px (invis share) | JF e8 -> e11
+Dog camera_0004 3 tree | 0.101 | 1,262,927: 0.84 (0.04/0.28/0.52) | 0.995 / 0.505 (0.76/0.91/0.27) | 7,912 (0.92) | 0.672 -> 0.669
+Dog camera_0004 4 handrail_or_fence | 0.089 | 811,494: 0.29 (0.14/0.11/0.04) | 0.951 / 0.447 (0.81/0.09/0.20) | 18,025 (0.44) | 0.728 -> 0.719
+CBABasketball v24 20 grandstand | 0.070 | 117,942: 0.76 (0.72/0.04/0.00) | 0.625 / 0.751 (0.78/0.13/nan) | 0 (nan) | 0.361 -> 0.360
+CBABasketball v06 20 grandstand | 0.065 | 137,380: 1.00 (1.00/0.00/0.00) | 0.151 / 0.617 (0.62/nan/nan) | 147 (0.43) | 0.407 -> 0.407
+Welder camera_0003 6 ground | 0.040 | 432,631: 0.93 (0.80/0.12/0.00) | 0.808 / 0.789 (0.79/0.75/nan) | 2,826 (0.81) | 0.676 -> 0.676
+Breakfast v9 8 chair_or_seat | 0.036 | 27,815: 0.84 (0.24/0.60/0.00) | 0.761 / 0.432 (0.72/0.32/nan) | 0 (nan) | 0.492 -> 0.495
+PoznanStreet v8 18 lamp | 0.026 | 5,561: 0.27 (0.00/0.16/0.11) | 0.208 / 0.842 (nan/0.84/0.84) | 155 (0.88) | 0.616 -> 0.606
+PoznanStreet v0 24 grass | 0.026 | 16,284: 0.24 (0.02/0.22/0.00) | 0.875 / 0.401 (0.00/0.43/nan) | 1,439 (0.20) | 0.795 -> 0.785
+MATF S1_CAM_1 11 chair_or_seat | 0.022 | 5,268: 0.32 (0.18/0.12/0.02) | 0.651 / 0.633 (0.57/0.76/0.47) | 137 (0.11) | 0.746 -> 0.744
+FlameSteak cam01 32 wall | 0.021 | 1,411,256: 0.65 (0.54/0.11/0.00) | 0.972 / 0.701 (0.66/0.92/0.88) | 132,178 (0.89) | 0.727 -> 0.727
+Barn v10 23 ground | 0.020 | 222,749: 0.46 (0.01/0.45/0.00) | 0.617 / 0.524 (0.00/0.54/nan) | 2,862 (0.56) | 0.616 -> 0.616
+CoffeeMartini cam10 12 cushion_or_carpet | 0.019 | 21,812: 0.84 (0.00/0.84/0.00) | 0.586 / 0.695 (nan/0.70/nan) | 273 (0.95) | 0.737 -> 0.737
+MartialArts v13 11 rig | 0.017 | 71,908: 0.96 (0.95/0.01/0.00) | 0.820 / 0.593 (0.59/0.78/nan) | 2,892 (0.95) | 0.755 -> 0.750
+CoffeeMartini cam02 29 bottle_or_cup | 0.017 | 4,793: 1.00 (0.00/1.00/0.00) | nan / 0.514 (nan/0.51/nan) | 134 (1.00) | 0.611 -> 0.610
+MartialArts v13 15 door | 0.016 | 5,159: 0.70 (0.51/0.19/0.00) | 0.563 / 0.708 (0.87/0.25/nan) | 243 (0.52) | 0.763 -> 0.762
+CoffeeMartini cam10 16 book | 0.015 | 4,757: 0.39 (0.00/0.39/0.00) | 0.958 / 0.086 (nan/0.09/nan) | 346 (0.03) | 0.706 -> 0.711
+Painter v15 19 painting_or_poster | 0.015 | 30,151: 0.53 (0.51/0.02/0.00) | 0.976 / 0.359 (0.33/0.99/nan) | 222 (0.11) | 0.735 -> 0.735
+PoznanStreet v8 13 traffic_sign | 0.014 | 39,587: 0.44 (0.39/0.04/0.00) | 0.946 / 0.661 (0.64/0.82/nan) | 1,462 (0.13) | 0.792 -> 0.791
+Breakfast v9 29 bottle_or_cup | 0.012 | 711: 0.15 (0.00/0.15/0.00) | 0.659 / 0.846 (nan/0.85/nan) | 54 (0.20) | 0.798 -> 0.792
+Fencing v9 3 weapon | 0.008 | 2,555: 0.34 (0.00/0.34/0.00) | 0.612 / 0.687 (nan/0.69/nan) | 184 (0.16) | 0.792 -> 0.778
+FlameSteak cam10 5 fire | 0.008 | 8,600: 0.29 (0.00/0.29/0.00) | 0.542 / 0.727 (nan/0.73/nan) | 112 (0.77) | 0.782 -> 0.773
+MATF S1_CAM_1 21 microphone | 0.007 | 466: 0.80 (0.00/0.16/0.64) | 0.298 / 0.828 (nan/0.32/0.96) | 47 (0.85) | 0.783 -> 0.781
+
+   all 664: missed GT px of geoset_pred_ft_rep_x_e11 = 5,892,912 of which invisible 4,317,571 (0.733) = outside 1,717,335 (0.291) + occluded 1,461,602 (0.248) + nodepth 1,138,634 (0.193); visible 1,575,341
+
+   under-cover 22: missed GT px of geoset_pred_ft_rep_x_e11 = 1,331,152 of which invisible 1,209,729 (0.909) = outside 486,040 (0.365) + occluded 214,783 (0.161) + nodepth 508,906 (0.382); visible 121,423
+
+   good 605: missed GT px of geoset_pred_ft_rep_x_e11 = 3,805,890 of which invisible 2,528,283 (0.664) = outside 954,350 (0.251) + occluded 1,104,452 (0.290) + nodepth 469,481 (0.123); visible 1,277,607
+
+=== keyframe pairs binned by their invisible-GT fraction, seeds = geoset_pred_ft_rep_x_e11 (pair-mean recall over pairs with >= 100 px in the class; J&F = mean) ===
+   invis frac bin pairs        GT px rec vis pw rec inv pw rec vis pm rec inv pm     JF failing under-cover
+   [0.0, 0.2)        229   23,761,703      0.981      0.900      0.946      0.807  0.928      12           1
+   [0.2, 0.5)        229   30,470,814      0.973      0.916      0.934      0.888  0.925      16           9
+   [0.5, 0.8)        124   30,709,980      0.955      0.914      0.902      0.893  0.886      17           5
+   [0.8, 1.0]         82   19,253,004      0.933      0.911      0.748      0.881  0.880      14           7

@@ -1,0 +1,104 @@
+meta: {'C0': 'geoset_pred_ft_rep_x_e11', 'nulls': ['geoset_dec_ft_rep_e9', 'geoset_decb_ft_rep_e9', 'geoset_pred_ft_r1_x_e11'], 'occ_tol': 0.01, 'device': 'cuda', 'seconds': 220.50777769088745, 'n_rows': 664}
+C0 re-scored: scene-mean J&F 0.9148 (E11 judge: 0.9148)
+
+== COMP  geoset_dec_ft_rep_e9: dJ&F +0.0011 [+0.0005, +0.0018]  dJ +0.0013 [+0.0006, +0.0021]  dF +0.0008 [+0.0002, +0.0016]  worst Barn -0.0008  down>0.01 4  up>0.01 15  G1 pass  G2 pass
+   splits dJ&F pair-mean: all664 +0.0010 (n 664)  good605 +0.0007 (n 605)  fail59 +0.0034 (n 59)  under22 +0.0045 (n 22)
+   all664   E-beyond-C0: inv 817,786 vis 304,271 | add raw 572,585 -> kept 562,753 (= 0.56 % of C0 px) | TP 442,033 FP 120,720 precision 0.785 | FP out/occ/nod 66,722/40,547/13,451 | TP out/occ/nod 127,039/146,444/168,550
+   good605  E-beyond-C0: inv 500,604 vis 253,089 | add raw 342,378 -> kept 335,421 (= 0.37 % of C0 px) | TP 238,571 FP 96,850 precision 0.711 | FP out/occ/nod 48,403/36,177/12,270 | TP out/occ/nod 82,047/119,343/37,181
+   fail59   E-beyond-C0: inv 317,182 vis 51,182 | add raw 230,207 -> kept 227,332 (= 2.12 % of C0 px) | TP 203,462 FP 23,870 precision 0.895 | FP out/occ/nod 18,319/4,370/1,181 | TP out/occ/nod 44,992/27,101/131,369
+   under22  E-beyond-C0: inv 41,927 vis 8,278 | add raw 35,314 -> kept 34,316 (= 0.99 % of C0 px) | TP 29,373 FP 4,943 precision 0.856 | FP out/occ/nod 3,098/1,027/818 | TP out/occ/nod 19,061/7,435/2,877
+   per-scene dJ&F: Barn -0.0008  MartialArts -0.0001  CoffeeMartini +0.0000  Frog +0.0001  Blocks +0.0003  Fencing +0.0003  Painter +0.0004  FlameSteak +0.0006  PoznanStreet +0.0008  Dog +0.0008  Carpark +0.0011  Breakfast +0.0011  MATF +0.0014  AlexaMeadeFacePaint +0.0021  AlexaMeadeExhibit +0.0022  CBABasketball +0.0024  Welder +0.0056
+   under22 per pair (dJ&F, add TP/FP):
+      Barn                 v10           23 C0 0.616 d +0.0025  add 729 TP 628 FP 101  raw-E JF 0.540
+      Breakfast            v9             8 C0 0.495 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.000
+      Breakfast            v9            29 C0 0.792 d +0.0005  add 4 TP 2 FP 2  raw-E JF 0.787
+      CBABasketball        v06           20 C0 0.407 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.000
+      CBABasketball        v24           20 C0 0.360 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.354
+      CoffeeMartini        cam02         29 C0 0.610 d +0.0003  add 3 TP 3 FP 0  raw-E JF 0.603
+      CoffeeMartini        cam10         12 C0 0.737 d +0.0015  add 134 TP 88 FP 46  raw-E JF 0.735
+      CoffeeMartini        cam10         16 C0 0.711 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.705
+      Dog                  camera_0004    3 C0 0.669 d +0.0015  add 4,502 TP 3,459 FP 1,043  raw-E JF 0.660
+      Dog                  camera_0004    4 C0 0.719 d +0.0000  add 152 TP 91 FP 61  raw-E JF 0.701
+      Fencing              v9             3 C0 0.778 d +0.0005  add 14 TP 7 FP 7  raw-E JF 0.821
+      FlameSteak           cam01         32 C0 0.727 d +0.0022  add 5,879 TP 4,155 FP 1,724  raw-E JF 0.746
+      FlameSteak           cam10          5 C0 0.773 d +0.0016  add 28 TP 28 FP 0  raw-E JF 0.788
+      MATF                 S1_CAM_1      11 C0 0.744 d +0.0076  add 88 TP 70 FP 18  raw-E JF 0.754
+      MATF                 S1_CAM_1      21 C0 0.781 d +0.0118  add 76 TP 23 FP 53  raw-E JF 0.826
+      MartialArts          v13           11 C0 0.750 d +0.0011  add 105 TP 99 FP 6  raw-E JF 0.749
+      MartialArts          v13           15 C0 0.762 d +0.0050  add 32 TP 32 FP 0  raw-E JF 0.745
+      Painter              v15           19 C0 0.735 d +0.0050  add 840 TP 840 FP 0  raw-E JF 0.788
+      PoznanStreet         v0            24 C0 0.785 d +0.0019  add 143 TP 81 FP 62  raw-E JF 0.799
+      PoznanStreet         v8            13 C0 0.791 d +0.0001  add 23 TP 13 FP 10  raw-E JF 0.817
+      PoznanStreet         v8            18 C0 0.606 d +0.0007  add 19 TP 11 FP 8  raw-E JF 0.622
+      Welder               camera_0003    6 C0 0.676 d +0.0551  add 21,545 TP 19,743 FP 1,802  raw-E JF 0.746
+
+== RAW   geoset_dec_ft_rep_e9: dJ&F -0.0011 [-0.0038, +0.0012]  dJ -0.0005 [-0.0039, +0.0026]  dF -0.0016 [-0.0039, +0.0002]  worst CBABasketball -0.0174  down>0.01 57  up>0.01 67  G1 fail  G2 fail
+   splits dJ&F pair-mean: all664 -0.0018 (n 664)  good605 -0.0009 (n 605)  fail59 -0.0119 (n 59)  under22 -0.0338 (n 22)
+
+== COMP  geoset_decb_ft_rep_e9: dJ&F +0.0015 [+0.0008, +0.0023]  dJ +0.0021 [+0.0011, +0.0031]  dF +0.0010 [+0.0002, +0.0019]  worst Barn -0.0005  down>0.01 18  up>0.01 39  G1 pass  G2 pass
+   splits dJ&F pair-mean: all664 +0.0013 (n 664)  good605 +0.0011 (n 605)  fail59 +0.0037 (n 59)  under22 +0.0110 (n 22)
+   all664   E-beyond-C0: inv 1,513,650 vis 758,517 | add raw 1,087,216 -> kept 1,033,162 (= 1.03 % of C0 px) | TP 654,690 FP 378,472 precision 0.634 | FP out/occ/nod 161,043/150,051/67,378 | TP out/occ/nod 213,292/333,565/107,833
+   good605  E-beyond-C0: inv 1,153,657 vis 653,863 | add raw 850,389 -> kept 812,668 (= 0.91 % of C0 px) | TP 507,971 FP 304,697 precision 0.625 | FP out/occ/nod 112,261/130,608/61,828 | TP out/occ/nod 140,358/274,901/92,712
+   fail59   E-beyond-C0: inv 359,993 vis 104,654 | add raw 236,827 -> kept 220,494 (= 2.06 % of C0 px) | TP 146,719 FP 73,775 precision 0.665 | FP out/occ/nod 48,782/19,443/5,550 | TP out/occ/nod 72,934/58,664/15,121
+   under22  E-beyond-C0: inv 117,651 vis 25,884 | add raw 93,317 -> kept 86,890 (= 2.50 % of C0 px) | TP 65,034 FP 21,856 precision 0.748 | FP out/occ/nod 12,590/5,696/3,570 | TP out/occ/nod 37,456/20,189/7,389
+   per-scene dJ&F: Barn -0.0005  Blocks -0.0003  MartialArts -0.0000  Frog +0.0000  Painter +0.0006  Fencing +0.0007  CoffeeMartini +0.0008  MATF +0.0010  AlexaMeadeExhibit +0.0011  PoznanStreet +0.0011  Carpark +0.0017  Breakfast +0.0019  FlameSteak +0.0021  Dog +0.0024  CBABasketball +0.0042  AlexaMeadeFacePaint +0.0046  Welder +0.0049
+   under22 per pair (dJ&F, add TP/FP):
+      Barn                 v10           23 C0 0.616 d +0.0120  add 2,656 TP 2,089 FP 567  raw-E JF 0.597
+      Breakfast            v9             8 C0 0.495 d +0.0693  add 5,732 TP 5,732 FP 0  raw-E JF 0.611
+      Breakfast            v9            29 C0 0.792 d -0.0004  add 19 TP 7 FP 12  raw-E JF 0.762
+      CBABasketball        v06           20 C0 0.407 d +0.0254  add 4,590 TP 4,581 FP 9  raw-E JF 0.423
+      CBABasketball        v24           20 C0 0.360 d +0.0001  add 13 TP 13 FP 0  raw-E JF 0.348
+      CoffeeMartini        cam02         29 C0 0.610 d +0.0007  add 7 TP 7 FP 0  raw-E JF 0.601
+      CoffeeMartini        cam10         12 C0 0.737 d +0.0090  add 497 TP 308 FP 189  raw-E JF 0.743
+      CoffeeMartini        cam10         16 C0 0.711 d +0.0001  add 1 TP 1 FP 0  raw-E JF 0.707
+      Dog                  camera_0004    3 C0 0.669 d +0.0025  add 12,782 TP 9,082 FP 3,700  raw-E JF 0.678
+      Dog                  camera_0004    4 C0 0.719 d +0.0008  add 3,363 TP 1,716 FP 1,647  raw-E JF 0.733
+      Fencing              v9             3 C0 0.778 d +0.0013  add 23 TP 13 FP 10  raw-E JF 0.872
+      FlameSteak           cam01         32 C0 0.727 d +0.0041  add 32,630 TP 21,327 FP 11,303  raw-E JF 0.730
+      FlameSteak           cam10          5 C0 0.773 d +0.0017  add 30 TP 30 FP 0  raw-E JF 0.785
+      MATF                 S1_CAM_1      11 C0 0.744 d +0.0091  add 129 TP 96 FP 33  raw-E JF 0.751
+      MATF                 S1_CAM_1      21 C0 0.781 d +0.0019  add 46 TP 14 FP 32  raw-E JF 0.494
+      MartialArts          v13           11 C0 0.750 d +0.0104  add 1,685 TP 1,318 FP 367  raw-E JF 0.774
+      MartialArts          v13           15 C0 0.762 d +0.0164  add 114 TP 111 FP 3  raw-E JF 0.787
+      Painter              v15           19 C0 0.735 d +0.0211  add 1,042 TP 1,042 FP 0  raw-E JF 0.972
+      PoznanStreet         v0            24 C0 0.785 d +0.0037  add 207 TP 146 FP 61  raw-E JF 0.797
+      PoznanStreet         v8            13 C0 0.791 d +0.0006  add 113 TP 65 FP 48  raw-E JF 0.791
+      PoznanStreet         v8            18 C0 0.606 d +0.0021  add 42 TP 29 FP 13  raw-E JF 0.598
+      Welder               camera_0003    6 C0 0.676 d +0.0498  add 21,169 TP 17,307 FP 3,862  raw-E JF 0.684
+
+== RAW   geoset_decb_ft_rep_e9: dJ&F -0.0030 [-0.0060, +0.0002]  dJ -0.0000 [-0.0034, +0.0038]  dF -0.0059 [-0.0098, -0.0020]  worst MartialArts -0.0136  down>0.01 109  up>0.01 102  G1 fail  G2 fail
+   splits dJ&F pair-mean: all664 -0.0044 (n 664)  good605 -0.0037 (n 605)  fail59 -0.0121 (n 59)  under22 +0.0095 (n 22)
+
+== COMP  geoset_pred_ft_r1_x_e11: dJ&F +0.0010 [-0.0000, +0.0021]  dJ +0.0013 [+0.0000, +0.0027]  dF +0.0006 [-0.0003, +0.0016]  worst MartialArts -0.0044  down>0.01 10  up>0.01 28  G1 fail  G2 pass
+   splits dJ&F pair-mean: all664 +0.0010 (n 664)  good605 +0.0003 (n 605)  fail59 +0.0078 (n 59)  under22 +0.0137 (n 22)
+   all664   E-beyond-C0: inv 854,089 vis 364,038 | add raw 590,004 -> kept 573,157 (= 0.57 % of C0 px) | TP 404,343 FP 168,814 precision 0.705 | FP out/occ/nod 82,214/72,213/14,387 | TP out/occ/nod 133,645/180,119/90,579
+   good605  E-beyond-C0: inv 546,319 vis 305,192 | add raw 366,486 -> kept 360,430 (= 0.40 % of C0 px) | TP 221,712 FP 138,718 precision 0.615 | FP out/occ/nod 63,246/64,604/10,868 | TP out/occ/nod 69,038/123,200/29,474
+   fail59   E-beyond-C0: inv 307,770 vis 58,846 | add raw 223,518 -> kept 212,727 (= 1.99 % of C0 px) | TP 182,631 FP 30,096 precision 0.859 | FP out/occ/nod 18,968/7,609/3,519 | TP out/occ/nod 64,607/56,919/61,105
+   under22  E-beyond-C0: inv 66,531 vis 10,459 | add raw 60,892 -> kept 54,345 (= 1.56 % of C0 px) | TP 40,496 FP 13,849 precision 0.745 | FP out/occ/nod 8,177/2,814/2,858 | TP out/occ/nod 25,682/13,428/1,386
+   per-scene dJ&F: MartialArts -0.0044  Barn -0.0007  Painter -0.0005  Frog +0.0000  AlexaMeadeExhibit +0.0002  Fencing +0.0003  MATF +0.0005  Carpark +0.0006  Dog +0.0008  CoffeeMartini +0.0009  Blocks +0.0009  CBABasketball +0.0013  AlexaMeadeFacePaint +0.0016  FlameSteak +0.0021  PoznanStreet +0.0028  Breakfast +0.0031  Welder +0.0070
+   under22 per pair (dJ&F, add TP/FP):
+      Barn                 v10           23 C0 0.616 d +0.0050  add 1,101 TP 997 FP 104  raw-E JF 0.587
+      Breakfast            v9             8 C0 0.495 d +0.1574  add 8,169 TP 8,169 FP 0  raw-E JF 0.696
+      Breakfast            v9            29 C0 0.792 d +0.0007  add 1 TP 1 FP 0  raw-E JF 0.794
+      CBABasketball        v06           20 C0 0.407 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.000
+      CBABasketball        v24           20 C0 0.360 d +0.0018  add 416 TP 416 FP 0  raw-E JF 0.365
+      CoffeeMartini        cam02         29 C0 0.610 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.000
+      CoffeeMartini        cam10         12 C0 0.737 d +0.0014  add 65 TP 57 FP 8  raw-E JF 0.708
+      CoffeeMartini        cam10         16 C0 0.711 d +0.0001  add 1 TP 1 FP 0  raw-E JF 0.697
+      Dog                  camera_0004    3 C0 0.669 d +0.0005  add 8,943 TP 4,180 FP 4,763  raw-E JF 0.670
+      Dog                  camera_0004    4 C0 0.719 d +0.0000  add 2 TP 2 FP 0  raw-E JF 0.728
+      Fencing              v9             3 C0 0.778 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.792
+      FlameSteak           cam01         32 C0 0.727 d +0.0060  add 20,325 TP 12,447 FP 7,878  raw-E JF 0.738
+      FlameSteak           cam10          5 C0 0.773 d +0.0002  add 3 TP 3 FP 0  raw-E JF 0.783
+      MATF                 S1_CAM_1      11 C0 0.744 d +0.0011  add 12 TP 12 FP 0  raw-E JF 0.672
+      MATF                 S1_CAM_1      21 C0 0.781 d -0.0025  add 43 TP 14 FP 29  raw-E JF 0.835
+      MartialArts          v13           11 C0 0.750 d +0.0017  add 772 TP 423 FP 349  raw-E JF 0.730
+      MartialArts          v13           15 C0 0.762 d +0.0000  add 0 TP 0 FP 0  raw-E JF 0.000
+      Painter              v15           19 C0 0.735 d +0.0000  add 3 TP 3 FP 0  raw-E JF 0.727
+      PoznanStreet         v0            24 C0 0.785 d +0.0049  add 178 TP 158 FP 20  raw-E JF 0.802
+      PoznanStreet         v8            13 C0 0.791 d +0.0975  add 2,797 TP 2,691 FP 106  raw-E JF 0.917
+      PoznanStreet         v8            18 C0 0.606 d +0.0013  add 23 TP 17 FP 6  raw-E JF 0.473
+      Welder               camera_0003    6 C0 0.676 d +0.0237  add 11,491 TP 10,905 FP 586  raw-E JF 0.678
+
+== RAW   geoset_pred_ft_r1_x_e11: dJ&F -0.0085 [-0.0175, -0.0014]  dJ -0.0093 [-0.0191, -0.0019]  dF -0.0077 [-0.0163, -0.0007]  worst CBABasketball -0.0637  down>0.01 94  up>0.01 70  G1 fail  G2 fail
+   splits dJ&F pair-mean: all664 -0.0092 (n 664)  good605 -0.0060 (n 605)  fail59 -0.0415 (n 59)  under22 -0.0744 (n 22)

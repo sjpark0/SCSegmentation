@@ -1,0 +1,391 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+{
+ "n_scenes": 17,
+ "n_samples": 1122,
+ "n_object_rows": 24834,
+ "n_present_in_target": 20990,
+ "pixel_weighted_over_present_target_gt": {
+  "vis": 0.5207200936939879,
+  "outside": 0.22397125445131186,
+  "occluded": 0.1891717583135578,
+  "nodepth": 0.06613689354114245,
+  "invisible_total": 0.4792799063060121,
+  "on_refgt_same_object": 0.4740194256699762
+ },
+ "object_mean_invisible_frac": 0.3907813524980143,
+ "object_median_invisible_frac": 0.32613951995364115,
+ "objects_with_invisible_frac_ge_0.2": 13649,
+ "objects_with_invisible_frac_ge_0.5": 7138,
+ "projected_ref_mask": {
+  "px_total": 1758170913,
+  "px_not_target_gt": 156826296,
+  "precision_vs_target_gt": 0.9108014500521998,
+  "recall_of_target_gt": 0.4740194256699762
+ },
+ "timing_s_per_sample": {
+  "reproj_inputs_mean": 0.03129311257319333,
+  "reproj_inputs_median": 0.03264977548678871,
+  "masks_h2d_mean": 0.0800816866738293,
+  "project_reference_masks+classes_gpu_mean": 0.003916439547839719,
+  "project_gpu_median": 0.0026867215055972338,
+  "total_mean": 0.03520955212103305,
+  "wall_total_s": 212.4042329788208,
+  "gpu_peak_mb": 3796.76220703125
+ },
+ "per_scene": {
+  "AlexaMeadeExhibit": {
+   "hw": [
+    1920,
+    2560
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 31.0,
+   "img_vis_frac_mean": 0.3847123465754769,
+   "img_nodepth_frac_mean": 0.07862541034366145,
+   "gt_invisible_frac_pixelweighted": 0.6112836475497327,
+   "gt_outside": 0.273962728216118,
+   "gt_occluded": 0.2591651715107972,
+   "gt_nodepth": 0.07815574782281752,
+   "gt_on_refgt_same_object": 0.3175428298755011,
+   "proj_precision": 0.8166794011633771
+  },
+  "AlexaMeadeFacePaint": {
+   "hw": [
+    1920,
+    2560
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 11.0,
+   "img_vis_frac_mean": 0.343696713673346,
+   "img_nodepth_frac_mean": 0.11591083951520198,
+   "gt_invisible_frac_pixelweighted": 0.6322316483410052,
+   "gt_outside": 0.294098884321326,
+   "gt_occluded": 0.2175001365659986,
+   "gt_nodepth": 0.12063262745368061,
+   "gt_on_refgt_same_object": 0.3060638618067382,
+   "proj_precision": 0.8316726305473459
+  },
+  "Barn": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 30.0,
+   "img_vis_frac_mean": 0.5644824522914309,
+   "img_nodepth_frac_mean": 0.0044786259108646346,
+   "gt_invisible_frac_pixelweighted": 0.4355174545029578,
+   "gt_outside": 0.14266111738438042,
+   "gt_occluded": 0.28837771043997285,
+   "gt_nodepth": 0.004478626678604527,
+   "gt_on_refgt_same_object": 0.5107069993595824,
+   "proj_precision": 0.9047727747834703
+  },
+  "Blocks": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 17.21212121212121,
+   "img_vis_frac_mean": 0.43616987042354816,
+   "img_nodepth_frac_mean": 8.344439745335627e-05,
+   "gt_invisible_frac_pixelweighted": 0.5356399568582104,
+   "gt_outside": 0.21658563222005744,
+   "gt_occluded": 0.3190321516722393,
+   "gt_nodepth": 2.2172965913668386e-05,
+   "gt_on_refgt_same_object": 0.4427711547100057,
+   "proj_precision": 0.9533581339218373
+  },
+  "Breakfast": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 26.818181818181817,
+   "img_vis_frac_mean": 0.7351328098412716,
+   "img_nodepth_frac_mean": 0.00016178860352573048,
+   "gt_invisible_frac_pixelweighted": 0.2590236404667245,
+   "gt_outside": 0.12865772630884786,
+   "gt_occluded": 0.1302026798485166,
+   "gt_nodepth": 0.00016323430936003827,
+   "gt_on_refgt_same_object": 0.726976898010397,
+   "proj_precision": 0.9812147179500702
+  },
+  "CBABasketball": {
+   "hw": [
+    1088,
+    2048
+   ],
+   "work_hw": [
+    364,
+    686
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 19.12121212121212,
+   "img_vis_frac_mean": 0.5733493096900709,
+   "img_nodepth_frac_mean": 0.0013850411130327054,
+   "gt_invisible_frac_pixelweighted": 0.40831180958210256,
+   "gt_outside": 0.2678279597768763,
+   "gt_occluded": 0.13918782743553743,
+   "gt_nodepth": 0.0012960223696888403,
+   "gt_on_refgt_same_object": 0.5531932489804468,
+   "proj_precision": 0.9339303875190601
+  },
+  "Carpark": {
+   "hw": [
+    1088,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 22.0,
+   "img_vis_frac_mean": 0.8377040308533292,
+   "img_nodepth_frac_mean": 0.006831252354789864,
+   "gt_invisible_frac_pixelweighted": 0.16229602000009283,
+   "gt_outside": 0.08363205382176545,
+   "gt_occluded": 0.07183271420547385,
+   "gt_nodepth": 0.006831251972853536,
+   "gt_on_refgt_same_object": 0.8241395892518939,
+   "proj_precision": 0.983812929084372
+  },
+  "CoffeeMartini": {
+   "hw": [
+    2028,
+    2704
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 47.666666666666664,
+   "img_vis_frac_mean": 0.48636337076172687,
+   "img_nodepth_frac_mean": 0.0009609559878244357,
+   "gt_invisible_frac_pixelweighted": 0.4531028747222812,
+   "gt_outside": 0.3045525142360213,
+   "gt_occluded": 0.14800253221965579,
+   "gt_nodepth": 0.0005478282666041201,
+   "gt_on_refgt_same_object": 0.5150713413977834,
+   "proj_precision": 0.9416020754471723
+  },
+  "Dog": {
+   "hw": [
+    1920,
+    2560
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 7.666666666666667,
+   "img_vis_frac_mean": 0.2677528395345717,
+   "img_nodepth_frac_mean": 0.34742096563180286,
+   "gt_invisible_frac_pixelweighted": 0.7318168140695487,
+   "gt_outside": 0.18615981029666387,
+   "gt_occluded": 0.19775031802473414,
+   "gt_nodepth": 0.3479066857481507,
+   "gt_on_refgt_same_object": 0.13207847000733058,
+   "proj_precision": 0.4965020457932655
+  },
+  "Fencing": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 8.0,
+   "img_vis_frac_mean": 0.6479136329708677,
+   "img_nodepth_frac_mean": 0.0,
+   "gt_invisible_frac_pixelweighted": 0.3520863656822858,
+   "gt_outside": 0.12209129050925926,
+   "gt_occluded": 0.22999507517302656,
+   "gt_nodepth": 0.0,
+   "gt_on_refgt_same_object": 0.6116375561167228,
+   "proj_precision": 0.9440142146080892
+  },
+  "FlameSteak": {
+   "hw": [
+    2028,
+    2704
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 44.666666666666664,
+   "img_vis_frac_mean": 0.48921099666393164,
+   "img_nodepth_frac_mean": 0.0033448476165314346,
+   "gt_invisible_frac_pixelweighted": 0.4133977302172833,
+   "gt_outside": 0.29817549802242793,
+   "gt_occluded": 0.11473687627206647,
+   "gt_nodepth": 0.00048535592278888814,
+   "gt_on_refgt_same_object": 0.5614219186152832,
+   "proj_precision": 0.957312455668196
+  },
+  "Frog": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 5.0,
+   "img_vis_frac_mean": 0.7227109029437556,
+   "img_nodepth_frac_mean": 0.0019914422088979995,
+   "gt_invisible_frac_pixelweighted": 0.27728909465020574,
+   "gt_outside": 0.14396035002805835,
+   "gt_occluded": 0.13133730242237188,
+   "gt_nodepth": 0.0019914421997755333,
+   "gt_on_refgt_same_object": 0.7081637409979424,
+   "proj_precision": 0.9798731259220346
+  },
+  "MATF": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 25.545454545454547,
+   "img_vis_frac_mean": 0.2542468225583434,
+   "img_nodepth_frac_mean": 0.22408924274372333,
+   "gt_invisible_frac_pixelweighted": 0.7024883218127901,
+   "gt_outside": 0.2981438155866729,
+   "gt_occluded": 0.14453750503384588,
+   "gt_nodepth": 0.25980700119227124,
+   "gt_on_refgt_same_object": 0.2704531285699301,
+   "proj_precision": 0.9090414791765034
+  },
+  "MartialArts": {
+   "hw": [
+    1080,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 16.666666666666668,
+   "img_vis_frac_mean": 0.5166601619937203,
+   "img_nodepth_frac_mean": 8.674710100863057e-05,
+   "gt_invisible_frac_pixelweighted": 0.47457534450060873,
+   "gt_outside": 0.17919183870988487,
+   "gt_occluded": 0.2952961708805247,
+   "gt_nodepth": 8.73349101992001e-05,
+   "gt_on_refgt_same_object": 0.4907068689274887,
+   "proj_precision": 0.9392989821179537
+  },
+  "Painter": {
+   "hw": [
+    1088,
+    2048
+   ],
+   "work_hw": [
+    364,
+    686
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 25.181818181818183,
+   "img_vis_frac_mean": 0.7665981009150996,
+   "img_nodepth_frac_mean": 0.00015654538564183784,
+   "gt_invisible_frac_pixelweighted": 0.23072604881220404,
+   "gt_outside": 0.13106925538846909,
+   "gt_occluded": 0.0994996733421499,
+   "gt_nodepth": 0.00015712008158505622,
+   "gt_on_refgt_same_object": 0.725852613433079,
+   "proj_precision": 0.9437142449051298
+  },
+  "PoznanStreet": {
+   "hw": [
+    1088,
+    1920
+   ],
+   "work_hw": [
+    378,
+    672
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 23.12121212121212,
+   "img_vis_frac_mean": 0.8289229806625482,
+   "img_nodepth_frac_mean": 0.05357014274958408,
+   "gt_invisible_frac_pixelweighted": 0.1666193343685841,
+   "gt_outside": 0.049162084877120385,
+   "gt_occluded": 0.0636008920402043,
+   "gt_nodepth": 0.053856357451259405,
+   "gt_on_refgt_same_object": 0.8171632603175301,
+   "proj_precision": 0.9805491591881895
+  },
+  "Welder": {
+   "hw": [
+    1920,
+    2560
+   ],
+   "work_hw": [
+    434,
+    588
+   ],
+   "n_samples": 66,
+   "objs_per_step_mean": 15.606060606060606,
+   "img_vis_frac_mean": 0.38973654174443445,
+   "img_nodepth_frac_mean": 0.028521075816542812,
+   "gt_invisible_frac_pixelweighted": 0.6027794541082002,
+   "gt_outside": 0.3013950523673713,
+   "gt_occluded": 0.27242659545772957,
+   "gt_nodepth": 0.028957806283099297,
+   "gt_on_refgt_same_object": 0.36070116863512763,
+   "proj_precision": 0.9080668264763685
+  }
+ }
+}

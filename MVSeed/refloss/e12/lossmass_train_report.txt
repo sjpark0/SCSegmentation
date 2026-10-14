@@ -1,0 +1,8 @@
+rows 1230 seconds 52 scenes ['AlexaMeadeExhibit', 'AlexaMeadeFacePaint', 'Breakfast', 'CBABasketball', 'Carpark', 'Fencing', 'FlameSteak', 'Frog']
+IN-SAMPLE (own fold's training scenes): invisible pixel share 0.499; GT inv frac 0.444
+  focal mass: GT vis 0.173 | GT inv 0.652 | nonGT vis 0.066 | nonGT inv 0.109 -> invisible-region share 0.761
+  per-pixel focal GT inv / GT vis = 4.71;  recall vis 0.977 inv 0.935;  FN inv share 0.693;  FP inv share 0.691
+  lam 0: object-mean focal 4.500e-03 (x20 = 0.0900); invisible share of the per-object focal 0.726
+  lam 1: object-mean focal 5.445e-03 (x20 = 0.1089); invisible share of the per-object focal 0.837
+  lam 2: object-mean focal 5.971e-03 (x20 = 0.1194); invisible share of the per-object focal 0.883
+  per-object invisible share of focal: median 0.432, p25 0.204, p75 0.690, objects with share < 0.5: 638/1094

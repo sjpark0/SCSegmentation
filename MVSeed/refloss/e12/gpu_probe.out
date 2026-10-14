@@ -1,0 +1,85 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+{
+ "B": 16,
+ "repeat_1mem": {
+  "loss_equal": true,
+  "loss": 0.31235724687576294,
+  "n_mem": 1,
+  "terms_equal": true,
+  "grads_bitwise_equal": false,
+  "n_grad_tensors": 108,
+  "max_abs_grad_diff": 0.00048828125,
+  "n_tensors_differ": 107
+ },
+ "zero_gate_vs_none_1mem": {
+  "loss_equal": true,
+  "dloss": 0.0,
+  "grads_bitwise_equal": false
+ },
+ "repeat_2mem_pred": {
+  "loss_equal": true,
+  "loss": 0.3037797808647156,
+  "n_mem": 2,
+  "terms_equal": true,
+  "grads_bitwise_equal": false,
+  "n_grad_tensors": 108,
+  "max_abs_grad_diff": 0.00048828125,
+  "n_tensors_differ": 108
+ },
+ "zero_gate_vs_none_2mem_pred": {
+  "loss_equal": true,
+  "dloss": 0.0,
+  "grads_bitwise_equal": false
+ },
+ "ref_drop": {
+  "none_vs_zero_gate_bitwise": true,
+  "none_vs_zero_gate_maxdiff": 0.0,
+  "others_unchanged_bitwise": true,
+  "others_maxdiff": 0.0,
+  "obj0_maxdiff": 19.0623779296875,
+  "obj0_sign_flips_frac": 0.0006702333921566606,
+  "obj0_fg_frac_before": 0.04782769829034805,
+  "obj0_fg_frac_after": 0.04789954423904419,
+  "pointer_only_finite": true,
+  "pointer_only_obj0_fg_frac": 0.0
+ },
+ "pred_view_drop": {
+  "conf": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "others_unchanged_bitwise": true,
+  "obj1_maxdiff": 2.5666465759277344
+ },
+ "step_seconds_1mem_none": 0.4066948890686035,
+ "step_seconds_1mem_zero_gate": 0.4822704792022705,
+ "peak_gb": 23.545972224
+}
