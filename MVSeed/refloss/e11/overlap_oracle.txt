@@ -1,0 +1,238 @@
+geoset_pred_ft_rep_e8: 664 scored pairs, 34 scored views, 17 scenes; sanity max|dJ| 0.00e+00 max|dF| 0.00e+00
+baseline keyframe J&F headline 0.91411 (J 0.87725 F 0.95097); pair mean 0.91261; hallucinations 13
+
+== overlap totals ==
+  views: 34
+  views_with_overlap: 34
+  pairs_overlapping: 933
+  pairs_possible: 11684
+  overlap_px: 378294
+  union_px: 100439048
+  ov_gt_contender: 370717
+  ov_gt_bg: 0
+  ov_gt_other: 7577
+  ov_mult3plus: 1230
+  scored_pairs_with_overlap: 637
+  scored_pairs_with_overlap_good: 581
+  scored_pairs_with_overlap_fail: 56
+  scored_pairs_with_overlap_spill14: 14
+  overlap_px_in_scored_masks: 725751
+  overlap_px_in_good: 537990
+  overlap_px_in_fail: 187761
+  overlap_px_in_spill14: 47323
+  rule_correct_px: {'oracle': 370717, 'oracle_pick': 370717, 'larger': 107344, 'smaller': 263254, 'centre': 253296, 'centroid': 253800, 'erase': 0}
+  rule_pixel_accuracy_on_gt_contender_px: {'oracle': 1.0, 'oracle_pick': 1.0, 'larger': 0.28955780285231053, 'smaller': 0.7101211975711931, 'centre': 0.6832597372119433, 'centroid': 0.6846192648300455, 'erase': 0.0}
+  rule_pixel_accuracy_on_all_overlap_px: {'oracle': 0.9799706048734582, 'oracle_pick': 0.9799706048734582, 'larger': 0.2837581352070083, 'smaller': 0.6958978995173066, 'centre': 0.6695744579612682, 'centroid': 0.670906755063522, 'erase': 0.0}
+  overlap_px / union_px = 0.00377; GT split of overlap px: contender 0.980 bg 0.000 other 0.020
+  rule pixel accuracy on overlap px whose GT object is a contender: oracle 1.0000, oracle_pick 1.0000, larger 0.2896, smaller 0.7101, centre 0.6833, centroid 0.6846, erase 0.0000
+
+== false-positive / false-negative decomposition (pixels summed over the subset) ==
+  all              n 664 FP   2355731 of which in an overlap   355034 (0.1507); pairs with >=50% of FP in overlap 62; FN   5795805 of which covered by another mask  1582924 (0.2731)
+  good605          n 605 FP   1559915 of which in an overlap   203628 (0.1305); pairs with >=50% of FP in overlap 46; FN   3719871 of which covered by another mask  1182371 (0.3179)
+  fail59           n  59 FP    795816 of which in an overlap   151406 (0.1903); pairs with >=50% of FP in overlap 16; FN   2075934 of which covered by another mask   400553 (0.1930)
+  spill14          n  14 FP    193389 of which in an overlap    38837 (0.2008); pairs with >=50% of FP in overlap 6; FN     40331 of which covered by another mask    19079 (0.4731)
+  spill_kind_all   n  21 FP    196603 of which in an overlap    39782 (0.2023); pairs with >=50% of FP in overlap 9; FN     41408 of which covered by another mask    20028 (0.4837)
+  wrong_object     n   3 FP      4817 of which in an overlap     1429 (0.2967); pairs with >=50% of FP in overlap 1; FN      6234 of which covered by another mask       96 (0.0154)
+
+== per view ==
+scene cam n_obj nonempty pairs_ov/possible overlap_px union_px ov/union gt_contender gt_bg gt_other mult>=3
+AlexaMeadeExhibit camera_0003 33 32 48/528 13496 4681913 0.0029 13467 0 29 0
+AlexaMeadeExhibit camera_0004 33 29 43/528 15580 4666603 0.0033 15551 0 29 0
+AlexaMeadeFacePaint camera_0008 12 9 12/66 4670 4424431 0.0011 4669 0 1 0
+AlexaMeadeFacePaint camera_0009 12 10 11/66 30055 4210286 0.0071 30055 0 0 0
+Barn v0 30 30 62/435 26323 1935449 0.0136 25211 0 1112 931
+Barn v10 30 30 59/435 16306 1973554 0.0083 15931 0 375 239
+Blocks cam0 16 15 20/120 2404 1827159 0.0013 2351 0 53 6
+Blocks cam9 16 14 20/120 1752 2033311 0.0009 1737 0 15 0
+Breakfast v5 27 25 33/351 2228 2014898 0.0011 2071 0 157 6
+Breakfast v9 27 26 31/351 6570 2022046 0.0032 6506 0 64 0
+CBABasketball v06 22 18 18/231 4583 2098467 0.0022 4507 0 76 0
+CBABasketball v24 22 18 17/231 1065 2155527 0.0005 1013 0 52 0
+Carpark v0 22 22 28/231 1828 2062249 0.0009 1826 0 2 0
+Carpark v8 22 22 30/231 1297 2064995 0.0006 1297 0 0 0
+CoffeeMartini cam02 50 45 51/1225 98391 4814386 0.0204 96442 0 1949 0
+CoffeeMartini cam10 50 36 43/1225 14784 5297325 0.0028 14383 0 401 0
+Dog camera_0003 7 7 9/21 10530 4702186 0.0022 10367 0 163 0
+Dog camera_0004 7 6 8/21 7573 4293168 0.0018 7518 0 55 0
+Fencing v0 8 8 9/28 1534 2041112 0.0008 1523 0 11 0
+Fencing v9 8 8 10/28 1575 2043519 0.0008 1570 0 5 0
+FlameSteak cam01 50 20 23/1225 4139 4084104 0.0010 4137 0 2 0
+FlameSteak cam10 50 44 54/1225 10059 5276645 0.0019 9971 0 88 0
+Frog v10 5 5 7/10 3169 2062826 0.0015 3169 0 0 0
+Frog v4 5 5 7/10 2404 2064961 0.0012 2390 0 14 0
+MATF S1_CAM_1 33 24 38/528 9704 1984026 0.0049 8857 0 847 9
+MATF S1_CAM_10 33 10 11/528 2789 1953040 0.0014 2774 0 15 4
+MartialArts v13 19 15 21/171 4516 2009496 0.0022 4473 0 43 1
+MartialArts v5 19 17 26/171 2815 2044170 0.0014 2467 0 348 0
+Painter v0 24 23 33/276 4883 2176430 0.0022 4804 0 79 0
+Painter v15 24 24 41/276 6752 2158934 0.0031 5624 0 1128 0
+PoznanStreet v0 24 23 32/276 8235 2063209 0.0040 8204 0 31 0
+PoznanStreet v8 24 23 38/276 8764 2049747 0.0043 8334 0 430 34
+Welder camera_0003 16 16 23/120 15712 4580695 0.0034 15709 0 3 0
+Welder camera_0004 16 15 17/120 31809 4568181 0.0070 31809 0 0 0
+
+== biggest overlapping object pairs (top 25) ==
+CoffeeMartini cam02 26&40 px 70232 (gt: a 70231 b 0 bg 0) sizes 253307/1892881
+AlexaMeadeFacePaint camera_0009 10&11 px 29051 (gt: a 28971 b 80 bg 0) sizes 2447153/565454
+CoffeeMartini cam02 19&32 px 18786 (gt: a 16976 b 0 bg 0) sizes 18807/20444
+Welder camera_0004 13&14 px 16476 (gt: a 13 b 16463 bg 0) sizes 1596363/17177
+Barn v0 14&26 px 10174 (gt: a 6045 b 3389 bg 0) sizes 14557/765530
+Welder camera_0004 8&13 px 9032 (gt: a 8829 b 203 bg 0) sizes 12973/1596363
+Welder camera_0003 13&14 px 7260 (gt: a 138 b 7122 bg 0) sizes 1476466/9401
+Dog camera_0003 5&6 px 7038 (gt: a 5202 b 1836 bg 0) sizes 40155/1197993
+CoffeeMartini cam10 11&12 px 6162 (gt: a 113 b 6044 bg 0) sizes 433618/15086
+Dog camera_0004 5&6 px 5070 (gt: a 4113 b 957 bg 0) sizes 77251/935475
+AlexaMeadeExhibit camera_0003 5&6 px 4380 (gt: a 3863 b 517 bg 0) sizes 762885/1068897
+Welder camera_0003 8&13 px 4188 (gt: a 4132 b 56 bg 0) sizes 11607/1476466
+AlexaMeadeExhibit camera_0004 6&26 px 3833 (gt: a 4 b 3829 bg 0) sizes 1400419/34795
+Breakfast v9 8&9 px 3815 (gt: a 3815 b 0 bg 0) sizes 16648/13827
+Welder camera_0004 5&9 px 3784 (gt: a 3670 b 114 bg 0) sizes 33762/440234
+Barn v10 14&26 px 3568 (gt: a 1899 b 1509 bg 0) sizes 14230/914503
+CoffeeMartini cam02 33&41 px 3097 (gt: a 0 b 3097 bg 0) sizes 3097/16832
+Barn v0 6&23 px 3073 (gt: a 3072 b 1 bg 0) sizes 3970/301369
+Dog camera_0003 4&6 px 2938 (gt: a 1703 b 1077 bg 0) sizes 1169424/1197993
+AlexaMeadeFacePaint camera_0008 10&12 px 2761 (gt: a 0 b 2761 bg 0) sizes 1560814/81008
+MATF S1_CAM_1 3&5 px 2671 (gt: a 2533 b 138 bg 0) sizes 197285/20701
+CoffeeMartini cam10 19&29 px 2613 (gt: a 2284 b 0 bg 0) sizes 6370/2992
+MartialArts v13 11&19 px 2585 (gt: a 1804 b 781 bg 0) sizes 46928/605082
+CBABasketball v06 5&17 px 2513 (gt: a 1591 b 922 bg 0) sizes 12199/7785
+FlameSteak cam10 37&50 px 2371 (gt: a 442 b 1923 bg 0) sizes 152043/19300
+
+== rules (delta vs baseline) ==
+rule | headline dJF [CI] | dJ | dF | pair-mean dJF | worst scene | up/down(+-0.01)/nonzero | halluc
+oracle       | +0.00542 [+0.00346, +0.00747] | +0.00992 | +0.00092 | +0.00609 | AlexaMeadeFacePaint -0.00276 | 102/2/603 | 12
+oracle_pick  | +0.00496 [+0.00310, +0.00691] | +0.00912 | +0.00079 | +0.00553 | AlexaMeadeFacePaint -0.00276 | 93/2/595 | 12
+larger       | -0.01336 [-0.02062, -0.00719] | -0.02101 | -0.00571 | -0.01313 | Welder -0.05644 | 26/95/551 | 12
+smaller      | +0.00011 [-0.00045, +0.00058] | -0.00044 | +0.00066 | -0.00030 | CoffeeMartini -0.00307 | 12/8/325 | 13
+centre       | -0.00123 [-0.00309, +0.00008] | -0.00194 | -0.00053 | -0.00107 | MATF -0.01316 | 11/18/414 | 13
+centroid     | -0.00115 [-0.00272, +0.00006] | -0.00198 | -0.00031 | -0.00107 | MATF -0.01096 | 15/22/421 | 13
+erase        | -0.01324 [-0.02041, -0.00710] | -0.02143 | -0.00505 | -0.01342 | Welder -0.05550 | 39/103/637 | 12
+
+== subset gains (rule applied to the subset only; headline = scene-mean J&F gain; pair = mean dJF over the subset) ==
+-- oracle
+   good605                      n 605 headline +0.00359 pair +0.00462 sum +2.7936 up/down/nz 79/1/549 min -0.0139 max +0.1246
+   fail59                       n  59 headline +0.00183 pair +0.02122 sum +1.2520 up/down/nz 23/1/54 min -0.0775 max +0.1850
+   spill14                      n  14 headline +0.00075 pair +0.04778 sum +0.6690 up/down/nz 9/1/14 min -0.0775 max +0.1850
+   spill_kind_all               n  21 headline +0.00107 pair +0.04773 sum +1.0023 up/down/nz 15/1/21 min -0.0775 max +0.1850
+   wrong_object                 n   3 headline +0.00044 pair +0.04938 sum +0.1481 up/down/nz 3/0/3 min +0.0119 max +0.1215
+   has_overlap                  n 637 headline +0.00542 pair +0.00635 sum +4.0455 up/down/nz 102/2/603 min -0.0775 max +0.1850
+   twin                         n 465 headline +0.00397 pair +0.00655 sum +3.0456 up/down/nz 74/1/417 min -0.0139 max +0.1246
+   kind_boundary/mixed          n  17 headline +0.00057 pair +0.02174 sum +0.3696 up/down/nz 10/0/17 min +0.0004 max +0.0826
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00041 pair +0.04318 sum +0.3023 up/down/nz 3/1/7 min -0.0775 max +0.1850
+   kind_spill-onto-other(twin)  n   7 headline +0.00034 pair +0.05239 sum +0.3667 up/down/nz 6/0/7 min +0.0020 max +0.1236
+   kind_under-cover             n  13 headline +0.00006 pair +0.00387 sum +0.0503 up/down/nz 1/0/12 min -0.0004 max +0.0181
+   kind_under-cover(beyond c_ini) n   9 headline +0.00002 pair +0.00167 sum +0.0150 up/down/nz 0/0/8 min +0.0000 max +0.0068
+   kind_wrong-object            n   3 headline +0.00044 pair +0.04938 sum +0.1481 up/down/nz 3/0/3 min +0.0119 max +0.1215
+-- oracle_pick
+   good605                      n 605 headline +0.00327 pair +0.00416 sum +2.5163 up/down/nz 71/1/542 min -0.0140 max +0.1246
+   fail59                       n  59 headline +0.00169 pair +0.01958 sum +1.1552 up/down/nz 22/1/53 min -0.0775 max +0.1822
+   spill14                      n  14 headline +0.00069 pair +0.04405 sum +0.6166 up/down/nz 8/1/13 min -0.0775 max +0.1822
+   spill_kind_all               n  21 headline +0.00100 pair +0.04465 sum +0.9376 up/down/nz 14/1/20 min -0.0775 max +0.1822
+   wrong_object                 n   3 headline +0.00042 pair +0.04523 sum +0.1357 up/down/nz 2/0/3 min +0.0000 max +0.1209
+   has_overlap                  n 637 headline +0.00496 pair +0.00576 sum +3.6715 up/down/nz 93/2/595 min -0.0775 max +0.1822
+   twin                         n 465 headline +0.00357 pair +0.00583 sum +2.7095 up/down/nz 65/1/409 min -0.0140 max +0.1246
+   kind_boundary/mixed          n  17 headline +0.00050 pair +0.01994 sum +0.3390 up/down/nz 10/0/17 min +0.0004 max +0.0826
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00039 pair +0.04148 sum +0.2903 up/down/nz 3/1/7 min -0.0775 max +0.1822
+   kind_spill-onto-other(twin)  n   7 headline +0.00030 pair +0.04661 sum +0.3263 up/down/nz 5/0/6 min +0.0000 max +0.1236
+   kind_under-cover             n  13 headline +0.00005 pair +0.00376 sum +0.0488 up/down/nz 2/0/12 min -0.0004 max +0.0181
+   kind_under-cover(beyond c_ini) n   9 headline +0.00002 pair +0.00167 sum +0.0150 up/down/nz 0/0/8 min +0.0000 max +0.0068
+   kind_wrong-object            n   3 headline +0.00042 pair +0.04523 sum +0.1357 up/down/nz 2/0/3 min +0.0000 max +0.1209
+-- larger
+   good605                      n 605 headline -0.01012 pair -0.01184 sum -7.1617 up/down/nz 16/74/501 min -0.6919 max +0.0234
+   fail59                       n  59 headline -0.00324 pair -0.02643 sum -1.5594 up/down/nz 10/21/50 min -0.5617 max +0.0947
+   spill14                      n  14 headline -0.00028 pair -0.01552 sum -0.2173 up/down/nz 6/5/14 min -0.1865 max +0.0947
+   spill_kind_all               n  21 headline -0.00068 pair -0.03015 sum -0.6332 up/down/nz 8/9/20 min -0.1906 max +0.0947
+   wrong_object                 n   3 headline +0.00005 pair +0.00905 sum +0.0272 up/down/nz 2/0/3 min +0.0018 max +0.0135
+   has_overlap                  n 637 headline -0.01336 pair -0.01369 sum -8.7211 up/down/nz 26/95/551 min -0.6919 max +0.0947
+   twin                         n 465 headline -0.01158 pair -0.01665 sum -7.7399 up/down/nz 19/70/404 min -0.6919 max +0.0947
+   kind_boundary/mixed          n  17 headline -0.00234 pair -0.05014 sum -0.8525 up/down/nz 2/6/13 min -0.5617 max +0.0782
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00001 pair +0.01079 sum +0.0755 up/down/nz 3/1/7 min -0.0755 max +0.0671
+   kind_spill-onto-other(twin)  n   7 headline -0.00029 pair -0.04184 sum -0.2929 up/down/nz 3/4/7 min -0.1865 max +0.0947
+   kind_under-cover             n  13 headline -0.00058 pair -0.03364 sum -0.4374 up/down/nz 0/8/12 min -0.1369 max +0.0015
+   kind_under-cover(beyond c_ini) n   9 headline -0.00009 pair -0.00883 sum -0.0794 up/down/nz 0/2/8 min -0.0535 max +0.0008
+   kind_wrong-object            n   3 headline +0.00005 pair +0.00905 sum +0.0272 up/down/nz 2/0/3 min +0.0018 max +0.0135
+-- smaller
+   good605                      n 605 headline -0.00002 pair -0.00045 sum -0.2709 up/down/nz 9/8/305 min -0.1609 max +0.0560
+   fail59                       n  59 headline +0.00014 pair +0.00120 sum +0.0710 up/down/nz 3/0/20 min -0.0031 max +0.0272
+   spill14                      n  14 headline +0.00000 pair -0.00002 sum -0.0002 up/down/nz 0/0/3 min -0.0011 max +0.0008
+   spill_kind_all               n  21 headline -0.00001 pair -0.00055 sum -0.0116 up/down/nz 0/1/4 min -0.0114 max +0.0008
+   wrong_object                 n   3 headline +0.00009 pair +0.00906 sum +0.0272 up/down/nz 1/0/1 min +0.0000 max +0.0272
+   has_overlap                  n 637 headline +0.00011 pair -0.00031 sum -0.1998 up/down/nz 12/8/325 min -0.1609 max +0.0560
+   twin                         n 465 headline -0.00015 pair -0.00073 sum -0.3397 up/down/nz 5/6/201 min -0.1609 max +0.0272
+   kind_boundary/mixed          n  17 headline +0.00003 pair +0.00193 sum +0.0328 up/down/nz 1/0/7 min -0.0024 max +0.0213
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00000 pair +0.00012 sum +0.0008 up/down/nz 0/0/2 min +0.0000 max +0.0008
+   kind_spill-onto-other(twin)  n   7 headline -0.00000 pair -0.00015 sum -0.0011 up/down/nz 0/0/1 min -0.0011 max +0.0000
+   kind_under-cover             n  13 headline +0.00001 pair +0.00086 sum +0.0112 up/down/nz 1/0/6 min -0.0031 max +0.0136
+   kind_under-cover(beyond c_ini) n   9 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/3 min -0.0000 max +0.0001
+   kind_wrong-object            n   3 headline +0.00009 pair +0.00906 sum +0.0272 up/down/nz 1/0/1 min +0.0000 max +0.0272
+-- centre
+   good605                      n 605 headline -0.00054 pair -0.00089 sum -0.5375 up/down/nz 6/13/378 min -0.1912 max +0.0561
+   fail59                       n  59 headline -0.00069 pair -0.00298 sum -0.1758 up/down/nz 5/5/36 min -0.2181 max +0.0752
+   spill14                      n  14 headline +0.00013 pair +0.00528 sum +0.0739 up/down/nz 1/0/5 min -0.0085 max +0.0752
+   spill_kind_all               n  21 headline +0.00012 pair +0.00346 sum +0.0726 up/down/nz 1/0/7 min -0.0085 max +0.0752
+   wrong_object                 n   3 headline -0.00001 pair +0.00127 sum +0.0038 up/down/nz 1/0/2 min -0.0092 max +0.0130
+   has_overlap                  n 637 headline -0.00123 pair -0.00112 sum -0.7133 up/down/nz 11/18/414 min -0.2181 max +0.0752
+   twin                         n 465 headline -0.00108 pair -0.00162 sum -0.7525 up/down/nz 5/10/260 min -0.2181 max +0.0390
+   kind_boundary/mixed          n  17 headline -0.00071 pair -0.01291 sum -0.2195 up/down/nz 3/3/13 min -0.2181 max +0.0390
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00012 pair +0.00968 sum +0.0677 up/down/nz 1/0/3 min -0.0085 max +0.0752
+   kind_spill-onto-other(twin)  n   7 headline +0.00001 pair +0.00088 sum +0.0062 up/down/nz 0/0/2 min -0.0011 max +0.0072
+   kind_under-cover             n  13 headline -0.00008 pair -0.00230 sum -0.0299 up/down/nz 0/2/11 min -0.0166 max +0.0079
+   kind_under-cover(beyond c_ini) n   9 headline -0.00002 pair -0.00046 sum -0.0041 up/down/nz 0/0/5 min -0.0031 max +0.0000
+   kind_wrong-object            n   3 headline -0.00001 pair +0.00127 sum +0.0038 up/down/nz 1/0/2 min -0.0092 max +0.0130
+-- centroid
+   good605                      n 605 headline -0.00066 pair -0.00111 sum -0.6730 up/down/nz 9/16/385 min -0.3002 max +0.0560
+   fail59                       n  59 headline -0.00049 pair -0.00061 sum -0.0359 up/down/nz 6/6/36 min -0.1960 max +0.0830
+   spill14                      n  14 headline +0.00015 pair +0.00678 sum +0.0949 up/down/nz 2/0/7 min -0.0085 max +0.0830
+   spill_kind_all               n  21 headline +0.00014 pair +0.00388 sum +0.0814 up/down/nz 2/1/9 min -0.0111 max +0.0830
+   wrong_object                 n   3 headline -0.00002 pair +0.00041 sum +0.0012 up/down/nz 1/1/2 min -0.0114 max +0.0127
+   has_overlap                  n 637 headline -0.00115 pair -0.00111 sum -0.7089 up/down/nz 15/22/421 min -0.3002 max +0.0830
+   twin                         n 465 headline -0.00121 pair -0.00178 sum -0.8259 up/down/nz 7/13/262 min -0.3002 max +0.0760
+   kind_boundary/mixed          n  17 headline -0.00052 pair -0.00490 sum -0.0833 up/down/nz 3/2/11 min -0.1960 max +0.0760
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00014 pair +0.01086 sum +0.0760 up/down/nz 1/0/5 min -0.0085 max +0.0830
+   kind_spill-onto-other(twin)  n   7 headline +0.00002 pair +0.00271 sum +0.0190 up/down/nz 1/0/2 min -0.0011 max +0.0200
+   kind_under-cover             n  13 headline -0.00010 pair -0.00351 sum -0.0456 up/down/nz 0/3/11 min -0.0224 max +0.0061
+   kind_under-cover(beyond c_ini) n   9 headline -0.00000 pair -0.00035 sum -0.0031 up/down/nz 0/0/5 min -0.0028 max +0.0000
+   kind_wrong-object            n   3 headline -0.00002 pair +0.00041 sum +0.0012 up/down/nz 1/1/2 min -0.0114 max +0.0127
+-- erase
+   good605                      n 605 headline -0.01014 pair -0.01228 sum -7.4279 up/down/nz 26/82/581 min -0.6919 max +0.0561
+   fail59                       n  59 headline -0.00310 pair -0.02516 sum -1.4845 up/down/nz 13/21/56 min -0.5617 max +0.0947
+   spill14                      n  14 headline -0.00028 pair -0.01549 sum -0.2169 up/down/nz 6/5/14 min -0.1865 max +0.0947
+   spill_kind_all               n  21 headline -0.00069 pair -0.03067 sum -0.6441 up/down/nz 8/10/21 min -0.1906 max +0.0947
+   wrong_object                 n   3 headline +0.00014 pair +0.01829 sum +0.0549 up/down/nz 3/0/3 min +0.0119 max +0.0296
+   has_overlap                  n 637 headline -0.01324 pair -0.01399 sum -8.9124 up/down/nz 39/103/637 min -0.6919 max +0.0947
+   twin                         n 465 headline -0.01172 pair -0.01736 sum -8.0732 up/down/nz 24/76/445 min -0.6919 max +0.0947
+   kind_boundary/mixed          n  17 headline -0.00230 pair -0.04807 sum -0.8172 up/down/nz 3/6/17 min -0.5617 max +0.0779
+   kind_miss                    n   3 headline +0.00000 pair +0.00000 sum +0.0000 up/down/nz 0/0/0 min +0.0000 max +0.0000
+   kind_spill-onto-other        n   7 headline +0.00001 pair +0.01086 sum +0.0760 up/down/nz 3/1/7 min -0.0751 max +0.0671
+   kind_spill-onto-other(twin)  n   7 headline -0.00029 pair -0.04184 sum -0.2929 up/down/nz 3/4/7 min -0.1865 max +0.0947
+   kind_under-cover             n  13 headline -0.00057 pair -0.03276 sum -0.4259 up/down/nz 1/8/13 min -0.1369 max +0.0136
+   kind_under-cover(beyond c_ini) n   9 headline -0.00009 pair -0.00882 sum -0.0794 up/down/nz 0/2/9 min -0.0535 max +0.0008
+   kind_wrong-object            n   3 headline +0.00014 pair +0.01829 sum +0.0549 up/down/nz 3/0/3 min +0.0119 max +0.0296
+
+== failing spill / wrong-object pairs ==
+scene cam obj kind JF pred_px fp_px fp_in_ov fn_px fn_by_other ov_px ov_gt_mine ov_gt_other_cont ov_gt_noncont | oracle oracle_pick larger smaller centre centroid erase
+AlexaMeadeExhibit camera_0004 21 spill-onto-other(twin) 0.738 621 278 173 101 101 460 287 171 2 | +0.075 +0.074 -0.187 +0.000 +0.000 +0.000 -0.187
+AlexaMeadeFacePaint camera_0009 11 spill-onto-other 0.704 565454 150453 28982 29891 16260 29062 80 28982 0 | -0.078 -0.078 -0.076 +0.001 +0.000 +0.001 -0.075
+Barn v0 14 spill-onto-other(twin) 0.780 14557 4902 4193 1511 819 10280 6087 3455 738 | +0.108 +0.084 -0.164 -0.001 -0.001 -0.001 -0.164
+Barn v10 11 spill-onto-other(twin) 0.737 3483 1060 55 809 355 315 260 9 46 | +0.002 +0.000 -0.034 +0.000 +0.000 +0.000 -0.034
+Blocks cam0 14 wrong-object 0.244 821 585 189 1585 11 195 6 188 1 | +0.015 +0.015 +0.013 +0.000 +0.000 +0.000 +0.013
+Breakfast v5 12 spill-onto-other(twin) 0.750 1891 743 86 45 0 86 0 86 0 | +0.013 +0.013 +0.013 +0.000 +0.000 +0.000 +0.013
+Breakfast v9 12 spill-onto-other(twin) 0.799 2538 856 30 185 8 30 0 0 30 | +0.014 +0.000 +0.014 +0.000 +0.000 +0.000 +0.014
+Breakfast v9 19 spill-onto-other 0.726 346 127 16 138 0 16 0 16 0 | +0.008 +0.008 +0.008 +0.000 +0.000 +0.000 +0.008
+Breakfast v9 26 spill-onto-other 0.390 11777 6844 1171 3974 373 1171 0 1156 15 | -0.008 -0.009 -0.009 +0.000 -0.008 -0.008 -0.008
+CBABasketball v06 17 spill-onto-other 0.694 7785 3039 2034 698 309 3278 1244 1958 76 | +0.162 +0.158 +0.067 +0.000 +0.075 +0.083 +0.067
+CoffeeMartini cam10 24 spill-onto-other(twin) 0.758 2247 1073 738 30 13 827 89 738 0 | +0.124 +0.124 +0.095 +0.000 +0.007 +0.020 +0.095
+FlameSteak cam10 14 spill-onto-other(twin) 0.578 1407 323 285 980 150 539 254 285 0 | +0.031 +0.031 -0.030 +0.000 +0.000 +0.000 -0.030
+FlameSteak cam10 31 spill-onto-other 0.579 44568 22570 480 1595 480 480 0 416 64 | +0.002 +0.001 +0.002 +0.000 +0.001 +0.000 +0.002
+MATF S1_CAM_1 26 wrong-object 0.155 2847 2818 324 4574 69 324 0 2 322 | +0.012 +0.000 +0.012 +0.000 +0.013 +0.013 +0.012
+MATF S1_CAM_10 10 wrong-object 0.546 1853 1414 916 75 16 1078 162 903 13 | +0.121 +0.121 +0.002 +0.027 -0.009 -0.011 +0.030
+Painter v15 2 spill-onto-other 0.772 2102 759 259 364 204 324 65 228 31 | +0.032 +0.028 +0.017 +0.000 +0.000 +0.001 +0.017
+Welder camera_0003 4 spill-onto-other 0.778 829 362 335 10 7 455 120 332 3 | +0.185 +0.182 +0.066 +0.000 +0.000 +0.000 +0.066
+
+written /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/overlap-oracle/overlap_oracle.json

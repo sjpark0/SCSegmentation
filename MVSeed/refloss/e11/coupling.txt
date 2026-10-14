@@ -1,0 +1,224 @@
+A. rows 664  fail 59 cost 1.3532  good 605 cost 1.7605  total 3.1137
+   under-cover(beyond c_ini)      n= 9 cost +0.3459
+   under-cover                    n=13 cost +0.3178
+   wrong-object                   n= 3 cost +0.2352
+   boundary/mixed                 n=17 cost +0.1712
+   spill-onto-other               n= 7 cost +0.1104
+   spill-onto-other(twin)         n= 7 cost +0.1002
+   miss                           n= 3 cost +0.0725
+A. groups: {'spill': (14, 0.2106), 'rest': (23, 0.4789), 'under': (22, 0.6637)}
+A. per scene (n / cost):
+   scene                         spill          under           rest           fail           good            all
+   MATF                   0 / +0.000   2 / +0.029   4 / +0.198   6 / +0.228  25 / +0.102  31 / +0.330
+   Dog                    0 / +0.000   2 / +0.190   0 / +0.000   2 / +0.190  11 / +0.266  13 / +0.457
+   Breakfast              4 / +0.055   2 / +0.047   3 / +0.052   9 / +0.154  42 / +0.095  51 / +0.250
+   CBABasketball          1 / +0.016   2 / +0.135   0 / +0.000   3 / +0.151  32 / +0.099  35 / +0.249
+   Welder                 1 / +0.002   1 / +0.040   2 / +0.053   4 / +0.094  27 / +0.119  31 / +0.213
+   Blocks                 0 / +0.000   0 / +0.000   3 / +0.082   3 / +0.082  26 / +0.049  29 / +0.132
+   Barn                   2 / +0.027   1 / +0.020   4 / +0.028   7 / +0.075  53 / +0.133  60 / +0.209
+   CoffeeMartini          1 / +0.009   3 / +0.051   2 / +0.015   6 / +0.075  71 / +0.113  77 / +0.187
+   PoznanStreet           0 / +0.000   3 / +0.066   1 / +0.004   4 / +0.070  42 / +0.066  46 / +0.136
+   FlameSteak             2 / +0.033   2 / +0.029   0 / +0.000   4 / +0.062  60 / +0.138  64 / +0.199
+   AlexaMeadeFacePaint    1 / +0.059   0 / +0.000   0 / +0.000   1 / +0.059  17 / +0.123  18 / +0.182
+   Painter                1 / -0.004   1 / +0.015   4 / +0.046   6 / +0.058  42 / +0.064  48 / +0.121
+   MartialArts            0 / +0.000   2 / +0.033   0 / +0.000   2 / +0.033  29 / +0.064  31 / +0.097
+   AlexaMeadeExhibit      1 / +0.014   0 / +0.000   0 / +0.000   1 / +0.014  59 / +0.203  60 / +0.218
+   Fencing                0 / +0.000   1 / +0.008   0 / +0.000   1 / +0.008  15 / +0.030  16 / +0.038
+   Carpark                0 / +0.000   0 / +0.000   0 / +0.000   0 / +0.000  44 / +0.083  44 / +0.083
+   Frog                   0 / +0.000   0 / +0.000   0 / +0.000   0 / +0.000  10 / +0.012  10 / +0.012
+B. cost recomputed from jf_e8/jf_e7 vs seedfail.json rows: max |diff| = 4.98e-06
+B. frame-0 J&F of the headline == stage-1 seed J&F? max |diff| = 0.0000
+B. spill  n=14 cost +0.2106 = frame0 +0.0167 + frames1-20 +0.1939  (per-frame later avg +0.0097; headline JF: f0 0.699 -> later 0.729; GT-seed later 0.910)  in F0 5 / in N0 9
+B. under  n=22 cost +0.6637 = frame0 +0.0372 + frames1-20 +0.6265  (per-frame later avg +0.0313; headline JF: f0 0.686 -> later 0.646; GT-seed later 0.916)  in F0 7 / in N0 15
+B. rest   n=23 cost +0.4789 = frame0 +0.0343 + frames1-20 +0.4446  (per-frame later avg +0.0222; headline JF: f0 0.606 -> later 0.645; GT-seed later 0.838)  in F0 11 / in N0 12
+B. all fail: cost +1.3532 = frame0 +0.0881 + later +1.2651; in F0 23, F0 pairs total 41, F0 pairs with seed JF>=0.8 now: 18
+B. fail pairs, frames 1-20 mean J&F vs frame 0 (+-0.02): {'same': 21, 'worse': 15, 'better': 23}
+C. AlexaMeadeExhibit: 1 failing pairs, annotated cams ['camera_0001', 'camera_0003', 'camera_0004'], ref camera_0001, stage-1 cams 45
+C. AlexaMeadeFacePaint: 1 failing pairs, annotated cams ['camera_0007', 'camera_0008', 'camera_0009'], ref camera_0007, stage-1 cams 46
+C. Barn: 7 failing pairs, annotated cams ['v0', 'v7', 'v10'], ref v7, stage-1 cams 15
+C. Blocks: 3 failing pairs, annotated cams ['cam0', 'cam4', 'cam9'], ref cam4, stage-1 cams 10
+C. Breakfast: 9 failing pairs, annotated cams ['v5', 'v7', 'v9'], ref v7, stage-1 cams 15
+C. CBABasketball: 3 failing pairs, annotated cams ['v06', 'v20', 'v24'], ref v20, stage-1 cams 30
+C. CoffeeMartini: 6 failing pairs, annotated cams ['cam02', 'cam10', 'cam16'], ref cam16, stage-1 cams 18
+C. Dog: 2 failing pairs, annotated cams ['camera_0002', 'camera_0003', 'camera_0004'], ref camera_0002, stage-1 cams 41
+C. Fencing: 1 failing pairs, annotated cams ['v0', 'v4', 'v9'], ref v4, stage-1 cams 10
+C. FlameSteak: 4 failing pairs, annotated cams ['cam01', 'cam10', 'cam16'], ref cam16, stage-1 cams 21
+C. MATF: 6 failing pairs, annotated cams ['S1_CAM_1', 'S1_CAM_4', 'S1_CAM_10'], ref S1_CAM_4, stage-1 cams 10
+C. MartialArts: 2 failing pairs, annotated cams ['v5', 'v9', 'v13'], ref v9, stage-1 cams 15
+C. Painter: 6 failing pairs, annotated cams ['v0', 'v6', 'v15'], ref v6, stage-1 cams 16
+C. PoznanStreet: 4 failing pairs, annotated cams ['v0', 'v4', 'v8'], ref v4, stage-1 cams 9
+C. Welder: 4 failing pairs, annotated cams ['camera_0001', 'camera_0003', 'camera_0004'], ref camera_0001, stage-1 cams 46
+D. 59 failing pairs (cost desc):
+   scene              cam          obj label          kind                            cost      f0   later    JF  r1JF   gt_px   vis tw nb verdict
+   Dog                camera_0004    3 tree           under-cover(beyond c_ini)    +0.1014 +0.0051 +0.0963 0.672 0.670 1262927  2.27 .  3  needs new information (missed part not in c_ini: 2% out of c_ini FOV, 6% occluded, 91% no Pi3 geometry, 0% ref bg, 0% own)
+   MATF               S1_CAM_10     10 bottle_or_cup  wrong-object                 +0.0902 +0.0047 +0.0855 0.546 0.547     514  0.42 T  1  needs new information (wrong px not separable by geometry: 31% own ref GT, 0% out of c_ini FOV, 35% occluded, 0% no Pi3 geometry)
+   Dog                camera_0004    4 handrail_or_fe under-cover                  +0.0889 +0.0042 +0.0847 0.728 0.728  811494  0.48 .  0  needs new information (missed part not in c_ini: 13% out of c_ini FOV, 52% occluded, 17% no Pi3 geometry, 0% ref bg, 0% own)
+   Blocks             cam0          14 chair_or_seat  wrong-object                 +0.0786 +0.0047 +0.0739 0.244 0.370    1821  0.05 T  2  needs new information (wrong px not separable by geometry: 33% own ref GT, 0% out of c_ini FOV, 47% occluded, 0% no Pi3 geometry)
+   CBABasketball      v24           20 grandstand     under-cover(beyond c_ini)    +0.0696 +0.0033 +0.0663 0.361 0.365  117942  1.36 .  3  needs new information (missed part not in c_ini: 55% out of c_ini FOV, 12% occluded, 0% no Pi3 geometry, 0% ref bg, 3% own)
+   MATF               S1_CAM_1      26 bottle_or_cup  wrong-object                 +0.0664 +0.0033 +0.0631 0.155 0.156    4603  3.99 T  0  needs new information (wrong px not separable by geometry: 6% own ref GT, 0% out of c_ini FOV, 68% occluded, 1% no Pi3 geometry)
+   CBABasketball      v06           20 grandstand     under-cover(beyond c_ini)    +0.0654 +0.0033 +0.0622 0.407 0.000  137380  1.59 .  1  needs new information (missed part not in c_ini: 100% out of c_ini FOV, 0% occluded, 0% no Pi3 geometry, 0% ref bg, 0% own)
+   AlexaMeadeFacePain camera_0009   11 ground         spill-onto-other             +0.0587 +0.0031 +0.0556 0.704 0.700  444892  0.53 .  2  needs new information (wrong px not separable by geometry: 0% own ref GT, 84% out of c_ini FOV, 0% occluded, 16% no Pi3 geometry)
+   Breakfast          v5            19 tub_or_bowl_or miss                         +0.0496 +0.0000 +0.0497 0.000 0.000       2  0.01 .  0  low value (gt 2 px)
+   Welder             camera_0003    6 ground         under-cover(beyond c_ini)    +0.0396 +0.0019 +0.0377 0.676 0.678  432631  3.65 .  3  needs new information (missed part not in c_ini: 79% out of c_ini FOV, 14% occluded, 0% no Pi3 geometry, 0% ref bg, 7% own)
+   MATF               S1_CAM_10     22 bottle_or_cup  boundary/mixed               +0.0372 +0.0022 +0.0350 0.787 0.789    1342  4.10 T  0  boundary (decode-only in principle; E9/E10 found it hard)
+   Breakfast          v9             8 chair_or_seat  under-cover                  +0.0356 +0.0019 +0.0337 0.492 0.696   27815  1.18 T  2  needs new information (missed part not in c_ini: 7% out of c_ini FOV, 86% occluded, 0% no Pi3 geometry, 0% ref bg, 4% own)
+   Breakfast          v9            26 floor          spill-onto-other             +0.0353 +0.0023 +0.0331 0.390 0.565    8907  0.28 .  3  needs new information (wrong px not separable by geometry: 19% own ref GT, 0% out of c_ini FOV, 75% occluded, 0% no Pi3 geometry)
+   Welder             camera_0004   15 ceiling        boundary/mixed               +0.0327 +0.0023 +0.0305 0.633 0.679 1954660  2.07 .  2  boundary (decode-only in principle; E9/E10 found it hard)
+   PoznanStreet       v8            18 lamp           under-cover                  +0.0263 +0.0015 +0.0248 0.616 0.473    5561  0.93 .  3  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 4% occluded, 3% no Pi3 geometry, 0% ref bg, 1% own)
+   PoznanStreet       v0            24 grass          under-cover                  +0.0262 +0.0008 +0.0254 0.795 0.802   16284  0.70 .  3  needs new information (missed part not in c_ini: 7% out of c_ini FOV, 53% occluded, 0% no Pi3 geometry, 0% ref bg, 6% own)
+   Painter            v0             9 table_or_desk  miss                         +0.0228 +0.0039 +0.0190 0.000 0.000    1696  0.15 .  3  low value (gt 1696 px)
+   MATF               S1_CAM_1      11 chair_or_seat  under-cover                  +0.0222 +0.0010 +0.0212 0.746 0.672    5268  0.25 T  2  needs new information (missed part not in c_ini: 22% out of c_ini FOV, 7% occluded, 3% no Pi3 geometry, 0% ref bg, 3% own)
+   FlameSteak         cam01         32 wall           under-cover                  +0.0211 +0.0013 +0.0198 0.727 0.738 1411256  0.79 .  3  needs new information (missed part not in c_ini: 91% out of c_ini FOV, 4% occluded, 0% no Pi3 geometry, 0% ref bg, 3% own)
+   Barn               v10           23 ground         under-cover                  +0.0203 +0.0012 +0.0191 0.617 0.587  222749  1.05 .  3  needs new information (missed part not in c_ini: 2% out of c_ini FOV, 49% occluded, 0% no Pi3 geometry, 0% ref bg, 7% own)
+   Welder             camera_0003   13 wall           boundary/mixed               +0.0200 +0.0013 +0.0187 0.771 0.826 1611664  1.03 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   CoffeeMartini      cam10         12 cushion_or_car under-cover                  +0.0192 +0.0007 +0.0184 0.737 0.708   21812  0.34 .  2  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 79% occluded, 0% no Pi3 geometry, 0% ref bg, 0% own)
+   FlameSteak         cam10         14 book           spill-onto-other(twin)       +0.0178 +0.0009 +0.0169 0.578 0.570    2064  0.17 T  1  decode-only plausible (wrong px geometrically separable: 71% other ref GT, 0% ref bg)
+   Breakfast          v5            12 bottle_or_cup  spill-onto-other(twin)       +0.0174 +0.0009 +0.0165 0.750 0.801    1193  0.54 T  2  needs new information (wrong px not separable by geometry: 29% own ref GT, 0% out of c_ini FOV, 35% occluded, 0% no Pi3 geometry)
+   MartialArts        v13           11 rig            under-cover(beyond c_ini)    +0.0172 +0.0015 +0.0157 0.755 0.730   71908  2.19 .  2  needs new information (missed part not in c_ini: 98% out of c_ini FOV, 0% occluded, 0% no Pi3 geometry, 0% ref bg, 0% own)
+   CoffeeMartini      cam02         29 bottle_or_cup  under-cover(beyond c_ini)    +0.0165 +0.0008 +0.0157 0.611 0.000    4793  2.10 T  1  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 100% occluded, 0% no Pi3 geometry, 0% ref bg, 0% own)
+   MartialArts        v13           15 door           under-cover                  +0.0160 +0.0015 +0.0145 0.763 0.000    5159  0.17 .  3  needs new information (missed part not in c_ini: 19% out of c_ini FOV, 42% occluded, 0% no Pi3 geometry, 0% ref bg, 12% own)
+   Barn               v10           11 wood           spill-onto-other(twin)       +0.0159 +0.0008 +0.0151 0.737 0.639    3232  0.23 T  2  needs new information (wrong px not separable by geometry: 0% own ref GT, 0% out of c_ini FOV, 79% occluded, 0% no Pi3 geometry)
+   CBABasketball      v06           17 basket         spill-onto-other             +0.0158 +0.0017 +0.0141 0.694 0.697    5444  0.64 .  0  needs new information (wrong px not separable by geometry: 1% own ref GT, 0% out of c_ini FOV, 67% occluded, 0% no Pi3 geometry)
+   FlameSteak         cam10         31 other_machine  spill-onto-other             +0.0152 +0.0009 +0.0144 0.579 0.579   23593  0.44 .  3  needs new information (wrong px not separable by geometry: 32% own ref GT, 0% out of c_ini FOV, 64% occluded, 0% no Pi3 geometry)
+   CoffeeMartini      cam10         16 book           under-cover                  +0.0151 +0.0008 +0.0143 0.706 0.698    4757  0.76 T  3  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 93% occluded, 0% no Pi3 geometry, 0% ref bg, 1% own)
+   Painter            v15           19 painting_or_po under-cover(beyond c_ini)    +0.0147 +0.0010 +0.0137 0.735 0.727   30151  2.00 T  3  needs new information (missed part not in c_ini: 97% out of c_ini FOV, 0% occluded, 0% no Pi3 geometry, 0% ref bg, 1% own)
+   Breakfast          v9            12 bottle_or_cup  spill-onto-other(twin)       +0.0145 +0.0008 +0.0138 0.799 0.774    1867  0.84 T  3  needs new information (wrong px not separable by geometry: 66% own ref GT, 0% out of c_ini FOV, 21% occluded, 0% no Pi3 geometry)
+   AlexaMeadeExhibit  camera_0004   21 handicrafts    spill-onto-other(twin)       +0.0143 +0.0008 +0.0135 0.738 0.730     444  0.48 T  2  decode-only plausible (wrong px geometrically separable: 74% other ref GT, 0% ref bg)
+   PoznanStreet       v8            13 traffic_sign   under-cover(beyond c_ini)    +0.0138 +0.0008 +0.0130 0.792 0.917   39587  1.70 T  3  needs new information (missed part not in c_ini: 79% out of c_ini FOV, 4% occluded, 0% no Pi3 geometry, 0% ref bg, 3% own)
+   Painter            v15           20 wall           boundary/mixed               +0.0125 +0.0009 +0.0116 0.772 0.760  183192  0.86 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   Breakfast          v9            29 bottle_or_cup  under-cover                  +0.0118 +0.0008 +0.0110 0.798 0.794     711  0.60 T  1  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 7% occluded, 0% no Pi3 geometry, 0% ref bg, 4% own)
+   Barn               v0            14 cart           spill-onto-other(twin)       +0.0114 +0.0007 +0.0107 0.780 0.749   11166  1.38 T  3  needs new information (wrong px not separable by geometry: 4% own ref GT, 0% out of c_ini FOV, 88% occluded, 0% no Pi3 geometry)
+   Painter            v15           24 stand          boundary/mixed               +0.0106 +0.0008 +0.0098 0.789 0.786   83114  1.15 T  3  boundary (decode-only in principle; E9/E10 found it hard)
+   Barn               v0            23 ground         boundary/mixed               +0.0102 +0.0006 +0.0095 0.792 0.742  327553  1.55 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   Barn               v10           26 wall           boundary/mixed               +0.0091 +0.0006 +0.0085 0.795 0.800  904376  1.04 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   CoffeeMartini      cam10         24 bottle_or_cup  spill-onto-other(twin)       +0.0089 +0.0007 +0.0082 0.758 0.754    1204  0.25 T  2  needs new information (wrong px not separable by geometry: 59% own ref GT, 0% out of c_ini FOV, 9% occluded, 0% no Pi3 geometry)
+   Barn               v0             1 tool           boundary/mixed               +0.0088 +0.0010 +0.0079 0.684 0.659    3905  1.77 T  0  boundary (decode-only in principle; E9/E10 found it hard)
+   Fencing            v9             3 weapon         under-cover                  +0.0079 +0.0024 +0.0055 0.792 0.792    2555  1.10 T  0  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 31% occluded, 0% no Pi3 geometry, 0% ref bg, 5% own)
+   FlameSteak         cam10          5 fire           under-cover(beyond c_ini)    +0.0076 +0.0005 +0.0072 0.782 0.783    8600  1.95 .  3  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 17% occluded, 0% no Pi3 geometry, 0% ref bg, 21% own)
+   CoffeeMartini      cam02         25 bottle_or_cup  boundary/mixed               +0.0076 +0.0006 +0.0070 0.729 0.777   10931  2.54 T  1  boundary (decode-only in principle; E9/E10 found it hard)
+   CoffeeMartini      cam02         40 wall           boundary/mixed               +0.0073 +0.0005 +0.0068 0.789 0.766 1843406  1.30 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   MATF               S1_CAM_1      21 microphone     under-cover                  +0.0073 +0.0008 +0.0064 0.783 0.835     466  0.07 T  1  needs new information (missed part not in c_ini: 0% out of c_ini FOV, 39% occluded, 10% no Pi3 geometry, 0% ref bg, 0% own)
+   Blocks             cam9           3 toy            boundary/mixed               +0.0059 +0.0013 +0.0046 0.788 0.790     343  0.62 T  2  boundary (decode-only in principle; E9/E10 found it hard)
+   MATF               S1_CAM_1       5 person         boundary/mixed               +0.0044 +0.0008 +0.0036 0.794 0.722   18879  0.15 T  2  boundary (decode-only in principle; E9/E10 found it hard)
+   PoznanStreet       v0            16 pillar         boundary/mixed               +0.0041 +0.0008 +0.0032 0.791 0.795    8035  0.67 .  3  boundary (decode-only in principle; E9/E10 found it hard)
+   Breakfast          v5            14 bottle_or_cup  boundary/mixed               +0.0027 +0.0008 +0.0019 0.780 0.793     347  0.31 T  2  boundary (decode-only in principle; E9/E10 found it hard)
+   Welder             camera_0003    4 metal_part     spill-onto-other             +0.0015 +0.0013 +0.0002 0.778 0.778     477  0.41 .  0  needs new information (wrong px not separable by geometry: 56% own ref GT, 0% out of c_ini FOV, 0% occluded, 0% no Pi3 geometry)
+   Painter            v0             2 pen_or_pencil  boundary/mixed               +0.0006 +0.0009 -0.0003 0.777 0.809    1841  0.86 .  1  boundary (decode-only in principle; E9/E10 found it hard)
+   Breakfast          v5            24 bottle_or_cup  miss                         +0.0000 +0.0000 +0.0000 0.000 0.000       6  0.01 T  1  low value (gt 6 px)
+   Barn               v10            1 tool           boundary/mixed               -0.0003 +0.0008 -0.0011 0.754 0.755    3684  1.67 T  0  boundary (decode-only in principle; E9/E10 found it hard)
+   Blocks             cam0           3 toy            boundary/mixed               -0.0023 +0.0014 -0.0038 0.770 0.000     274  0.49 T  1  boundary (decode-only in principle; E9/E10 found it hard)
+   Painter            v15            2 pen_or_pencil  spill-onto-other             -0.0038 +0.0009 -0.0046 0.772 0.770    1707  0.79 .  1  decode-only plausible (wrong px geometrically separable: 81% other ref GT, 0% ref bg)
+   Breakfast          v9            19 tub_or_bowl_or spill-onto-other             -0.0124 +0.0010 -0.0134 0.726 0.774     357  1.97 .  2  needs new information (wrong px not separable by geometry: 0% own ref GT, 0% out of c_ini FOV, 80% occluded, 0% no Pi3 geometry)
+C. validation: my valid-reprojected count of the round-1 mask vs round1_conf n_valid (official torch path):
+   Dog          camera_0004    3  mine   198993  official   198993  r1_px   743003
+   MATF         S1_CAM_10     10  mine     1129  official     1129  r1_px     1747
+   Dog          camera_0004    4  mine   560306  official   560306  r1_px   672687
+   Blocks       cam0          14  mine      470  official      470  r1_px      610
+   CBABasketbal v24           20  mine    18080  official    18080  r1_px    86029
+   MATF         S1_CAM_1      26  mine      853  official      853  r1_px     3001
+   CBABasketbal v06           20  mine        0  official        0  r1_px        0
+   AlexaMeadeFa camera_0009   11  mine   103355  official   103355  r1_px   566530
+   Breakfast    v5            19  mine        0  official        0  r1_px        0
+   Welder       camera_0003    6  mine    27946  official    27946  r1_px   348054
+   MATF         S1_CAM_10     22  mine      546  official      546  r1_px     1065
+   Breakfast    v9             8  mine     3529  official     3529  r1_px    21837
+   Breakfast    v9            26  mine     5770  official     5770  r1_px    14716
+   Welder       camera_0004   15  mine   366807  official   366787  r1_px  1850152
+   PoznanStreet v8            18  mine      462  official      462  r1_px     1600
+   PoznanStreet v0            24  mine    12251  official    12251  r1_px    14144
+   Painter      v0             9  mine        0  official        0  r1_px        0
+   MATF         S1_CAM_1      11  mine     2407  official     2407  r1_px     3435
+   FlameSteak   cam01         32  mine   495483  official   495483  r1_px  1271955
+   Barn         v10           23  mine    72530  official    72530  r1_px   127465
+   Welder       camera_0003   13  mine   104134  official   104134  r1_px  1487999
+   CoffeeMartin cam10         12  mine     2091  official     2091  r1_px    14293
+   FlameSteak   cam10         14  mine      718  official      718  r1_px     1361
+   Breakfast    v5            12  mine     1297  official     1297  r1_px     1734
+   MartialArts  v13           11  mine     2125  official     2125  r1_px    44333
+   CoffeeMartin cam02         29  mine        0  official        0  r1_px        0
+   MartialArts  v13           15  mine        0  official        0  r1_px        0
+   Barn         v10           11  mine      273  official      273  r1_px     2660
+   CBABasketbal v06           17  mine     3843  official     3843  r1_px     7740
+   FlameSteak   cam10         31  mine    29644  official    29644  r1_px    45018
+   CoffeeMartin cam10         16  mine     3368  official     3368  r1_px     3541
+   Painter      v15           19  mine    14006  official    14006  r1_px    19541
+   Breakfast    v9            12  mine     1341  official     1341  r1_px     2500
+   AlexaMeadeEx camera_0004   21  mine      547  official      547  r1_px      628
+   PoznanStreet v8            13  mine    22130  official    22130  r1_px    38338
+   Painter      v15           20  mine   134124  official   134124  r1_px   171084
+   Breakfast    v9            29  mine      433  official      433  r1_px      531
+   Barn         v0            14  mine     2183  official     2183  r1_px    12520
+   Painter      v15           24  mine    65872  official    65872  r1_px    66593
+   Barn         v0            23  mine    76779  official    76779  r1_px   290845
+   Barn         v10           26  mine   470288  official   470288  r1_px   907102
+   CoffeeMartin cam10         24  mine     2019  official     2019  r1_px     2297
+   Barn         v0             1  mine      852  official      852  r1_px     3190
+   Fencing      v9             3  mine     1221  official     1221  r1_px     1855
+   FlameSteak   cam10          5  mine     3581  official     3581  r1_px     5711
+   CoffeeMartin cam02         25  mine     3095  official     3095  r1_px     8504
+   CoffeeMartin cam02         40  mine   690449  official   690449  r1_px  1887109
+   MATF         S1_CAM_1      21  mine       46  official       46  r1_px      452
+   Blocks       cam9           3  mine      154  official      154  r1_px      340
+   MATF         S1_CAM_1       5  mine     6663  official     6663  r1_px    24517
+   PoznanStreet v0            16  mine     5078  official     5078  r1_px     7850
+   Breakfast    v5            14  mine      105  official      105  r1_px      416
+   Welder       camera_0003    4  mine      831  official      831  r1_px      831
+   Painter      v0             2  mine      879  official      879  r1_px     2315
+   Breakfast    v5            24  mine        0  official        0  r1_px        0
+   Barn         v10            1  mine     1155  official     1155  r1_px     3014
+   Blocks       cam0           3  mine        0  official        0  r1_px        0
+   Painter      v15            2  mine     2006  official     2006  r1_px     2075
+   Breakfast    v9            19  mine        9  official        9  r1_px      330
+D. neighbours of the under/spill/wrong pairs (cam: admitted?, presence, iou, overlap | annotated gt_px, r1 J&F):
+   Dog          camera_0004    3 under-cover(be ref_gt  555203 gt 1262927 other annotated cams gt {'camera_0003': 905301}  own r1: A p+7.4 iou0.91 ov0.839  nb camera_0023:A p+7.5 iou0.90 ov0.565; camera_0003:A p+10.4 iou0.93 ov0.914 |gt 905301 r1JF 0.8301; camera_0010:A p+9.9 iou0.90 ov0.724
+   MATF         S1_CAM_10     10 wrong-object   ref_gt    1223 gt     514 other annotated cams gt {'S1_CAM_1': 702}  own r1: x p+9.9 iou0.81 ov0.444  nb S1_CAM_9:A p+10.5 iou0.90 ov0.533; S1_CAM_8:x p+9.1 iou0.83 ov0.161; S1_CAM_7:x p+9.7 iou0.78 ov0.277
+   Dog          camera_0004    4 under-cover    ref_gt 1671796 gt  811494 other annotated cams gt {'camera_0003': 1284372}  own r1: x p+8.2 iou0.95 ov0.055  nb camera_0023:x p+8.6 iou0.91 ov0.135; camera_0003:x p+11.4 iou0.94 ov0.393 |gt 1284372 r1JF 0.8646; camera_0010:x p+10.1 iou0.93 ov0.426
+   Blocks       cam0          14 wrong-object   ref_gt   37237 gt    1821 other annotated cams gt {'cam9': 64451}  own r1: A p+1.5 iou0.26 ov0.521  nb cam1:x p+9.4 iou0.65 ov0.469; cam2:A p+14.2 iou0.85 ov0.796; cam3:A p+17.1 iou0.90 ov0.876
+   CBABasketbal v24           20 under-cover(be ref_gt   86577 gt  117942 other annotated cams gt {'v06': 137380}  own r1: A p+11.0 iou0.97 ov0.992  nb v25:A p+11.3 iou0.96 ov0.997; v23:A p+11.2 iou0.97 ov0.984; v22:A p+10.2 iou0.92 ov0.985
+   MATF         S1_CAM_1      26 wrong-object   ref_gt    1154 gt    4603 other annotated cams gt {'S1_CAM_10': 0}  own r1: x p+5.9 iou0.73 ov0.21  nb S1_CAM_2:x p+5.6 iou0.61 ov0.086; S1_CAM_3:x p+5.0 iou0.62 ovnan
+   CBABasketbal v06           20 under-cover(be ref_gt   86577 gt  137380 other annotated cams gt {'v24': 117942}  own r1: x p-0.4 iou0.69 ovNone  nb v07:x p-1.2 iou0.57 ovnan; v05:x p-0.1 iou0.80 ovnan; v08:A p+0.7 iou0.80 ovnan
+   AlexaMeadeFa camera_0009   11 spill-onto-oth ref_gt  846466 gt  444892 other annotated cams gt {'camera_0008': 1225737}  own r1: A p+9.1 iou0.87 ov0.897  nb camera_0008:A p+11.7 iou0.95 ov0.912 |gt 1225737 r1JF 0.9636; camera_0002:A p+10.1 iou0.94 ov0.927; camera_0003:x p-1.9 iou0.00 ovnan
+   Welder       camera_0003    6 under-cover(be ref_gt  118459 gt  432631 other annotated cams gt {'camera_0004': 0}  own r1: A p+8.9 iou0.83 ov0.999  nb camera_0038:A p+6.8 iou0.88 ov1.0; camera_0010:A p+9.8 iou0.88 ov1.0; camera_0011:A p+2.8 iou0.89 ovnan
+   Breakfast    v9             8 under-cover    ref_gt   23668 gt   27815 other annotated cams gt {'v5': 22673}  own r1: A p+2.8 iou0.84 ov1.0  nb v8:A p+9.4 iou0.95 ov0.956; v14:x p-3.3 iou0.00 ovnan; v4:A p+3.2 iou0.55 ov1.0
+   Breakfast    v9            26 spill-onto-oth ref_gt   32346 gt    8907 other annotated cams gt {'v5': 61562}  own r1: A p+6.0 iou0.52 ov0.799  nb v8:A p+8.8 iou0.71 ov0.914; v14:A p+3.4 iou0.47 ov0.937; v4:A p+8.1 iou0.66 ov0.765
+   PoznanStreet v8            18 under-cover    ref_gt    5951 gt    5561 other annotated cams gt {'v0': 6290}  own r1: x p+6.5 iou0.55 ov0.232  nb v7:A p+9.4 iou0.77 ov0.529; v6:A p+10.7 iou0.81 ov0.675; v5:A p+11.9 iou0.83 ov0.9
+   PoznanStreet v0            24 under-cover    ref_gt   23373 gt   16284 other annotated cams gt {'v8': 32894}  own r1: A p+11.4 iou0.81 ov0.915  nb v1:A p+11.6 iou0.83 ov0.908; v2:A p+11.4 iou0.84 ov0.919; v3:A p+11.9 iou0.84 ov0.935
+   MATF         S1_CAM_1      11 under-cover    ref_gt   21261 gt    5268 other annotated cams gt {'S1_CAM_10': 40683}  own r1: A p+7.1 iou0.79 ov0.884  nb S1_CAM_2:A p+5.9 iou0.71 ov0.843; S1_CAM_3:A p+12.7 iou0.81 ov0.857
+   FlameSteak   cam01         32 under-cover    ref_gt 1778070 gt 1411256 other annotated cams gt {'cam10': 1114627}  own r1: A p+10.6 iou0.83 ov0.972  nb cam02:A p+11.7 iou0.91 ov0.968; cam03:A p+11.6 iou0.88 ov0.982; cam12:A p+14.8 iou0.95 ov0.986
+   Barn         v10           23 under-cover    ref_gt  211671 gt  222749 other annotated cams gt {'v0': 327553}  own r1: A p+10.0 iou0.75 ov0.939  nb v11:A p+10.1 iou0.80 ov0.941; v5:A p+11.1 iou0.79 ov0.956; v6:A p+11.1 iou0.81 ov0.973
+   CoffeeMartin cam10         12 under-cover    ref_gt   63295 gt   21812 other annotated cams gt {'cam02': 50420}  own r1: x p+4.4 iou0.82 ov0.335  nb cam09:x p+2.3 iou0.77 ov0.347; cam08:A p+5.3 iou0.77 ov0.593; cam19:A p+9.8 iou0.86 ov0.836
+   FlameSteak   cam10         14 spill-onto-oth ref_gt   12512 gt    2064 other annotated cams gt {'cam01': 0}  own r1: x p+3.5 iou0.68 ov0.21  nb cam09:x p+1.1 iou0.65 ov0.36; cam08:A p+9.1 iou0.86 ov0.703; cam19:x p+6.2 iou0.71 ov0.403
+   Breakfast    v5            12 spill-onto-oth ref_gt    2225 gt    1193 other annotated cams gt {'v9': 1867}  own r1: A p+7.9 iou0.74 ov0.685  nb v6:A p+10.6 iou0.82 ov0.977; v10:A p+7.5 iou0.65 ov0.894; v0:x p+4.1 iou0.54 ov0.42
+   MartialArts  v13           11 under-cover(be ref_gt   32823 gt   71908 other annotated cams gt {'v5': 47585}  own r1: x p+7.6 iou0.76 ov0.159  nb v14:A p+5.6 iou0.76 ov0.584; v12:x p+9.4 iou0.76 ov0.481; v11:A p+9.2 iou0.77 ov0.618
+   CoffeeMartin cam02         29 under-cover(be ref_gt    2287 gt    4793 other annotated cams gt {'cam10': 0}  own r1: x p-1.4 iou0.14 ovNone  nb cam01:x p-0.3 iou0.00 ovnan; cam04:A p+1.9 iou0.64 ov0.873; cam12:x p+5.0 iou0.54 ovnan
+   MartialArts  v13           15 under-cover    ref_gt   29808 gt    5159 other annotated cams gt {'v5': 0}  own r1: x p-3.4 iou0.00 ovNone  nb v14:A p+6.7 iou0.87 ov0.658; v12:A p+7.8 iou0.84 ov0.888; v11:A p+11.1 iou0.88 ov0.847
+   Barn         v10           11 spill-onto-oth ref_gt   13749 gt    3232 other annotated cams gt {'v0': 31671}  own r1: x p+1.9 iou0.68 ov0.055  nb v11:x p+0.6 iou0.39 ovnan; v5:A p+10.8 iou0.84 ov0.861; v6:A p+10.9 iou0.84 ov0.949
+   CBABasketbal v06           17 spill-onto-oth ref_gt    8518 gt    5444 other annotated cams gt {'v24': 7291}  own r1: x p+7.0 iou0.64 ov0.041  nb v07:x p-2.7 iou0.00 ovnan; v05:x p+7.6 iou0.61 ov0.057; v08:x p+2.5 iou0.39 ov0.038
+   FlameSteak   cam10         31 spill-onto-oth ref_gt   53575 gt   23593 other annotated cams gt {'cam01': 36266}  own r1: A p+9.8 iou0.91 ov0.939  nb cam09:A p+9.6 iou0.85 ov0.951; cam08:A p+10.8 iou0.93 ov0.92; cam19:A p+10.4 iou0.96 ov0.967
+   CoffeeMartin cam10         16 under-cover    ref_gt    6289 gt    4757 other annotated cams gt {'cam02': 0}  own r1: A p+9.1 iou0.79 ov0.696  nb cam09:A p+9.4 iou0.81 ov0.826; cam08:A p+10.0 iou0.84 ov0.829; cam19:A p+10.4 iou0.85 ov0.916
+   Painter      v15           19 under-cover(be ref_gt   15086 gt   30151 other annotated cams gt {'v0': 7007}  own r1: A p+11.7 iou0.93 ov0.928  nb v14:A p+13.2 iou0.96 ov0.919; v11:A p+12.7 iou0.93 ov0.973; v10:A p+13.1 iou0.96 ov0.923
+   Breakfast    v9            12 spill-onto-oth ref_gt    2225 gt    1867 other annotated cams gt {'v5': 1193}  own r1: A p+6.6 iou0.66 ov0.846  nb v8:A p+8.6 iou0.82 ov0.93; v14:A p+6.2 iou0.70 ov0.977; v4:A p+7.0 iou0.83 ov0.826
+   AlexaMeadeEx camera_0004   21 spill-onto-oth ref_gt     924 gt     444 other annotated cams gt {'camera_0003': 644}  own r1: x p+6.3 iou0.63 ov0.059  nb camera_0006:A p+8.4 iou0.75 ovnan; camera_0026:x p-9.0 iou0.00 ovnan; camera_0005:A p+8.4 iou0.75 ovnan
+   PoznanStreet v8            13 under-cover(be ref_gt   23228 gt   39587 other annotated cams gt {'v0': 0}  own r1: A p+11.2 iou0.91 ov0.904  nb v7:A p+10.1 iou0.95 ov0.907; v6:A p+12.2 iou0.94 ov0.892; v5:A p+13.9 iou0.96 ov0.962
+   Breakfast    v9            29 under-cover    ref_gt    1177 gt     711 other annotated cams gt {'v5': 1159}  own r1: A p+6.9 iou0.71 ov0.732  nb v8:A p+9.8 iou0.87 ov0.852; v14:x p+5.9 iou0.70 ov0.0; v4:x p+6.5 iou0.73 ov0.373
+   Barn         v0            14 spill-onto-oth ref_gt    8121 gt   11166 other annotated cams gt {'v10': 11877}  own r1: x p+9.6 iou0.60 ov0.383  nb v1:A p+11.1 iou0.74 ov0.616; v5:A p+11.5 iou0.69 ov0.635; v6:A p+11.3 iou0.71 ov0.553
+   CoffeeMartin cam10         24 spill-onto-oth ref_gt    4902 gt    1204 other annotated cams gt {'cam02': 12925}  own r1: A p+3.6 iou0.74 ov0.612  nb cam09:x p+8.0 iou0.83 ov0.484; cam08:A p+7.0 iou0.85 ov0.714; cam19:A p+5.7 iou0.81 ov0.525
+   Fencing      v9             3 under-cover    ref_gt    2313 gt    2555 other annotated cams gt {'v0': 2383}  own r1: x p+9.6 iou0.63 ov0.045  nb v8:x p+11.1 iou0.68 ov0.0; v7:x p+12.4 iou0.73 ov0.023; v6:x p+11.9 iou0.70 ov0.009
+   FlameSteak   cam10          5 under-cover(be ref_gt    4418 gt    8600 other annotated cams gt {'cam01': 6987}  own r1: A p+7.2 iou0.72 ov0.706  nb cam09:A p+6.6 iou0.70 ov0.851; cam08:A p+9.5 iou0.75 ov0.824; cam19:A p+9.1 iou0.78 ov0.624
+   MATF         S1_CAM_1      21 under-cover    ref_gt    6224 gt     466 other annotated cams gt {'S1_CAM_10': 6100}  own r1: x p+0.6 iou0.69 ovNone  nb S1_CAM_2:x p+6.6 iou0.81 ov0.101; S1_CAM_3:A p+13.2 iou0.82 ov0.725
+   Welder       camera_0003    4 spill-onto-oth ref_gt    1160 gt     477 other annotated cams gt {'camera_0004': 1921}  own r1: x p+2.7 iou0.47 ov0.312  nb camera_0038:x p+2.4 iou0.61 ov0.0; camera_0010:x p+2.7 iou0.64 ov0.0; camera_0011:x p+5.2 iou0.73 ov0.0
+   Painter      v15            2 spill-onto-oth ref_gt    2150 gt    1707 other annotated cams gt {'v0': 1841}  own r1: x p+10.8 iou0.79 ov0.274  nb v14:x p+10.2 iou0.76 ov0.197; v11:A p+10.4 iou0.79 ov0.661; v10:x p+9.9 iou0.78 ov0.338
+   Breakfast    v9            19 spill-onto-oth ref_gt     181 gt     357 other annotated cams gt {'v5': 2}  own r1: x p+8.4 iou0.60 ovNone  nb v8:A p+7.3 iou0.54 ov0.726; v14:x p+1.5 iou0.16 ovnan; v4:A p+5.5 iou0.34 ov0.59
+D. cost by otype within group:
+   spill  static: n=10 cost +0.1189  env: n=2 cost +0.0940  dynamic: n=2 cost -0.0023
+   under  env: n=9 cost +0.4497  static: n=11 cost +0.1984  dynamic: n=2 cost +0.0156
+   rest   static: n=10 cost +0.3659  env: n=7 cost +0.0959  dynamic: n=6 cost +0.0172
+D. verdict totals:
+   under  needs new information                    n=22 cost +0.6637
+   rest   needs new information                    n= 3 cost +0.2352
+   spill  needs new information                    n=11 cost +0.1822
+   rest   boundary                                 n=17 cost +0.1711
+   rest   low value                                n= 3 cost +0.0724
+   spill  decode-only plausible                    n= 3 cost +0.0283
+D. round-1 vs final on the 59: r1 better by >0.02 in 11, worse in 16, mean r1 JF 0.6202 vs final 0.6578; pairs with 0 admitted neighbours 9
+wrote ./coupling.json
