@@ -1,0 +1,167 @@
+{
+ "geoset_pred_ft/fold0": {
+  "memory_attention": {
+   "rel": 0.015286592460478046,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.09367678591599869
+  }
+ },
+ "geoset_pred_ft/fold1": {
+  "memory_attention": {
+   "rel": 0.01484587419644192,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.08642120569483376
+  }
+ },
+ "geoset_pred_ft/fold2": {
+  "memory_attention": {
+   "rel": 0.015124187300455814,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.0969108760801314
+  }
+ },
+ "geoset_pred_ft/fold3": {
+  "memory_attention": {
+   "rel": 0.015242799257792043,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.08909032613715474
+  }
+ },
+ "geoset_pred_ft/fold4": {
+  "memory_attention": {
+   "rel": 0.01558588041924933,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.09775709967867638
+  }
+ },
+ "geoset_dec_ft/fold0": {
+  "memory_attention": {
+   "rel": 0.012460977750442623,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.0702974975971189
+  },
+  "mask_decoder": {
+   "rel": 0.009859621733504756,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03225381227591586
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_dec_ft/fold1": {
+  "memory_attention": {
+   "rel": 0.012502281762908381,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.06714839735431195
+  },
+  "mask_decoder": {
+   "rel": 0.009710994023461957,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03236954397628834
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_dec_ft/fold2": {
+  "memory_attention": {
+   "rel": 0.012616582529160097,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.07198522891118139
+  },
+  "mask_decoder": {
+   "rel": 0.00999280357286248,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03235132860113855
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_dec_ft/fold3": {
+  "memory_attention": {
+   "rel": 0.012783666894394662,
+   "worst_tensor": "layers.1.self_attn.v_proj.bias",
+   "worst_rel": 0.06968475062475021
+  },
+  "mask_decoder": {
+   "rel": 0.010110949741429547,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03311980075368709
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_dec_ft/fold4": {
+  "memory_attention": {
+   "rel": 0.012921333491140751,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.07446176794792955
+  },
+  "mask_decoder": {
+   "rel": 0.010077469314249524,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.0327781944855757
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_decb_ft/fold0": {
+  "memory_attention": {
+   "rel": 0.015082933267906941,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.07710952127906288
+  },
+  "mask_decoder": {
+   "rel": 0.011906177273501066,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03669122603080271
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_decb_ft/fold1": {
+  "memory_attention": {
+   "rel": 0.015061821240389395,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.07805407797385248
+  },
+  "mask_decoder": {
+   "rel": 0.01163215926090496,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03706245594198286
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_decb_ft/fold2": {
+  "memory_attention": {
+   "rel": 0.015163771240406384,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.08235250826167226
+  },
+  "mask_decoder": {
+   "rel": 0.011856153752566904,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.036978660430216484
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_decb_ft/fold3": {
+  "memory_attention": {
+   "rel": 0.015347280148680205,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.07213335618409832
+  },
+  "mask_decoder": {
+   "rel": 0.011847972709801601,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.038273377011597
+  },
+  "conv_s_unchanged": true
+ },
+ "geoset_decb_ft/fold4": {
+  "memory_attention": {
+   "rel": 0.015699622098135267,
+   "worst_tensor": "layers.0.self_attn.v_proj.bias",
+   "worst_rel": 0.08415183956055515
+  },
+  "mask_decoder": {
+   "rel": 0.011980001702486056,
+   "worst_tensor": "output_upscaling.0.weight",
+   "worst_rel": 0.03735097808624017
+  },
+  "conv_s_unchanged": true
+ }
+}

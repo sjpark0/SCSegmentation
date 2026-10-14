@@ -19,6 +19,7 @@ large JSONs, ~40 MB, are not committed).  Container scripts take `<method> <out.
 | `seedcat.py` | host | stdout, `seedfail_joined.json` | failure types and cost tables |
 | `seedgrid.py` | scsam3 | `grid0.json` | 288/576 grid ceiling of the frame-0 non-reference GT |
 | `seedcmp.py` / `seedfuse.py` / `seedmorph.py` | host / scsam3 / scsam3 | stdout / json | seed-correction probes: SAM 3 redraw, gated and band fusion, dilate/erode |
+| `e9_decmove.py` | scsam3 (`stage1/scripts/docker_run.sh scsam3 python …`) | `MVSeed/runs/e9/decmove.json` | S1-E9: relative weight movement of the fine-tuned mask decoder / memory attention per fold vs the SAM 3 start (docs/stage1-E9.md §4) |
 | `nonref.py` | host | stdout | non-reference loss: E8 headline vs GT-seed headline (E7), F0/N0, seed bins, per-frame curve (docs/stage2-D-nonref.md) |
 
 `refmap.py`/`ceil.py` read `refmap.json` from the cwd; `sim2.py` expects the two container outputs there.
