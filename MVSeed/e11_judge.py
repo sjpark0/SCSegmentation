@@ -98,7 +98,7 @@ def z2_round1(r1_folder, rep_folder):
     return out
 
 
-def z1_z5x(folder, ref_cams, capped):
+def z1_z5x(folder, ref_cams, capped, failing=frozenset()):
     """Z1 (counters == PNG-derived) and Z5x (exact containment) for X1 / D, plus the GT argmax-accuracy diagnostic and
     the exempt-touched / contested pair sets.  Returns (z1, z5x, diag, sets)."""
     import cv2
@@ -107,8 +107,8 @@ def z1_z5x(folder, ref_cams, capped):
     from mvseg2d.io import load_labelmap
     z1 = dict(scenes=0, counters_ok=0, contested_px=0, removed_entries=0, masks_changed=0, masks_exempt=0, masks_emptied=0)
     z5 = dict(scenes_checked=0, added_px=0, outside_contested_px=0, double_survivor_px=0, key_mismatch=[], missing=[])
-    diag = dict(contested_px_scored=0, gt_owner_contender_px=0, argmax_to_gt_px=0, argmax_to_smaller_px=0)
-    contested_pairs, exempt_pairs = set(), set()
+    diag = dict(contested_px_scored=0, evaluated_px=0, gt_owner_contender_px=0, argmax_to_gt_px=0, argmax_to_smaller_px=0)
+    contested_pairs, exempt_pairs, separable_pairs = set(), set(), set()
     for sc in SCENES:
         d = _result(sc, folder)
         if not os.path.isdir(d):
@@ -130,8 +130,9 @@ def z1_z5x(folder, ref_cams, capped):
             if B0 is None:
                 z5["key_mismatch"].append((sc, cam)); continue
             objs_b = [f for f in objs if (cam, f) in base_all]
-            if set(objs) != set(objs_b):
-                z5["key_mismatch"].append((sc, cam)); continue          # an arm mask without a C0 mask
+            for f in objs:
+                if (cam, f) not in base_all:                              # an arm mask without a C0 mask = added pixels
+                    z5["key_mismatch"].append((sc, cam, f)); z5["added_px"] += int((cv2.imread(arm_all[(cam, f)], 0) > 127).sum())
             shape = B0.shape[1:]
             A = np.stack([(cv2.imread(arm_all[(cam, f)], 0) > 127) if (cam, f) in arm_all else np.zeros(shape, bool) for f in objs_b])
             contested = B0.sum(0) >= 2
@@ -150,17 +151,21 @@ def z1_z5x(folder, ref_cams, capped):
                 gt = load_labelmap(os.path.join(S1, "Data", sc, "masks", f"{cam}.png"))
                 ids = np.array([int(f[:-4]) for f in objs_b])
                 for b, f in enumerate(objs_b):
+                    k = (sc, cam, int(f[:-4]))
                     if contested.any() and (B0[b] & contested).any():
-                        contested_pairs.add((sc, cam, int(f[:-4])))
-                    if exempt[b] or (removed[b].any() and exempt.any()):
-                        pass
+                        contested_pairs.add(k)
                     if exempt[b]:
-                        exempt_pairs.add((sc, cam, int(f[:-4])))
+                        exempt_pairs.add(k)
+                    if k in failing:                                     # in-view separable: >= 50 % of the wrong pixels also claimed by another C0 mask
+                        fp = B0[b] & (gt != ids[b])
+                        if fp.any() and (fp & contested).sum() >= 0.5 * fp.sum():
+                            separable_pairs.add(k)
                 # argmax accuracy on scored views: at each contested pixel the survivor (non-exempt) vs the GT owner
                 surv = A.copy(); surv[exempt] = False
                 one = surv.sum(0) == 1
                 px = contested & one
                 diag["contested_px_scored"] += int(contested.sum())
+                diag["evaluated_px"] += int(px.sum())
                 if px.any():
                     winner = ids[surv[:, px].argmax(0)]
                     gtv = gt[px]
@@ -179,8 +184,34 @@ def z1_z5x(folder, ref_cams, capped):
     z5["ok"] = z5["scenes_checked"] == 17 and z5["added_px"] == 0 and z5["outside_contested_px"] == 0 and not z5["missing"] and \
         (z5["double_survivor_px"] == 0) and (not z5["key_mismatch"] or not capped)
     diag["argmax_accuracy"] = diag["argmax_to_gt_px"] / diag["gt_owner_contender_px"] if diag["gt_owner_contender_px"] else None
-    diag["smaller_fraction"] = diag["argmax_to_smaller_px"] / max(diag["argmax_to_gt_px"] + (diag["gt_owner_contender_px"] - diag["argmax_to_gt_px"]), 1)
-    return z1, z5, diag, dict(contested=contested_pairs, exempt=exempt_pairs)
+    diag["smaller_fraction"] = diag["argmax_to_smaller_px"] / diag["evaluated_px"] if diag["evaluated_px"] else None
+    z5["ok"] = z5["ok"] and not z5["key_mismatch"]
+    return z1, z5, diag, dict(contested=contested_pairs, exempt=exempt_pairs, separable=separable_pairs)
+
+
+def output_invariants(folder, ref_cams):
+    """The X1 output rule's invariants on an arm folder alone (used for X2, Z1m): at most one non-exempt survivor per
+    pixel (exempt flags from xcl_conf.json), no emptied mask (records with px > 0 and kept == 0), key set == C0's."""
+    import cv2
+    import numpy as np
+    out = dict(scenes=0, double_survivor_px=0, emptied=0, key_mismatch=0, missing=[])
+    for sc in SCENES:
+        d = _result(sc, folder)
+        if not os.path.isdir(d) or not os.path.isfile(os.path.join(d, "xcl_conf.json")):
+            out["missing"].append(sc); continue
+        out["scenes"] += 1
+        recs = _load_json(os.path.join(d, "xcl_conf.json"))
+        arm, base = _pngs(d, skip=(ref_cams[sc],)), _pngs(_result(sc, D0), skip=(ref_cams[sc],))
+        out["key_mismatch"] += int(set(arm) != set(base))
+        out["emptied"] += sum(1 for cam in recs for o, r in recs[cam].items() if r["px"] > 0 and r["kept"] == 0)
+        for cam in sorted({k[0] for k in arm}):
+            objs = sorted(f for (c, f) in arm if c == cam)
+            A = np.stack([cv2.imread(arm[(cam, f)], 0) > 127 for f in objs])
+            exempt = np.array([bool(recs.get(cam, {}).get(f[:-4], {}).get("exempt", False)) for f in objs])
+            if (~exempt).any():
+                out["double_survivor_px"] += int((A[~exempt].sum(0) > 1).sum())
+    out["ok"] = out["scenes"] == 17 and out["double_survivor_px"] == 0 and out["emptied"] == 0 and out["key_mismatch"] == 0
+    return out
 
 
 def stage1():
@@ -232,11 +263,19 @@ def stage1():
                         dF=_mean(kk[k]["F"] - k0[k]["F"] for k in sel),
                         up=sum(d[k] > 0.01 for k in sel), down=sum(d[k] < -0.01 for k in sel), nonzero=sum(d[k] != 0 for k in sel))
         z1 = z5 = diag = None
+        failing = {k for k in k0 if k not in good}
         if rid in ("X1", "D"):
-            z1, z5, diag, sets[rid] = z1_z5x(folder, ref_cams, capped=(rid == "X1"))
+            z1, z5, diag, sets[rid] = z1_z5x(folder, ref_cams, capped=(rid == "X1"), failing=failing)
+            if rid == "X1":
+                z1["ok"] = z1["ok"] and z1["masks_emptied"] == 0 and not z5["key_mismatch"]
         cont = sets.get("X1", sets.get("D", {})).get("contested", set())
         exem = sets.get(rid, {}).get("exempt", set())
+        sepa = sets.get("X1", sets.get("D", {})).get("separable", set())
         splits = dict(good=split(good), fail=split(k for k in k0 if k not in good),
+                      separable=split(k for k in k0 if k in sepa) if sepa else None,
+                      **{f"rig_{t}": split(k for k, r in k0.items() if r["rig"] == t) for t in ("pinhole", "hemisphere")},
+                      **{f"vd_{b}": split(k for k, r in k0.items() if lo <= r["view_dist"] <= hi) for b, lo, hi in
+                         (("<=1", 0, 1), ("2", 2, 2), ("3-4", 3, 4), (">=5", 5, 10 ** 6))},
                       contested=split(k for k in k0 if k in cont) if cont else None,
                       non_contested=split(k for k in k0 if k not in cont) if cont else None,
                       exempt_touched=split(k for k in k0 if k in exem) if exem else None,
@@ -268,9 +307,10 @@ def stage1():
                     xmem["scenes"] += 1
                     for k2 in ("contested_cells", "clamped_cells", "masks_exempt", "eligible"):
                         xmem[k2] += int(c.get(f"n_xmem_{k2}", 0))
-        z7["ok"] = z7["seconds"] <= 45 * 60 and z7["gpu_mb_max"] <= z7["gpu_mb_max_C0"] + 1000 and z7["seconds"] <= 1.15 * z7["seconds_C0"] + 60
+        z7["ok"] = z7["seconds"] <= 45 * 60 and z7["gpu_mb_max"] <= z7["gpu_mb_max_C0"] + 1000 and z7["seconds"] <= 1.15 * z7["seconds_C0"]
         if rid == "X2":
-            xmem["ok"] = xmem["scenes"] == 17 and xmem["contested_cells"] > 0 and xmem["clamped_cells"] > 0
+            xmem["output_invariants"] = output_invariants(folder, ref_cams)
+            xmem["ok"] = xmem["scenes"] == 17 and xmem["contested_cells"] > 0 and xmem["clamped_cells"] > 0 and xmem["output_invariants"]["ok"]
         r = dict(name=folder, tag=tag, **summary(rs), hallucinations=hallu(folder), fails=sum(x["J"] < 0.5 for x in rs),
                  paired={k: dict(delta=v["delta"], ci=list(v["ci"]), per_scene=v["per_scene"]) for k, v in st.items()},
                  gate=gate, splits=splits, by_size=by_size, failure_kinds=kinds, Z1=z1, Z1m=xmem if rid == "X2" else None, Z2=z2, Z5x=z5, Z7=z7, diag=diag)
@@ -286,18 +326,26 @@ def stage1():
               + (f"  | contested {sp['contested']['dJF']:+.4f} (n={sp['contested']['n']}, nonzero {sp['contested']['nonzero']})  non-contested {sp['non_contested']['dJF']:+.4f} (n={sp['non_contested']['n']}, nonzero {sp['non_contested']['nonzero']})" if sp['contested'] else "")
               + (f"  | exempt-touched {sp['exempt_touched']['dJF']:+.4f} (n={sp['exempt_touched']['n']})" if sp['exempt_touched'] else "")
               + f"  | spill14 {sp['spill14']['dJF']:+.4f} (↑{sp['spill14']['up']} ↓{sp['spill14']['down']})  under22 {sp['under22']['dJF']:+.4f}  twin {sp['twin']['dJF']:+.4f}"
+              + (f"  | separable {sp['separable']['dJF']:+.4f} (n={sp['separable']['n']}, ↑{sp['separable']['up']})" if sp['separable'] else "")
+              + f"  | rig {sp['rig_pinhole']['dJF']:+.4f}/{sp['rig_hemisphere']['dJF']:+.4f}  vd {{{', '.join(f'{b}: {sp[f'vd_{b}']['dJF']:+.4f}' for b in ('<=1', '2', '3-4', '>=5'))}}}"
               + f"  | size {{{', '.join(f'{b}: {v['dJF']:+.4f}' for b, v in by_size.items())}}}")
         print(f"   kinds {kinds}\n   diag {diag}\n   Z1 {z1}\n   Z1m {r['Z1m']}\n   Z2 {z2}\n   Z5x {z5}\n   Z7 {z7}")
     pr = {}
     if "X1" in res:
         x = res["X1"]; dj = x["paired"]["JF"]["delta"]
+        full = res["D"]["diag"] if "D" in res and res["D"]["diag"] else x["diag"]        # the full-population accuracy is D's (no exempt masks)
         pr["P1"] = dict(delta=dj, ok=-0.002 <= dj <= 0.004 and x["paired"]["J"]["delta"] > x["paired"]["F"]["delta"] and abs(x["paired"]["F"]["delta"]) <= 0.001,
-                        above_ceiling=dj > ORACLE, argmax_accuracy=x["diag"]["argmax_accuracy"] if x["diag"] else None)
+                        above_ceiling=dj > ORACLE, argmax_accuracy=full["argmax_accuracy"] if full else None,
+                        argmax_accuracy_X1=x["diag"]["argmax_accuracy"] if x["diag"] else None)
+        if pr["P1"]["above_ceiling"]:
+            print(f"ABORT: X1 ΔJ&F {dj:+.4f} exceeds the registered oracle ceiling {ORACLE:+.4f} -- a bug, fix before any stage-2 run (prereg P1)")
         sp = x["splits"]
         pr["P2"] = dict(non_contested_nonzero=sp["non_contested"]["nonzero"] if sp["non_contested"] else None, added_px=x["Z5x"]["added_px"] if x["Z5x"] else None,
                         good=sp["good"]["dJF"], fail=sp["fail"]["dJF"], spill14=sp["spill14"]["dJF"],
+                        separable=None if sp["separable"] is None else dict(n=sp["separable"]["n"], dJF=sp["separable"]["dJF"], up=sp["separable"]["up"]),
                         ok=(sp["non_contested"] is None or sp["non_contested"]["nonzero"] == 0) and (x["Z5x"] is None or x["Z5x"]["added_px"] == 0)
-                        and -0.001 <= sp["good"]["dJF"] <= 0.0035 and 0 <= sp["fail"]["dJF"] <= 0.020 and -0.02 <= sp["spill14"]["dJF"] <= 0.05)
+                        and -0.001 <= sp["good"]["dJF"] <= 0.0035 and 0 <= sp["fail"]["dJF"] <= 0.020 and -0.02 <= sp["spill14"]["dJF"] <= 0.05
+                        and (sp["separable"] is None or (sp["separable"]["dJF"] >= 0.02 and sp["separable"]["up"] >= 4)))
         pr["P3"] = dict(down=sp["good"]["down"] + sp["fail"]["down"], fails=x["fails"], halluc=x["hallucinations"], worst=x["gate"]["worst_delta"], exempt=x["Z1"]["masks_exempt"] if x["Z1"] else None,
                         ok=(sp["good"]["down"] + sp["fail"]["down"]) <= 10 and x["fails"] <= 15 and x["hallucinations"] == res["C0"]["hallucinations"] and x["gate"]["worst_delta"] >= -0.006
                         and (x["Z1"] is None or 5 <= x["Z1"]["masks_exempt"] <= 120))
@@ -312,18 +360,18 @@ def stage1():
             for k in set(a) & set(b):
                 n_all += 1; n_diff += int(not _bytes_equal(a[k], b[k]))
         s14 = res["X2"]["splits"]["spill14"]["dJF"] - res["X1"]["splits"]["spill14"]["dJF"]
-        pr["P5"] = dict(X2_minus_X1=dd, pngs_differ=n_diff, pngs=n_all, spill14_diff=s14, same_gate=res["X2"]["gate"]["pass"] == res["X1"]["gate"]["pass"],
-                        ok=-0.0015 <= dd <= 0.002 and n_diff > 0 and -0.01 <= s14 <= 0.02 and res["X2"]["gate"]["pass"] == res["X1"]["gate"]["pass"])
+        g1 = lambda r: res[r]["gate"]["G1_mean_gt_0"] and res[r]["gate"]["G1_ci_lower_gt_0"]
+        pr["P5"] = dict(X2_minus_X1=dd, pngs_differ=n_diff, pngs=n_all, spill14_diff=s14, same_G1=g1("X2") == g1("X1"),
+                        ok=-0.0015 <= dd <= 0.002 and n_diff > 0 and -0.01 <= s14 <= 0.02 and g1("X2") == g1("X1"))
         pr["P9"] = dict(ok=res["X1"]["paired"]["JF"]["delta"] >= res["X2"]["paired"]["JF"]["delta"] - 0.0015)
     if "X1" in res and "D" in res:
         dd = res["D"]["paired"]["JF"]["delta"] - res["X1"]["paired"]["JF"]["delta"]
         ex = sets.get("X1", {}).get("exempt", set())
         # every pair where D != X1 is an exempt-touched pair of X1 (same camera as an exempt mask)
         kd = {key(r): r for r in rows_of(res["D"]["name"])}; kx = {key(r): r for r in rows_of(res["X1"]["name"])}
-        ex_cams = {(k[0], k[1]) for k in ex}
         differ = [k for k in kx if abs(kd[k]["JF"] - kx[k]["JF"]) > 1e-9]
-        not_touched = [k for k in differ if (k[0], k[1]) not in ex_cams]
-        pr["P6"] = dict(D_minus_X1=dd, emptied=res["D"]["Z1"]["masks_emptied"] if res["D"]["Z1"] else None, pairs_differ=len(differ), pairs_differ_outside_exempt_cams=len(not_touched),
+        not_touched = [k for k in differ if k not in ex]
+        pr["P6"] = dict(D_minus_X1=dd, emptied=res["D"]["Z1"]["masks_emptied"] if res["D"]["Z1"] else None, pairs_differ=len(differ), pairs_differ_outside_exempt=len(not_touched),
                         reading="cap protected" if dd < -0.001 else ("cap forfeited" if dd > 0.001 else "cap neutral"),
                         ok=-0.005 <= dd <= 0.001 and (res["D"]["Z1"] is None or 0 <= res["D"]["Z1"]["masks_emptied"] <= 60) and len(not_touched) == 0)
     for rid in ("X1", "X2", "D"):
@@ -333,11 +381,16 @@ def stage1():
                 v = res[rid].get(z)
                 if v is not None:
                     pr[f"{z}_{rid}"] = bool(v.get("ok"))
+    ceiling = bool(pr.get("P1", {}).get("above_ceiling"))
+    if ceiling:
+        passing = []
     out = _load_json(OUT) if os.path.isfile(OUT) else {}
-    out.update({"prereg": "docs/stage1-E11-prereg.md", "stage1": dict(arms=res, passing_tags=passing, predictions=pr)})
+    out.update({"prereg": "docs/stage1-E11-prereg.md", "stage1": dict(arms=res, passing_tags=passing, predictions=pr, ceiling_violation=ceiling)})
     os.makedirs(OUT_DIR, exist_ok=True)
     json.dump(out, open(OUT, "w"), indent=1)
     print(f"stage-1 gate: passing {passing}   predictions {json.dumps(pr)}")
+    if ceiling:
+        sys.exit(2)
 
 
 def stage2():
@@ -400,7 +453,8 @@ def stage2():
         kf = s1.get("arms", {}).get(r, {}).get("paired", {}).get("JF", {}).get("delta")
         if kf:
             ratio = res[r]["paired"]["mean"] / (66.7 * kf)
-            pr[f"P7_{r}"] = dict(ratio=ratio, basic_delta=res[r]["paired"]["mean"], ok=0.3 <= ratio <= 1.5 and 0 <= res[r]["paired"]["mean"] <= 0.3)
+            pr[f"P7_{r}"] = dict(ratio=ratio, basic_delta=res[r]["paired"]["mean"], e8_rule_expected=kf >= 0.004, e8_rule=res[r]["rule"]["pass"],
+                                 ok=0.3 <= ratio <= 1.5 and 0 <= res[r]["paired"]["mean"] <= 0.3 and (res[r]["rule"]["pass"] <= (kf >= 0.004)))
         pr[f"P8_{r}"] = res[r]["P8_ref_frame0_is_gt"]
         pr[f"Z3_{r}"] = isinstance(res[r]["Z3_mask_digest"], dict) and res[r]["Z3_mask_digest"]["bad"] == [] and res[r]["Z3_mask_digest"]["ok"] == 17
     out["stage2"] = dict(runs=res, passed=passed, adopted=adopted, adopted_tag=res[adopted]["tag"] if adopted else None, predictions=pr)
