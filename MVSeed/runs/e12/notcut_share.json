@@ -1,0 +1,42 @@
+{
+ "fold0": {
+  "steps": 2574,
+  "eligible": 24092,
+  "cut": 23953,
+  "not_cut_share": 0.005769550058110529,
+  "replay_mismatch": 0
+ },
+ "fold1": {
+  "steps": 2574,
+  "eligible": 24027,
+  "cut": 23925,
+  "not_cut_share": 0.004245224122861768,
+  "replay_mismatch": 0
+ },
+ "fold2": {
+  "steps": 2772,
+  "eligible": 26801,
+  "cut": 26672,
+  "not_cut_share": 0.00481325323681947,
+  "replay_mismatch": 0
+ },
+ "fold3": {
+  "steps": 2772,
+  "eligible": 25107,
+  "cut": 24991,
+  "not_cut_share": 0.004620225435137626,
+  "replay_mismatch": 0
+ },
+ "fold4": {
+  "steps": 2772,
+  "eligible": 25372,
+  "cut": 25258,
+  "not_cut_share": 0.004493142046350318,
+  "replay_mismatch": 0
+ },
+ "all": {
+  "eligible": 125399,
+  "cut": 124799,
+  "not_cut_share": 0.004784727150934254
+ }
+}
