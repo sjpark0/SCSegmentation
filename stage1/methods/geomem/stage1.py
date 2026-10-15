@@ -37,6 +37,8 @@ PRESETS = {
     "geoset_rep_xm": dict(arm="geoset_pred_ft", gate="reproj", xcl="outmem"),    # X2: + round-1 memories
     # S1-E12 (docs/stage1-E12-prereg.md): M+ = memory-token half-plane dropout training, adopted decode path; appended last
     "geoset_cutall_rep_x": dict(arm="geoset_cutall_ft", gate="reproj", xcl="out"),
+    # S1-E14 (docs/stage1-E14-prereg.md): S = the adopted preset with the output threshold L > -0.5 (coverage calibration); last
+    "geoset_rep_xs": dict(arm="geoset_pred_ft", gate="reproj", xcl="outs"),
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
 DEFAULT_RUNS = os.path.join(common.REPO, "geomem", "runs")

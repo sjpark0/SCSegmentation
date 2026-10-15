@@ -352,7 +352,7 @@ def parse_args():
     ap.add_argument("--stage1", default=None, metavar="TAG",
                     help="run stage 1 in this process (docs/pipeline-inprocess.md): the stage-1 GeoSet-2 "
                          "preset TAG (geoset_rep_x = the S1-E11 headline, geoset_rep = S1-E8, geoset_abs, "
-                         "geoalign_rep, geoset_rep_z2/z2r, geoset_rep_xm) decodes the "
+                         "geoalign_rep, geoset_rep_z2/z2r, geoset_rep_xm, geoset_rep_xs) decodes the "
                          "reference frame from stage1/Data and its fold checkpoint, and its masks replace "
                          "the seeds exactly as --seeds-from MVSeed_TAG would, without a file. Folder "
                          "suffix Sd<TAG> (the same seeds); excludes --seeds-from and --repair-seeds. MVOpt only.")

@@ -77,6 +77,82 @@ def test_exclusive_logits_1008_rule():
     assert torch.equal(out2, nested) and c2["masks_exempt"] == 1
 
 
+# ------------------------------------------------------------------ S1-E14 S: the shifted threshold (CPU torch)
+def test_shift_zero_is_the_adopted_rule_bit_for_bit():
+    g = torch.Generator().manual_seed(0)
+    L = torch.randn(5, 30, 40, generator=g) * 3
+    L[3] = -1024.0                                                          # an absent object
+    a, ca, ra = R.exclusive_masks(L)
+    b, cb, rb = R.exclusive_masks(L, R.XCL_TAU_KEEP, 0.0)
+    assert torch.equal(a, b) and ca == cb and ra == rb
+
+
+def test_shift_claims_only_where_the_object_is_the_argmax():
+    L = torch.full((2, 4, 16), -1024.0)
+    L[0, :, 0:4] = 1.0                                                      # A holds x 0..3
+    L[0, :, 4:6] = -0.3                                                     # A, unclaimed, above -0.5: gained
+    L[0, :, 6:8] = -0.6                                                     # A below -0.5: not gained
+    L[1, :, 2:4] = 0.8                                                      # B inside A's pixels, B < A: never taken from A
+    L[1, :, 8:14] = 1.0                                                     # B's own pixels
+    L[1, :, 14:16] = -0.3                                                   # B alone above -0.5: gained
+    keep0, _, r0 = R.exclusive_masks(L)
+    keep, c, recs = R.exclusive_masks(L, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert keep0[0, 0].tolist() == [True] * 4 + [False] * 12 and keep0[1, 0].tolist() == [False] * 8 + [True] * 6 + [False] * 2
+    assert keep[0, 0].tolist() == [True] * 6 + [False] * 10
+    assert keep[1, 0].tolist() == [False] * 8 + [True] * 8
+    assert r0[1]["exempt"] is False and recs[1] == dict(px=40, lost=8, exempt=False, kept=32, removed=8)
+    absent = torch.cat([L[:1], torch.full_like(L[:1], -1024.0)])
+    k2, c2, _ = R.exclusive_masks(absent, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert k2[1].sum() == 0 and c2["masks_present"] == 1
+
+
+def test_shift_superset_except_exempt_to_nonexempt_flips():
+    # B: 100 px of its own + 40 contested px it loses to A -> not exempt at 0 (40 / 140) nor under the shift
+    L = torch.full((2, 10, 60), -1024.0)
+    L[0, :, 0:24] = 2.0                                                     # A
+    L[1, :, 20:34] = 1.0                                                    # B: x 20..23 contested (A wins), x 24..33 own
+    L[1, :, 34:44] = -0.3                                                   # B gains 100 px under the shift
+    L[0, :, 44:60] = -0.3; L[1, :, 44:60] = -0.2                            # contested only under the shift: B is the argmax
+    k0, _, r0 = R.exclusive_masks(L)
+    ks, cs, rs = R.exclusive_masks(L, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert r0[1]["exempt"] is False and rs[1]["exempt"] is False and rs[0]["exempt"] is False
+    assert (k0 & ~ks).sum() == 0, "a pixel was removed from an object without an exemption flip"
+    assert ks[1].sum() == k0[1].sum() + 100 + 160 and torch.equal(ks[0], k0[0])
+    # off -> on flip: B loses 40 of 100 at 0 (not exempt); under the shift it adds 100 px it loses to A -> 140 / 200, exempt
+    L2 = torch.full((2, 10, 60), -1024.0)
+    L2[0, :, 0:24] = 2.0; L2[0, :, 30:40] = 2.0
+    L2[1, :, 20:30] = 1.0; L2[1, :, 30:40] = -0.3
+    k0, _, r0 = R.exclusive_masks(L2)
+    ks, _, rs = R.exclusive_masks(L2, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert r0[1]["exempt"] is False and rs[1]["exempt"] is True and (k0 & ~ks).sum() == 0
+    # on -> off flip: B exempt at 0 (loses exactly 50 %), gains 100 own px under the shift -> 50 / 200, not exempt:
+    # B drops the 50 contested px it kept while exempt -- the only legitimate removal (I2 excludes these objects)
+    L3 = torch.full((2, 10, 60), -1024.0)
+    L3[0, :, 0:10] = 2.0
+    L3[1, :, 5:15] = 1.0
+    L3[1, :, 15:25] = -0.3
+    k0, _, r0 = R.exclusive_masks(L3)
+    ks, _, rs = R.exclusive_masks(L3, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert r0[1]["exempt"] is True and rs[1]["exempt"] is False
+    assert (k0[1] & ~ks[1]).sum() == 50 and (k0[0] & ~ks[0]).sum() == 0 and ks[1].sum() == 150
+
+
+def test_shift_never_empties_a_mask_and_keeps_the_true_argmax():
+    L = torch.full((2, 8, 8), -1024.0)
+    L[0] = 3.0
+    L[1, 2:6, 2:6] = 1.0; L[1, 0:2, :] = -0.2                               # B loses all of its pos to A -> exempt, kept whole
+    ks, cs, rs = R.exclusive_masks(L, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert rs[1]["exempt"] is True and ks[1].sum() == 16 + 16 and cs["masks_emptied"] == 0
+    # two logits one float32 ulp apart at pixel 0: the comparison form keeps the true argmax (B); adding 0.5 to the
+    # logits could round them to one value and hand the pixel to the lower index (A)
+    a = torch.tensor(0.3, dtype=torch.float32)
+    b = torch.nextafter(a, torch.tensor(1.0))
+    T = torch.full((2, 1, 4), -1024.0)
+    T[0, 0, 0] = a; T[1, 0, 0] = b; T[0, 0, 1:] = 5.0                       # A: 4 pos px, loses pixel 0 (25 %, not exempt)
+    ks, _, rs = R.exclusive_masks(T, R.XCL_TAU_KEEP, R.XCL_SHIFT)
+    assert bool(ks[1, 0, 0]) and not bool(ks[0, 0, 0]) and rs[0]["lost"] == 1 and rs[0]["exempt"] is False
+
+
 # ------------------------------------------------------------------ real decodes on Blocks
 @pytest.fixture(scope="module")
 def model():
@@ -125,6 +201,47 @@ def test_xcl_none_is_byte_identical_to_the_adopted_output(model):
     assert "xcl" not in cfg
     a, b = _pngs(os.path.join(DATA, "Blocks", "Result", "dbg_x0"), skip=(scene.ref_cam,)), _pngs(E8, skip=(scene.ref_cam,))
     assert a and set(a) == set(b) and all(a[k] == b[k] for k in a)
+
+
+@needs_data
+def test_outs_invariants_on_blocks(model):
+    """S1-E14 S on a real Blocks decode against `out` (the adopted rule): round 1 untouched, arm >= out for every object
+    except an exempt -> non-exempt flip, nothing emptied, key set >= out's, kept == PNG pixels, config records the shift."""
+    scene = common.load_scene(DATA, "Blocks")
+    _rm("dbg_xs_out", "dbg_xs_out_r1", "dbg_xs_outs", "dbg_xs_outs_r1")
+    c_out = R.decode_scene(scene, _args("dbg_xs_out", xcl="out"))
+    cfg = R.decode_scene(scene, _args("dbg_xs_outs", xcl="outs"))
+    assert cfg["xcl"] == "outs" and cfg["xcl_shift"] == 0.5 and cfg["xcl_tau_keep"] == 0.5 and "xcl_shift" not in c_out
+    d, d0 = (os.path.join(DATA, "Blocks", "Result", n) for n in ("dbg_xs_outs", "dbg_xs_out"))
+    assert _pngs(d + "_r1") == _pngs(d0 + "_r1")
+    assert open(os.path.join(d, "round1_conf.json"), "rb").read() == open(os.path.join(d0, "round1_conf.json"), "rb").read()
+    recs, recs0 = (json.load(open(os.path.join(x, "xcl_conf.json"))) for x in (d, d0))
+    arm, base = _masks(d, skip=(scene.ref_cam,)), _masks(d0, skip=(scene.ref_cam,))
+    assert set(arm) >= set(base) and cfg["n_xcl_masks_emptied"] == 0
+    added = removed_flip = removed_other = flips_on = flips_off = 0
+    for cam in recs:
+        for o, r in recs[cam].items():
+            k = (cam, f"{o}.png")
+            a = arm.get(k)
+            assert r["kept"] == (0 if a is None else int(a.sum())), (k, r)
+            b = base.get(k)
+            if b is None:
+                continue
+            a = a if a is not None else np.zeros_like(b)
+            rem = int((b & ~a).sum())
+            e0, e1 = recs0[cam][o]["exempt"], r["exempt"]
+            flips_on += int(e1 and not e0); flips_off += int(e0 and not e1)
+            if e0 and not e1:
+                removed_flip += rem
+            else:
+                removed_other += rem
+            added += int((a & ~b).sum())
+    assert removed_other == 0, "a pixel was removed from an object without an exempt -> non-exempt flip"
+    assert added > 0, "the shift added nothing (dead branch?)"
+    assert sum(r["exempt"] for v in recs.values() for r in v.values()) == cfg["n_xcl_masks_exempt"]
+    print(f"\n[outs] added {added} px, removed (on->off flips) {removed_flip}, flips on {flips_on} off {flips_off}, "
+          f"exempt {cfg['n_xcl_masks_exempt']} (out {c_out['n_xcl_masks_exempt']})")
+    _rm("dbg_xs_out", "dbg_xs_out_r1", "dbg_xs_outs", "dbg_xs_outs_r1")
 
 
 @needs_data

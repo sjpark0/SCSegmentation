@@ -81,21 +81,24 @@ def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none"):
 
 
 # S1-E11 (docs/stage1-E11-prereg.md section 2): in-view object exclusivity by the decoder's own logits.
-XCL_MODES = ("none", "out", "outmem", "out_nocap")
+XCL_MODES = ("none", "out", "outmem", "out_nocap", "outs")
 XCL_TAU_KEEP = 0.5          # nested-mask cap: a mask that would lose >= this fraction of its pixels is exempt (kept whole)
 XCL_MEM_CLAMP = -10.0       # the clamp SAM 3 uses in _apply_non_overlapping_constraints (sigmoid(-10) = 4.5e-5)
+# S1-E14 (docs/stage1-E14-prereg.md section 2.2): `outs` = `out` with the output threshold lowered to L > -XCL_SHIFT
+# (a comparison, not an addition: the argmax stays on the unshifted logits); round-2 output only.
+XCL_SHIFT = 0.5
 
 
-def exclusive_masks(L, tau_keep=XCL_TAU_KEEP):
-    """X1 / D rule on output-resolution logits L [B,h,w] float -> (keep [B,h,w] bool, counts, per-object records).
+def exclusive_masks(L, tau_keep=XCL_TAU_KEEP, shift=0.0):
+    """X1 / D / S rule on output-resolution logits L [B,h,w] float -> (keep [B,h,w] bool, counts, per-object records).
 
-    pos = L > 0; w = per-pixel argmax over objects (exact ties -> the lowest index; absent objects carry
-    NO_OBJ_SCORE and never win); a mask that would lose >= tau_keep of its pixels is exempt and kept whole
-    (tau_keep None = no cap, D); keep = pos & (win | exempt).  keep is a subset of pos; only pixels claimed by
-    >= 2 masks can change; at most one non-exempt mask survives at a contested pixel."""
+    pos = L > 0 (S1-E14 S: L > -shift); w = per-pixel argmax over objects of the UNSHIFTED L (exact ties -> the
+    lowest index; absent objects carry NO_OBJ_SCORE and never win); a mask that would lose >= tau_keep of its pos
+    pixels is exempt and kept whole (tau_keep None = no cap, D); keep = pos & (win | exempt).  keep is a subset of
+    pos; only pixels claimed by >= 2 masks can change; at most one non-exempt mask survives at a contested pixel."""
     import torch
     B = L.shape[0]
-    pos = L > 0
+    pos = L > 0 if not shift else L > -float(shift)
     w = L.argmax(0)                                                            # [h,w]
     win = w[None] == torch.arange(B, device=L.device)[:, None, None]           # [B,h,w]
     del w
@@ -322,7 +325,7 @@ def decode_scene(scene, args, sink=None):
         assert zoom == zoom_mod.ZOOM and zoom_rope in ("grid", "remap"), (zoom, zoom_rope)
         assert two_round and round2 == "pred" and not pair_mode and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
             f"--zoom is registered for the two-round predicted-memory arms only, not {arm}"
-    xcl = getattr(args, "xcl", "none") or "none"           # S1-E11 in-view exclusivity: none | out | outmem | out_nocap
+    xcl = getattr(args, "xcl", "none") or "none"           # S1-E11 in-view exclusivity: none | out | outmem | out_nocap; S1-E14: outs
     assert xcl in XCL_MODES, xcl
     if xcl != "none":
         assert zoom is None, "--xcl and --zoom are registered separately (no combination arm)"
@@ -549,10 +552,12 @@ def decode_scene(scene, args, sink=None):
                     if zoom is None and xcl == "none":
                         written2 += write(args.out, cam, out["logits_1008"])
                     elif zoom is None:
-                        # S1-E11 X1 / D: per-pixel logit argmax at the output resolution (the to_bool tensor), nested-mask cap
+                        # S1-E11 X1 / D: per-pixel logit argmax at the output resolution (the to_bool tensor), nested-mask cap;
+                        # S1-E14 S (outs): the same with pos = L > -XCL_SHIFT
                         L = sam3_io.logits_to_original(out["logits_1008"], scene.hw)[:, 0]
                         del out
-                        keep, xc, xr = exclusive_masks(L, None if xcl == "out_nocap" else XCL_TAU_KEEP)
+                        keep, xc, xr = exclusive_masks(L, None if xcl == "out_nocap" else XCL_TAU_KEEP,
+                                                       XCL_SHIFT if xcl == "outs" else 0.0)
                         del L
                         xcl_counts.update(xc)
                         xcl_recs[cam] = {str(int(o)): xr[i] for i, o in enumerate(scene.objects)}
@@ -577,6 +582,8 @@ def decode_scene(scene, args, sink=None):
                 if xcl != "none":
                     sink.json(args.out, "xcl_conf.json", xcl_recs)
                     config.update({"xcl": xcl, "xcl_tau_keep": None if xcl == "out_nocap" else XCL_TAU_KEEP})
+                    if xcl == "outs":
+                        config["xcl_shift"] = XCL_SHIFT
                     config.update({f"n_xcl_{key}": int(xcl_counts[key]) for key in
                                    ("contested_px", "removed_entries", "masks_changed", "masks_exempt", "masks_emptied", "masks_present")})
                     if xcl == "outmem":
@@ -643,7 +650,8 @@ def _extra(ap):
                     help="S1-E10: query RoPE of the crop decode: the crop lattice as is (C1) or remapped to full-view cells (C2)")
     ap.add_argument("--xcl", choices=XCL_MODES, default="none",
                     help="S1-E11: in-view object exclusivity by the decoder logits: out (X1, capped), outmem (X2, + round-1 memories), "
-                         "out_nocap (D, diagnostic without the nested-mask cap); docs/stage1-E11-prereg.md")
+                         "out_nocap (D, diagnostic without the nested-mask cap); docs/stage1-E11-prereg.md.  S1-E14: outs (S, = out "
+                         "with the output threshold L > -XCL_SHIFT = -0.5; docs/stage1-E14-prereg.md)")
     ap.add_argument("--round2", choices=("pred", "proj_bin", "proj_soft"), default="pred",
                     help="GeoProj: second-round memory from round-1 predictions (pred) or from the reference GT masks projected "
                          "into the neighbour (binary mask / soft logits with unknown = 0); no prediction, 'absent'-style conf")

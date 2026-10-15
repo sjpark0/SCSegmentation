@@ -40,7 +40,7 @@ def test_cut_arms_are_predicted_memory_set2_arms():
 def test_presets_and_tags():
     assert S.PRESETS["geoset_cutall_rep_x"] == dict(arm="geoset_cutall_ft", gate="reproj", xcl="out")
     assert S.PRESETS["geoset_rep_x"] == dict(arm="geoset_pred_ft", gate="reproj", xcl="out")      # the adopted preset untouched
-    assert list(S.PRESETS)[-1] == "geoset_cutall_rep_x"
+    assert list(S.PRESETS)[-2:] == ["geoset_cutall_rep_x", "geoset_rep_xs"]     # S1-E14 S appended after M+
     assert all(p["arm"] != "geoset_cut0_ft" for p in S.PRESETS.values())                       # C0' never reaches stage 2
     supply = _load("stage1_supply", os.path.join(MAIN, "SCSam3", "stage1_supply.py"))
     bgs = _load("build_geoset_seeds", os.path.join(MAIN, "MVSeed", "build_geoset_seeds.py"))

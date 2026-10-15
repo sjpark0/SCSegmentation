@@ -151,7 +151,8 @@ def test_presets_and_tag_registries():
     assert S.PRESETS["geoset_rep"] == dict(arm="geoset_pred_ft", gate="reproj")
     assert S.PRESETS["geoset_rep_z2"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="grid")
     assert S.PRESETS["geoset_rep_z2r"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="remap")
-    assert list(S.PRESETS)[-5:] == ["geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm", "geoset_cutall_rep_x"]
+    assert list(S.PRESETS)[-6:] == ["geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm", "geoset_cutall_rep_x",
+                                    "geoset_rep_xs"]
     main = os.path.dirname(ROOT)
     spec = importlib.util.spec_from_file_location("stage1_supply", os.path.join(main, "SCSam3", "stage1_supply.py"))
     supply = importlib.util.module_from_spec(spec); spec.loader.exec_module(supply)
@@ -168,7 +169,7 @@ def test_check_gate_out_refuses_the_arms_own_folder_with_zoom():
         R.check_gate_out("geoset_pred_ft", "view", "geoset_pred_ft", "pred", 2)
 
 
-@pytest.mark.parametrize("tag", ["geoset_rep", "geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm"])
+@pytest.mark.parametrize("tag", ["geoset_rep", "geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm", "geoset_rep_xs"])
 def test_stage1_run_forwards_every_preset_key(tag, monkeypatch):
     captured = {}
 
