@@ -10,16 +10,17 @@ from collections import defaultdict
 import numpy as np
 
 
-def scene_means(rows, key):
-    """{scene: mean over views of (mean over pairs of row[key])}."""
+def scene_means(rows, key, view_key="cam"):
+    """{scene: mean over views of (mean over pairs of row[key])}.  A view is row[view_key] (the keyframe: the camera;
+    the DEV set: "<t>/<cam>", geomem/devset.py)."""
     by = defaultdict(lambda: defaultdict(list))
     for r in rows:
-        by[r["scene"]][r["cam"]].append(float(r[key]))
+        by[r["scene"]][r[view_key]].append(float(r[key]))
     return {s: float(np.mean([np.mean(v) for v in views.values()])) for s, views in by.items()}
 
 
-def paired_scene_bootstrap(rows_a, rows_b, key="J", n=10_000, seed=0):
-    ma, mb = scene_means(rows_a, key), scene_means(rows_b, key)
+def paired_scene_bootstrap(rows_a, rows_b, key="J", n=10_000, seed=0, view_key="cam"):
+    ma, mb = scene_means(rows_a, key, view_key), scene_means(rows_b, key, view_key)
     scenes = sorted(set(ma) & set(mb))
     d = np.array([mb[s] - ma[s] for s in scenes], dtype=np.float64)
     if d.size == 0:
