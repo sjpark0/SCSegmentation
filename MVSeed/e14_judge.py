@@ -7,8 +7,9 @@
               contrast), invariants I1-I4 + Z1 against the DEV-A base, mechanism and quality reference values.
               Exit 2 on any failure.
   --stage B   DEV-B: pair-set check (exit 3), invariants I1-I4 + Z1 (exit 2 = a bug: fix and redo the decode), the
-              stop-and-audit check (all-pair dJ&F > +0.006: exit 4, only that number is printed, until --audited),
-              then B1-B3 and the report values.  Exit 0 whenever judged (pass or fail is in the JSON).
+              stop-and-audit check (all-pair dJ&F > +0.006: exit 4; only that number is printed AND saved -- no rule, no
+              contrast -- until --audited), then B1-B3 and the report values.  Exit 0 whenever judged (pass or fail is in
+              the JSON).  devb_state() is the one reading of that record (pass / fail / audit / bug / missing).
   --stage 1   keyframe (664 pairs): G1/G2 against C0 = geoset_pred_ft_rep_x_e11, the audit threshold (+0.008: exit 4
               until --audited), Z1/Z2 and the report values.
   --stage 2   stage 2: the E8 section-5 rule against the headline SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs.
@@ -109,6 +110,18 @@ def keyframe_gate(jf):
     g1 = _finite(jf["delta"], jf["ci"][0]) and jf["delta"] > 0 and jf["ci"][0] > 0
     g2 = bool(jf.get("per_scene")) and all(_finite(v) for v in jf["per_scene"].values()) and worst[1] >= SAFETY
     return dict(G1=g1, G2=g2, worst_scene=worst[0], worst_delta=worst[1], **{"pass": g1 and g2})
+
+
+def devb_state(stage_b):
+    """The DEV-B record -> 'missing' (not judged), 'audit' (stop-and-audit pending), 'bug' (an abort record: pair sets or
+    invariants), 'pass' or 'fail'.  Only 'pass' opens the keyframe (TEST)."""
+    if not stage_b:
+        return "missing"
+    if stage_b.get("audit_required") and not stage_b.get("audited"):
+        return "audit"
+    if "rule" not in stage_b:
+        return "bug"
+    return "pass" if stage_b["rule"].get("pass") else "fail"
 
 
 def object_class(rec_base, rec_arm):
@@ -403,6 +416,12 @@ def stage_b(audited=False):
     con = dev_contrast(base, arm)
     jf = con["compare"]["paired"]["JF"]
     audit = audit_needed(jf["delta"], AUDIT_B)
+    if audit and not audited:
+        # section 4: audit before reading anything else -- the rule, contrasts and predictions are neither printed nor saved
+        _save("stageB", dict(pairs=pairs, invariants=inv, audit_required=True, audited=False, delta=jf["delta"]))
+        print(f"STOP AND AUDIT (section 4): all-pair dJ&F {jf['delta']:+.4f} > +{AUDIT_B} -- audit for a bug before reading "
+              f"anything else; rerun with --audited once the audit finds none")
+        sys.exit(4)
     rule = dev_b_rule(jf, con["good"])
     res = dict(pairs=pairs, invariants=inv, contrast=con, rule=rule, audit_required=audit, audited=bool(audited),
                empty_gt=empty_gt_stats(base_raw, arm_raw), quality=quality(base, arm))
@@ -420,16 +439,13 @@ def stage_b(audited=False):
                 empty_gt_px_ok=res["empty_gt"]["arm"]["px"] <= 1.05 * res["empty_gt"]["base"]["px"],
                 owner_accuracy_ok=mech["newly_claimed_owner_accuracy"] is not None and 0.60 <= mech["newly_claimed_owner_accuracy"] <= 0.70,
                 multi_ratio_ok=mech["multi_ratio"] is not None and 1.2 <= mech["multi_ratio"] <= 1.7),
-        P6=dict(band_oracle_closed=con["good"]["delta"] / BAND_ORACLE_A, ok_band=con["good"]["delta"] / BAND_ORACLE_A <= 0.06,
+        P6=dict(kind_note="dJF by the BASE failure kind over all pairs (prereg section 9, 2026-10-16 erratum)",
+                band_oracle_closed=con["good"]["delta"] / BAND_ORACLE_A, ok_band=con["good"]["delta"] / BAND_ORACLE_A <= 0.06,
                 spill=sp.get("kind:spill-onto-other", {}).get("dJF"), twin=sp.get("kind:spill-onto-other(twin)", {}).get("dJF"),
                 under=sp.get("kind:under-cover", {}).get("dJF"), under_beyond=sp.get("kind:under-cover(beyond c_ini)", {}).get("dJF")),
         cost=dict(time_ratio=inv["time_ratio"], ok=inv["time_ratio"] is not None and inv["time_ratio"] <= 1.05))
     res["predictions"] = pr
     _save("stageB", res)
-    if audit and not audited:
-        print(f"STOP AND AUDIT (section 4): all-pair dJ&F {jf['delta']:+.4f} > +{AUDIT_B} -- audit for a bug before reading "
-              f"anything else; rerun with --audited once the audit finds none")
-        sys.exit(4)
     print(f"DEV-B {len(base)} pairs: dJ&F {jf['delta']:+.4f} [{jf['ci'][0]:+.4f}, {jf['ci'][1]:+.4f}]  dJ {p['J']['delta']:+.4f} "
           f"[{p['J']['ci'][0]:+.4f}, {p['J']['ci'][1]:+.4f}]  dF {p['F']['delta']:+.4f} [{p['F']['ci'][0]:+.4f}, {p['F']['ci'][1]:+.4f}]")
     print(f"   good {con['good']['n']} {con['good']['delta']:+.5f} [{con['good']['ci'][0]:+.5f}, {con['good']['ci'][1]:+.5f}] (pair mean "
@@ -511,8 +527,9 @@ def stage1(audited=False):
     from mvseg2d.paired import paired_scene_bootstrap, scene_means
     from mvseg2d.report import flatten
     out_all = _load_json(OUT) if os.path.isfile(OUT) else {}
-    if not out_all.get("stageB", {}).get("rule", {}).get("pass"):
-        raise SystemExit("the DEV-B rule did not pass (or was not judged): no keyframe run (section 4)")
+    state = devb_state(out_all.get("stageB"))
+    if state != "pass":
+        raise SystemExit(f"DEV-B state '{state}': no keyframe judgement (section 4)")
 
     def rows_of(name):
         rs = flatten(_load_json(os.path.join(OUT_DIR, f"kf_{name}.json")))
@@ -564,6 +581,8 @@ def stage1(audited=False):
                 fails=res["arm"]["fails"], fails_ok=res["arm"]["fails"] in (13, 14), halluc=res["arm"]["hallucinations"],
                 halluc_ok=res["arm"]["hallucinations"] == res["C0"]["hallucinations"], round1_identical=z2["ok"],
                 good_bins_positive=all((splits[f"good_{n}"]["dJF"] or 0) > 0 for n, _, _ in SIZE_BINS if splits[f"good_{n}"]["n"]),
+                good_bins_max_at_100k=bool(splits["good_>=100k"]["n"]) and splits["good_>=100k"]["dJF"] == max(
+                    splits[f"good_{n}"]["dJF"] for n, _, _ in SIZE_BINS if splits[f"good_{n}"]["n"]),
                 dev_b_delta=out_all["stageB"]["contrast"]["compare"]["paired"]["JF"]["delta"]),
         P6=dict(band_oracle_closed=gb["delta"] / BAND_ORACLE_A, ok=gb["delta"] / BAND_ORACLE_A <= 0.06))
     passing = [TAG] if gate["pass"] and not audit and z1["ok"] and z2["ok"] else []
@@ -608,9 +627,15 @@ def stage2():
     sm, sb = E7.scene_scores(Rm), E7.scene_scores(Rb)
     cm, cb = E7.scene_scores(list(E7.rows(d, METHOD2, "complete"))), E7.scene_scores(list(E7.rows(d, HEADLINE, "complete")))
     st, stc = E7.paired(sb, sm), E7.paired(cb, cm)
-    worst = min(st["per_scene"].values())
-    rule = dict(mean_gt_0=st["mean"] > 0, ci_lower_gt_0=st["ci"][0] > 0, defence=worst >= DEFENCE, worst=worst, complete_ge_0=stc["mean"] >= 0)
-    rule["pass"] = all(rule[k] for k in ("mean_gt_0", "ci_lower_gt_0", "defence", "complete_ge_0"))
+    worst = st["worst"][0]                                   # unrounded (E7.paired rounds per_scene to 3 decimals)
+    n17 = len(sm) == len(sb) == len(cm) == len(cb) == 17 and st["n"] == stc["n"] == 17
+    if not n17:
+        _save("stage2", dict(note="fewer than 17 scenes scored on one side: not judged (fix the sweep / score first)",
+                             n=dict(arm=len(sm), base=len(sb), arm_complete=len(cm), base_complete=len(cb))))
+        raise SystemExit(f"stage 2: not all 17 scenes scored (arm {len(sm)}, base {len(sb)}, complete {len(cm)}/{len(cb)})")
+    rule = dict(mean_gt_0=st["mean"] > 0, ci_lower_gt_0=st["ci"][0] > 0, defence=worst >= DEFENCE, worst=worst, complete_ge_0=stc["mean"] >= 0,
+                all_17_scenes=n17)
+    rule["pass"] = all(rule[k] for k in ("mean_gt_0", "ci_lower_gt_0", "defence", "complete_ge_0", "all_17_scenes"))
     z3 = z3_digest("geoset_pred_ft", METHOD2, result=ARM)
     z3b = dict(same=0, different=0, missing=0)
     from PIL import Image

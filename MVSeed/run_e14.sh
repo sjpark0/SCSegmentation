@@ -13,6 +13,9 @@
 #   score   eval/eval_jf.py --out jf_e14.json
 #   judge2  e14_judge --stage 2
 # Default STAGES="z4 decA emulA" (everything before DEV-B).  Logs: MVSeed/logs/e14_*.log, SCSam3/logs/e14-*.
+# Opt-ins (review 2026-10-16): AUDITED_B=1 / AUDITED_KF=1 clear the DEV-B / keyframe stop-and-audit SEPARATELY (each only
+# after its own audit found no bug); OVERWRITE=1 re-decodes DEV frames that already have DONE (a 'fix and redo the decode');
+# RESUME=1 accepts DONE frames from an interrupted run of the SAME code (otherwise any skipped frame aborts).
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 S1="${ROOT}/stage1"
@@ -27,6 +30,22 @@ has() { [[ " ${STAGES} " == *" $1 "* ]]; }
 gpu() { if [[ -n "${LOCK:-}" ]]; then flock "${LOCK}" "$@"; else "$@"; fi; }
 judge() { PYTHONDONTWRITEBYTECODE=1 "${PY}" "${JUDGE}" "$@"; }
 passed() { python3 -c "import json,sys; d=json.load(open('${OUTDIR}/e14_judge.json')); sys.exit(0 if $1 else 1)" 2>/dev/null; }
+devb() {   # the DEV-B state as e14_judge.devb_state reads it: pass / fail / audit / bug / missing
+  PYTHONDONTWRITEBYTECODE=1 python3 -c "
+import importlib.util, json, os
+spec = importlib.util.spec_from_file_location('j', '${JUDGE}'); j = importlib.util.module_from_spec(spec); spec.loader.exec_module(j)
+p = '${OUTDIR}/e14_judge.json'
+print(j.devb_state(json.load(open(p)).get('stageB') if os.path.isfile(p) else None))"
+}
+devb_gate() {   # <stage>: continue only on 'pass'; 'fail' closes S1-E14 (exit 0); anything else stops (exit 1)
+  local st; st=$(devb)
+  case "${st}" in
+    pass) return 0 ;;
+    fail) echo "$(ts) $1: DEV-B did not pass -- S1-E14 closed as 'no effect', no keyframe run"; exit 0 ;;
+    audit) echo "$(ts) $1: the DEV-B stop-and-audit is pending (rerun judgeB with AUDITED_B=1 after the audit) -- stop"; exit 1 ;;
+    *) echo "$(ts) $1: DEV-B state '${st}' (not judged or an abort record = a bug, not a result) -- stop"; exit 1 ;;
+  esac
+}
 echo "$(ts) E14 chain start  stages: ${STAGES}  HEAD $(git -C "${ROOT}" rev-parse --short HEAD)  lock ${LOCK:-none}"
 
 cmp_dirs() {   # <a> <b>: PNG bytes of every camera folder identical and the key sets equal
@@ -49,11 +68,15 @@ EOF
 
 dev_decode() {   # <preset> <split> [extra args]
   local preset=$1 split=$2; shift 2
-  ( cd "${S1}" && gpu scripts/docker_run.sh scsam3 python -m methods.geomem.dev_decode --preset "${preset}" --split "${split}" "$@" ) \
-    > "${LOG}/e14_dec_${preset}_${split}.log" 2>&1
-  local st=$? n
+  ( cd "${S1}" && gpu scripts/docker_run.sh scsam3 python -m methods.geomem.dev_decode --preset "${preset}" --split "${split}" \
+      ${OVERWRITE:+--overwrite} "$@" ) > "${LOG}/e14_dec_${preset}_${split}.log" 2>&1
+  local st=$? n sk
   n=$(python3 -c "import json,sys,os; r='${S1}/Data/_dev/${preset}_${split}'; i=json.load(open(r+'/index.json'))['scenes']; print(sum(all(os.path.isfile(f'{r}/{s}/{t:06d}/DONE') for t in v['frames']) for s, v in i.items()))")
-  echo "$(ts) dev_decode ${preset} ${split} exit ${st}  (${n}/17 scenes complete)  $(tail -n 1 "${LOG}/e14_dec_${preset}_${split}.log" | cut -c1-120)"
+  sk=$(grep -c "skip (DONE)" "${LOG}/e14_dec_${preset}_${split}.log")
+  echo "$(ts) dev_decode ${preset} ${split} exit ${st}  (${n}/17 scenes complete, ${sk} frames skipped as DONE)  $(tail -n 1 "${LOG}/e14_dec_${preset}_${split}.log" | cut -c1-120)"
+  if [[ ${sk} -gt 0 && -z "${RESUME:-}" ]]; then
+    echo "$(ts) ${sk} frames were reused from an earlier run: set RESUME=1 (same code, interrupted run) or OVERWRITE=1 (redo)"; return 1
+  fi
   [[ ${st} -eq 0 && ${n} -eq 17 ]]
 }
 dev_score() {    # <preset> <split>
@@ -104,12 +127,12 @@ if has decB; then
   dev_score geoset_rep_xs B || { echo "$(ts) ABORT: DEV-B arm scoring failed"; exit 1; }
 fi
 if has judgeB; then
-  judge --stage B ${AUDITED:+--audited} > "${LOG}/e14_judgeB.log" 2>&1
+  judge --stage B ${AUDITED_B:+--audited} > "${LOG}/e14_judgeB.log" 2>&1
   st=$?; echo "$(ts) judge B exit ${st}"; cat "${LOG}/e14_judgeB.log"
   [[ ${st} -eq 0 ]] || { echo "$(ts) STOP: judge B exit ${st} (2 = invariant bug, 3 = pair sets differ, 4 = stop and audit)"; exit 1; }
 fi
 if has kf; then
-  passed "d['stageB']['rule']['pass']" || { echo "$(ts) DEV-B did not pass: S1-E14 closed, no keyframe run"; exit 0; }
+  devb_gate kf
   echo "$(ts) kf decode --xcl outs -> ${ARM} / ${ARM_R1}"
   ( cd "${S1}" && gpu scripts/run_geomem.sh all --arm geoset_pred_ft --gate reproj --xcl outs --out "${ARM}" --r1-out "${ARM_R1}" --overwrite ) \
     > "${LOG}/e14_kf_decode.log" 2>&1
@@ -127,8 +150,8 @@ if has kf; then
   ( cd "${S1}" && "${PY}" -m mvseg2d.report "${OUTDIR}"/kf_*.json --out "${OUTDIR}/kf_report.md" ) > /dev/null 2>&1
 fi
 if has judge1; then
-  passed "d['stageB']['rule']['pass']" || { echo "$(ts) DEV-B did not pass: no keyframe judgement"; exit 0; }
-  judge --stage 1 ${AUDITED:+--audited} > "${LOG}/e14_judge1.log" 2>&1
+  devb_gate judge1
+  judge --stage 1 ${AUDITED_KF:+--audited} > "${LOG}/e14_judge1.log" 2>&1
   st=$?; echo "$(ts) judge1 exit ${st}"; cat "${LOG}/e14_judge1.log"
   [[ ${st} -eq 0 ]] || { echo "$(ts) STOP: judge1 exit ${st} (2 = Z1/Z2 failed, 4 = stop and audit)"; exit 1; }
 fi
@@ -136,13 +159,17 @@ if has sweep; then
   passed "d['stage1']['passing_tags']" || { echo "$(ts) the keyframe gate did not pass: no stage 2"; exit 0; }
   echo "$(ts) sweep geoset_rep_xs (headline, in-process, ref-snap)"
   ( cd "${ROOT}/SCSam3" && gpu env XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep_xs F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 \
-      LOGTAG="e14-geoset_rep_xs" ./runMVOptThree.sh ${SCENES} ) 2>&1 | sed "s/^/    /"
+      LOGTAG="e14-geoset_rep_xs" ./runMVOptThree.sh ${SCENES} ) > "${LOG}/e14_sweep.log" 2>&1
+  st=$?; sed "s/^/    /" "${LOG}/e14_sweep.log"
+  nf=$(grep -c "FAILED(" "${LOG}/e14_sweep.log")
+  [[ ${st} -eq 0 && ${nf} -eq 0 ]] || { echo "$(ts) ABORT: sweep exit ${st}, ${nf} scenes FAILED"; exit 1; }
 fi
 if has score; then
   passed "d['stage1']['passing_tags']" || { echo "$(ts) score: nothing to score"; exit 0; }
   docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${ROOT}" scsam3 \
     python eval/eval_jf.py --methods SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs --out jf_e14.json > "${LOG}/e14_score.log" 2>&1
   st=$?; echo "$(ts) score exit ${st}  $(tail -n 2 "${LOG}/e14_score.log" | tr '\n' ' ' | cut -c1-200)"
+  [[ ${st} -eq 0 ]] || { echo "$(ts) ABORT: stage-2 scoring failed"; exit 1; }
 fi
 if has judge2; then
   judge --stage 2 > "${LOG}/e14_judge2.log" 2>&1

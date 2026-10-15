@@ -138,3 +138,34 @@ def test_frame_check_config_round1_and_keyset(dev):
     _frame(arm, "outs", m, {1: False, 2: False}, shift=0.25, r1=r1)
     kinds = {b[0] for b in J.frame_check(("S", 1, base, arm))["bad"]}
     assert {"I4", "I1-png", "I3-keyset", "I2-removed"} <= kinds
+
+
+def test_devb_state():
+    assert J.devb_state(None) == "missing" and J.devb_state({}) == "missing"
+    assert J.devb_state(dict(audit_required=True, audited=False, delta=0.01)) == "audit"
+    assert J.devb_state(dict(pairs={}, invariants={}, note="invariant violated")) == "bug"
+    assert J.devb_state(dict(rule={"pass": True}, audit_required=False)) == "pass"
+    assert J.devb_state(dict(rule={"pass": True}, audit_required=True, audited=True)) == "pass"
+    assert J.devb_state(dict(rule={"pass": False}, audit_required=False)) == "fail"
+
+
+def test_stage_b_audit_hold_saves_no_rule(tmp_path, monkeypatch):
+    """Section 4: above +0.006 the judge stops (exit 4) and saves neither the rule nor the contrasts."""
+    def rows(delta):
+        out = []
+        for i, sc in enumerate(J.SCENES):
+            for t in (1, 2):
+                for o in (1, 2):
+                    jf = 0.9 + delta
+                    out.append(dict(scene=sc, t=t, cam="c", obj=o, J=jf, F=jf, JF=jf, view=f"{t}/c", kind="boundary/mixed"))
+        return out
+    base, arm = rows(0.0), rows(0.01)
+    monkeypatch.setattr(J, "OUT", str(tmp_path / "e14_judge.json"))
+    monkeypatch.setattr(J, "OUT_DIR", str(tmp_path))
+    monkeypatch.setattr(J, "_load_rows", lambda split, preset: (base, {}) if preset == J.BASE_PRESET else (arm, {}))
+    monkeypatch.setattr(J, "dev_invariants", lambda split: dict(ok=True, n_bad=0, bad=[]))
+    with pytest.raises(SystemExit) as e:
+        J.stage_b(audited=False)
+    assert e.value.code == 4
+    saved = json.load(open(tmp_path / "e14_judge.json"))["stageB"]
+    assert "rule" not in saved and "contrast" not in saved and J.devb_state(saved) == "audit"

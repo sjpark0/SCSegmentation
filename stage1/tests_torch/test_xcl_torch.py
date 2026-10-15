@@ -145,12 +145,15 @@ def test_shift_never_empties_a_mask_and_keeps_the_true_argmax():
     assert rs[1]["exempt"] is True and ks[1].sum() == 16 + 16 and cs["masks_emptied"] == 0
     # two logits one float32 ulp apart at pixel 0: the comparison form keeps the true argmax (B); adding 0.5 to the
     # logits could round them to one value and hand the pixel to the lower index (A)
-    a = torch.tensor(0.3, dtype=torch.float32)
+    a = torch.tensor(0x3E99999B, dtype=torch.int32).view(torch.float32)   # 0.30000004 (review: a pair that DOES tie at +0.5)
     b = torch.nextafter(a, torch.tensor(1.0))
+    assert bool(a < b) and bool((a + 0.5) == (b + 0.5)), "the case must be a float32 tie under the addition form"
     T = torch.full((2, 1, 4), -1024.0)
     T[0, 0, 0] = a; T[1, 0, 0] = b; T[0, 0, 1:] = 5.0                       # A: 4 pos px, loses pixel 0 (25 %, not exempt)
     ks, _, rs = R.exclusive_masks(T, R.XCL_TAU_KEEP, R.XCL_SHIFT)
     assert bool(ks[1, 0, 0]) and not bool(ks[0, 0, 0]) and rs[0]["lost"] == 1 and rs[0]["exempt"] is False
+    ka, _, _ = R.exclusive_masks(T + 0.5)                                   # the forbidden addition form: the tie goes to A
+    assert bool(ka[0, 0, 0]), "the addition form no longer ties here -- the test would not guard the comparison form"
 
 
 # ------------------------------------------------------------------ real decodes on Blocks
