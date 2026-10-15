@@ -1,0 +1,139 @@
+{
+ "n_pairs": 3300,
+ "paired": {
+  "J": {
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "per_scene": {
+    "AlexaMeadeExhibit": 0.0,
+    "AlexaMeadeFacePaint": 0.0,
+    "Barn": 0.0,
+    "Blocks": 0.0,
+    "Breakfast": 0.0,
+    "CBABasketball": 0.0,
+    "Carpark": 0.0,
+    "CoffeeMartini": 0.0,
+    "Dog": 0.0,
+    "Fencing": 0.0,
+    "FlameSteak": 0.0,
+    "Frog": 0.0,
+    "MATF": 0.0,
+    "MartialArts": 0.0,
+    "Painter": 0.0,
+    "PoznanStreet": 0.0,
+    "Welder": 0.0
+   }
+  },
+  "F": {
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "per_scene": {
+    "AlexaMeadeExhibit": 0.0,
+    "AlexaMeadeFacePaint": 0.0,
+    "Barn": 0.0,
+    "Blocks": 0.0,
+    "Breakfast": 0.0,
+    "CBABasketball": 0.0,
+    "Carpark": 0.0,
+    "CoffeeMartini": 0.0,
+    "Dog": 0.0,
+    "Fencing": 0.0,
+    "FlameSteak": 0.0,
+    "Frog": 0.0,
+    "MATF": 0.0,
+    "MartialArts": 0.0,
+    "Painter": 0.0,
+    "PoznanStreet": 0.0,
+    "Welder": 0.0
+   }
+  },
+  "JF": {
+   "delta": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "per_scene": {
+    "AlexaMeadeExhibit": 0.0,
+    "AlexaMeadeFacePaint": 0.0,
+    "Barn": 0.0,
+    "Blocks": 0.0,
+    "Breakfast": 0.0,
+    "CBABasketball": 0.0,
+    "Carpark": 0.0,
+    "CoffeeMartini": 0.0,
+    "Dog": 0.0,
+    "Fencing": 0.0,
+    "FlameSteak": 0.0,
+    "Frog": 0.0,
+    "MATF": 0.0,
+    "MartialArts": 0.0,
+    "Painter": 0.0,
+    "PoznanStreet": 0.0,
+    "Welder": 0.0
+   }
+  }
+ },
+ "splits": {
+  "fail": {
+   "n": 293,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "good": {
+   "n": 3007,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:boundary/mixed": {
+   "n": 2806,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:miss": {
+   "n": 22,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:spill-onto-other": {
+   "n": 24,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:spill-onto-other(twin)": {
+   "n": 71,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:under-cover": {
+   "n": 228,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:under-cover(beyond c_ini)": {
+   "n": 128,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  },
+  "kind:wrong-object": {
+   "n": 21,
+   "dJF": 0.0,
+   "up": 0,
+   "down": 0
+  }
+ }
+}

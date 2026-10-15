@@ -1,0 +1,180 @@
+{
+ "frames": 85,
+ "done_missing": [],
+ "checks": {
+  "x_vs_adopted_px": 0,
+  "x_vs_adopted_objs": 0,
+  "z_vs_sink_px": 0,
+  "r1_vs_adopted_px": 0,
+  "r1_missing": 0,
+  "r1_extra": 0,
+  "zoom_out_of_band_px": 0
+ },
+ "round1_conf_mismatch": [],
+ "zoom_counts": {
+  "candidates": 3338.0,
+  "run": 2372.0,
+  "changed": 2305.0,
+  "px_added": 821510.0,
+  "px_removed": 1581041.0,
+  "accepted": 2305.0,
+  "skipped_large": 966.0,
+  "kept_iou": 41.0,
+  "seconds": 517.5051662819751,
+  "kept_absent": 26.0
+ },
+ "xcl_counts": {
+  "x": {
+   "contested_px": 1917102,
+   "removed_entries": 1756895,
+   "masks_changed": 3083,
+   "masks_exempt": 22,
+   "masks_emptied": 0,
+   "masks_present": 3338
+  },
+  "zx": {
+   "contested_px": 1778409,
+   "removed_entries": 1647169,
+   "masks_changed": 3067,
+   "masks_exempt": 19,
+   "masks_emptied": 0,
+   "masks_present": 3338
+  },
+  "zxb": {
+   "contested_px": 1778409,
+   "removed_entries": 1622355,
+   "masks_changed": 3063,
+   "masks_exempt": 22,
+   "masks_emptied": 0,
+   "masks_present": 3338
+  }
+ },
+ "decode_seconds": 1245.5179324150085,
+ "zoom_seconds": 517.5051662819751,
+ "post_seconds": 57.727397857932374,
+ "decode_minus_zoom_post": 670.2853682751011,
+ "adopted_decode_seconds_e13": 656.9360880851746,
+ "peak_gpu_gb_max": 12.447600841522217,
+ "zoom_seconds_per_crop": 0.2181724984325359,
+ "per_scene": {
+  "AlexaMeadeExhibit": {
+   "seconds": 106.08405113220215,
+   "zoom_seconds": 52.555975753988605,
+   "crops": 240,
+   "accepted": 231,
+   "adopted_seconds": 47.35682272911072
+  },
+  "AlexaMeadeFacePaint": {
+   "seconds": 28.68603491783142,
+   "zoom_seconds": 10.474373799050227,
+   "crops": 40,
+   "accepted": 40,
+   "adopted_seconds": 16.06360626220703
+  },
+  "Barn": {
+   "seconds": 86.2645332813263,
+   "zoom_seconds": 46.221072868967894,
+   "crops": 225,
+   "accepted": 225,
+   "adopted_seconds": 37.27749967575073
+  },
+  "Blocks": {
+   "seconds": 47.1146399974823,
+   "zoom_seconds": 18.63193058699835,
+   "crops": 89,
+   "accepted": 86,
+   "adopted_seconds": 27.448240756988525
+  },
+  "Breakfast": {
+   "seconds": 88.70181012153625,
+   "zoom_seconds": 42.547853011928964,
+   "crops": 208,
+   "accepted": 196,
+   "adopted_seconds": 44.031254053115845
+  },
+  "CBABasketball": {
+   "seconds": 70.80834221839905,
+   "zoom_seconds": 30.68872537103016,
+   "crops": 147,
+   "accepted": 137,
+   "adopted_seconds": 37.891406774520874
+  },
+  "Carpark": {
+   "seconds": 69.11175894737244,
+   "zoom_seconds": 36.97191241197288,
+   "crops": 180,
+   "accepted": 180,
+   "adopted_seconds": 29.463924407958984
+  },
+  "CoffeeMartini": {
+   "seconds": 197.59360337257385,
+   "zoom_seconds": 81.5080657270446,
+   "crops": 345,
+   "accepted": 330,
+   "adopted_seconds": 96.5676052570343
+  },
+  "Dog": {
+   "seconds": 18.54186487197876,
+   "zoom_seconds": 4.599852064973675,
+   "crops": 15,
+   "accepted": 15,
+   "adopted_seconds": 12.611022710800171
+  },
+  "Fencing": {
+   "seconds": 21.714661121368408,
+   "zoom_seconds": 4.785671131045092,
+   "crops": 20,
+   "accepted": 20,
+   "adopted_seconds": 16.188321828842163
+  },
+  "FlameSteak": {
+   "seconds": 178.54948925971985,
+   "zoom_seconds": 63.70049720699899,
+   "crops": 266,
+   "accepted": 262,
+   "adopted_seconds": 91.78185391426086
+  },
+  "Frog": {
+   "seconds": 13.61634087562561,
+   "zoom_seconds": 0.7206940080213826,
+   "crops": 0,
+   "accepted": 0,
+   "adopted_seconds": 13.164327144622803
+  },
+  "MATF": {
+   "seconds": 74.0590193271637,
+   "zoom_seconds": 23.948491340968758,
+   "crops": 128,
+   "accepted": 121,
+   "adopted_seconds": 50.9616425037384
+  },
+  "MartialArts": {
+   "seconds": 53.40584063529968,
+   "zoom_seconds": 17.809115202049725,
+   "crops": 84,
+   "accepted": 84,
+   "adopted_seconds": 37.32099986076355
+  },
+  "Painter": {
+   "seconds": 66.15107655525208,
+   "zoom_seconds": 26.6810226389498,
+   "crops": 126,
+   "accepted": 126,
+   "adopted_seconds": 36.411399364471436
+  },
+  "PoznanStreet": {
+   "seconds": 71.46227431297302,
+   "zoom_seconds": 33.72698686498916,
+   "crops": 163,
+   "accepted": 162,
+   "adopted_seconds": 32.98460054397583
+  },
+  "Welder": {
+   "seconds": 53.65259146690369,
+   "zoom_seconds": 21.932926292996854,
+   "crops": 96,
+   "accepted": 90,
+   "adopted_seconds": 29.41156029701233
+  }
+ }
+}

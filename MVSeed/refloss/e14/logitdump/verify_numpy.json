@@ -1,0 +1,20 @@
+{
+ "mode": "numpy",
+ "root": "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/geoset_rep_x_A",
+ "ref_root": "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev",
+ "seconds": 88.58580827713013,
+ "views": 170,
+ "object_views": 3952,
+ "object_views_identical": 3952,
+ "object_views_diff_px_total": 0,
+ "dev_pairs": 3300,
+ "dev_pairs_found": 3300,
+ "dev_pairs_identical": 3300,
+ "dev_pairs_diff_px_total": 0,
+ "dev_pairs_missing": [],
+ "candidate_consistency_checked": true,
+ "candidate_consistency_bad": [],
+ "bytes_low_res_npz": 312026975,
+ "bytes_mm_npz": 1476483376,
+ "diffs": []
+}

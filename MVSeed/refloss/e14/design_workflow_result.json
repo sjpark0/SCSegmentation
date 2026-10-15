@@ -1,0 +1,940 @@
+{
+ "summary": "Design S1-E14 for the good-seed boundary error on the standard DEV-A set: anatomy, logit dump, cheap decode-time candidates, judges, synthesis with a DEV-B confirmation rule",
+ "agentCount": 9,
+ "logs": [
+  "understand done 2/2",
+  "measure done 4/4"
+ ],
+ "result": {
+  "maps": [
+   {
+    "summary": "I ran a boundary anatomy of the adopted preset geoset_rep_x on DEV-A only. Inputs were the masks in stage1/geomem/runs/_e13_dev and the pair list in its dev_pairs.json; the keyframe and DEV-B were never touched. My J&F recomputation matches dev_pairs.json exactly (max |dJF| = 0) on all 3 300 pairs. Good seeds are the 3 007 pairs with J&F >= 0.8.\n\nGood seeds score J 0.9003, F 0.9729, J&F 0.9366 (scene-cluster 95% CI 0.9301 to 0.9433), so the gap is 0.0634. 1-recall is 0.0637 and 1-precision 0.0418.\n\n**Band oracles.** Replacing the prediction by the GT inside the band around the GT boundary gives:\n- ±1 px: 0.9649, closes 44.7% of the gap\n- ±2 px: 0.9767 (CI 0.9735 to 0.9800), closes 63.3% (CI 61.3 to 65.6%)\n- ±4 px: 0.9854, closes 76.9%\n- ±8 px: 0.9900, closes 84.2%\n\n**Under- vs over-coverage.**\n- Under-coverage dominates. Fixing only the missed pixels (FN) inside ±2 px gains +0.0260; fixing only the extra pixels (FP) gains +0.0140. Their difference is +0.0120 (CI 0.0086 to 0.0159).\n- FN are 71.7% of the error pixels inside the ±2 px band.\n- Masks sit on average 0.53 px inside the true boundary.\n- The direction depends on size. Objects under 2k px are balanced (net -0.02 px), and those under 25 grid cells are slightly over-covered (+0.13 px). Objects of 100k px or more are under-covered by 0.64 px, with FN making up 75% of their in-band error.\n- People and other moving objects ('dynamic' type) are the most under-covered (FN share 0.795).\n- Walls and floors ('env' type) have the most error outside the band: the ±2 px oracle closes only 58% of their gap, and their F is 0.905.\n\n**Image border.** Not a major factor.\n- Objects that touch the frame score J&F 0.9338, against 0.9380 for those that don't.\n- The ±2 px oracle restricted to the band within 16 px of the frame gains +0.0040, against +0.0367 beyond 16 px.\n- Within 4 px of the frame the error rate is slightly higher (0.391 vs 0.354 per band pixel) and leans towards FP (FN share 0.545).\n\n**Neighbouring objects.** The DEV GT label maps are fully dense: only 35 unlabelled pixels exist in all 170 views, so the \"unlabelled background\" case effectively does not occur.\n- 96.9% of good-seed GT boundary pixels border another seeded (decoded) object; 3.1% border a labelled object that was not decoded.\n- The ±2 px oracle restricted to the shared-with-seeded parts recovers 98.5% of the full band gain.\n- The 302 pairs that touch an undecoded object score lower (J&F about 0.918 vs 0.939).\n\n**The predicted masks leave gaps.** Treating each view's masks as one partition shows where the misses come from.\n- 6.67% of all view pixels are claimed by no mask; 58.8% of those belong to a seeded object.\n- Good-seed error pixels split into:\n  - FN that no mask claims: 51.3% (CI 44.3 to 58.7%)\n  - FN taken by a neighbour's mask: 20.5%\n  - FP on a seeded neighbour: 23.4%\n  - FP on an undecoded object: 4.9%\n- Inside ±2 px the split is 45.1 / 26.6 / 27.0 / 1.2%.\n- 44% of the unclaimed FN lie within 2 px of a claimed pixel, i.e. thin seams between masks.\n- The exclusivity step (xcl) cannot create unclaimed pixels; they come from the threshold at 0.\n\n**Gap-filling probe.** Giving each unclaimed pixel to the nearest mask (no GT used) picks the right object only 65% of the time.\n- k = 1 px: +0.0014 (CI 0.0006 to 0.0027)\n- k = 2 px: +0.0009\n- unlimited distance: -0.0102\n- The ceiling (unclaimed pixels within 2 px given to their true owner) is +0.0170 (CI 0.0144 to 0.0199).\n\n**288-grid round trip of the GT.** J&F 0.9845 (CI 0.9820 to 0.9870). Its shortfall, 0.0155, is 24.5% (CI 20.8 to 27.5%) of the gap. The 576 grid gives 0.9936 (10.0% of the gap).\n- Only 5.9% of the prediction's error pixels coincide with the round trip's error pixels.\n- The grid matters most for small objects: 51.9% of the gap under 25 grid cells, against 13.9% at 100k px or more.\n\n**Caveat on F.** The F part of the band oracles falls as the band widens (0.9943 → 0.9908). This is an artefact of the seams the oracle creates at the band edge, so the J-oracles are the cleaner measure.\n\n**Not measured.** I did not re-measure the E10 zoom or E11 xcl effects on DEV-A; that needs two DEV-A decodes on the GPU, which I did not run. Those effects are still known only on the keyframe, and no keyframe number was used here.\n\nScripts and outputs are kept in stage1/geomem/runs/_e14_boundary-anatomy/ (git-ignored), with scratch copies in the scratchpad's boundary-anatomy folder. No tracked files were modified.",
+    "measurements": [
+     {
+      "name": "DEV-A pair sets",
+      "value": "3300 pairs (170 views = 85 frames x 2 cams, 17 scenes); good seeds (J&F>=0.8) 3007; failing 293; recomputed J&F == dev_pairs.json JF exactly (max |d| = 0.00e+00)",
+      "how": "bd_anatomy.py --check-jf over _e13_dev masks vs stage1/Data/<scene>/frames/<t>/masks/<cam>.png with mvseg2d.metrics.jf_pair; pair list = _e13_dev/dev_pairs.json rows"
+     },
+     {
+      "name": "Good-seed base",
+      "value": "J 0.9003, F 0.9729, J&F 0.9366 [0.9301, 0.9433], gap 0.0634; 1-recall 0.0637, 1-precision 0.0418 (pair means). All DEV-A: J&F 0.9078; failing: 0.6122",
+      "how": "pair means; CI = scene-cluster bootstrap (17 scenes resampled, 10 000 reps, seed 0), bd_report.py"
+     },
+     {
+      "name": "Band oracles (good seeds) J&F / J / F",
+      "value": "+-1 px 0.9649/0.9355/0.9943 (closes 0.447 of gap); +-2 px 0.9767 [0.9735,0.9800] / 0.9599 / 0.9936 (closes 0.633 [0.613,0.656]); +-4 px 0.9854/0.9787/0.9921 (0.769); +-8 px 0.9900/0.9892/0.9908 (0.842). All DEV-A +-2: 0.9617",
+      "how": "seedfail.py definition: band = dilate(g, ellipse 2r+1) & ~erode(g, same); pred replaced by GT inside band; close_r = (or_r - JF)/(1 - JF) of pair means"
+     },
+     {
+      "name": "Error pixels inside band (good seeds, pooled)",
+      "value": "+-1 0.187, +-2 0.334, +-4 0.484, +-8 0.614 of all 26,538,997 error px (FN 0.718 of all error px)",
+      "how": "sum over pairs of (FN+FP) inside band / total FN+FP; pixel-pooled, so large env objects dominate"
+     },
+     {
+      "name": "Under vs over inside +-2 px band (good seeds)",
+      "value": "FN share of in-band error px 0.717 pooled [0.691,0.745], 0.647 pair-mean; FN-only oracle +0.0260 (J +0.0367, F +0.0153), FP-only oracle +0.0140 (J +0.0217, F +0.0063), both +0.0401 [0.0364,0.0440]; FN share of one-sided gains 0.650 [0.611,0.694]; FN-only minus FP-only +0.0120 [0.0086,0.0159]. +-1: FN +0.0188 / FP +0.0100; +-4: FN +0.0311 / FP +0.0169",
+      "how": "FN-only oracle = s | (g & band); FP-only = s & ~(band & ~g); pair-mean J&F deltas; bootstrap as above"
+     },
+     {
+      "name": "Boundary displacement (good seeds, +-2 band)",
+      "value": "mean |displacement| 1.209 px pooled (1.099 pair-mean); net (over - under) -0.526 px pooled (-0.347 pair-mean)",
+      "how": "(FN_in2 + FP_in2) / GT boundary length (seg2bmap px), and (FP_in2 - FN_in2) / length"
+     },
+     {
+      "name": "By GT size (good seeds): n, J&F, or+-2, FN px share in band, net px, g288, grid share",
+      "value": "<2k: 228, 0.8940, 0.9688, 0.508, -0.016, 0.9598, 0.379 | 2k-10k: 620, 0.9219, 0.9735, 0.560, -0.126, 0.9772, 0.292 | 10k-100k: 1450, 0.9479, 0.9800, 0.654, -0.335, 0.9880, 0.231 | >=100k: 709, 0.9402 (F 0.9312), 0.9755 (closes 0.590), 0.752, -0.644, 0.9917, 0.139",
+      "how": "bins on gt_px; grid share = (1 - g288)/(1 - J&F) per bin"
+     },
+     {
+      "name": "By size in 288-grid cells (cell=(W/288)(H/288) px)",
+      "value": "<25 cells: n 69, J&F 0.8776, FN-only +0.0394 vs FP-only +0.0424, net +0.134 px (over), g288 0.9364, grid share 0.519 | 25-100: 348, 0.9096, net -0.022, grid share 0.330 | 100-1000: 1293, 0.9381, net -0.304, 0.254 | >=1000: 1297, 0.9455, net -0.577, 0.164",
+      "how": "bd_report.py by_cells"
+     },
+     {
+      "name": "By object type (objects_labels.json)",
+      "value": "dynamic n 818: J&F 0.9414, FN px share 0.795, net -0.666 px, closes 0.644 | static 1833: 0.9382, 0.648, -0.332, 0.642 | env 356: 0.9173 (F 0.9053), 0.741, -0.638, closes only 0.581",
+      "how": "bd_report.py by_type"
+     },
+     {
+      "name": "Frame border (good seeds)",
+      "value": "GT touches frame n 997: J&F 0.9338, closes 0.601, FN share 0.741 | inside n 2010: 0.9380, closes 0.650, FN share 0.660. Band px share by distance to image edge [0,4) 0.0168 / [4,16) 0.0157 / [16,64) 0.0747 / >=64 0.8928; error rate per band px 0.391 / 0.358 / 0.362 / 0.354; FN share 0.545 / 0.701 / 0.703 / 0.722. +-2 oracle restricted to band within 16 px of frame +0.0040 vs beyond +0.0367 (0.098 of the restricted gains). Out-of-band error px within 4 px of frame: 0.020 of out-of-band error",
+      "how": "d = min(y, x, H-1-y, W-1-x); restricted oracle replaces pred by GT only on band & (d<16) or band & (d>=16)"
+     },
+     {
+      "name": "GT label-map density",
+      "value": "label 0 = 35 px in all 170 DEV-A views (6.7e-8 of px); labelled-but-unseeded objects = 0.0315 of px",
+      "how": "bd_partition.py view counts (gt_label0_px, gt_unseeded_px); seeded = basic set present in c_ini GT at t (asserted equal to config.json objects)"
+     },
+     {
+      "name": "Neighbour across the GT boundary (good seeds, rho=0)",
+      "value": "GT inner-boundary px bordering another SEEDED object 0.969, an UNSEEDED labelled object 0.031, label 0 0.000. Band(+-2) error rate per band px 0.353 vs 0.412; FN share 0.719 vs 0.661; restricted +-2 oracle +0.0395 (0.985 of full band) vs +0.0009 (0.022). Pairs with an unseeded neighbour: 302 (J&F 0.9186 for share (0,0.1], n 177; 0.9182 for >0.1, n 125) vs 0.9387 without (n 2705). rho=3 (seam-tolerant) gives the same within 0.002",
+      "how": "class of pixel outside g = its own GT label class; inside g = class of nearest outside-g pixel (cv2.distanceTransformWithLabels DIST_L2 mask 5)"
+     },
+     {
+      "name": "Predicted partition (170 views pooled)",
+      "value": "unclaimed (no mask) px 35,852,662 = 0.0667 of all px; of them GT seeded 0.588 (= 0.0392 of all px), GT unseeded 0.412. Seeded-owner unclaimed by gap width to nearest claimed px: (0,1] 0.212, (1,2] 0.131, (2,4] 0.150, (4,8] 0.139, >8 0.368. Single-claimed px with wrong seeded owner 0.0148 of px; multiply-claimed 166,091 px",
+      "how": "bd_partition.py: claim count over all seeded objects' masks per eval view; gap width = cv2 distance transform of the unclaimed map"
+     },
+     {
+      "name": "Good-seed error px by what is on the other side",
+      "value": "pooled: FN unclaimed 0.513 [0.443,0.587], FN claimed by a seeded neighbour 0.205, FP on seeded-neighbour GT 0.234 (overlap with that neighbour's mask 0.0002), FP on unseeded GT 0.049. Inside +-2: 0.451 / 0.266 / 0.270 / 0.012. Pair-mean: 0.395 / 0.258 / 0.341 / 0.006. Good-seed unclaimed FN by gap width: (0,1] 0.280, (1,2] 0.164, (2,4] 0.175, (4,8] 0.142, >8 0.238",
+      "how": "bd_partition.py + bd_part_report.py; CI = scene-cluster bootstrap 2000 reps on the pooled share"
+     },
+     {
+      "name": "Unclaimed-pixel fill probe (DEV-A only)",
+      "value": "GT-free nearest-claimed-mask fill, good seeds: k=1 +0.0014 [+0.0006,+0.0027] (201 up/117 down, px correct 0.646); k=2 +0.0009 [-0.0005,+0.0027]; k=4 -0.0007; k=8 -0.0024; k=inf -0.0102 [-0.0154,-0.0054]. All DEV-A k=1 +0.0016 [+0.0007,+0.0028]; failing k=8 +0.0109 [+0.0039,+0.0183]. Oracle fill (unclaimed own-GT px) good seeds k=2 +0.0170 [+0.0144,+0.0199], k=inf +0.0241 [+0.0206,+0.0281]; all DEV-A k=2 +0.0256",
+      "how": "unclaimed px within k px of a claimed px assigned to the nearest claimed px's mask (cv2.distanceTransformWithLabels); J&F per pair vs as-decoded; bootstrap 10 000 reps"
+     },
+     {
+      "name": "288 / 576 grid round-trip ceiling of the DEV-A GT",
+      "value": "good seeds g288 J&F 0.9845 [0.9820,0.9870] (J 0.9755, F 0.9934); 1-g288 = 0.0155 = 0.245 [0.208,0.275] of the gap; g576 0.9936 (0.100 of gap). All DEV-A g288 0.9805 (0.212 of gap); failing 0.9395. Seed error px that are also round-trip error px (same direction) 0.059; round-trip error px that are also seed errors 0.598; round-trip error FN share 0.580",
+      "how": "bd_grid.py in scsam3 (CPU torch, under the gpu.lock flock, 42 s): MVSeed/refloss/seedgrid.py rt() verbatim (+-1 -> bilinear 1008 -> bilinear antialias n -> 1008 -> image -> >0), jf_pair vs GT"
+     },
+     {
+      "name": "F artefact of band oracles",
+      "value": "oracle F falls as band widens: 0.9943 (+-1) > 0.9936 > 0.9921 > 0.9908 (+-8); e.g. MATF S1_CAM_1 obj 3: seam pixels at the band edge add matched boundary px that inflate precision at small r",
+      "how": "seg2bmap/precision counts on worst pairs; J oracles are monotone and the clean measure"
+     }
+    ],
+    "implications": [
+     "The good-seed gap on DEV-A (0.0634) is mostly area (J): J gap 0.0997 vs F gap 0.0271. The ±2 px band oracle closes 63%. Boundary methods can be designed and checked on DEV-A alone, with no keyframe number used.",
+     "Under-coverage is the larger half: fixing only misses gains +0.026, fixing only extras +0.014, and the net boundary sits 0.53 px inside. The direction depends on size: objects under 25 grid cells are over-covered (+0.13 px) while objects of 100k px or more are under-covered (-0.64 px). A uniform dilate or threshold shift therefore cancels out. Any shift rule would have to depend on size or type, and must be chosen on DEV-A and confirmed once on DEV-B.",
+     "Boundaries are a multi-object partition problem. The GT is fully dense and 97% of good-seed boundary pixels are shared with another decoded object. The single largest error class is pixels no mask claims (51% of good-seed error pixels, 45% inside ±2 px), all coming from the threshold at 0. The rest is boundaries misplaced between two decoded neighbours (one mask's miss is the other's extra, about 27% each inside the band).",
+     "Filling seams on binary masks alone is weak: nearest-mask assignment is right only about 65% of the time, so it gains +0.0014 at k = 1 against a +0.017 ceiling at k = 2. A fill that uses the decoder logits could get closer to that ceiling: give a pixel whose logits are all below 0 to the highest-logit object when that logit is above -tau. This needs per-object logits on DEV-A (another agent is dumping logits under _e14_logitdump). tau must be chosen on DEV-A and confirmed on DEV-B.",
+     "Grid resolution is a minority cause. The 288-grid ceiling of the GT explains 24.5% [20.8, 27.5%] of the gap, and only 5.9% of the prediction's error pixels coincide with the grid round trip's errors. Doubling the grid (2× zoom) could reach at most about 0.0155 - 0.0064 = +0.009 on good seeds, concentrated in small objects (grid share 52% under 25 cells, 14% at 100k px or more).",
+     "The image border is not a lever: only about 10% of the ±2 px band gain lies within 16 px of the frame. Walls and floors (env type) and objects next to undecoded objects carry error outside the band (the ±2 px oracle closes only 58% for env), which is coverage extent rather than boundary placement.",
+     "The zoom (E10) and exclusivity (E11) effects are still keyframe-only; I ran no DEV-A decode for them. To measure them on DEV-A, decode the geoset_rep and geoset_rep_z2r presets on DEV-A with methods.geomem.dev_decode --root geomem/runs/_e14_<name>/<preset>_A. Then rerun bd_anatomy.py and bd_partition.py with --pairs geomem/runs/_e13_dev/dev_pairs.json, and the reports with --good-from anat_geoset_rep_x_A.json."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_boundary-anatomy/bd_anatomy.py (host: band oracles r=1,2,4,8, FN/FP-only oracles, neighbour classes, frame-distance bins) -> anat_geoset_rep_x_A.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_boundary-anatomy/bd_report.py (host: tables + scene-cluster bootstrap) -> report_anat.txt, summary_anat.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_boundary-anatomy/bd_partition.py (host: per-view predicted partition, error-pixel owner decomposition, nearest-fill and oracle-fill probes) -> part_geoset_rep_x_A.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_boundary-anatomy/bd_part_report.py (host) -> report_part.txt, summary_part.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_boundary-anatomy/bd_grid.py (scsam3, CPU torch, run with: flock <scratchpad>/gpu.lock scripts/docker_run.sh scsam3 python geomem/runs/_e14_boundary-anatomy/bd_grid.py --pairs geomem/runs/_e13_dev/dev_pairs.json --masks geomem/runs/_e13_dev --out geomem/runs/_e14_boundary-anatomy/grid_geoset_rep_x_A.json) -> grid_geoset_rep_x_A.json, grid.log",
+     "Host commands (from the scratch dir, PYTHONDONTWRITEBYTECODE=1, stage1/.venv/bin/python): bd_anatomy.py --masks stage1/geomem/runs/_e13_dev --pairs stage1/geomem/runs/_e13_dev/dev_pairs.json --out <O>/anat_geoset_rep_x_A.json --check-jf; bd_report.py --anat <O>/anat_geoset_rep_x_A.json --grid <O>/grid_geoset_rep_x_A.json --summary <O>/summary_anat.json; bd_partition.py --masks ... --pairs ... --out <O>/part_geoset_rep_x_A.json; bd_part_report.py --part <O>/part_geoset_rep_x_A.json --summary <O>/summary_part.json",
+     "Scratch copies: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/boundary-anatomy/{bd_anatomy,bd_report,bd_partition,bd_part_report}.py"
+    ]
+   },
+   {
+    "summary": "I dumped the round-2 decoder outputs for preset geoset_rep_x on DEV-A (85 frames, 170 eval views = 2 per frame, 3952 object-views, which covers all 3300 scored pairs). The decode path was left unchanged. Re-thresholding the saved fp16 low_res through the adopted path gives the adopted DEV-A PNGs byte for byte: 3952/3952 object-views and 3300/3300 pairs, 0 differing pixels. I checked this three ways: inside the dump job, in a separate fresh GPU process that reads only from disk, and on the host with a numpy emulation of the CUDA interpolate. That numpy emulation is bit-exact, so other agents can run post-decode variants on the host without a GPU. I did not touch the TEST keyframe or DEV-B, and I changed no tracked files.\n\nRoot: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/geoset_rep_x_A/ (1.81 GiB). It has the same layout as dev_decode, so dev_score can read it: <scene>/<t:06d>/<cam>/<obj>.png, _r1/, config.json, round1_conf.json, xcl_conf.json. In addition, each frame has a _logits/ folder with, for each eval camera:\n- <cam>.npz: objects int32 [B], hw int32 [2], low_res float16 [B,288,288], ious float32 [B], presence float32 [B], token int8 [B], stability float32 [B]. low_res is exactly the out[\"low_res\"] that decode_scene used: -1024 where presence <= 0, and the stability-selected token. token 0 is the single-mask token; 1..3 mean the decoder fell back to a multimask candidate because token 0's stability was below 0.98.\n- <cam>_mm.npz: mm_low_res float16 [B,4,288,288] holds all 4 decoder tokens before the -1024 replacement (0 = single-mask, 1..3 = multimask candidates); mm_ious float32 [B,4] holds their IoUs.\n- meta.json and DONE.\n\nThe root also holds the summary files index.json, dump_meta.json, verify_torch.json, verify_numpy.json and probe_emul.json. Field definitions are in the docstring of code/e14dump.py.\n\nHow the capture works without changing the decode:\n- GeoMemStar.decode_view is wrapped. A top-level call with `chunk` is round 2 (decode_scene passes chunk only there). Each round-2 call is matched to its camera through the backbone dict that the camera's round-1 call used, and that round-1 call is identified by the path of the sam3_io.load_image call just before it.\n- The tracker's MaskDecoder.predict_masks is wrapped to keep all 4 token masks and IoUs.\n- The stability score is recomputed with the decoder's own _get_stability_scores on the same tensor.\n\nDecoder settings in this image: torch 2.10.0+cu128 on an RTX 6000 Ada; dynamic_multimask_via_stability=True, delta 0.05, thresh 0.98, decoder in eval mode.\n\nReuse API (code/e14dump.py):\n- E.load(root, scene, t, cam, mm=False) and E.views(root) read the dump.\n- E.masks_torch(low_res, hw) is the exact adopted path on GPU.\n- E.logits_full_np(low_res, hw) returns the full-resolution float32 logits on the host; E.masks_numpy(low_res, hw) adds threshold and exclusivity. Both reproduce the adopted output exactly.\n- E.exclusive_masks_np reproduces run.exclusive_masks with the 0.5 cap.\n- E.read_png_masks and E.dev_pairs are helpers for reading masks and pairs.",
+    "measurements": [
+     {
+      "name": "Identity check, GPU, fresh process (adopted path)",
+      "value": "3952/3952 object-views identical, 0 differing px; 3300/3300 DEV-A pairs identical, 0 px (all 3300 pairs found)",
+      "how": "code/verify_dump.py --mode torch in scsam3 under the GPU lock (75 s). For each of the 170 views: npz low_res fp16 -> float32 -> F.interpolate to 1008x1008 (bilinear, align_corners=False) -> F.interpolate to (h,w) -> run.exclusive_masks(L, 0.5). Compared per object with the _e13_dev PNG (absent PNG = empty). Pairs are the rows of _e13_dev/dev_pairs.json. Output: verify_torch.json"
+     },
+     {
+      "name": "In-job checks (all 85 frames)",
+      "value": "PNG file bytes equal to _e13_dev 3952/3952; this run's in-memory masks equal to _e13_dev 3952/3952; re-thresholded npz (read back from disk) equal to in-memory masks 3952/3952; 0 MISMATCH lines in any log",
+      "how": "dump_logits.py check_view after writing each frame; aggregated by code/summarize.py -> dump_meta.json"
+     },
+     {
+      "name": "Identity check, host numpy emulation",
+      "value": "3952/3952 object-views and 3300/3300 pairs identical, 0 px; 88.6 s wall with 8 processes",
+      "how": "code/verify_dump.py --mode numpy --workers 8 on the host (stage1/.venv) using E.masks_numpy: float32 bilinear with nvcc's FMA contraction emulated as fma(a,b,c) = float32(float64(a)*b + c), then numpy exclusive_masks. Output: verify_numpy.json"
+     },
+     {
+      "name": "Bit-exactness of the numpy interpolate vs CUDA",
+      "value": "FMA order (src = fma(scale, dst+0.5, -0.5); inner and outer lerp = fma(l0, a, l1*b)): 0 differing bits out of 12,192,768 stage-1 values (288->1008) and 0 out of 58,982,400 stage-2 values (1008->hw). Plain float32 order: 2,253,484 and 16,996,675 bit differences, but 0 sign flips",
+      "how": "code/probe_emul.py in scsam3 on the first 3 views x first 4 objects, testing 18 op-order variants; each stage tested on the GPU's own input. Output: probe_emul.json"
+     },
+     {
+      "name": "Saved candidates match the decoder's selected output",
+      "value": "170/170 views: low_res == where(presence>0, mm_low_res[token], -1024), ious == mm_ious[token], presence == decoder object score",
+      "how": "In-job in float32 before saving (save_view) and again from disk in the fp16 domain (verify_dump.py)"
+     },
+     {
+      "name": "Token usage (stability fallback)",
+      "value": "All object-views: token0 3749, token1 41, token2 106, token3 56 (203 fallbacks = 5.1%). Among the 3300 pairs: 3167 / 15 / 69 / 49 (133 fallbacks = 4.0%)",
+      "how": "Counts of the npz `token` field over all views and over the dev_pairs.json pair set"
+     },
+     {
+      "name": "Absent objects (presence <= 0, low_res = -1024)",
+      "value": "614 of 3952 object-views; 22 of the 3300 pairs",
+      "how": "Count of the npz `presence` field <= 0"
+     },
+     {
+      "name": "fp16 storage loss",
+      "value": "Selected low_res: 0 inexact values in all 170 views (all values bf16, held in float32). mm_low_res: 2 inexact values out of about 1.3e9, both fp16 subnormals (|x| < 6.1e-5, sign kept) in non-selected tokens (Blocks t=4 cam9, MATF t=46 S1_CAM_1). No inf or NaN; max |low_res| over present objects = 160",
+      "how": "In-job torch.equal(x.half().float(), x) per view, plus a host scan of the two flagged views"
+     },
+     {
+      "name": "Dump size",
+      "value": "low_res npz 312,026,975 B (298 MiB); mm npz 1,476,483,376 B (1.38 GiB); whole root including PNGs and _r1 1,943,080,408 B (1.81 GiB); 340 npz files (170 views x 2)",
+      "how": "os.path.getsize per file (verify_*.json) and du -sb (dump_meta.json). np.savez_compressed is about 0.58x of raw fp16"
+     },
+     {
+      "name": "GPU time",
+      "value": "Decode 645.9 s total plus dump and in-job verification 647.6 s, over 4 locked jobs. Group walls 892 s (includes lock wait), 449 s, 506 s; Dog smoke run 24 s of work; verify_torch 75 s; probe 25 s. Every job was under 25 min",
+      "how": "Sum of the per-frame 'dec' and 'dump' fields in logs/smoke_dog.log and logs/dump_g{1,2,3}.log; wall times from logs/chain.log"
+     }
+    ],
+    "implications": [
+     "Post-decode variants (re-threshold, other upsampling, candidate selection, exclusivity rules) can run entirely on the host from this dump. E.logits_full_np reproduces the adopted full-resolution logits bit for bit and E.masks_numpy reproduces the adopted DEV-A masks with 0 px difference. So any change in DEV-A J&F comes from the variant itself, not from the reproduction.",
+     "Use the 3 multimask candidates with care. The decoder only falls back to them on 133 of the 3300 pairs (4.0%). A candidate-selection variant reaches more pairs only if it overrides token 0 on stable objects. mm_low_res is stored before the -1024 replacement, so absent objects still carry raw candidate logits.",
+     "The dump stops at the 288 low-res grid. The 1008 map and the image-resolution map are just two bilinear stages of it. Variants that need sub-288 information (decoder features, upscaled embeddings, image edges) still need the image or a new GPU pass; the 288 logits alone cannot supply it.",
+     "The emulation's bit-exactness was measured on torch 2.10.0+cu128 CUDA on an RTX 6000 Ada. If the image or torch version changes, re-run probe_emul.py and verify_dump.py --mode numpy before relying on host identity.",
+     "Only preset geoset_rep_x on DEV-A is dumped, round 2 of the eval cameras only. Round-1 logits, DEV-B and the TEST keyframe were not decoded, so the protocol's DEV-B confirmation is still unspent.",
+     "The dump root is also a complete dev_decode root whose PNGs are byte-identical to _e13_dev. dev_score and dev_compare can use it directly, and _e13_dev/dev_pairs.json stays the baseline scoring."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/code/dump_logits.py",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/code/e14dump.py",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/code/verify_dump.py",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/code/probe_emul.py",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/code/summarize.py",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/geoset_rep_x_A/ (dump root: <scene>/<t:06d>/_logits/<cam>.npz, <cam>_mm.npz, meta.json; dev_decode PNG layout; dump_meta.json, verify_torch.json, verify_numpy.json, probe_emul.json, index.json)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_logitdump/logs/ (smoke_dog.log, dump_g1..3.log, chain.log, verify_torch.log, verify_numpy.log, probe_emul.log)",
+     "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/logitdump/ (copies of the 5 scripts)"
+    ]
+   }
+  ],
+  "measures": [
+   {
+    "summary": "I tested three host-side post-decode variants of the adopted geoset_rep_x round-2 decode, on DEV-A only, using the logit dump. The TEST keyframe and DEV-B were never touched, no GPU was used, and no tracked file was changed. Grids and the selection rule were written down and hashed before anything was scored: PREREG.md, stamped 2026-10-15T20:33:21+09:00.\n\n**Pipeline check.** Every variant goes 288 logits → upsampler → full-res logits → pos = L > -tau → the adopted exclusivity (argmax winner, nested-mask cap 0.5) → J&F per pair.\n- With the adopted upsampler at tau = 0 the pipeline reproduces the adopted PNGs exactly: 0 differing pixels for every object in all 170 views.\n- It also reproduces dev_pairs.json J&F exactly on all 3 300 pairs (max |d| = 0).\n- I check the per-object crop shortcut on 3 views (all gf settings, bic1, one jbu setting, all 11 taus): 0 differing pixels.\n\n**Selection rule (pre-registered).** Pick by the DEV-A all-pair J&F, aggregated the way dev_compare does (pair → view \"t/cam\" → scene; 17 scenes). The CIs are the scene-cluster paired bootstrap (10 000 resamples, seed 0). Good seeds are pairs where the adopted J&F is at least 0.8 (3 007 pairs); failing seeds are the other 293. \"Hier\" means the dev_compare-style aggregate; \"pair-mean\" is the plain mean over pairs.\n\n**(a) Global threshold shift.** The pick is tau = +1 logit (masks grow; a median boundary moves about 0.8 px).\n- All pairs: +0.00314 [+0.00054, +0.00590]. J +0.0041 with a CI above zero; F +0.0022 with a CI that includes zero.\n- Good seeds: +0.00168 [-0.00078, +0.00359] hier, so the CI includes zero; +0.00252 pair-mean. That is about 4% of the 0.0634 good-seed gap.\n- Failing seeds: +0.01119 [+0.00488, +0.02012].\n- Risk: 132 pairs drop by more than 0.01 (114 good, 18 failing), against 358 that rise by more than 0.01. 13 of 17 scenes go up; Dog drops 0.009.\n- Selection bias is small: picking tau on 16 scenes and scoring the held-out one gives +0.00288.\n- The optimum is flat. tau = +0.5 gives +0.0028 with a tighter CI [+0.0013, +0.0047] and only 78 drops.\n\n**(b) Upsampling alone (no shift).** Nothing beats the adopted bilinear.\n- Bicubic: -0.00029 [-0.00097, +0.00045]; on good seeds -0.00067.\n- Joint-bilateral upsampling of the logits with the image as guide: the stronger the image guidance, the worse the result. Its best setting is the spatial-only control (no image guidance at all), at -0.00042 [-0.00086, -0.00003].\n- Guided filter of the logits: at best -0.00126 [-0.00305, +0.00015].\n\n**(c) Upsampler plus shift.** The joint pick is spatial-only JBU (no image guidance) with tau = +1: +0.00308 [+0.00051, +0.00579]. That is no better than the shift alone: paired difference -0.0001 [-0.0004, +0.0003]. Every upsampler's best tau was +1.\n\n**Why the shift helps.** At tau = +1, 99.4% of the pixels it adds were claimed by no mask at tau = 0, and it removes none. So it is a logit-based fill of the gaps between masks, not a way of moving boundaries. It claims 51% of those unclaimed pixels, but gives them to the right object only 59.7% of the time (65.6% at tau = +0.5). That is no more accurate than the binary nearest-mask fill (about 65%). Of the added pixels, 30% belong to another decoded object's GT and 12% to objects that were not decoded.",
+    "measurements": [
+     {
+      "name": "Pipeline identity (adopted bil2, tau 0)",
+      "value": "keep masks == adopted PNGs for every object in all 170 DEV-A views (png_diff = 0 px each, logs/variants.log); per-pair J&F == _e13_dev/dev_pairs.json on 3300/3300 (max |dJF| = 0.0)",
+      "how": "tu_variants.py view_job check: bil2 = e14dump.logits_full_np (bit-exact CUDA emulation) per object, crop-based argmax + exclusive_masks rule, compared with e14dump.read_png_masks of the dump root; tu_report.py check_max_abs_dJF_vs_dev_pairs"
+     },
+     {
+      "name": "Crop-approximation exactness",
+      "value": "0 differing keep-mask px (all objects, all 11 taus) for gf x6, bic1, jbu_s1_r8 on Frog/184/v10, Breakfast/4/v5, AlexaMeadeExhibit/12/camera_0003",
+      "how": "check_gf.py: full-image computation of each upsampler per object vs tu_variants crops -> check_crops.json"
+     },
+     {
+      "name": "Baseline (DEV-A, adopted geoset_rep_x)",
+      "value": "hier J&F 0.90793, pair-mean 0.90782; 3300 pairs = 3007 good (adopted JF >= 0.8) + 293 failing; good-seed 1-recall 0.0637, 1-precision 0.0418",
+      "how": "tu_report.py; hier = mean over 17 scenes of mean over views '<t>/<cam>' of pair means (mvseg2d.paired.scene_means)"
+     },
+     {
+      "name": "(a) tau grid, U = bil2 (hier dJF all / good pair-mean / fail pair-mean / up / down >0.01)",
+      "value": "-1: -0.01827/-0.01471/-0.02770/79/1074 | -0.5: -0.00717/-0.00567/-0.01329/40/515 | -0.25: -0.00307/-0.00241/-0.00649/18/243 | 0: 0 | +0.25: +0.00185/+0.00143/+0.00634/167/37 | +0.5: +0.00281/+0.00220/+0.01134/260/78 | +1: +0.00314/+0.00252/+0.01544/358/132 | +1.5: +0.00268/+0.00225/+0.01704/395/163 | +2: +0.00203/+0.00189/+0.01812/418/183 | +3: +0.00090/+0.00086/+0.01907/424/201 | +4: -0.00077/-0.00030/+0.01201/415/234",
+      "how": "mask = L > -tau (tau > 0 grows), then adopted exclusivity; report.txt GRID section"
+     },
+     {
+      "name": "(a) pick tau = +1 vs adopted",
+      "value": "all: dJ&F +0.00314 [+0.00054, +0.00590], dJ +0.00410 [+0.00259, +0.00577], dF +0.00217 [-0.00208, +0.00671], pair-mean +0.00367 | good: +0.00168 [-0.00078, +0.00359] hier, +0.00252 pair-mean | failing: +0.01119 [+0.00488, +0.02012] hier, +0.01544 pair-mean | risk: 132 pairs down >0.01 (114 good, 18 failing), 358 up | good-seed 1-recall -0.0101, 1-precision +0.0065 | good by gt_px: <2k +0.00054, 2k-10k +0.00072, 10k-100k +0.00215, >=100k +0.00550 | scenes up 13/17 (Dog -0.0091 worst, Welder +0.0185 best) | worst pairs: Welder 16/camera_0003 o8 0.420 -0.151, AlexaMeadeFacePaint 12/camera_0009 o11 0.880 -0.139, AlexaMeadeFacePaint 8/camera_0008 o10 0.914 -0.118, CoffeeMartini 16/cam10 o9 0.994 -0.112",
+      "how": "mvseg2d.paired.paired_scene_bootstrap (10 000, seed 0, view_key 'view') on all / good / failing subsets; replicated with mvseg2d.dev_compare: +0.0031 CI [+0.0005, +0.0059] (cand/cmp_bil2_tau1.json)"
+     },
+     {
+      "name": "(a) runner-up tau = +0.5 and selection-bias check",
+      "value": "tau +0.5: +0.0028 [+0.0013, +0.0047], 78 down / 260 up (dev_compare); tau 1 vs 0.5: +0.0003 [-0.0009, +0.0013]. LOSO (pick tau on 16 scenes, score held-out, mean of 17): +0.00288, picks {0.5, 1}",
+      "how": "dev_compare on cand/*.json; tu_report.py LOSO"
+     },
+     {
+      "name": "(b) upsampling alone at tau 0 (hier dJF all)",
+      "value": "bil1 (control) +0.00003 [-0.00011, +0.00020]; bic1 -0.00029 [-0.00097, +0.00045] (good -0.00067 [-0.00133, +0.00001], failing +0.00684 [+0.00137, +0.01367], 199 down / 166 up; acts as a growth: good 1-recall -0.0050, 1-precision +0.0051); JBU ss 0.5: sr 4 -0.00429, 8 -0.00262, 16 -0.00128, 32 -0.00061, inf -0.00042; JBU ss 1: -0.00649, -0.00656, -0.00767, -0.00948, -0.01264; GF r4: eps 1e-4 -0.00126, 1e-3 -0.00203, 1e-2 -0.00298; GF r8: -0.00590, -0.00857, -0.01483",
+      "how": "bic1 = cv2 INTER_CUBIC 288 -> (h,w); JBU = 4x4 tap joint bilateral, Gaussian spatial ss (cells) x Lab range sr vs INTER_AREA 288 guide; GF = He et al. colour guided filter of the adopted full-res logits, RGB [0,1] guide; all then adopted exclusivity"
+     },
+     {
+      "name": "(b) picks",
+      "value": "overall (b) = bic1 -0.00029 (CI above); best JBU = jbu_s0.5_rinf (spatial-only control) -0.00042 [-0.00086, -0.00003], good -0.00038 [-0.00077, -0.00004], failing -0.00210 [-0.00499, +0.00017], 48 down / 32 up; best GF = gf_r4_e1e-4 -0.00126 [-0.00305, +0.00015], good -0.00116 [-0.00284, +0.00019], failing -0.00736 [-0.02018, +0.00094], 217 down / 198 up (good >=100k px +0.00115, smaller sizes negative); LOSO (b) -0.00127",
+      "how": "pre-registered argmax over {bic1, 10 jbu, 6 gf} at tau 0; bootstrap as above"
+     },
+     {
+      "name": "(c) joint upsampler x tau pick",
+      "value": "jbu_s0.5_rinf with tau +1: all +0.00308 [+0.00051, +0.00579] (dJ +0.00370, dF +0.00246), pair-mean +0.00358 | good +0.00182 [-0.00059, +0.00368], pair-mean +0.00259 | failing +0.00875 [+0.00167, +0.01815], pair-mean +0.01374 | 132 down (111 good, 21 failing) / 338 up | vs (a) pick tau+1 on bil2: -0.0001 [-0.0004, +0.0003]. Best tau per upsampler is +1 for all 19 upsamplers: bil1 +0.00308, bic1 +0.00231, jbu_s0.5_r32 +0.00283, gf_r4_e1e-4 +0.00254, others lower. LOSO (c) +0.00281",
+      "how": "argmax over 17 eligible upsamplers x 11 taus (187); dev_compare cand/cmp_bil2_tau1_vs_jbu_s0.5_rinf_tau1.json"
+     },
+     {
+      "name": "What the shift adds (bil2, all decoded objects pooled, 170 views)",
+      "value": "tau +1: 18 487 480 px added, 0 removed; 99.4% were unclaimed by any mask at tau 0; GT owner of added px: own 0.594, another decoded object 0.284, undecoded labelled object 0.122, label 0 0.000. Good-seed pairs: own 0.581 / decoded other 0.303 / undecoded 0.116. View partition: of 35 852 662 unclaimed px at tau 0, 51.2% become claimed, owner correct 59.7%. tau +0.5: 33.6% claimed, owner correct 65.6%",
+      "how": "tu_decomp.py (decomp.json): keep_tau vs keep_0 per object; claimed = covered by any keep mask at tau 0; owner = GT label map"
+     },
+     {
+      "name": "Compute",
+      "value": "tu_variants: 170 views x 19 upsamplers x 11 taus, 14 host processes, 3705 s wall (CoffeeMartini/FlameSteak views about 580-780 s each); tu_decomp 189 s; no GPU",
+      "how": "logs/variants.log, logs/decomp.log"
+     }
+    ],
+    "implications": [
+     "A global threshold shift of tau = +1 is the only variant here whose CI on all DEV-A pairs excludes zero (+0.0031 [+0.0005, +0.0059]). It is not a boundary-placement fix: the good-seed gain is +0.0017 hier (CI includes 0) or +0.0025 pair-mean, about 4% of the 0.0634 gap and about 6% of the ±2 px band oracle. Most of the gain is on failing seeds (+0.011 hier, +0.015 pair-mean) and on objects of 100k px or more (+0.0055).",
+     "Mechanically, the shift fills the gaps between masks using the logits: 99.4% of the added pixels were unclaimed, and exclusivity stops it from taking pixels another mask already holds. The owner it picks is right only about 60% of the time, no better than the nearest-mask fill. Going beyond about +0.003 toward the +0.017 oracle-fill ceiling needs a better cue for who owns a gap pixel than raw logit height. Ideas: per-object logit calibration, or the multimask candidates in the dump.",
+     "Upsampling the 288 logits is not a lever on DEV-A. Bicubic is neutral. Image-guided JBU and guided filtering of the logits get worse the stronger the image guidance, and every edge-aware setting is below the adopted bilinear. Image colour edges do not supply the sub-288 boundary information. Together with the round-trip result in the anatomy, this points away from post-hoc upsampling and toward decoder-side resolution (e.g. zoom) or a learned refinement, if the grid is pursued at all.",
+     "Combining an upsampler with the shift adds nothing (-0.0001 [-0.0004, +0.0003] vs the shift alone), so a registration would be the shift alone on the adopted upsampler.",
+     "If it is registered: by the pre-registered rule the DEV-A pick is tau = +1. Risk is 132 of 3 300 pairs down by more than 0.01, and the Dog scene drops 0.009. tau = +0.5 has almost the same mean (+0.0028), a tighter CI [+0.0013, +0.0047] and fewer drops (78); the two differ by only +0.0003 [-0.0009, +0.0013]. Choosing 0.5 now would be a post-hoc change, so it would have to be stated as such in the registration. Either way, the DEV-B confirmation rule must be written and committed before the one DEV-B run. The LOSO estimate (+0.0029) suggests little winner's curse on DEV-A.",
+     "Even confirmed, the expected stage-1 effect is small: about +0.003 on all pairs and about +0.002 on good seeds. The good-seed boundary gap stays essentially open, with 63% of it still inside the ±2 px band."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/PREREG.md (+ PREREG.stamp: sha256 and time, written before scoring)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/tu_variants.py (host: all upsamplers x taus -> parts/<scene>_<t>_<cam>.json; run: stage1/.venv/bin/python tu_variants.py --out-dir parts --procs 14)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/tu_report.py (grid, picks, bootstrap CIs, risk, size bins, LOSO -> summary.json, report.txt)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/tu_decomp.py (where the shift's added pixels go -> decomp.json, logs/decomp.log)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/check_gf.py (crop vs full-image exactness -> check_crops.json)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/cand/ (dev_score-format rows for bil2 tau 0/0.5/1, jbu_s0.5_rinf tau 0/1, bic1, gf_r4_e1e-4, plus mvseg2d.dev_compare outputs cmp_*.json)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_threshold-upsample/logs/ (variants.log, check_gf.log, decomp.log)",
+     "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/threshold-upsample/ (copies of PREREG.md and the 4 scripts)"
+    ]
+   },
+   {
+    "summary": "I tested every pre-registered multimask variant on DEV-A only (3 300 pairs: 3 007 good seeds, 293 failing). The inputs were the logit dump (_e14_logitdump/geoset_rep_x_A) and _e13_dev/dev_pairs.json. I did not touch the TEST keyframe or DEV-B, and I modified no tracked files.\n\nI wrote the grid, the metric and the selection rule to prereg_multimask.json before computing any variant mask or score. There are 10 candidate arms plus one GT oracle ceiling:\n- **Select by predicted IoU:** I4 (best of tokens 0..3), I3 (best of tokens 1..3 only).\n- **Select by stability:** S4 (best of 0..3), SF (stability used only for the existing fallback).\n- **Select by agreement with the reprojected reference GT:** R4 (best of 0..3), RF (fallback only).\n- **Average the hypotheses' logits:** M4 (mean of 4), M3 (mean of 1..3), W4 (mean weighted by predicted IoU).\n- **Union:** X4 (max of the 4 logits).\n- **Ceiling (uses GT):** O4, the best token per pair.\n\nEvery arm reuses the adopted path unchanged after choosing the 288 logits: the same upsampling, threshold 0, and exclusivity (xcl).\n\n**Checks that the evaluation reproduces the adopted pipeline (all exact):**\n- The control arm A0 reproduces the _e13_dev PNGs on all 170 views, and its J and F equal dev_pairs.json on all 3 300 pairs.\n- My recomputed token-0 stability equals the dump's stored value everywhere.\n- The reprojected reference masks reproduce decode_scene's own recorded round-1 reprojection overlap on 3 952/3 952 object-views (max difference 0).\n\n**Result: decoder hypotheses do not address the good-seed boundary error.**\n- The best arm moves good seeds by only +0.0005 (I3, CI −0.0006 to +0.0016). The good-seed gap is 0.0634.\n- Even a GT oracle that picks the best of the 4 tokens per pair gains only +0.0068 on good seeds (CI 0.0055 to 0.0081), against +0.040 for the ±2 px band oracle. Most of its gain is on failing pairs (+0.056).\n- The pre-registered rule picks **I3** overall: +0.0012 (CI +0.00002 to +0.0024). That gain comes from failing pairs (+0.0084).\n  - I3's lower CI bound is fragile: it is above 0 for only 6 of 10 bootstrap seeds. I did not change the rule because of this; it is reported as a caveat.\n  - I4 also qualifies and holds for all 10 seeds, but is smaller (+0.0008, CI +0.0001 to +0.0014).\n- Stability selection, reference-agreement selection, and plain or IoU-weighted averaging are neutral or harmful on good seeds.\n- The union arm (X4) is clearly harmful (−0.0106 on good seeds). It helps only objects of 100k px or more, consistent with the size-dependent coverage direction found in the boundary anatomy.\n\nThe full numbers are in the measurements below and in report_mm.txt and summary_mm.json under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/.",
+    "measurements": [
+     {
+      "name": "Pre-registration",
+      "value": "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/prereg_multimask.json, written 2026-10-15 21:55 KST before any variant mask or J&F existed. Defines arms A0 (control), I4, I3, S4, SF, R4, RF, M4, M3, W4, X4 and the ceiling O4. No tuned constants: stability delta 0.05 and threshold 0.98 from the decoder, MIN_VALID 64 and xcl cap 0.5 from run.py. Primary metric: paired dJ&F vs A0 over all 3 300 pairs, scene-cluster bootstrap with views '<t>/<cam>', 10 000 resamples, seed 0 (as dev_compare). Pick: the largest primary dJ&F among arms with CI lower bound > 0 and good-seed dJ&F >= 0",
+      "how": "Written by hand before running mm_eval.py; the only counts known beforehand were the dump's token counts"
+     },
+     {
+      "name": "Fidelity of the evaluation",
+      "value": "A0 masks equal the _e13_dev PNGs for every object of all 170 views. A0 J and F equal dev_pairs.json exactly on 3300/3300 pairs. Recomputed token-0 stability equals the dump's stored value on all views. The oracle's single-object exclusivity path, at the adopted token, gives exactly the A0 mask on every present pair. Reprojected reference: proj_ref.py reproduces the round-1 reproj overlap recorded by decode_scene on 3952/3952 object-views (max |diff| 0, n_valid mismatches 0, NaN mismatches 0)",
+      "how": "Python asserts inside mm_eval.py (none failed; 0 tracebacks). proj_meta.json from proj_ref.py, which ran run.project_reference_masks and run.reproj_overlap unchanged in scsam3 under the GPU flock (75.6 s)"
+     },
+     {
+      "name": "A0 base (DEV-A)",
+      "value": "All pairs: J 0.8672, F 0.9485, J&F 0.9078. Good seeds (3007): 0.9003 / 0.9729 / 0.9366. Failing (293): 0.5270 / 0.6974 / 0.6122 (pair means)",
+      "how": "mm_report.py from the A0 rows (equal to dev_pairs.json)"
+     },
+     {
+      "name": "Grid, all 3300 pairs: dJ&F vs A0 [95% CI], dJ, dF, pairs up / down by > 0.01",
+      "value": "I4 +0.0008 [+0.0001, +0.0014], dJ +0.0010, dF +0.0006, 259/167 | I3 +0.0012 [+0.00002, +0.0024], +0.0009, +0.0014, 395/274 | S4 -0.0013 [-0.0032, +0.0007], 247/312 | SF -0.0005 [-0.0013, +0.0002], 24/53 | R4 -0.0007 [-0.0027, +0.0013], 413/420 | RF +0.0004 [-0.0001, +0.0010], 40/33 | M4 -0.0011 [-0.0023, -0.0001], 179/223 | M3 -0.0021 [-0.0038, -0.0005], 200/297 | W4 -0.0003 [-0.0011, +0.0006], 176/193 | X4 -0.0071 [-0.0127, -0.0015], 626/536 | ceiling O4 +0.0121 [+0.0088, +0.0159], 778/0",
+      "how": "mvseg2d.paired.paired_scene_bootstrap (pair -> view -> scene means; 17 scenes; 10 000 resamples; seed 0). Arm J&F is recomputed with mvseg2d.metrics.jf_pair for every pair whose final mask changed, and taken from A0 otherwise. mm_report.py -> report_mm.txt, summary_mm.json"
+     },
+     {
+      "name": "Grid, good seeds (A0 J&F >= 0.8, n = 3007)",
+      "value": "I4 +0.0003 [-0.0004, +0.0008] | I3 +0.0005 [-0.0006, +0.0016] | S4 -0.0026 [-0.0041, -0.0012] | SF -0.0008 [-0.0016, -0.0002] | R4 -0.0021 [-0.0041, -0.0004] | RF -0.0007 [-0.0013, -0.0002] | M4 -0.0014 [-0.0026, -0.0003] | M3 -0.0024 [-0.0040, -0.0009] | W4 -0.0006 [-0.0013, +0.0002] | X4 -0.0106 [-0.0178, -0.0037] | O4 ceiling +0.0068 [+0.0055, +0.0081] (dJ +0.0085, dF +0.0051), which is 10.7% of the 0.0634 good-seed gap",
+      "how": "Same bootstrap restricted to the good-seed pairs"
+     },
+     {
+      "name": "Grid, failing pairs (n = 293)",
+      "value": "I4 +0.0055 [+0.0003, +0.0112] | I3 +0.0084 [+0.0023, +0.0152] | S4 +0.0084 [-0.0037, +0.0224] | SF +0.0027 | R4 +0.0000 [-0.0231, +0.0165] | RF +0.0045 | M4 +0.0016 | M3 +0.0026 | W4 +0.0024 | X4 +0.0172 [-0.0056, +0.0329] | O4 ceiling +0.0561 [+0.0399, +0.0736]",
+      "how": "Same bootstrap restricted to the failing pairs"
+     },
+     {
+      "name": "Pre-registered pick and its robustness",
+      "value": "Pick = I3 (always multimask, highest predicted IoU over tokens 1..3). Qualifying arms: I3, then I4. I3's all-pairs CI lower bound is +0.00002 at seed 0 and above 0 in only 6/10 bootstrap seeds (range -0.00001 to +0.00005). I4's lower bound is +0.00013 to +0.00016 and above 0 in 10/10 seeds. Good-seed lower bounds are below 0 in 10/10 seeds for both. I3 per scene: 12/17 scenes positive, from -0.0030 (Dog) to +0.0068 (AlexaMeadeFacePaint)",
+      "how": "mm_report.py applies the rule. mm_seed_sens.py repeats the bootstrap with seeds 0..9 (sensitivity only, not part of the rule) -> seed_sens.json"
+     },
+     {
+      "name": "Good seeds by GT size: pair-mean dJ&F (<2k n=228 / 2k-10k n=620 / 10k-100k n=1450 / >=100k n=709)",
+      "value": "I4 -0.0007/-0.0007/+0.0003/+0.0018 | I3 -0.0015/-0.0008/+0.0004/+0.0028 | S4 -0.0042/-0.0065/-0.0020/-0.0009 | R4 -0.0063/-0.0030/-0.0005/-0.0040 | M4 -0.0032/-0.0008/-0.0002/-0.0035 | W4 -0.0011/-0.0005/+0.0002/-0.0015 | X4 -0.0194/-0.0190/-0.0045/+0.0008 | O4 +0.0124/+0.0071/+0.0065/+0.0067",
+      "how": "Bins on GT pixel count, as in the boundary-anatomy bins"
+     },
+     {
+      "name": "How much each arm changes",
+      "value": "3338 present object-views (137 already on a fallback token in A0). Object-views whose token changes: I4 0.548, I3 0.959, S4 0.610, SF 0.025, R4 0.851, RF 0.025. Pixels added / removed over all objects: I4 3.42M/1.21M, I3 4.68M/1.89M, S4 4.01M/5.97M, R4 4.82M/6.13M, M4 1.57M/6.24M, M3 1.94M/7.45M, W4 1.56M/5.39M, X4 12.76M/0.87M",
+      "how": "mm_eval.py arm_stats and per-object token records, summed in mm_report.py"
+     },
+     {
+      "name": "Per-token quality (changing only that object's token; other objects stay at A0)",
+      "value": "All 3278 present pairs: t0 0.9134, t1 0.8913, t2 0.9020, t3 0.9132; A0 0.9139; per-pair best token 0.9259. Good seeds: t0 0.9359, t1 0.9145, t2 0.9229, t3 0.9354; A0 0.9366; best 0.9437. The best token's J&F exceeds the worst token's by more than 0.01 on 1964 pairs (mean spread 0.0554). Which token is best (ties go to the lower token): t0 450, t1 598, t2 1507, t3 723",
+      "how": "Oracle J&F computed with xcl for that one object against the prefix and suffix maxima of the A0 logits (exact argmax tie rule, 0.5 exemption cap)"
+     },
+     {
+      "name": "How well each signal ranks the tokens",
+      "value": "Share of pairs where the signal picks a best token / mean regret / J&F: predicted IoU 0.320 / 0.0111 / 0.9149; stability 0.261 / 0.0139 / 0.9120; reference agreement 0.340 / 0.0135 / 0.9125; adopted rule 0.150 / 0.0120 / 0.9139. Rank correlation (Spearman) between the signal's margin over token 0 and the J&F gain over token 0: IoU +0.281, agreement +0.221, stability +0.130 (n = 9834, 9645, 9834)",
+      "how": "mm_report.py over the per-pair token J&F"
+     },
+     {
+      "name": "Quality of the reprojected reference mask P",
+      "value": "P has at least 64 visible pixels on 3215 of 3278 present pairs. IoU of P with the GT inside the visible area: mean 0.660, median 0.748",
+      "how": "proj_ref.py (run.project_reference_masks with the Pi3 frame cache of t; GT-free) vs the eval-view GT, measured inside vis"
+     },
+     {
+      "name": "Compute",
+      "value": "GPU (scsam3, under the flock): 75.6 s for the projection of all 170 views. Host: mm_eval.py 954 s wall with 10 workers (about 185 s for the largest views: CoffeeMartini, 50 objects at 2028x2704). Outputs: parts 5.6 MB, proj 7.6 MB",
+      "how": "proj_meta.json, logs/mm_eval.log"
+     }
+    ],
+    "implications": [
+     "Multimask hypotheses are not a lever for the good-seed boundary error. Every candidate arm stays within ±0.003 on good seeds, and no improvement is significant. Even a GT oracle that picks the best of the 4 tokens per object is capped at +0.0068 on good seeds (10.7% of the 0.0634 gap), against +0.040 for the ±2 px band oracle. On good seeds the decoder's tokens differ mostly in extent (part vs whole object), not in where the boundary sits, so whatever helps comes from failing pairs (oracle +0.056 there).",
+     "The rule picks I3 (always use the multimask output and take the highest predicted IoU): +0.0012 [+0.00002, +0.0024] on all pairs, +0.0005 n.s. on good seeds, +0.0084 on failing pairs. Its lower CI bound is seed-fragile (above 0 in 6/10 seeds). I4 is smaller but robust (+0.0008 [+0.0001, +0.0014], 10/10 seeds). Either is about a +0.001 gain from failing pairs. I would not register it as a boundary method. If a DEV-B confirmation is wanted anyway, the pick and its fragility must be stated up front in the DEV-B registration, and DEV-B is spent once.",
+     "Of the GT-free signals, predicted IoU ranks tokens best, but only weakly (Spearman +0.28; it picks a best token on 32% of pairs). The reprojected reference GT is too coarse to choose between near-identical hypotheses: its IoU with the GT inside the visible area is 0.66 on average. R4 therefore harms good seeds (-0.0021 [-0.0041, -0.0004]), small objects most (-0.0063 under 2k px). Stability is the worst signal (S4 good -0.0026). Replacing only the fallback rule (SF, RF) slightly harms good seeds, so the decoder's existing fallback by predicted IoU should stay.",
+     "Averaging the hypotheses shrinks masks: pixels removed far exceed pixels added for M4, M3 and W4. That runs against the under-coverage direction, and all three are neutral to harmful. The union X4 adds 12.8M px and costs -0.0071 overall and -0.0106 on good seeds (-0.019 under 10k px), while gaining only +0.0008 on objects of 100k px or more. This confirms the boundary-anatomy finding: a uniform expansion cancels across object sizes, so any coverage correction has to depend on size or come from a logit-based seam fill.",
+     "Reusable artefacts: proj/ holds the reprojected reference mask P and its visibility map for all 170 DEV-A eval views. It is computed GT-free and is identical to the method's own reprojection. Any other agent can load it on the host as reference evidence or a prior. parts/ holds per-pair, per-token J&F (O4 oracle) and the signals (IoU, stability, agreement), so further token-level questions can be answered without recomputing anything."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/prereg_multimask.json (pre-registration: grid, metric, selection rule)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/code/proj_ref.py (scsam3, run with: cd stage1 && flock <scratchpad>/gpu.lock scripts/docker_run.sh scsam3 python geomem/runs/_e14_multimask/code/proj_ref.py) -> proj/<scene>/<t:06d>/<cam>.npz (P packbits [B, h*w/8], vis packbits, nP, nvis), proj/proj_meta.json; logs/proj.log, logs/proj_smoke.log",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/code/mm_eval.py (host: PYTHONDONTWRITEBYTECODE=1 stage1/.venv/bin/python mm_eval.py --workers 10) -> parts/<scene>__<t>__<cam>.json (per pair: every arm's J and F, the 4-token oracle J and F, ious/stab/agree/nP, the token each arm chose, P quality; per-object token records; arm_stats); logs/mm_eval.log",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/code/mm_report.py (host) -> report_mm.txt, summary_mm.json (whole grid all/good/fail with CIs and per-scene deltas, size bins, switch and pixel stats, token diagnostics, pick)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_multimask/code/mm_seed_sens.py (host; bootstrap seed sensitivity, outside the rule) -> seed_sens.json",
+     "Scratch copies of all scripts and reports: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/multimask/"
+    ]
+   },
+   {
+    "summary": "I decoded E10 zoom followed by E11 exclusivity on DEV-A as one composed arm. It is a small gain that is not significant, and almost all of it comes from the zoom. Against the adopted geoset_rep_x (_e13_dev), all 3 300 pairs gain ΔJ&F +0.0013 [−0.0008, +0.0034]. Good seeds gain +0.0006 [−0.0012, +0.0026] and failing seeds +0.0064 [−0.0012, +0.0134]. The zoom adds about 79% to the decode time. I did not touch the keyframe or DEV-B, and I changed no tracked files.\n\n**How the composed arm is built.** run.py refuses zoom together with xcl, so the scratch decode leaves run.py alone:\n- It decodes the registered zoom preset geoset_rep_z2r through dev_decode.decode_frame, unchanged (restricted cameras, each scene's own-fold checkpoint).\n- It hooks GeoMemStar.decode_view to capture the round-2 logits and the 2x crop logits.\n- It wraps geomem.zoom.refine_camera, which still runs the original code.\n- For each eval camera it builds the zoomed output's logits L_z: the adopted output-resolution logits L, with the crop logits pasted where the zoom pasted (band ∩ window of each accepted object). It then applies run.exclusive_masks(L_z, 0.5).\n- The crop pass is skipped on the cameras decoded only as memory candidates. Those outputs are never written, and no eval camera reads them.\n\nThe same GPU pass also produced:\n- r2: geoset_rep, no zoom and no xcl\n- z: geoset_rep_z2r, zoom only\n- zxb: a diagnostic where the zoom decides which pixels are claimed but the round-2 logits decide who wins a contested pixel\n\nTogether with the adopted x, these four arms form a 2x2 factorial on DEV-A.\n\n**Identity checks (all 85 frames pass).**\n- The x arm recomputed in the job equals the adopted _e13_dev masks: 0 px difference over 3 952 object-views.\n- Round-1 masks are 0 px different, with no missing or extra objects, and round1_conf.json is equal on 85 of 85 frames.\n- The zoomed logits L_z thresholded at 0 equal the zoom output exactly.\n- No zoom change lies outside the band.\n- The claimant-argmax helper used for zxb reproduces exclusive_masks exactly.\n\n**Results (dev_compare: scene-cluster bootstrap, views \"t/cam\", 10 000 resamples, seed 0).**\n- **Composed arm vs adopted x.**\n  - All pairs: ΔJ +0.0025, ΔF +0.0001; pair-mean J&F 0.9078 → 0.9103 (+0.0024); 11 scenes up, 5 down.\n  - Good seeds: pair-mean 0.9366 → 0.9384. 1−recall gets worse (0.0637 → 0.0690) while 1−precision improves (0.0418 → 0.0314). The zoom pulls masks inward: 821 510 px added against 1 581 041 removed. Good seeds were already under-covered, so this goes the wrong way.\n  - Failing seeds: pair-mean 0.6122 → 0.6215.\n  - The gain sits in small objects: +0.0107 under 2k px, +0.0058 at 2k–10k, +0.0006 at 10k–100k, −0.0001 at 100k px or more.\n- **The factorial.**\n  - xcl alone: +0.0006 [+0.0001, +0.0011]. This is the first DEV-A measurement of E11.\n  - Zoom alone: +0.0018 [−0.0003, +0.0039]. This is the first DEV-A measurement of E10 C2.\n  - xcl added on top of zoom: +0.0001 [−0.0004, +0.0006].\n  - Interaction (zx−z)−(x−r2): −0.0005 [−0.0009, −0.0002]; for good seeds −0.0007 [−0.0012, −0.0003].\n  - So the two are less than additive: once the zoom has run, exclusivity adds nothing. The zoom has already removed some of the overlap xcl would resolve (contested pixels 1.917 M → 1.778 M), and xcl's recall loss stacks on the zoom's.\n- **Diagnostic zxb.** Letting the round-2 logits pick the winner is worse than the crop logits: −0.0007 [−0.0013, −0.0003] vs the composed arm, −0.0063 on failing seeds. The natural composition is the better of the two.\n\n**Cost.**\n- The zoom ran 2 372 crops out of 3 338 non-empty eval-camera masks: 966 were too large for the window and skipped, 2 305 accepted.\n- It took 517.5 s, 0.218 s per crop, about 3.0 s per eval view. The rest of the decode took 670.3 s, against the adopted 656.9 s.\n- The composite and exclusivity step took ≤ 57.7 s. That figure includes three exclusivity variants plus the checks, so the composition alone costs less.\n- Peak GPU memory was 12.4 GB.\n- Job walls: decode groups 616, 579 and 515 s (including writing four arms' PNGs); dev_score 4 × about 168 s.\n- In a full-camera pipeline the zoom cost scales with every target camera, not just the two eval cameras here.",
+    "measurements": [
+     {
+      "name": "PRIMARY zoom->xcl (zx) vs adopted geoset_rep_x, all DEV-A pairs",
+      "value": "n 3300; ΔJ&F +0.0013 [−0.0008, +0.0034]; ΔJ +0.0025 [−0.0014, +0.0065]; ΔF +0.0001 [−0.0004, +0.0006]; J&F (pair→view→scene) 0.9079 → 0.9092; pair-mean 0.9078 → 0.9103 (+0.0024); 2951 pairs changed; scenes 11 up / 5 down (best AlexaMeadeExhibit +0.0104, Barn +0.0086; worst Carpark −0.0060, AlexaMeadeFacePaint −0.0052, PoznanStreet −0.0030)",
+      "how": "dev_score.py on zx_A (scsam3, GPU lock) vs _e13_dev/dev_pairs.json; mvseg2d.dev_compare.compare = paired scene-cluster bootstrap, views '<t>/<cam>', 10 000 reps, seed 0 (compare_arms.py, which also reproduced dev_compare CLI output +0.0013 [−0.0008, +0.0034])"
+     },
+     {
+      "name": "PRIMARY zx vs x, good seeds (adopted J&F >= 0.8)",
+      "value": "n 3007; ΔJ&F +0.0006 [−0.0012, +0.0026]; ΔJ +0.0015 [−0.0021, +0.0052]; ΔF −0.0002 [−0.0007, +0.0002]; pair-mean J&F 0.9366 → 0.9384 (+0.0018); 487 up / 338 down (|Δ| > 0.01); 1−recall 0.0637 → 0.0690; 1−precision 0.0418 → 0.0314",
+      "how": "same bootstrap restricted to pairs with adopted x JF >= 0.8 (both arms); recall/precision = pair means of dev_score rows"
+     },
+     {
+      "name": "PRIMARY zx vs x, failing seeds (adopted J&F < 0.8)",
+      "value": "n 293 (15 scenes); ΔJ&F +0.0064 [−0.0012, +0.0134]; ΔJ +0.0081 [−0.0062, +0.0228]; ΔF +0.0048 [−0.0004, +0.0107]; pair-mean 0.6122 → 0.6215 (+0.0092); 79 up / 36 down; by seedcat kind: spill-onto-other(twin) n 71 +0.0406, spill-onto-other n 24 +0.0138, under-cover n 228 +0.0051, under-cover(beyond c_ini) n 128 −0.0059 (kinds over all pairs, pair means)",
+      "how": "same bootstrap restricted to adopted JF < 0.8; kinds from mvseg2d.dev_compare splits"
+     },
+     {
+      "name": "PRIMARY zx vs x by GT size (pair-mean ΔJ&F, all / good)",
+      "value": "<2k n 289: +0.0107 / +0.0087; 2k–10k n 726: +0.0058 / +0.0038; 10k–100k n 1513: +0.0006 / +0.0007; >=100k n 772: −0.0001 / −0.0001. By zoom verdict: accepted n 2264 +0.0034, skip_big n 966 +0.0002, kept_iou n 37 +0.0049, kept_absent n 11 −0.0020, no candidate (empty round-2 mask) n 22 0",
+      "how": "compare_arms.py size_bins on gt_px; verdicts from zx_A/<scene>/<t>/zoom_conf.json"
+     },
+     {
+      "name": "2x2 factorial on DEV-A (ΔJ&F, all pairs)",
+      "value": "xcl alone x−r2 +0.0006 [+0.0001, +0.0011] (good +0.0007 [+0.0003, +0.0011], fail −0.0015 [−0.0046, +0.0017]); zoom alone z−r2 +0.0018 [−0.0003, +0.0039] (good +0.0013 [−0.0007, +0.0033], fail +0.0060 [−0.0015, +0.0124]); xcl on top of zoom zx−z +0.0001 [−0.0004, +0.0006] (good −0.0000 [−0.0005, +0.0005], fail −0.0011); zx−r2 +0.0019 [−0.0003, +0.0040]; z−x +0.0012 [−0.0009, +0.0034]. Interaction (zx−z)−(x−r2): all −0.0005 [−0.0009, −0.0002], good −0.0007 [−0.0012, −0.0003], fail +0.0005 [−0.0013, +0.0028]",
+      "how": "r2 = round-2 L > 0 (= geoset_rep), z = zoom output (= geoset_rep_z2r), both from the same GPU pass; interaction = scene means (pair→view→scene) of the difference of differences, 10 000 scene resamples seed 0"
+     },
+     {
+      "name": "Diagnostic zxb (zoom claims, round-2 full-view logit arbitration among claimants)",
+      "value": "vs x +0.0006 [−0.0014, +0.0025]; vs zx −0.0007 [−0.0013, −0.0003] (good −0.0004 [−0.0009, +0.0000], fail −0.0063 [−0.0113, −0.0022]) -> arbitration by the crop logits (zx) is better",
+      "how": "claimant_exclusive(L, L_z > 0, 0.5) in zx_decode.py; same bootstrap"
+     },
+     {
+      "name": "Identity / sanity checks (85 frames, 170 eval views)",
+      "value": "in-job x = exclusive_masks(L, 0.5) vs adopted _e13_dev PNGs: 0 px, 0 objects differ (3952 object-views); round-1 masks vs _e13_dev/_r1: 0 px, 0 missing, 0 extra; round1_conf.json equal 85/85; (L_z > 0) == zoom output (asserted every view); zoom changes outside band_r(round-2 mask) 0 px; claimant_exclusive(L, L>0) == exclusive_masks(L) (asserted); zx and zxb subsets of z (asserted); sink zoom masks == stashed z 0 px",
+      "how": "zx_decode.py checks, aggregated by summarize.py -> summary_decode.json; all 85 log lines 'checks OK'"
+     },
+     {
+      "name": "Zoom pass counts (eval cams only)",
+      "value": "candidates 3338 non-empty object-views; crops run 2372; skipped_large 966; accepted 2305; kept_iou 41; kept_absent 26; masks changed 2305; px added 821,510 vs removed 1,581,041 (net inward)",
+      "how": "zoom.refine_camera Counter summed over eval cams (config.json zoom_counts_eval)"
+     },
+     {
+      "name": "Exclusivity counts",
+      "value": "x (adopted): contested px 1,917,102, removed entries 1,756,895, masks changed 3083, exempt 22; zx: contested 1,778,409, removed 1,647,169, changed 3067, exempt 19; zxb: removed 1,622,355, exempt 22; no mask emptied in any arm",
+      "how": "exclusive_masks / claimant_exclusive counts per eval view summed (config.json xcl_counts)"
+     },
+     {
+      "name": "Cost",
+      "value": "zoom 517.5 s for 2372 crops = 0.218 s/crop (about 3.0 s per eval view, 170 views); rest of decode 670.3 s (adopted DEV-A decode in _e13_dev: 656.9 s) -> zoom adds +79% decode time; composite + 3 exclusivity variants + checks 57.7 s (upper bound for the composition step); peak GPU allocated 12.4 GB (CoffeeMartini); job walls decode 616 / 579 / 515 s (incl. model load, 4-arm PNG writing), smoke Dog 49 s, dev_score 4 x 167-168 s",
+      "how": "config.json seconds / zoom_counts_eval.seconds / post_seconds / peak_gpu_gb (torch.cuda.max_memory_allocated) summed by summarize.py; walls from logs/chain.log. Only the 2 eval cams were zoomed; a full-camera decode zooms every target"
+     }
+    ],
+    "implications": [
+     "Zoom followed by xcl does not clear the bar on DEV-A. Against the adopted geoset_rep_x it gains +0.0013 [−0.0008, +0.0034] on all pairs and +0.0006 [−0.0012, +0.0026] on good seeds, and both CIs include 0. It also costs about 79% more decode time on the zoomed cameras.",
+     "It does not touch the good-seed boundary error, which was the target. On good seeds it closes only about 0.0018/0.0401 (4.5%) of the ±2 px band-oracle gap (pair means). It also moves the wrong way: the zoom pulls masks inward, so 1−recall worsens from 0.0637 to 0.0690 while 1−precision improves from 0.0418 to 0.0314. The anatomy found good seeds are under-covered and their misses are mostly unclaimed pixels.",
+     "The gain is in small objects (+0.0107 under 2k px) and failing seeds (+0.0092 pair-mean, mostly twin spill +0.04), and it comes from the zoom. That is a seed-failure or small-object effect, not a boundary-placement effect.",
+     "Zoom and xcl are less than additive. After the zoom, xcl adds +0.0001 [−0.0004, +0.0006]; on its own it adds +0.0006 [+0.0001, +0.0011] (interaction −0.0005 [−0.0009, −0.0002]). The zoom's inward pull already removes some of the overlap xcl resolves (contested pixels −7%), and xcl's recall loss stacks on the zoom's. Combining the two buys essentially nothing over zoom alone, and xcl-then-zoom (not run) has no reason to do better.",
+     "If a zoom is ever combined with exclusivity, the crop logits should decide contested pixels. The zxb variant, which uses the round-2 full-view logits instead, is −0.0007 [−0.0013, −0.0003] worse (−0.0063 on failing seeds).",
+     "New DEV-A baselines for other agents (DEV-A only, not tuned on): geoset_rep (r2_A), geoset_rep_z2r (z_A) and the composed arm (zx_A) are complete dev_decode-layout roots with dev_score JSONs. The adopted xcl effect on DEV-A is +0.0006 [+0.0001, +0.0011] and the E10 C2 zoom effect is +0.0018 [−0.0003, +0.0039]. DEV-B was not spent."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_zoom-xcl/code/zx_decode.py (scsam3; dev_decode.decode_frame of preset geoset_rep_z2r unchanged + decode_view / zoom.refine_camera hooks; writes r2_A, z_A, zx_A (+_r1, zoom_conf, xcl_conf, round1_conf), zxb_A; in-job identity checks vs _e13_dev). Run: cd stage1 && flock <scratchpad>/gpu.lock scripts/docker_run.sh scsam3 python geomem/runs/_e14_zoom-xcl/code/zx_decode.py --scenes A,B",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_zoom-xcl/code/chain.sh (3 decode groups + dev_score of zx, z, r2, zxb, each under the GPU lock)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_zoom-xcl/code/summarize.py (host; checks, cost, zoom/xcl counts -> summary_decode.json)",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_zoom-xcl/code/compare_arms.py (host, PYTHONPATH=stage1; dev_compare.compare for 8 arm pairs, good/fail bootstraps, size and zoom-verdict bins, 2x2 interaction -> compare_arms.json, report_compare.txt)",
+     "Outputs: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_zoom-xcl/{r2_A,z_A,zx_A,zxb_A}/ (mask roots), scores/{zx_A,z_A,r2_A,zxb_A}.json (dev_score), scores/devcompare_zx_vs_x.json, compare_arms.json, report_compare.txt, summary_decode.json, logs/{smoke_dog,decode_g1..3,score_*,chain}.log",
+     "Scratch copies: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/zoom-xcl/{zx_decode.py,chain.sh,summarize.py,compare_arms.py,compare_arms.json,summary_decode.json,report_compare.txt}"
+    ]
+   },
+   {
+    "summary": "I estimated the E9 §5(b) arm (boundary-band BCE at a balanced weight W, IoU and object-score heads frozen) and its zero-dose control from the training logs plus DEV-A decodes of the existing trained checkpoints. I ran no training. The protocol was followed: TEST and DEV-B were never decoded, and no tracked file was changed.\n\nGPU work: under the shared lock I decoded three checkpoints on DEV-A with the adopted path (gate reproj, xcl out), each with a round-2 logit dump. They are E9 D1 (decoder trained, W 0), E9 D2 (decoder plus band BCE at W 1) and E12 C0' (zero-dose retrain of the adopted recipe). A second pass of D1 and D2 also saved the token-0 logits and was byte-identical to the first (3 952 of 3 952 object-views per arm). The lock was held for about 1.65 h in total, and no job ran over 25 min.\n\n**Expected effect: essentially zero.** I approximated intermediate doses by blending the D1 and D2 outputs; these two arms share the same per-step training samples in all 5 folds. Against its own W 0 control, the band arm at W 0.03 to 0.1 is expected to move DEV-A J&F by +0.0000 to +0.0006, and by the same amount on good seeds. No CI excludes 0.\n\nFor scale:\n- A pure retrain moves DEV-A by +0.0017 [+0.0001, +0.0043].\n- Shifting D1's threshold half a logit outward, with no training, gives +0.0031 [+0.0019, +0.0046].\n- The ±2 px band gap on good seeds is 0.040.\n\nThe W 1 arm is confirmed harmful on DEV-A against its W 0 control: −0.0027 [−0.0055, +0.0000]; good seeds −0.0022 [−0.0039, −0.0004], with F −0.0035.\n\n**Freezing the heads would not address the damage.** The IoU and object-score heads are not the channel:\n- Presence flips are rare (14 of 3 300 pairs).\n- D2's loss is in the token-0 boundary itself. Decoding both arms with token 0 forced still gives −0.0020, good seeds −0.0019 [−0.0035, −0.0004].\n- D2's less confident boundary logits triple the stability fallback (111 → 393 of 3 300 pairs). That is a symptom, not the cause: forcing token 0 changes D2 by only +0.0001.\n\n**Choice of W.** E9's \"band term 10 to 20 times the base loss\" is driven by rare spike steps from objects predicted absent, whose logits are fixed at −1024 and carry no gradient. Balancing gradient norms on DEV-A gives W of about 0.11 [0.095, 0.13]; balancing per-step median losses gives about 0.3. W 0.03 would make the band gradient only about a third of the base gradient.\n\n**Leak: none.** In all 4 checkpoint sets, every scene's own fold model never saw that scene. The other folds' models train on every TEST frame (17/17), every DEV-A frame (85/85) and 85 of 255 DEV-B frames, but only of other scenes. That is the same status as the keyframe, so DEV-A is a fair yardstick. However, DEV-A shares the 17 scene clusters with TEST, so it is no sharper: a +0.0005 effect is below single-contrast CI half-widths of about 0.0013 to 0.0028.\n\n**Cost.**\n- Arm plus matched W 0 control: about 2 × 10.7k s of training (fold jobs run 32 to 40 min, so this needs a registered chain), plus about 2 × 11 to 12 min DEV-A decode, plus about 23 s host scoring. That is about 6.3 h for DEV-A.\n- DEV-B confirm adds about 2 × 33 min and TEST about 2 × 8 min, for about 7.7 GPU h in all.\n- Each extra W value adds about 3 h.\n- Keeping E9's trainable set (heads unfrozen) lets the existing D1 serve as the exact zero-dose control, which halves training to about 3 h.",
+    "measurements": [
+     {
+      "name": "Leak audit (fold checkpoints vs DEV frames)",
+      "value": "For all 4 checkpoint sets (geoset_pred_ft C0, geoset_cut0_ft C0', geoset_dec_ft D1, geoset_decb_ft D2), each scene's own fold checkpoint never lists the scene in `scenes`, and every scene is in the training of all 4 other folds. Training samples are train_frames[::2] = ref, ref+2, ..., ref+20 over all 6 ordered annotated-camera pairs, including c_ini -> eval cam. Of each scene's frames, the other-fold models therefore train on the TEST frame (17/17), all DEV-A frames (85/85) and 85 of 255 DEV-B frames (the even offsets). These are cross-scene uses with the same status as the keyframe: no leak.",
+      "how": "leak_audit.py: reads geomem/folds.json, runs/<arm>/fold<k>/config.json (scenes, held_out, frame_stride 2) and meta train_frames; DEV split from geomem/devset.dev_frames"
+     },
+     {
+      "name": "Training flow identity",
+      "value": "D1, D2 and C0' have identical n_targets on every step and an identical step-1 base loss (0.13690) in all 5 folds; n_mem agrees on 99.6 to 100% of steps. They therefore share one sample stream, so D2 - D1 is a clean dose contrast at W 1, and D1 can serve as the W 0 control for any W trained with the E9 code. Adopted C0 (2D repo 2662a84) has the same n_targets but n_mem agrees on only about 49 to 50% of steps (a different memory flow).",
+      "how": "train_logs.py on runs/<arm>/fold*/log.csv; total = 20 focal + dice + iou + presence + W band reconstructs logged loss to <= 1.1e-4"
+     },
+     {
+      "name": "E9 D2 band term in the training logs (W 1)",
+      "value": "Mean over first 100 steps: band 4.23 to 6.81 vs base 0.42 to 0.71 (W_eq = base/band 0.073 to 0.155). Last 100 steps: band 0.75 to 1.40 vs base 0.13 to 0.20 (W_eq 0.110 to 0.200). All steps: W_eq 0.118 to 0.171. The mean is driven by spikes: steps with band > 10 are 7.7 to 10.7% of the first 300 steps but carry 87 to 91% of the band sum, and 3.5 to 4.8% of all steps carry 71 to 80% (maximum 96 to 160). Per-step medians: band 0.44 to 0.47 vs base 0.18 to 0.22 in the first 300 steps, and 0.36 to 0.38 vs 0.12 to 0.13 in the last 300 (ratio 2.1 to 3.2). The median per-step W_eq is 0.30 to 0.38.",
+      "how": "train_logs.py -> train_logs.json (decb_summary, decb_spikes); base = 20*focal + dice + iou + presence"
+     },
+     {
+      "name": "Source of the spikes (DEV-A)",
+      "value": "22 C0 object-views are predicted absent but have non-empty GT; their logits are fixed at NO_OBJ_SCORE -1024 by torch.where. Each has band BCE of about 372 and 20*focal of about 3.2, but zero gradient into the mask logits. Averaged over B <= 16 objects per step, such objects reproduce the 30 to 160 spikes seen in training.",
+      "how": "grad_balance.py: loss values of presence <= 0 objects with GT; torch.where makes their gradient zero"
+     },
+     {
+      "name": "Gradient balance on DEV-A (288 low-res logits)",
+      "value": "W_grad = rms||grad(20 focal + dice)|| / rms||grad band_bce||: C0 0.1101 [0.0975, 0.1292], D1 0.1057 [0.0949, 0.1246], D2 0.2108 [0.1865, 0.2362]. Median per-object ratio 0.095 / 0.095 / 0.163; mean cosine between the two gradients 0.763 / 0.765 / 0.725. By GT size (C0): <2k px 0.101, 2k to 10k 0.089, 10k to 100k 0.093, >=100k 0.302. So a W of about 0.1 equalises gradient norms (W 0.03 makes the band gradient about 0.3x the base), while large objects are already base-dominated.",
+      "how": "grad_balance.py over all 3 952 object-views of each dump (3 278 to 3 283 present objects with a band). Analytic gradients of losses.py terms (20 sigmoid_focal, dice eps 1, band_bce R_BAND 4 with a square 9x9 band) at full resolution, pulled back through the transposes of the two bilinear stages to 288. CI = 17-scene bootstrap, 2 000 reps (gb_report.py)"
+     },
+     {
+      "name": "Loss levels on DEV-A (present objects with a band)",
+      "value": "C0: 20focal 0.0404, dice 0.0860, band 0.7831 (median 0.59); loss-based W = 0.16. D1: band 0.7597 (W_loss 0.167). D2: band 0.4876 (-36%: the band objective does transfer to held-out scenes), with dice 0.1054 (vs 0.0848 for D1) and W_loss 0.29. Band composition: C0 band pixels are 21.0% wrong (FN 13.7%, FP 7.3%); confidently wrong pixels (|L| > 4) are 5.2% and carry 39% of band BCE, falling to 1.4% in D2. In band pixels FN outnumber FP for objects >= 100k px (0.194 vs 0.064) while FP outnumber FN for objects < 2k px (0.104 vs 0.086), so the band term pushes large objects outward and small ones inward.",
+      "how": "gb_report.py -> gb_summary.json"
+     },
+     {
+      "name": "DEV-A arm contrasts (hierarchical J&F, paired scene-cluster bootstrap, views t/cam, 10 000 reps, seed 0)",
+      "value": "C0' - C0 (pure retrain): +0.0017 [+0.0001, +0.0043]; good -0.0004 [-0.0009, +0.0000]; failing +0.0134. D1 - C0' (decoder unfrozen, same flow): +0.0011 [-0.0001, +0.0024]; good +0.0004 [-0.0008, +0.0016]. D2 - D1 (band at W 1, same flow): -0.0027 [-0.0055, +0.0000], dJ -0.0014, dF -0.0041 [-0.0075, -0.0004]; good -0.0022 [-0.0039, -0.0004] (J -0.0008, F -0.0035); 5 of 17 scenes up, worst MATF -0.019. D1 - C0: +0.0028 [+0.0002, +0.0063]. D2 - C0: +0.0001 [-0.0033, +0.0045]; good -0.0021 [-0.0037, -0.0003]. Pair-mean J&F: C0 0.90782, C0' 0.90934, D1 0.91010, D2 0.90634. Pairs with J < 0.5: C0 90, C0' 85, D1 90, D2 106.",
+      "how": "score_arm.py (host jf_pair; reproduces _e13_dev/dev_pairs.json JF exactly, max |d| = 0) then arm_compare.py using mvseg2d.dev_compare.compare and paired.paired_scene_bootstrap; good = C0 JF >= 0.8 (3 007 pairs) -> arm_compare.json"
+     },
+     {
+      "name": "Good-seed boundary proxies (3 007 pairs)",
+      "value": "J&F / +-2 px oracle / 1-recall / 1-precision / FN share of in-band error / predicted-to-GT pixel ratio. C0: 0.9366 / 0.9768 / 0.0637 / 0.0418 / 0.717 / 0.975. C0': 0.9364 / 0.9766 / 0.0637 / 0.0421 / 0.717 / 0.975. D1: 0.9363 / 0.9762 / 0.0629 / 0.0431 / 0.706 / 0.976. D2: 0.9338 / 0.9734 / 0.0623 / 0.0461 / 0.619 / 0.983. D2 expands the masks, but precision falls more than recall rises and the band oracle itself drops.",
+      "how": "arm_compare.py proxies; +-2 band = dilate(g, ellipse 5) & ~erode(g, same) (seedfail definition)"
+     },
+     {
+      "name": "D2 - D1 by GT size (good seeds, pair means)",
+      "value": "<2k px (n 228): -0.0065; recall -0.020, precision +0.008; predicted/GT ratio 1.013 -> 0.991 (shrinks). 2k to 10k (620): -0.0034. 10k to 100k (1 450): -0.0008. >=100k (709): -0.0040 with F -0.0079; ratio 0.976 -> 0.984 (grows). The band term moves masks in the size-dependent direction the anatomy suggested, but J&F falls in every size bin.",
+      "how": "by_size.py -> by_size.json"
+     },
+     {
+      "name": "Decision channels (round-2 dumps; round-1 round1_conf.json)",
+      "value": "Presence flips among the 3 300 scored pairs: C0'-C0 5, D1-C0' 10, D2-D1 14. Stability-fallback tokens on scored pairs: C0 133, D1 111, D2 393 (token-0 stability < 0.98 among present objects: 4.1% / 3.5% / 12.2%). Round-1 memory-gate flips (presence > 0 and IoU >= 0.7, out of 14 679 entries): C0'-C0 87, D1-C0' 201, D2-D1 191.",
+      "how": "arm_compare.py decisions from npz presence/token and round1_conf.json"
+     },
+     {
+      "name": "Decoding with the stability fallback off (token 0 forced in round 2)",
+      "value": "Forcing token 0 vs each arm's own decode: C0 -0.0003 [-0.0014, +0.0007], D1 -0.0006 [-0.0015, +0.0003], D2 +0.0001 [-0.0008, +0.0010]. With token 0 forced in both, D2 - D1 = -0.0020 [-0.0051, +0.0012], dF -0.0033; good seeds -0.0019 [-0.0035, -0.0004]. So D2's damage is in the token-0 boundary; the tripled fallback rate is a symptom, not the cause.",
+      "how": "tok0.py: token-0 logits from the second-pass dumps (*_A_t0/<cam>_t0.npz) and from the C0 mm dump; host emulation of the adopted path (bit-exact with fma) -> tok0.json. The second pass is byte-identical to the first (3 952 of 3 952 object-views per arm)."
+     },
+     {
+      "name": "Dose proxy: blend of D1 and D2 logits",
+      "value": "Fallback on (blend of the selected low_res), vs D1: a 0.05 +0.0001, 0.1 +0.0004 [-0.0001, +0.0011], 0.2 +0.0004, 0.3 +0.0006 [-0.0001, +0.0014], 0.5 +0.0005, 0.7 +0.0006 [-0.0012, +0.0030], 1.0 -0.0027. Token 0 forced, vs D1 token 0: a 0.1 +0.0001, 0.2 +0.0003, 0.3 +0.0006 [+0.0000, +0.0012] (good +0.0006 [+0.0001, +0.0012]), 0.5 +0.0005, 0.7 +0.0009 [-0.0010, +0.0032], 1.0 -0.0020. Share of objects that would fall back: 3.5% at a 0, then 3.9, 4.5, 5.1, 5.9, 7.4% for a 0.1 to 0.7, and 12.2% at a 1.",
+      "how": "interp.py and tok0.py: low(a) = (1-a) low_D1 + a low_D2 with presence blended likewise, then the adopted path; a = 0 and a = 1 reproduce the D1 and D2 scores exactly"
+     },
+     {
+      "name": "Expected band-specific effect vs a same-flow W 0 control (DEV-A)",
+      "value": "W 0.03: +0.0000 (SGD-like) to +0.0004 (Adam-like, a 0.24). W 0.05: +0.0001 to +0.0006 (a 0.36). W 0.1: +0.0001 to +0.0006 (a 0.54). W 0.2: +0.0003 to +0.0006. W 0.3: +0.0006 to -0.0003. W 1: -0.0020 to -0.0027 (measured). Good seeds are in the same range (<= +0.0006), and the fallback share rises to 4.8 to 6.2% at W 0.03 to 0.1. Expected effect against adopted C0: about D1 - C0 (+0.0028, mostly retrain/flow plus decoder unfreeze, good seeds +0.0001) plus about +0.0005.",
+      "how": "dose_estimate.py and dose_tok0.py: a(W) = W (SGD-like) or s(W)/s(1) with s(W) = W r/(1 + W r) and r = 1/W_grad(D1) = 9.46 (AdamW with gradient-norm clipping 1.0); linear interpolation of the blend contrasts -> dose_estimate.json, dose_tok0.json"
+     },
+     {
+      "name": "Threshold curves (pos = L > tau; negative tau expands)",
+      "value": "D1: tau -1.0 +0.0033 [+0.0011, +0.0055]; -0.5 +0.0031 [+0.0019, +0.0046] (good +0.0022 [+0.0013, +0.0032]); -0.25 +0.0022; +0.25 -0.0035; +0.5 -0.0077; +1 -0.0190. D2 vs D1 at tau 0: best at tau -0.5 with -0.0005, and -0.0010 at tau -1. So D2's boundary shape is worse than D1's at every threshold (about 0.004 below D1's best); its outward shift is not a clean calibration shift.",
+      "how": "interp.py D1_t*/D2_t* variants (xcl argmax unchanged, pos = L > tau), bootstrap vs D1 in dose_estimate.py"
+     },
+     {
+      "name": "Measured compute cost",
+      "value": "Training per arm (5 folds, 2 574 or 2 772 steps per fold, about 0.79 s/step): D2 10 720 s (2 000 to 2 345 s per fold), D1 10 971 s, C0' 10 400 s, C0 10 207 s. Each fold job is 32 to 40 min, over the 25-min scratch cap, so training needs a registered chain. DEV-A decode per arm (85 frames, restricted cameras): about 660 to 670 s of decode (D2, D1); 885 s for C0' under host CPU contention. Job walls including model load and dump: 1 064 / 1 069 / 1 534 s; second pass 1 141 / 1 113 s. Host scoring 23 s per arm (8 processes). Disk 3.2 GB for this folder. GPU lock held about 5 955 s in total.",
+      "how": "runs/<arm>/fold*/config.json seconds; per-frame dec fields in logs/dump_*.log; logs/chain.log and logs/chain2.log walls"
+     },
+     {
+      "name": "Projected cost of a protocol-fair evaluation",
+      "value": "Arm B(W) plus same-code W 0 control B0, heads frozen: about 21 400 s training plus about 2 x 720 s DEV-A, roughly 6.3 GPU h to a DEV-A answer. Adding DEV-B once (255 frames, about 3 x 665 s per arm, about 2 x 33 min) and TEST (E9: 455 s decode + 17 s eval per arm) gives about 7.7 GPU h. Each extra W adds about 3.0 h plus 12 min. With E9's trainable set (heads not frozen), the existing D1 is an exact same-flow W 0 control: about 3.0 h plus 12 min to a DEV-A answer.",
+      "how": "sums of the measured per-arm numbers above; DEV-B scaled by its frame count"
+     }
+    ],
+    "implications": [
+     "The E9 §5(b) arm is not worth about 6 to 8 GPU hours as specified. Its expected band-specific effect on DEV-A is +0.0000 to +0.0006 J&F (good seeds <= +0.0006). That is below what a pure retrain moves (+0.0017 [+0.0001, +0.0043]) and below single-contrast CI half-widths (about 0.0013 to 0.0028), so the DEV-A answer would almost certainly be 'no effect'. It would recover about 1 to 2% of the good-seed ±2 px band gap (0.040).",
+     "W 1 is confirmed harmful on DEV-A against its own same-flow W 0 control: -0.0027 [-0.0055, +0.0000]; good seeds -0.0022 [-0.0039, -0.0004], driven by F (-0.0035). Band BCE is misaligned with J&F. It lowers band BCE on held-out scenes (0.76 -> 0.49) while J&F falls, by making boundary logits less confident (stability fallback 3.5% -> 12.2%) rather than placing the boundary better.",
+     "If registered anyway, set W from gradient balance: W of about 0.1 (W_grad 0.11 [0.095, 0.13] on DEV-A). The E9 §4 ratio of 10 to 20 times comes from spike steps of objects predicted absent, whose -1024 logits carry no gradient, so it should not be used. W 0.03 makes the band gradient only about a third of the base. Large objects (>= 100k px) are base-dominated at W_grad 0.30.",
+     "Freezing the IoU and object-score heads does not address the observed damage. Presence flips are rare (14 of 3 300), and D2's loss stays with token 0 forced (good seeds -0.0019 [-0.0035, -0.0004]). The heads' outputs would still move, because the shared decoder transformer and the memory attention are retrained from scratch. Holding decisions truly fixed needs a different arm: start from the adopted C0 fold checkpoints and train only the mask path (output_upscaling plus the token-0 hypernetwork MLP) with memory attention and the decoder transformer frozen. That also removes most retrain noise; its cost is about 3 epochs <= 2 400 s per fold (1 epoch <= 800 s, which fits the 25-min cap).",
+     "Cheapest faithful test: keep E9's trainable set and change only W. D1 is then an exact same-flow zero-dose control (identical per-step samples and step-1 loss in all 5 folds). That costs one training (about 3.0 h) plus a 12-min DEV-A decode, against about 6.3 h with a newly trained heads-frozen control.",
+     "DEV-A is leak-free for trained arms; their status is the same as the keyframe's. Each scene is decoded by a checkpoint that never saw it, and other folds' training on the scene's DEV and TEST frames does not touch its evaluation. But DEV-A is no sharper than TEST: it shares the 17 scene clusters and its retrain-noise CI is wider ([+0.0001, +0.0043] vs [+0.0001, +0.0030] on the keyframe). Every trained arm needs a same-code zero-dose control, and DEV-B's frames are interleaved in time with DEV-A's, so DEV-B is a weak independent check.",
+     "Side finding for the post-decode work: on DEV-A an outward threshold offset alone (pos = L > -0.5) gives D1 +0.0031 [+0.0019, +0.0046] (good +0.0022 [+0.0013, +0.0032]). This is larger than any dose of the band arm, and it is consistent with the threshold-upsample agent's C0 curve. A threshold offset chosen on DEV-A dominates the band-training arm."
+    ],
+    "scripts": [
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/dump_arm.py (scsam3, under the GPU lock: copy of _e14_logitdump dump_logits.py; registers the scratch presets geoset_dec_rep_x / geoset_decb_rep_x / geoset_cut0_rep_x (gate reproj, xcl out) at run time; --tok0 also saves the token-0 logits) -> geoset_{dec,decb,cut0}_rep_x_A/, geoset_{dec,decb}_rep_x_A_t0/ (dev_decode layout + _logits/<cam>.npz [+ <cam>_t0.npz])",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/chain.sh, chain2.sh (GPU chains: 2 scene groups per preset, each job under the flock and well under 25 min) -> logs/chain.log, chain2.log, dump_*.log, smoke_dog.log",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/score_arm.py (host: per-pair J/F/JF/recall/precision/±2 oracle in dev_score-compatible rows; --check reproduces _e13_dev/dev_pairs.json exactly) -> score_geoset_{rep_x,cut0_rep_x,dec_rep_x,decb_rep_x}_A.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/arm_compare.py (host: dev_compare-style paired scene bootstrap, good/fail splits, pair means, decision flips) -> arm_compare.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/train_logs.py (host: E9/E12 log-term magnitudes, spike statistics, flow identity) -> train_logs.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/grad_balance.py + gb_report.py (host: per-object loss values and analytic logit gradients of 20 focal + dice vs band_bce, pulled back to 288) -> gb_geoset_{rep_x,dec_rep_x,decb_rep_x}_A.json, gb_summary.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/interp.py (host: D1->D2 logit blend and D1/D2 threshold curves) -> interp.json; dose_estimate.py -> dose_estimate.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/tok0.py (host: token 0 forced in round 2 for C0/D1/D2, token-0 blend, fallback share) -> tok0.json; dose_tok0.py -> dose_tok0.json",
+     "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_train-band/code/by_size.py -> by_size.json; leak_audit.py -> leak_audit.json",
+     "Host commands: run from stage1/geomem/runs/_e14_train-band with PYTHONDONTWRITEBYTECODE=1 OMP_NUM_THREADS=1 ../../../.venv/bin/python code/<script>.py ... GPU command: flock <scratchpad>/gpu.lock scripts/docker_run.sh scsam3 python geomem/runs/_e14_train-band/code/dump_arm.py --preset <p> --scenes <list> [--tok0 --root ... --ref-root ...], run from stage1.",
+     "Scratch copies of all scripts: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/train-band/"
+    ]
+   }
+  ],
+  "verdicts": [
+   {
+    "assessments": [
+     {
+      "candidate": "Global threshold shift, pos = L > -tau, adopted bilinear upsampler; pre-registered pick tau = +1 (threshold-upsample)",
+      "credible_gain": "I re-scored this independently from the logit dump with my own threshold, exclusivity and jf_pair code, and it matches the agent's cand rows exactly (max |dJF| = 0 on 3 300 pairs). At tau = 0 it reproduces dev_pairs.json exactly.\n\n**tau = +1, all DEV-A pairs:** +0.00314 [+0.00054, +0.00590]. 13 of 17 scenes go up; Dog is worst at -0.0091.\n\n**tau = +1, good seeds:** +0.00168 [-0.00078, +0.00359], scene-level average, so the CI includes 0. The plain pair mean is +0.0025, about 4% of the 0.0634 good-seed gap.\n\n**tau = +0.5:** +0.00281 [+0.00129, +0.00473] on all pairs, and +0.00185 [+0.00065, +0.00292] on good seeds. The agent did not report that good-seed CI; it excludes 0, and tau = +0.5 is higher than tau = +1 on good seeds.\n\n**Selection bias:** small. Picking tau on 16 scenes and scoring the held-out one (LOSO) gives +0.0029.\n\n**Provenance:** PREREG.md matches the sha256 in its stamp. It was saved at 20:33:17, before the first scored part (20:49) and before tu_report.py (20:51). The tau grid range was fixed from a GT-free gradient statistic.",
+      "risks": "- **Not a boundary fix.** 99.4% of the pixels it adds were claimed by no mask. It gives them to the right object only about 60% of the time, so the good-seed boundary gap stays essentially open.\n- **Precision cost.** 132 pairs drop by more than 0.01. On good seeds, 1-precision rises by 0.0065.\n- **Regression to the mean in the failing-seed gain.** The failing subset (+0.011 scene-level, +0.015 pair mean) is defined by the baseline's own J&F, so part of that gain is regression to the mean. A pure retrain with no method change, C0' vs C0, already shows +0.020 pair mean on failing seeds.\n- **CIs are optimistic.** 17-scene percentile bootstrap CIs tend to be too narrow.\n- **DEV-B is a weak check.** Its frames are interleaved in time with DEV-A's.\n- **Choosing tau = +0.5 now would be post hoc.** The registration must say so.",
+      "verdict": "Advance: this is the only candidate worth one DEV-B confirmation. Register tau = +1 under the pre-registered rule, or tau = +0.5 declared as a post-hoc change. Write and commit the DEV-B pass rule before the run. Expected keyframe effect is about +0.003 overall and about +0.002 on good seeds."
+     },
+     {
+      "candidate": "Upsampling the 288 logits: bicubic, joint-bilateral (image-guided) and guided filter, at tau = 0 or combined with the shift (threshold-upsample)",
+      "credible_gain": "None. I re-ran dev_compare on the agent's cand rows:\n- bicubic: -0.0003 [-0.0010, +0.0005]\n- joint-bilateral, spatial only (no image guidance): -0.0004 [-0.0009, -0.0000]\n- guided filter r4, eps 1e-4: -0.0013 [-0.0030, +0.0001]\n\nThe stronger the image guidance, the worse the result. Spatial-only joint-bilateral plus tau = +1 is no better than the shift alone: -0.0001 [-0.0004, +0.0003].",
+      "risks": "The conclusion that image colour edges carry no sub-288 boundary information is generalised from 16 settings of two filters.",
+      "verdict": "Reject."
+     },
+     {
+      "candidate": "Multimask token selection or averaging (I3, I4, S4, SF, R4, RF, M4, M3, W4, X4) (multimask)",
+      "credible_gain": "I recomputed the whole grid from parts/ and it matches exactly. Base J/F equal dev_pairs.json on all 3 300 pairs. I also recomputed the I3, I4 and X4 J/F independently from the mm dump on 6 views (282 checks), with 0 difference.\n- **I3 (the pre-registered pick):** +0.00116 [+0.00002, +0.00236] on all pairs. Its lower bound is above 0 for only 6 of 10 bootstrap seeds. Good seeds: +0.0005 [-0.0006, +0.0016].\n- **I4:** +0.0008 [+0.0001, +0.0014], above 0 for all 10 seeds.\n- **Ceiling:** a per-object GT oracle over the 4 tokens gains +0.0068 on good seeds.\n- **Provenance:** prereg_multimask.json was saved at 21:55:13, before mm_eval.py (21:58) and the first parts (22:02). mm_report.py was last edited at 22:00, before the parts finished.",
+      "risks": "- The gain is about +0.001 and comes from failing pairs, which carries the same regression-to-the-mean caveat as above.\n- I3's CI lower bound depends on the bootstrap seed.\n- Selection by agreement with the reprojected reference, and union of the tokens, both harm good seeds.",
+      "verdict": "Do not register. It does not address good-seed boundaries and is not worth spending DEV-B on."
+     },
+     {
+      "candidate": "E10 2x zoom followed by E11 exclusivity, composed (zoom-xcl)",
+      "credible_gain": "I reproduced every contrast with the dev_compare CLI from scores/.\n- **zoom then xcl vs adopted:** +0.0013 [-0.0008, +0.0034]; good seeds +0.0018 pair mean, CI includes 0.\n- **Recall and precision on good seeds:** 1-recall 0.0637 → 0.0690 and 1-precision 0.0418 → 0.0314, both verified.\n- **Size bins:** +0.0107 under 2k px, -0.0001 at 100k px or more, verified.\n- **2x2 factorial:**\n  - xcl alone: +0.0006 [+0.0001, +0.0011]\n  - zoom alone: +0.0018 [-0.0003, +0.0039]\n  - xcl on top of zoom: +0.0001 [-0.0004, +0.0006]",
+      "risks": "- About 79% more time for the restricted decode, and the cost grows with every target camera in a full decode.\n- It pulls masks inward, which is the wrong direction for under-covered good seeds.\n- The zoom constants come from the E10 keyframe-era registration, not from DEV-A.",
+      "verdict": "Reject for this target."
+     },
+     {
+      "candidate": "E9 §5(b) boundary-band BCE training arm at a balanced W, heads frozen (train-band)",
+      "credible_gain": "I reproduced the arm contrasts with dev_compare:\n- C0' vs C0 (pure retrain): +0.0017 [+0.0001, +0.0043]\n- D1 vs C0': +0.0011 [-0.0001, +0.0024]\n- D2 vs D1 (band term at W 1): -0.0027 [-0.0055, +0.00004]; good seeds -0.0022 [-0.0039, -0.0004], F -0.0035\n\nThe audit of the fold splits is correct: in all 5 arms, 85 of 85 decode configs use the scene's own held-out fold. The per-step n_targets are identical across D1, D2, C0' and C0 in all 5 folds. There is no measured evidence that an intermediate W would help.",
+      "risks": "- About 6 to 8 GPU hours.\n- The 'expected +0.0000 to +0.0006' comes from blending D1 and D2 output logits with an assumed mapping from W to blend weight. It is not a measurement of a model trained at that W.",
+      "verdict": "Do not run as specified. Agree with the agent."
+     },
+     {
+      "candidate": "Seam fill of unclaimed pixels with a better owner cue (boundary-anatomy implication; not yet a pre-registered arm)",
+      "credible_gain": "I recomputed the anatomy numbers independently and they match:\n- good-seed J&F 0.9366; ±2 px band oracle 0.9767, closing 0.633 of the gap\n- fixing only misses gains +0.0260; fixing only extras gains +0.0140\n- unclaimed misses are 0.513 of good-seed error pixels\n- 0.0667 of all view pixels are claimed by no mask\n\nThe oracle ceiling for giving unclaimed pixels to their true owner is +0.017 at k = 2. The probes reached:\n- nearest-mask fill, k = 1: +0.0014 [+0.0006, +0.0027]. It was not pre-registered (k swept over 1, 2, 4, 8, unlimited).\n- the tau shift: about +0.0025 pair mean on good seeds.",
+      "risks": "Owner accuracy is about 60 to 65% with either the logits or the nearest mask, and that is the bottleneck. No GT-free cue better than that has been shown yet.",
+      "verdict": "Most promising next design question. Explore it host-only on the logit dump, with a new pre-registration on DEV-A."
+     }
+    ],
+    "refuted_claims": [
+     "train-band: 'The W 1 arm is confirmed harmful on DEV-A against its W 0 control: -0.0027 [-0.0055, +0.0000]'. The exact all-pairs upper bound is +0.00004, and 5 of 17 scenes go up, so on all pairs the CI includes 0. Only the good-seed contrast excludes 0: -0.0022 [-0.0039, -0.0004].",
+     "threshold-upsample: 'tau = +1 is the only variant here whose CI on all DEV-A pairs excludes zero'. False. tau = +0.5 has [+0.0013, +0.0047] and spatial-only joint-bilateral plus tau = +1 has [+0.0005, +0.0058]. Spatial-only joint-bilateral at tau = 0 also excludes zero, on the negative side.",
+     "threshold-upsample (by omission): the good-seed gain of the shift has a CI that includes 0. That is true only for the pick tau = +1. My independent re-score gives tau = +0.5 a good-seed gain of +0.00185 [+0.00065, +0.00292], which excludes 0 and is higher than tau = +1 (+0.00168).",
+     "logit-dump: 'E.logits_full_np reproduces the adopted full-resolution logits bit for bit' as a general statement. Bit-exactness was probed on only 12 object-views of one scene (AlexaMeadeExhibit) at one image size. The whole-dump evidence is mask identity, not bit identity. My re-run confirms 0 differing mask pixels over 3 952 object-views and byte-identical PNGs. A plain float64 bilinear differs on only 371 pixels in 170 views, so the practical consequence is nil.",
+     "train-band: 'expected band-specific effect +0.0000 to +0.0006 J&F' at W 0.03 to 0.1. This comes from linear blends of D1 and D2 output logits with an assumed (SGD-like or Adam-like) mapping from W to blend weight. It is an extrapolation, not an estimate of a model trained at that W. The verdict not to run still stands on cost and on the measured W 1 result.",
+     "train-band: 'D1 is an exact same-flow zero-dose control'. The per-step samples and step-1 loss are identical, but n_mem differs on up to 0.4% of steps, so it is near-exact, not exact.",
+     "multimask: 'on good seeds the decoder's tokens differ mostly in extent (part vs whole object), not in where the boundary sits'. Not measured; nothing in the agent's analysis separates part-vs-whole extent from boundary position.",
+     "multimask: the oracle that picks the best token per object 'caps' good-seed gains at +0.0068. It fixes the other objects at the adopted tokens. Because exclusivity couples objects, choosing tokens jointly could exceed it, so it is not a strict cap.",
+     "boundary-anatomy: 'doubling the grid (2x zoom) could reach at most about +0.009 on good seeds'. The GT round trip only bounds what the 288 grid loses in representation. A crop re-decode also sees more image detail, so this is not an upper bound. The measured zoom gain, +0.0013 on good seeds, happens to be consistent with it.",
+     "Shared interpretation in threshold-upsample, multimask and zoom-xcl: 'most of the gain is on failing seeds'. Good and failing seeds are defined by the baseline's own J&F, so regression to the mean inflates failing-subset gains and deflates good-subset gains. A pure retrain, C0' vs C0, already shows +0.0197 pair mean on failing seeds against -0.0002 on good seeds. Failing-seed gains of +0.008 to +0.015 are not clean evidence of a failing-specific mechanism.",
+     "zoom-xcl: 'costs about 79% more decode time on the zoomed cameras'. The 79% is zoom time over the whole restricted decode (c_ini, 2 eval cameras and their k=3 candidates), not a per-camera figure."
+    ],
+    "recommendation": "**No leakage found, and the cheap host steps reproduce exactly.**\n\n**Leakage check:**\n- Every output root has exactly the 85 DEV-A frames. The only non-eval-camera outputs are the reference camera (c_ini).\n- The dump, projection, zoom and train-band scripts all assert the frame is not the reference frame and allow only split A.\n- Nothing was written under Data/ or Cache/. Data/_dev holds only geoset_rep_x_A.\n- No tracked file changed; the one modified file, e4c_project.json, was already modified at session start.\n- All 5 decoded arms use the scene's own held-out fold (85 of 85 configs match folds.json).\n- Both pre-registrations predate their scoring: PREREG.md matches its sha256 stamp, and the multimask JSON was saved before mm_eval.py ran.\n\n**Reproductions:**\n- Logit dump: re-thresholding gives 0 differing mask pixels over 3 952 object-views, with byte-identical PNGs.\n- Threshold shift: my independent re-score of tau 0, +0.5 and +1 equals the agent's rows exactly.\n- Multimask: the whole grid and its pick reproduce, and a 6-view independent recompute matches.\n- Zoom-xcl and train-band: every dev_compare contrast reproduces.\n- Anatomy: the band oracle, the fix-misses-only and fix-extras-only gains, and the unclaimed shares all match.\n\n**Recommendation:**\n1. Register only the global threshold shift, as a logit-based fill of the seams between masks. It is not a boundary-placement fix.\n   - Use tau = +1, the pre-registered pick, or tau = +0.5 declared up front as a post-hoc change. tau = +0.5 has a tighter all-pairs CI and is the only setting whose good-seed CI excludes 0: +0.00185 [+0.00065, +0.00292].\n   - Write and commit the DEV-B pass rule before the single DEV-B run, for example all-pairs ΔJ&F > 0 with CI lower bound > 0 and good seeds ≥ 0.\n   - Expect only about +0.003 overall and +0.002 on good seeds.\n2. Drop logit upsampling, multimask selection, zoom→xcl, and the band-BCE training arm.\n3. The good-seed ±2 px band gap (+0.040) stays essentially open. The best-supported next step is a better GT-free cue for who owns an unclaimed seam pixel (oracle ceiling +0.017 on good seeds). Today's owner accuracy is about 60 to 65%. Pre-register it and explore it host-only on the logit dump.\n\nMy scratch scripts and outputs are in /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/judge-correctness/:\n- frames_audit.py\n- reverify_dump.py → reverify_dump.json\n- rescore_tau.py → rescore_tau.json\n- anat_check.py → anat_check.json\n- mm_check.py\n- mm_spot.py"
+   },
+   {
+    "assessments": [
+     {
+      "candidate": "Global logit threshold shift on the final round-2 output: pos = L > -tau, then the adopted exclusivity applied to L + tau. Adopted bilinear upsampler, round-1 and memory untouched. Pick tau = +0.5.",
+      "credible_gain": "DEV-A, all 3 300 pairs: tau +0.5 gives +0.0028 [+0.0013, +0.0047], with 14 of 17 scenes up and a worst scene of Dog -0.0029. tau +1 gives +0.0031 [+0.0005, +0.0059], worst scene Dog -0.0091. Leave-one-scene-out (LOSO) gives +0.0029, and its picks are {0.5, 1}. The curve shape replicates on a different checkpoint: on E9 D1, an offset of 0.5 gives +0.0031 [+0.0019, +0.0046] and is again the tightest CI. Good seeds gain +0.0022 (pair mean) at 0.5, about 3.5% of the 0.0634 gap and about 5% of the ±2 px band oracle. Failing seeds gain +0.011. The cost is a constant (no GPU). The keyframe estimate is about +0.002 to +0.003. I scaled DEV-A to the keyframe using xcl (0.0006 → 0.0007) and zoom (0.0018 → 0.0025), and assumed the keyframe CI is about 1.2x DEV-A's (±0.0022 at 0.5). That puts the chance of passing G1 (keyframe CI lower bound > 0) at about 65% for tau 0.5 and about 45% for tau 1. tau 1 also risks failing G2, the gate that no scene falls below -0.01: Dog is already at -0.009 on DEV-A. For stage 2, scaling by 66.7 × keyframe Δ × ratio [0.52, 2.0] (the E10 and E11 ratios) gives about +0.10 to +0.37 on the headline.",
+      "risks": "1. It is a gap-fill, not a boundary fix: 99.4% of the added pixels were unclaimed, and only 60–66% of them go to the correct object. 30% of the added pixels land on another decoded object's GT and 12% on undecoded objects, so seed spill could grow in stage-2 tracking (compare E10 Welder).\n2. F falls in 5 scenes at tau 1 (AlexaMeadeFacePaint -0.014, Dog -0.015). At tau 0.5 these drops are about half as large.\n3. The changes are spread out: 260 pairs rise and 78 fall at 0.5, so the stage-2 CI should behave like E10's (±0.12), not E11's confined change. Stage-2 adoption is therefore uncertain (about 40–60%).\n4. tau 0.5 departs from the E14 exploratory pre-registration, whose argmax rule gave tau 1. This must be declared in the registration.\n5. DEV-B shares the 17 scene clusters and is interleaved in time with DEV-A, so it is a weak independent check.\n6. The tracked run.py implementation must reproduce the host emulation with 0 px difference on DEV-A before DEV-B is run.",
+      "verdict": "REGISTER as S1-E14: 'logit seam fill / coverage calibration', explicitly not a good-seed boundary method. Fix tau = +0.5 from DEV-A evidence (tighter CI, smaller G2 risk, the LOSO pick set, D1 replication). Apply it only to the final output. Run one DEV-B confirmation, then the keyframe G1/G2 gates, then stage 2."
+     },
+     {
+      "candidate": "Multimask token selection: I3 (always use the multimask output, take the best predicted IoU over tokens 1..3) and I4 (best of tokens 0..3)",
+      "credible_gain": "I3: +0.0012 [+0.00002, +0.0024], and the CI lower bound is above 0 in only 6 of 10 bootstrap seeds. I4: +0.0008 [+0.0001, +0.0014]. On good seeds both are not significant (+0.0005 and +0.0003). Even the GT-oracle best token gains only +0.0068 on good seeds. Expected keyframe effect: about +0.001.",
+      "risks": "The effect is below keyframe resolvability (roughly +0.002–0.003 is needed). E11 passed G1 at +0.0007 only because its change was confined to contested pixels, whereas I3 changes the token on 96% of object-views. I3 is fragile across bootstrap seeds, and almost all of its gain comes from failing pairs. Spending DEV-B on it would almost surely end in 'no effect'.",
+      "verdict": "Do NOT register. Keep the decoder's existing stability fallback. Treat the dump and the per-token oracle as diagnostics only."
+     },
+     {
+      "candidate": "E10 zoom combined with E11 exclusivity (geoset_rep_z2r with crop-logit arbitration)",
+      "credible_gain": "Against the adopted preset: +0.0013 [-0.0008, +0.0034] on all pairs, and +0.0006 [-0.0012, +0.0026] on good seeds. The interaction is negative (-0.0005 [-0.0009, -0.0002]): xcl adds nothing after the zoom.",
+      "risks": "It moves good seeds the wrong way: 1-recall rises from 0.0637 to 0.0690 while they are already under-covered. It adds 79% decode time on every target camera. Zoom already failed the stage-2 adoption rule (+0.088, CI includes 0).",
+      "verdict": "Do NOT register. Keep the zoom closed. The DEV-A baselines (r2_A, z_A, zx_A) are useful references only."
+     },
+     {
+      "candidate": "Post-hoc logit upsamplers: bicubic, joint-bilateral (image-guided), guided filter",
+      "credible_gain": "No setting gains. Bicubic is -0.0003, the best joint-bilateral setting is -0.0004 [-0.0009, -0.00003] (and it is the spatial-only control), and the best guided filter is -0.0013. Combined with the threshold shift, the joint-bilateral upsampler adds -0.0001 [-0.0004, +0.0003] over the shift alone.",
+      "risks": "Image colour edges do not supply the information that is missing below the 288 grid. The stronger the image guidance, the worse the result.",
+      "verdict": "Do NOT register. Close post-hoc upsampling as a lever."
+     },
+     {
+      "candidate": "E9 §5(b) boundary-band BCE training (W about 0.03–0.1, heads frozen) with a same-flow W 0 control",
+      "credible_gain": "From a dose proxy that blends D1 and D2: +0.0000 to +0.0006 on DEV-A (good seeds ≤ +0.0006). That is below the noise of a pure retrain (+0.0017 [+0.0001, +0.0043]). At W 1 the arm is confirmed harmful against its W 0 control: good seeds -0.0022 [-0.0039, -0.0004].",
+      "risks": "It costs about 6–8 GPU h (3 h with D1 as the control). Trained arms need even larger effects to clear the keyframe gate because of retrain variance. Freezing the heads does not reach the observed damage, which lies in the token-0 boundary.",
+      "verdict": "Do NOT register. A threshold offset chosen on DEV-A dominates it at zero cost."
+     },
+     {
+      "candidate": "Logit-based seam fill (the anatomy's proposal: give an unclaimed pixel to the highest-logit object when that logit is above -tau)",
+      "credible_gain": "Mechanically this is the threshold shift above: exclusivity keeps existing claimants, which have L > 0, and 99.4% of the added pixels were unclaimed. The measured result is +0.0022–0.0025 (pair mean) on good seeds, against the +0.017 oracle-fill ceiling.",
+      "risks": "Owner accuracy is 59.7–65.6%, no better than the binary nearest-mask fill (about 65%). Getting closer to the ceiling would need a better ownership cue than the height of the raw logit.",
+      "verdict": "Subsumed by candidate 1. Not a separate registration."
+     }
+    ],
+    "refuted_claims": [
+     "Anatomy: 'a uniform dilate or threshold shift therefore cancels out; any shift rule would have to depend on size or type.' Refuted for a logit threshold shift under exclusivity. The single global tau +0.5 gives +0.0028 [+0.0013, +0.0047] on all DEV-A pairs. At tau +1 the good-seed gain is positive in every size bin (<2k +0.0005, 2k–10k +0.0007, 10k–100k +0.0022, ≥100k +0.0055), and the shape replicates on the D1 checkpoint (+0.0031 [+0.0019, +0.0046]). The cancellation holds only for an unconstrained binary dilate, where exclusivity does not stop growth into masks other objects already claim.",
+     "Anatomy: 'a fill that uses the decoder logits could get closer to that ceiling (+0.017).' Refuted. A logit fill gated at tau is exactly the measured threshold shift: 99.4% of the added pixels were unclaimed, and the owner is right only 59.7% of the time (65.6% at tau 0.5), no better than nearest-mask (65%). It reaches only about +0.0022–0.0025 pair-mean on good seeds, about 13–15% of the ceiling.",
+     "Threshold-upsample: 'choosing tau = 0.5 now would be a post-hoc change' (implying it is illegitimate). Partly refuted. Protocol §3.1 lets constants be chosen on DEV-A. Only DEV-B and TEST are protected, and neither has been looked at. Choosing 0.5 on DEV-A-only grounds (tighter CI [+0.0013, +0.0047] vs [+0.0005, +0.0059], worst scene -0.0029 vs -0.0091 against the G2 floor of -0.01, LOSO picks {0.5, 1}, the tightest CI again on D1) spends nothing. It only has to be declared as a deviation from the E14 exploratory argmax rule. The difference tau1 - tau0.5 is +0.0003 [-0.0009, +0.0013].",
+     "Multimask: the rule's pick I3 (+0.0012) as a registrable result. Not refuted as a DEV-A number, but its registration value is: I3's lower bound is above 0 in only 6 of 10 bootstrap seeds, it changes the token on 96% of object-views (unconfined, so high variance), and the keyframe effect would be about +0.001, below the roughly +0.002–0.003 a decode-only arm needs to clear G1."
+    ],
+    "recommendation": "Register exactly one arm: S1-E14, a global logit threshold offset on the final round-2 output. Frame it honestly as a logit seam fill / coverage calibration, not a good-seed boundary fix.\n\n**Definition.** The preset is geoset_rep_x plus `pos = L > -0.5` on the final output logits. Exclusivity is `run.exclusive_masks(L + 0.5, 0.5)`. Round-1 masks, memory and upsampling are unchanged.\n\n**Constant.** tau = +0.5, chosen on DEV-A only and declared as a deviation from the E14 exploratory argmax (+1). The reasons:\n- a tighter CI: +0.0028 [+0.0013, +0.0047] vs +0.0031 [+0.0005, +0.0059];\n- a smaller G2 risk: worst scene -0.0029 vs Dog -0.0091;\n- LOSO picks {0.5, 1};\n- replication on D1, where 0.5 gives +0.0031 [+0.0019, +0.0046] and the tightest CI.\n\n**Order of steps.**\n1. Implement the arm in tracked code.\n2. Show that a DEV-A decode with the new preset reproduces the host emulation with 0 px difference.\n3. Commit the registration with the DEV-B rule.\n4. Decode DEV-B once, both the base geoset_rep_x_B and the arm from the same pass. The arm is post-decode, so a single dump gives both.\n\n**DEV-B pass rule.** All rules are evaluated once. Bootstrap = dev_compare, hierarchical pair → view \"t/cam\" → scene, 10 000 resamples, seed 0.\n- B1: ΔJ&F on all DEV-B pairs > 0, with 95% CI lower bound > 0.\n- B2: point estimate in [+0.0010, +0.0050]. Below that is failure; above +0.0050 suggests a bug: stop and audit, do not report a result.\n- B3: good-seed ΔJ&F (base J&F ≥ 0.8) ≥ 0 as a point estimate (non-harm on the target population), with its CI reported.\n- B4: no scene below -0.005, and at most 3.5% of pairs drop by more than 0.01 (DEV-A: 2.4%).\n- B5: mechanism invariants, which must hold exactly. If they fail it is a bug, not a result.\n  - 0 px removed vs base;\n  - at least 98% of added pixels were unclaimed at tau 0.\n\nFailing any of B1–B4 closes the arm as 'no effect' and spends DEV-B. No other tau is tried and no TEST run follows.\n\n**After a DEV-B pass.** Run the keyframe gate once (G1: CI lower bound > 0; G2: no scene below C0 - 0.01), with the prediction stated in the registration: keyframe ΔJ&F in [+0.0005, +0.0050], point estimate about +0.0025, G1 pass probability about 65%. Then run stage 2 under the unchanged adoption rule. The predicted basic Δ is about +0.05 to +0.40, from 66.7 × keyframe Δ × the E10/E11 ratios 0.52–2.0. Stage 2 is the main risk: the changes are spread out and 42% of the added pixels belong to other objects' GT, so the CI is likely E10-like.\n\n**Do not register:**\n- multimask I3/I4 (about +0.001, below gate resolvability);\n- zoom→xcl (+0.0013, CI includes 0, wrong direction, +79% decode cost);\n- any logit upsampler (all ≤ 0);\n- E9 §5(b) band training (+0.0000 to +0.0006 expected, 6–8 GPU h).\n\n**State plainly in ROADMAP/HANDOFF** that the good-seed ±2 px boundary gap (0.040 of 0.0634) remains essentially open. The best post-decode lever closes about 5% of it, so a real fix has to be model-level. One example is a decisions-frozen fine-tune of only the mask path, starting from the C0 checkpoints. That would need its own DEV-A ceiling estimate before any GPU-hours are committed."
+   }
+  ],
+  "final": {
+   "arms": [
+    {
+     "name": "S: a global logit threshold offset of +0.5 on the final round-2 output, applied before the adopted exclusivity. It is a coverage calibration that fills the seams between masks from the logits; it is not a good-seed boundary fix.",
+     "tag": "Preset geoset_rep_xs, using new XCL mode 'outs' with module constant XCL_SHIFT = 0.5. Keyframe output folders: geoset_pred_ft_rep_xs_e14 (round 1: geoset_pred_ft_r1_xs_e14). DEV roots: Data/_dev/geoset_rep_xs_A and Data/_dev/geoset_rep_xs_B. Stage-2 run: SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs.",
+     "mechanism": "The exclusivity winner is the per-pixel argmax of L. Adding the same constant to every object does not change the argmax, so lowering the threshold to L > -0.5 can only add pixels where the gaining object is already the argmax. It cannot take a pixel from another mask that holds it, except through the nested-mask exemption.\n\nMeasured on DEV-A from the logit dump:\n- 99.4% of the 12,108,305 added pixels were claimed by no mask at tau 0.\n- No pixel is removed from any object.\n- 1 exemption flip (non-exempt to exempt) out of 3,952 object-views.\n- No mask goes from empty to non-empty.\n- Empty-GT object-views that hold a mask stay at 60 (pixels 301,037 to 309,124).\n\nSo it fills the gaps between masks. Good-seed error pixels are 51% unclaimed misses and all come from the 0 threshold. The newly claimed pixels go to the right owner only 65.6% of the time: 29% land on another decoded object's GT and 6% on undecoded objects. It does not move boundaries between two decoded neighbours. Round-1 masks, memory encoding, the gate, the upsampler and the exclusivity cap are untouched.",
+     "rule_and_constants": "In run.decode_scene, at the round-2 output of each target camera, in the branch `zoom is None and xcl != 'none'`:\n- L = sam3_io.logits_to_original(out['logits_1008'], hw)[:, 0], unchanged from the adopted code.\n- If xcl == 'outs': L += XCL_SHIFT, in place.\n- keep = exclusive_masks(L, XCL_TAU_KEEP).\n\nIt follows that pos = L_orig > -0.5. The argmax is unchanged, with ties going to the lowest index. Exemption is computed on the shifted pos: lost >= 0.5 * |pos|. Absent objects sit at -1024 + 0.5 and are never positive.\n\nXCL_SHIFT = 0.5 is a module constant, not a CLI knob. Everything else stays as adopted: θ 0.5, MIN_VALID 64, τ 0.7, k 3, OBJ_CHUNK 8, gate reproj, XCL_TAU_KEEP 0.5, zoom off, checkpoints geoset_pred_ft from each scene's own held-out fold.\n\nHow the constant was chosen (DEV-A only; declared in the registration as a deviation from the E14 exploratory argmax rule, which picked +1):\n- Rule: take the largest DEV-A all-pair ΔJ&F among the taus that pass a keyframe-shaped G1 (CI lower bound > 0) and G2 (no scene < -0.01) on all 5 DEV-A pseudo-keyframes. A pseudo-keyframe is one DEV-A frame offset per scene, with 2 cameras and views = camera.\n- tau 0.25 passes 5/5 (+0.0019).\n- tau 0.5 passes 5/5 (+0.0028).\n- tau 1 passes 4/5 (+0.0031). Offset +12 gives CI [-0.0010, +0.0059] and worst scene -0.0131.\n- tau 1.5 passes 0/5.\n- Taus 2 to 4 have smaller means.\n- The pick is 0.5.",
+     "dev_a_evidence": "All figures are DEV-A, adopted geoset_rep_x as the base, 3,300 pairs, compared with dev_compare (pair -> view 't/cam' -> scene, 10,000 resamples, seed 0). I re-scored them independently from the threshold-upsample per-view outputs; they reproduce exactly.\n\n**tau +0.5, all pairs.**\n- ΔJ&F +0.0028 [+0.0013, +0.0047].\n- ΔJ +0.0033 [+0.0023, +0.0044]; ΔF +0.0023 [-0.0002, +0.0055].\n- Pair-mean +0.0030.\n\n**Good seeds (3,007 pairs).**\n- +0.00185 [+0.00065, +0.00292]; pair-mean +0.0022.\n- Positive in every size bin: <2k +0.0004, 2k-10k +0.0006, 10k-100k +0.0015, >=100k +0.0056.\n- 1-recall 0.0637 → 0.0568; 1-precision 0.0418 → 0.0459.\n\n**Failing seeds.** +0.0085 [+0.0037, +0.0161] hier, +0.0113 pair-mean. This is a deterministic transform of the same logits, so there is no re-drawn noise and the subset is descriptive only.\n\n**Scenes.**\n- 14 of 17 up. Worst Dog -0.0029; good-seed worst Dog -0.0051; F worst AlexaMeadeFacePaint -0.0068. Best Welder +0.0150.\n- Without Welder the mean is +0.0021; the median scene is +0.0027.\n\n**Pairs.** 78 down by more than 0.01 (2.4%), 260 up.\n\n**Robustness.**\n- Frame halves: offsets {+4, +12, +20} give +0.0029 [+0.0013, +0.0048]; offsets {+8, +16} give +0.0027 [+0.0012, +0.0046].\n- 5/5 pseudo-keyframes pass G1 and G2: Δ +0.0022 to +0.0034, CI lower bounds +0.00007 to +0.0018, worst scenes -0.0067 to -0.0021.\n- LOSO (pick on 16 scenes, score the held-out one) gives +0.0029 and picks {0.5, 1}.\n- 0.5 vs 1: +0.0003 [-0.0009, +0.0013].\n- The same curve holds on another decoder. On the E9 D1 checkpoint an outward 0.5 gives +0.0031 [+0.0019, +0.0046] (good seeds +0.0022 [+0.0013, +0.0032]); outward 1 gives +0.0033 [+0.0011, +0.0055].\n\n**For scale.**\n- The ±2 px band oracle on good seeds is +0.040, so S closes about 5% of it and about 3.5% of the 0.0634 good-seed gap.\n- Oracle fill of the unclaimed pixels within 2 px (good seeds) is +0.017.",
+     "code_changes": [
+      "stage1/methods/geomem/run.py:\n- Add 'outs' to XCL_MODES and add the constant XCL_SHIFT = 0.5.\n- In the round-2 output xcl branch, add `if xcl == 'outs': L += XCL_SHIFT` before exclusive_masks, keeping the 0.5 cap.\n- config.json gets xcl='outs' and xcl_shift=0.5.\n- The 'outs' mode follows the same arm and gate admissibility as 'out'. The zoom+xcl assertion and check_gate_out are kept.\n- Round 1, memory and the outmem path are untouched.",
+      "stage1/methods/geomem/stage1.py: append PRESETS['geoset_rep_xs'] = dict(arm='geoset_pred_ft', gate='reproj', xcl='outs'), last in the pinned order.",
+      "MVSeed/build_geoset_seeds.py and SCSam3/stage1_supply.py: add 'geoset_rep_xs' to TAGS; both TAGS sets must stay equal.",
+      "stage1/tests/test_xcl.py: add cases for the shift rule. stage1/tests/test_zoom.py: update the PRESETS last-5 order pin. stage1/tests/test_e12_cut.py: check the adopted geoset_rep_x preset is still untouched.",
+      "MVSeed/e14_judge.py:\n- --stage B: DEV-B rule B1-B3, the stop-and-audit check, and PNG/xcl_conf invariants.\n- --stage 1: keyframe G1/G2 against geoset_pred_ft_rep_x_e11.\n- --stage 2: the E8 §5 rule.\n- NaN-safe bootstraps.",
+      "MVSeed/run_e14.sh chain, one GPU job at a time under the lock, scene groups so each job stays under the cap, stopping at any failed gate. Stages:\n- zA: Z4 identity on DEV-A and the keyframe, then arm decode on DEV-A and its emulation check.\n- decB: dev_decode geoset_rep_x --split B, then geoset_rep_xs --split B.\n- scoreB: dev_score on both roots.\n- judgeB.\n- If passed: kf (run_geomem.sh all --arm geoset_pred_ft --gate reproj --xcl outs --out geoset_pred_ft_rep_xs_e14 --r1-out geoset_pred_ft_r1_xs_e14 --overwrite), then eval, judge1, sweep, score, judge2.",
+      "Docs:\n- docs/stage1-E14-prereg.md, committed before implementation and before any DEV-B decode.\n- Copy the E14 design scripts and summaries (threshold-upsample, boundary-anatomy, multimask, zoom-xcl, train-band, logitdump, synthesis) into MVSeed/refloss/e14/ for provenance.\n- Sync ROADMAP, HANDOFF and Notion."
+     ],
+     "cost": "Code: about 30 lines plus tests and a judge.\n\nGPU:\n- DEV-A implementation checks: arm decode about 11 min, dev_score about 7 min, Z4 Dog/Fencing a few minutes.\n- DEV-B (255 frames, about 3x DEV-A): base geoset_rep_x_B about 33 min decode plus about 21 min dev_score; the arm the same again. About 1.8 h in total, split into scene-group jobs under the lock.\n- Keyframe arm decode about 8 min plus evaluation about 2 min.\n- Stage-2 sweep about 1 h 45 min plus 1 min scoring.\n\nTotals: about 2.1 GPU h to the DEV-B answer and about 4.2 h to the adoption answer.\n\nRuntime overhead: one in-place scalar add per view, about 0 s, with GPU peak unchanged.",
+     "expected_gain": "- DEV-B ΔJ&F about +0.0028 (80% range +0.0015 to +0.0040); good seeds about +0.0018.\n- Keyframe ΔJ&F about +0.0028 (80% range +0.0010 to +0.0045); P(G1) about 0.75, P(G2) about 0.9.\n- Stage-2 basic about +0.15 (range +0.05 to +0.37), from 66.7 × keyframe Δ × a transfer ratio in [0.3, 2.0]; complete Δ ≥ 0. P(E8 rule passes) about 0.45.\n- Overall P(adoption) about 0.3."
+    }
+   ],
+   "dev_b_rule": "Written into docs/stage1-E14-prereg.md and committed before any DEV-B frame is decoded.\n\n**Inputs.**\n- Base: dev_decode geoset_rep_x --split B → Data/_dev/geoset_rep_x_B.\n- Arm: dev_decode geoset_rep_xs --split B → Data/_dev/geoset_rep_xs_B.\n- Same checkpoints and cameras for both. Each is scored once with dev_score.\n- The pair set must be identical; if it differs, abort.\n\n**Statistics.** mvseg2d.dev_compare (pair → view \"t/cam\" → scene, 17 scenes, 10,000 resamples, seed 0). Good seeds = pairs with base J&F ≥ 0.8.\n\n**Pass requires all three:**\n- **B1:** all-pair ΔJ&F > 0 with 95% CI lower bound > 0. On DEV-A this was +0.0028 [+0.0013, +0.0047].\n- **B2:** good-seed ΔJ&F ≥ 0 as a point estimate, with its CI reported. On DEV-A: +0.0019 [+0.0006, +0.0029].\n- **B3:** no scene's ΔJ&F below -0.010 (the G2 threshold). On DEV-A the worst was Dog -0.0029.\n\n**Hard invariants.** These are checked before B1-B3 are read. A violation means a bug: stop, fix, and redo the decode. It does not count as a result.\n- I1: arm and base round-1 PNGs and round1_conf.json are identical for every frame.\n- I2: for every object whose exemption flag is the same in both xcl_conf.json files, arm mask ⊇ base mask (0 px removed).\n- I3: no mask is emptied, and the arm's non-empty key set contains the base's.\n- I4: config.json has xcl='outs' and xcl_shift=0.5 on every frame.\n\n**Stop and audit.** If the all-pair Δ exceeds +0.006 (about 2× DEV-A), audit for a bug before reading anything else. If the audit finds no bug, B1-B3 apply as written.\n\n**Report only (not pass conditions):** ΔJ and ΔF; failing-seed Δ; pairs down and up by more than 0.01; size bins; per-scene table; the mechanism shares in watch_values.\n\n**On failure.** Failing any of B1-B3 closes S1-E14 as \"no effect\". DEV-B is then spent for E14: no other tau, no keyframe run, no stage 2.\n\n**On pass.** Go once to the keyframe gate.\n\n**Never on DEV-B:** decoding, scoring or tuning any other tau or variant; a logit dump.",
+   "keyframe_gate": "The keyframe gate runs only after DEV-B passes, once, following E9-E12 §5.\n\n**Run.**\n- Decode: `scripts/run_geomem.sh all --arm geoset_pred_ft --gate reproj --xcl outs --out geoset_pred_ft_rep_xs_e14 --r1-out geoset_pred_ft_r1_xs_e14 --overwrite`, 17 scenes.\n- Score: `mvseg2d.evaluate` → MVSeed/runs/e14/kf_<folder>.json on the 664 keyframe pairs.\n- Compare: paired pair → camera → scene bootstrap (10,000 resamples, seed 0) against C0 = geoset_pred_ft_rep_x_e11 (adopted, J&F 0.9148).\n\n**Gates:**\n- **G1:** ΔJ&F > 0 with 95% CI lower bound > 0.\n- **G2:** no scene below C0 - 0.01.\n\nIf either fails, report \"no effect\" and stop. No other tau, and no stage 2.\n\n**Stage 2** runs only if G1 and G2 pass, under the unchanged E8 §5 rule.\n- Command: `XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep_xs F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 ./runMVOptThree.sh <17 scenes>` → SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs.\n- Base: SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs (basic 92.626 / complete 87.954).\n- Score: `eval/eval_jf.py --out jf_e14.json`, then `e14_judge.py --stage 2`.\n- Adopt only if all three hold: basic Δ > 0 with 95% CI lower bound > 0; no scene with basic Δ < -1.0; complete Δ ≥ 0.\n\n**If adopted:** the headline stage-1 preset becomes geoset_rep_xs. Keep the E8 training-data caveat and the S2-R6 LOSO +0.387 note.\n\n**Stop and audit:** a keyframe Δ above +0.008 means checking for a leak or bug before stage 2.\n\n**Comparison:** the keyframe result is checked against the DEV-predicted range, and that check is reported.",
+   "predictions": [
+    "P1, DEV-B:\n- All-pair ΔJ&F +0.0028 (80% range +0.0015 to +0.0040); CI half-width about 0.0017, because between-scene spread dominates (DEV-A frame halves had the same width as the whole set).\n- P(B1) about 0.9, P(B2) about 0.95, P(B3) about 0.95; P(DEV-B pass) about 0.85.\n- Good seeds +0.0013 to +0.0025.\n- ΔJ > ΔF.\n- Pairs down by more than 0.01: 1.5 to 3.5%.\n- Welder is the largest gain, Dog the worst scene (about -0.003).",
+    "P2, DEV-B mechanism:\n- Share of added pixels unclaimed in the base ≥ 0.98 (DEV-A 0.994).\n- 0 px removed from objects without an exemption flip; flips ≤ 10.\n- Masks becoming non-empty: 0 to 3.\n- Empty-GT non-empty count unchanged ±2; their pixels up by ≤ 5% (DEV-A 2.7%).\n- Owner accuracy of newly claimed pixels 0.60 to 0.70 (DEV-A 0.656).\n- Multiply-claimed pixels ×1.2 to ×1.7 (DEV-A 1.44).",
+    "P3, keyframe (664 pairs):\n- ΔJ&F +0.0028 (80% range +0.0010 to +0.0045), ΔJ > ΔF.\n- P(G1) about 0.75, P(G2) about 0.9 (pseudo-keyframe worst scenes were -0.0067 to -0.0021).\n- Failures (J < 0.5) 14 → 13 or 14; hallucinations 13 → 13.\n- Round-1 output identical 17/17.\n- Good seeds positive in every size bin, largest at ≥100k px.",
+    "P4, stage 2 (only if G1 and G2 pass):\n- basic Δ / (66.7 × keyframe Δ) in [0.3, 2.0]. E10's band change gave 0.52; E11's ownership change gave 2.0.\n- basic Δ about +0.15 (range +0.05 to +0.37); complete Δ ≥ 0; worst scene > -1.0.\n- P(E8 rule passes) about 0.45. The changes are spread over many pairs, so the CI should be E10-like (about ±0.12), and 35% of added pixels belong to other objects' GT and can spread through frame-0 memory.",
+    "P5, overall: P(adoption) about 0.3; expected headline gain when adopted about +0.15 basic.",
+    "P6, scope statement to confirm:\n- The good-seed ±2 px band gap stays essentially open. S closes ≤ 6% of the +0.040 band oracle on DEV-B and on the keyframe.\n- Spill and twin seedfail kinds move ≤ ±0.005 (DEV-A -0.002 / -0.001).\n- Under-cover kinds gain the most among failing seeds (DEV-A +0.006 / +0.007)."
+   ],
+   "watch_values": [
+    "Z4 (after the code change, before any arm run):\n- `--xcl out` is byte-identical: DEV-A dev_decode geoset_rep_x on Dog (with --validate) equals _e13_dev.\n- Keyframe Fencing `--xcl out` equals geoset_pred_ft_rep_x_e11 (final, r1, round1_conf, xcl_conf), plus MVSeed/inproc_check.py. These are byte comparisons only; no GT is read.",
+    "Z-emul (DEV-A, before DEV-B):\n- dev_decode geoset_rep_xs --split A matches the host emulation, exclusive_masks_np(logits_full_np(low_res) + 0.5) from _e14_logitdump, with 0 px difference on 3,952 object-views.\n- dev_score rows equal _e14_threshold-upsample/cand/bil2_tau0.5.json J and F on 3,300 pairs.\n- dev_compare against _e13_dev reproduces +0.0028 [+0.0013, +0.0047].",
+    "Z2: arm vs base round-1 PNGs and round1_conf.json are identical on DEV-A, on DEV-B, and on the keyframe (17/17).",
+    "Z1: config.json has xcl='outs' and xcl_shift=0.5, and the n_xcl_* counts equal a recount from the PNGs. No mask is emptied. Non-empty key set: arm ⊇ base.",
+    "Mechanism, with DEV-A values to compare against:\n- added pixels 12,108,305, of which 99.4% were unclaimed in the base\n- removed 0\n- exemption flips 1 on / 0 off\n- masks becoming non-empty 0\n- empty-GT non-empty 60 → 60 (pixels 301,037 → 309,124)\n- owner accuracy of newly claimed pixels 0.656\n- share of unclaimed pixels newly claimed 0.336\n- multiply-claimed pixels 166,091 → 238,604",
+    "Quality:\n- ΔJ +0.0033 vs ΔF +0.0023.\n- Good-seed 1-recall 0.0637 → 0.0568 and 1-precision 0.0418 → 0.0459.\n- Pairs down / up by more than 0.01: 78 / 260.\n- Worst scene Dog -0.0029; best Welder +0.0150.",
+    "Cost: decode time ≤ 1.05× the base for the same split; GPU peak ≤ base + 0.5 GB (the add is in place); dev_decode reports 17/17 scenes ok.",
+    "Keyframe report against C0: failures (14), hallucinations (13), per-scene table, size bins, seedfail kinds.",
+    "Stage 2: Z3/Z3b MANIFEST seed digests equal the CLI reconstruction (17/17), and frame-0 PNGs are pixel-identical to the seeds."
+   ],
+   "non_variables": [
+    "Tau is fixed at +0.5. No other tau is run on DEV-B or the keyframe, not even as a diagnostic; it would spend DEV-B and peek at TEST for a future constant.",
+    "The offset applies to the final round-2 output only: not round-1 masks, not memory encoding (no outmem variant), not zoom.",
+    "XCL_TAU_KEEP 0.5, the argmax tie rule, and the exemption computed on the shifted pos.",
+    "The upsampler stays the adopted two-stage bilinear. Bicubic, JBU and guided filter are closed: all ≤ 0 on DEV-A.",
+    "No size- or type-dependent shift, no per-object calibration, no nearest-mask seam fill, no confidence-weighted owner rule.",
+    "No multimask token selection (I3/I4 about +0.001, below keyframe resolvability), no zoom or zoom→xcl (+0.0013 with CI including 0, the wrong direction for under-covered good seeds, +79% restricted decode time), no band-BCE training arm, no combination arms.",
+    "θ 0.5, MIN_VALID 64, τ 0.7, k 3, OBJ_CHUNK 8, gate reproj, geoset_pred_ft own-fold checkpoints, restricted DEV cameras.",
+    "Good and failing seeds are defined by the base J&F on each set, never by the arm.",
+    "Statistics: dev_compare on DEV (pair → view 't/cam' → scene); keyframe pair → camera → scene; 10,000 resamples, seed 0.",
+    "The stage-2 configuration and the E8 §5 adoption rule are unchanged.",
+    "No keyframe number is used for DEV design. The pseudo-keyframes are DEV-A frames."
+   ],
+   "tests": [
+    "T1, torch CPU unit tests in stage1/tests/test_xcl.py:\n- XCL_SHIFT == 0.5 and PRESETS['geoset_rep_xs'] == dict(arm='geoset_pred_ft', gate='reproj', xcl='outs').\n- With XCL_SHIFT monkeypatched to 0, 'outs' equals 'out' bit for bit.\n- A pixel with L = -0.3 that is the argmax is claimed; one at -0.6 is not.\n- A pixel held by A (L_A = +1) is never taken by B.\n- An absent object (-1024) stays empty.\n- Exemption uses the shifted pos: a case where the flag flips.\n- keep_out ⊆ keep_outs for every object without a flip.\n- No mask is emptied.",
+    "T2:\n- test_zoom.py preset-order pin updated.\n- build_geoset_seeds.TAGS == set(stage1_supply.TAGS).\n- check_gate_out rejects `--xcl outs` when --out equals the arm name.\n- The zoom+xcl assertion still raises.\n- The geoset_rep_x preset is unchanged (test_e12_cut).",
+    "T3 Z4 GPU identity: `--xcl out` is byte-identical after the change, on DEV-A Dog and keyframe Fencing, plus inproc_check.",
+    "T4 Z-emul: the DEV-A arm decode equals the host emulation (0 px, 3,952 object-views), dev_score equals cand/bil2_tau0.5.json, and dev_compare gives +0.0028 [+0.0013, +0.0047]. Commit this result before the DEV-B decode.",
+    "T5: Z2 round-1 invariance of arm vs base on DEV-A, DEV-B and the keyframe.",
+    "T6, e14_judge unit tests on synthetic rows:\n- B1-B3 boundaries (CI lower bound exactly 0 fails; scene exactly -0.01 passes).\n- Stop-and-audit at Δ > +0.006.\n- Invariant I2 with a flipped object is excluded.\n- NaN-safe bootstrap.\n- Pair-set mismatch aborts."
+   ],
+   "go_no_go": "GO for one small registration, S1-E14 arm S (logit threshold offset +0.5 under the adopted exclusivity), framed as coverage calibration / logit seam fill.\n\nWhy:\n- It is the only DEV-A candidate whose CI excludes 0 on all pairs (+0.0028 [+0.0013, +0.0047]) and on good seeds (+0.0019 [+0.0006, +0.0029]).\n- It replicates on frame halves, on 5/5 pseudo-keyframes, in LOSO, and on another checkpoint (E9 D1).\n- It costs about 2.1 GPU h to the DEV-B answer and about 4.2 h to adoption.\n\nExpected value is small:\n- about +0.003 at stage 1;\n- about +0.15 basic if adopted;\n- P(adoption) about 0.3, with the main risk being the stage-2 E8 CI because the changes are spread out.\n\nNO-GO for everything else:\n- multimask I3/I4\n- zoom→xcl\n- logit upsamplers (bicubic, JBU, guided filter)\n- E9 §5(b) band-BCE training\n\nClose the good-seed boundary block for decode-only means:\n- The best post-decode lever closes about 5% of the ±2 px band oracle (+0.040) and about 3.5% of the 0.0634 good-seed gap.\n- Grid upsampling, token choice, zoom and exclusivity are all ≤ +0.002 on good seeds.\n- 63% of the gap still sits in the ±2 px band.\n\nWhat remains needs one of two new registrations, each with its own DEV-A ceiling first:\n- a model-level change, e.g. a mask-path-only fine-tune from the C0 checkpoints with memory attention and decisions frozen;\n- a GT-free seam-owner cue better than logit height, designed host-only on DEV-A. Today's owner accuracy is 60-66% against an oracle-fill ceiling of +0.017 on good seeds.\n\nBefore the chain, docs/stage1-E14-prereg.md, ROADMAP, HANDOFF and Notion must state this framing and the closure.",
+   "key_numbers": [
+    "Good-seed target on DEV-A: J&F 0.9366, gap 0.0634, ±2 px band oracle 0.9767 (closes 63%), 1-recall 0.0637 vs 1-precision 0.0418. Unclaimed misses are 51% of good-seed error pixels. Oracle fill (k = 2) +0.017. 288-grid round trip of the GT explains 24.5% of the gap. Script: stage1/geomem/runs/_e14_boundary-anatomy/{bd_anatomy,bd_partition,bd_grid}.py → report_anat.txt, report_part.txt",
+    "Arm S at tau +0.5 on DEV-A: all pairs +0.0028 [+0.0013, +0.0047] (ΔJ +0.0033, ΔF +0.0023); good seeds +0.00185 [+0.00065, +0.00292]; failing +0.0085; 14/17 scenes up; worst Dog -0.0029; 78 down / 260 up. Scripts: stage1/geomem/runs/_e14_threshold-upsample/{PREREG.md (sha256 stamped before scoring), tu_variants.py, tu_report.py}, cand/cmp_bil2_tau0.5.json",
+    "Tau curve on DEV-A, all pairs: 0.25 +0.0019 [+0.0011, +0.0028]; 0.5 +0.0028 [+0.0013, +0.0047]; 1 +0.0031 [+0.0005, +0.0059] (good-seed CI includes 0, Dog -0.0091, 132 down); 1.5 +0.0027 [-0.0008, +0.0060]. LOSO +0.0029, picks {0.5, 1}. Script: _e14_threshold-upsample/summary.json",
+    "Pseudo-keyframe G1 and G2 passes, and frame halves, on DEV-A: 0.25 5/5; 0.5 5/5 (Δ +0.0022 to +0.0034, lower bounds +0.00007 to +0.0018, worst scenes -0.0067 to -0.0021); 1 4/5; 1.5 0/5. Halves at 0.5: +0.0029 [+0.0013, +0.0048] and +0.0027 [+0.0012, +0.0046]. Script: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/synth/tau_power.py → tau_power.json",
+    "Arm S good seeds at 0.5 by size: <2k +0.0004, 2k-10k +0.0006, 10k-100k +0.0015, ≥100k +0.0056. 1-recall 0.0637 → 0.0568, 1-precision 0.0418 → 0.0459. Script: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/synth/tau05_bins.py",
+    "Mechanism invariants at 0.5 on DEV-A, recomputed from the logit dump:\n- base PNGs reproduced with 0 px difference\n- added 12,108,305 px, removed 0\n- exemption flips 1 on / 0 off\n- masks becoming non-empty 0\n- empty-GT non-empty 60 → 60 (pixels 301,037 → 309,124)\n- multiply-claimed pixels 166,091 → 238,604\nScript: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/synth/shift_invariants.py → shift_invariants.json",
+    "Owner of added pixels at 0.5: own 65.2%, another decoded object 28.7%, undecoded 6.1%. 99.4% were unclaimed in the base. Owner accuracy of newly claimed pixels 0.656, against about 0.65 for nearest-mask fill. Script: _e14_threshold-upsample/tu_decomp.py → decomp.json",
+    "Replication on the E9 D1 checkpoint: outward 0.5 gives +0.0031 [+0.0019, +0.0046] (good seeds +0.0022 [+0.0013, +0.0032]); outward 1 gives +0.0033 [+0.0011, +0.0055]. Script: stage1/geomem/runs/_e14_train-band/code/interp.py and dose_estimate.py → dose_estimate.json",
+    "Closed candidates on DEV-A:\n- multimask I3 +0.0012 [+0.00002, +0.0024] (lower bound above 0 in 6/10 bootstrap seeds); I4 +0.0008 [+0.0001, +0.0014]; per-object token oracle +0.0068 on good seeds (_e14_multimask/summary_mm.json)\n- zoom→xcl +0.0013 [-0.0008, +0.0034], 1-recall worsens 0.0637 → 0.0690 (_e14_zoom-xcl/compare_arms.json)\n- upsamplers all ≤ 0: bicubic -0.0003, best JBU -0.0004, best guided filter -0.0013\n- band BCE at W 1 vs D1: good seeds -0.0022 [-0.0039, -0.0004]; all pairs -0.0027 [-0.0055, +0.00004]",
+    "DEV-A reference effects of earlier decode changes: xcl alone +0.0006 [+0.0001, +0.0011]; zoom C2 alone +0.0018 [-0.0003, +0.0039]; pure retrain C0' - C0 +0.0017 [+0.0001, +0.0043]. Script: _e14_zoom-xcl/compare_arms.json, _e14_train-band/arm_compare.json",
+    "Logit-dump fidelity: re-thresholding reproduces the adopted DEV-A PNGs with 0 px difference on 3,952 object-views (GPU and host). Bit-exact interpolation was probed only on 12 object-views. Script: stage1/geomem/runs/_e14_logitdump/code/{e14dump.py, verify_dump.py}",
+    "Baselines for the gates: DEV-A geoset_rep_x J&F 0.9078 (stage1/geomem/runs/_e13_dev/dev_pairs.json); keyframe C0 geoset_pred_ft_rep_x_e11 J&F 0.9148 (664 pairs); stage-2 headline basic 92.626 / complete 87.954."
+   ]
+  }
+ },
+ "workflowProgress": [
+  {
+   "type": "workflow_phase",
+   "index": 1,
+   "title": "Understand"
+  },
+  {
+   "type": "workflow_phase",
+   "index": 2,
+   "title": "Measure"
+  },
+  {
+   "type": "workflow_phase",
+   "index": 3,
+   "title": "Judge"
+  },
+  {
+   "type": "workflow_phase",
+   "index": 4,
+   "title": "Synthesize"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 1,
+   "label": "read:boundary-anatomy",
+   "phaseIndex": 1,
+   "phaseTitle": "Understand",
+   "agentId": "a4bc851a6a5c4085a",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792060337969,
+   "queuedAt": 1792060337945,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I ran a boundary anatomy of the adopted preset geoset_rep_x…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792062027629,
+   "tokens": 203231,
+   "toolCalls": 56,
+   "durationMs": 1689660,
+   "resultPreview": "{\"summary\":\"I ran a boundary anatomy of the adopted preset geoset_rep_x on DEV-A only. Inputs were the masks in stage1/geomem/runs/_e13_dev and the pair list in its dev_pairs.json; the keyframe and DEV-B were never touched. My J&F recomputation matches dev_pairs.json exactly (max |dJF| = 0) on all 3 300 pairs. Good seeds are the 3 007 pairs with J&F >= 0.8.\\n\\nGood seeds score J 0.9003, F 0.9729, …"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 2,
+   "label": "read:logit-dump",
+   "phaseIndex": 1,
+   "phaseTitle": "Understand",
+   "agentId": "aa605803cfbd08a56",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792060337969,
+   "queuedAt": 1792060337945,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I dumped the round-2 decoder outputs for preset geoset_rep_…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792063732739,
+   "tokens": 185199,
+   "toolCalls": 62,
+   "durationMs": 3393912,
+   "resultPreview": "{\"summary\":\"I dumped the round-2 decoder outputs for preset geoset_rep_x on DEV-A (85 frames, 170 eval views = 2 per frame, 3952 object-views, which covers all 3300 scored pairs). The decode path was left unchanged. Re-thresholding the saved fp16 low_res through the adopted path gives the adopted DEV-A PNGs byte for byte: 3952/3952 object-views and 3300/3300 pairs, 0 differing pixels. I checked th…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 3,
+   "label": "measure:threshold-upsample",
+   "phaseIndex": 2,
+   "phaseTitle": "Measure",
+   "agentId": "a86ad4c998c189ee3",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792063735062,
+   "queuedAt": 1792063735057,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I tested three host-side post-decode variants of the adopte…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792068549826,
+   "tokens": 186341,
+   "toolCalls": 63,
+   "durationMs": 4814763,
+   "resultPreview": "{\"summary\":\"I tested three host-side post-decode variants of the adopted geoset_rep_x round-2 decode, on DEV-A only, using the logit dump. The TEST keyframe and DEV-B were never touched, no GPU was used, and no tracked file was changed. Grids and the selection rule were written down and hashed before anything was scored: PREREG.md, stamped 2026-10-15T20:33:21+09:00.\\n\\n**Pipeline check.** Every va…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 4,
+   "label": "measure:multimask",
+   "phaseIndex": 2,
+   "phaseTitle": "Measure",
+   "agentId": "a590579dd77511142",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792068551633,
+   "queuedAt": 1792068551627,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I tested every pre-registered multimask variant on DEV-A on…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792070253525,
+   "tokens": 155507,
+   "toolCalls": 44,
+   "durationMs": 1701892,
+   "resultPreview": "{\"summary\":\"I tested every pre-registered multimask variant on DEV-A only (3 300 pairs: 3 007 good seeds, 293 failing). The inputs were the logit dump (_e14_logitdump/geoset_rep_x_A) and _e13_dev/dev_pairs.json. I did not touch the TEST keyframe or DEV-B, and I modified no tracked files.\\n\\nI wrote the grid, the metric and the selection rule to prereg_multimask.json before computing any variant ma…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 5,
+   "label": "measure:zoom-xcl",
+   "phaseIndex": 2,
+   "phaseTitle": "Measure",
+   "agentId": "a6e023cbc7ead449e",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792070254996,
+   "queuedAt": 1792070254990,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I decoded E10 zoom followed by E11 exclusivity on DEV-A as …",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792073130184,
+   "tokens": 182542,
+   "toolCalls": 46,
+   "durationMs": 2875188,
+   "resultPreview": "{\"summary\":\"I decoded E10 zoom followed by E11 exclusivity on DEV-A as one composed arm. It is a small gain that is not significant, and almost all of it comes from the zoom. Against the adopted geoset_rep_x (_e13_dev), all 3 300 pairs gain ΔJ&F +0.0013 [−0.0008, +0.0034]. Good seeds gain +0.0006 [−0.0012, +0.0026] and failing seeds +0.0064 [−0.0012, +0.0134]. The zoom adds about 79% to the decode…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 6,
+   "label": "measure:train-band",
+   "phaseIndex": 2,
+   "phaseTitle": "Measure",
+   "agentId": "a27f93fe498e59d88",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792073131808,
+   "queuedAt": 1792073131803,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "I estimated the E9 §5(b) arm (boundary-band BCE at a balanc…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792080210655,
+   "tokens": 268318,
+   "toolCalls": 92,
+   "durationMs": 7078846,
+   "resultPreview": "{\"summary\":\"I estimated the E9 §5(b) arm (boundary-band BCE at a balanced weight W, IoU and object-score heads frozen) and its zero-dose control from the training logs plus DEV-A decodes of the existing trained checkpoints. I ran no training. The protocol was followed: TEST and DEV-B were never decoded, and no tracked file was changed.\\n\\nGPU work: under the shared lock I decoded three checkpoints…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 7,
+   "label": "judge:0",
+   "phaseIndex": 3,
+   "phaseTitle": "Judge",
+   "agentId": "af32585eec2775203",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792080212152,
+   "queuedAt": 1792080212124,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "**No leakage found, and the cheap host steps reproduce exac…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792080754068,
+   "tokens": 189424,
+   "toolCalls": 54,
+   "durationMs": 541915,
+   "resultPreview": "{\"assessments\":[{\"candidate\":\"Global threshold shift, pos = L > -tau, adopted bilinear upsampler; pre-registered pick tau = +1 (threshold-upsample)\",\"credible_gain\":\"I re-scored this independently from the logit dump with my own threshold, exclusivity and jf_pair code, and it matches the agent's cand rows exactly (max |dJF| = 0 on 3 300 pairs). At tau = 0 it reproduces dev_pairs.json exactly.\\n\\n*…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 8,
+   "label": "judge:1",
+   "phaseIndex": 3,
+   "phaseTitle": "Judge",
+   "agentId": "a4a21ad64bcc529f8",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792080212152,
+   "queuedAt": 1792080212125,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "Register exactly one arm: S1-E14, a global logit threshold …",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792080402384,
+   "tokens": 108218,
+   "toolCalls": 11,
+   "durationMs": 189309,
+   "resultPreview": "{\"assessments\":[{\"candidate\":\"Global logit threshold shift on the final round-2 output: pos = L > -tau, then the adopted exclusivity applied to L + tau. Adopted bilinear upsampler, round-1 and memory untouched. Pick tau = +0.5.\",\"credible_gain\":\"DEV-A, all 3 300 pairs: tau +0.5 gives +0.0028 [+0.0013, +0.0047], with 14 of 17 scenes up and a worst scene of Dog -0.0029. tau +1 gives +0.0031 [+0.0005…"
+  },
+  {
+   "type": "workflow_agent",
+   "index": 9,
+   "label": "synthesis",
+   "phaseIndex": 4,
+   "phaseTitle": "Synthesize",
+   "agentId": "ad79886fefdddc935",
+   "model": "claude-opus-5-5",
+   "state": "done",
+   "startedAt": 1792080755421,
+   "queuedAt": 1792080755390,
+   "attempt": 1,
+   "lastToolName": "StructuredOutput",
+   "lastToolSummary": "Written into docs/stage1-E14-prereg.md and committed before…",
+   "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ ; anything a container job reads/writes goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e14_<your-name>/ (git-ignored). Host python: stage1/.venv/b…",
+   "promptFramed": true,
+   "lastProgressAt": 1792081631688,
+   "tokens": 214422,
+   "toolCalls": 25,
+   "durationMs": 876266,
+   "resultPreview": "{\"arms\":[{\"name\":\"S: a global logit threshold offset of +0.5 on the final round-2 output, applied before the adopted exclusivity. It is a coverage calibration that fills the seams between masks from the logits; it is not a good-seed boundary fix.\",\"tag\":\"Preset geoset_rep_xs, using new XCL mode 'outs' with module constant XCL_SHIFT = 0.5. Keyframe output folders: geoset_pred_ft_rep_xs_e14 (round 1…"
+  }
+ ],
+ "totalTokens": 1693202,
+ "totalToolCalls": 453
+}

@@ -1,0 +1,641 @@
+{
+ "arms": {
+  "geoset_pred_ft": {
+   "own_fold_never_trained_on_scene": true,
+   "scene_in_all_other_folds_training": true,
+   "frame_stride": [
+    2
+   ],
+   "samples": [
+    858,
+    858,
+    924,
+    924,
+    924
+   ],
+   "steps": [
+    2574,
+    2574,
+    2772,
+    2772,
+    2772
+   ],
+   "seconds": [
+    1946,
+    1920,
+    2227,
+    2066,
+    2048
+   ],
+   "git": [
+    "2662a84"
+   ]
+  },
+  "geoset_cut0_ft": {
+   "own_fold_never_trained_on_scene": true,
+   "scene_in_all_other_folds_training": true,
+   "frame_stride": [
+    2
+   ],
+   "samples": [
+    858,
+    858,
+    924,
+    924,
+    924
+   ],
+   "steps": [
+    2574,
+    2574,
+    2772,
+    2772,
+    2772
+   ],
+   "seconds": [
+    1994,
+    1954,
+    2250,
+    2122,
+    2080
+   ],
+   "git": [
+    "47566b9"
+   ]
+  },
+  "geoset_dec_ft": {
+   "own_fold_never_trained_on_scene": true,
+   "scene_in_all_other_folds_training": true,
+   "frame_stride": [
+    2
+   ],
+   "samples": [
+    858,
+    858,
+    924,
+    924,
+    924
+   ],
+   "steps": [
+    2574,
+    2574,
+    2772,
+    2772,
+    2772
+   ],
+   "seconds": [
+    2161,
+    2122,
+    2424,
+    2144,
+    2120
+   ],
+   "git": [
+    "645b8b0",
+    "b418be0"
+   ]
+  },
+  "geoset_decb_ft": {
+   "own_fold_never_trained_on_scene": true,
+   "scene_in_all_other_folds_training": true,
+   "frame_stride": [
+    2
+   ],
+   "samples": [
+    858,
+    858,
+    924,
+    924,
+    924
+   ],
+   "steps": [
+    2574,
+    2574,
+    2772,
+    2772,
+    2772
+   ],
+   "seconds": [
+    2051,
+    2000,
+    2345,
+    2180,
+    2144
+   ],
+   "git": [
+    "b418be0"
+   ]
+  }
+ },
+ "scenes": {
+  "AlexaMeadeExhibit": {
+   "fold": 0,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "AlexaMeadeFacePaint": {
+   "fold": 1,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Barn": {
+   "fold": 4,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Blocks": {
+   "fold": 0,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Breakfast": {
+   "fold": 1,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "CBABasketball": {
+   "fold": 2,
+   "ref": 90,
+   "n_train_frames": 21,
+   "train_stride2": [
+    90,
+    92,
+    94,
+    96,
+    98,
+    100,
+    102,
+    104,
+    106,
+    108,
+    110
+   ],
+   "test_in_train": true,
+   "devA": [
+    94,
+    98,
+    102,
+    106,
+    110
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Carpark": {
+   "fold": 3,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "CoffeeMartini": {
+   "fold": 4,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Dog": {
+   "fold": 2,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Fencing": {
+   "fold": 0,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "FlameSteak": {
+   "fold": 1,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Frog": {
+   "fold": 2,
+   "ref": 180,
+   "n_train_frames": 21,
+   "train_stride2": [
+    180,
+    182,
+    184,
+    186,
+    188,
+    190,
+    192,
+    194,
+    196,
+    198,
+    200
+   ],
+   "test_in_train": true,
+   "devA": [
+    184,
+    188,
+    192,
+    196,
+    200
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "MATF": {
+   "fold": 3,
+   "ref": 30,
+   "n_train_frames": 21,
+   "train_stride2": [
+    30,
+    32,
+    34,
+    36,
+    38,
+    40,
+    42,
+    44,
+    46,
+    48,
+    50
+   ],
+   "test_in_train": true,
+   "devA": [
+    34,
+    38,
+    42,
+    46,
+    50
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "MartialArts": {
+   "fold": 4,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Painter": {
+   "fold": 0,
+   "ref": 40,
+   "n_train_frames": 21,
+   "train_stride2": [
+    40,
+    42,
+    44,
+    46,
+    48,
+    50,
+    52,
+    54,
+    56,
+    58,
+    60
+   ],
+   "test_in_train": true,
+   "devA": [
+    44,
+    48,
+    52,
+    56,
+    60
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "PoznanStreet": {
+   "fold": 1,
+   "ref": 90,
+   "n_train_frames": 21,
+   "train_stride2": [
+    90,
+    92,
+    94,
+    96,
+    98,
+    100,
+    102,
+    104,
+    106,
+    108,
+    110
+   ],
+   "test_in_train": true,
+   "devA": [
+    94,
+    98,
+    102,
+    106,
+    110
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  },
+  "Welder": {
+   "fold": 3,
+   "ref": 0,
+   "n_train_frames": 21,
+   "train_stride2": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20
+   ],
+   "test_in_train": true,
+   "devA": [
+    4,
+    8,
+    12,
+    16,
+    20
+   ],
+   "devA_in_train": 5,
+   "devB_in_train": 5,
+   "n_devB": 15,
+   "dev_dirs_in_train": true
+  }
+ }
+}

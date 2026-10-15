@@ -1,0 +1,25 @@
+{
+ "written": "2026-10-15, before any variant mask or J&F was computed (only the dump's token counts, already reported by logit-dump, were known)",
+ "data": "DEV-A only (3 300 pairs, _e13_dev/dev_pairs.json); the logit dump _e14_logitdump/geoset_rep_x_A (round 2, all 4 decoder tokens). TEST keyframe and DEV-B are not touched.",
+ "common_path": "per present object (presence > 0; absent objects keep -1024 = empty, the presence gate is unchanged) a 288x288 logit map is formed by the arm's rule from mm_low_res[b, 0..3]; then the adopted path unchanged: bilinear 288->1008->(h,w) (host emulation, bit-exact to CUDA), threshold 0, run.exclusive_masks with cap 0.5 over all objects of the view.",
+ "arms": {
+  "A0": "adopted (control): token 0 if stability(token 0) >= 0.98 else argmax predicted IoU over tokens 1..3 (= stored `token`); must reproduce _e13_dev PNGs exactly",
+  "I4": "select by predicted IoU: argmax mm_ious over tokens 0..3",
+  "I3": "select by predicted IoU, multimask only: 1 + argmax mm_ious over tokens 1..3 (SAM multimask_output=True)",
+  "S4": "select by stability: argmax stability over tokens 0..3 (stability = |x > d| / |x > -d| on the 288 logits, d = 0.05 as the decoder computes it in bf16; ties -> lowest token)",
+  "SF": "stability fallback: token 0 if stable (>= 0.98), else 1 + argmax stability over tokens 1..3",
+  "R4": "select by agreement with the reprojected reference GT: P = run.project_reference_masks(c_ini GT at t, Pi3 frame cache) in the eval view, vis = its validity map; agreement_k = |M_k & P & vis| / |(M_k | P) & vis| with M_k = token k through the adopted upsampling, > 0 (before exclusivity); argmax over tokens 0..3 (ties -> lowest); if |P & vis| < 64 (run.MIN_VALID) keep the adopted token",
+  "RF": "reference fallback: token 0 if stable, else (|P & vis| >= 64) 1 + argmax agreement over tokens 1..3, else the adopted token",
+  "M4": "average: mean of the 4 tokens' 288 logits",
+  "M3": "average: mean of tokens 1..3",
+  "W4": "predicted-IoU-weighted mean of the 4 tokens (w_k = max(iou_k, 0) / sum; uniform if the sum is 0)",
+  "X4": "max over the 4 tokens' logits (union of hypotheses; aggregation companion to the averages)"
+ },
+ "ceiling_not_a_candidate": {
+  "O4": "per pair, the token (0..3) with the best J&F vs GT, other objects of the view kept at A0 (exclusivity recomputed for that object); uses GT, so it is an upper bound on per-object selection only"
+ },
+ "constants": "none tuned: stability delta 0.05 / thresh 0.98 (decoder), MIN_VALID 64 (run.py), xcl cap 0.5 (run.py)",
+ "primary": "paired dJ&F of the arm vs A0 over all 3 300 DEV-A pairs: mvseg2d.paired.paired_scene_bootstrap (scene clusters, pair -> view '<t>/<cam>' -> scene means, 10 000 resamples, seed 0) = dev_compare",
+ "secondary": "the same bootstrap on the good-seed subset (A0 J&F >= 0.8) and the failing subset; dJ, dF; pairs up / down by > 0.01; fraction of present object-views whose token / logits differ from A0",
+ "selection_rule": "DEV-A pick = the non-oracle arm with the largest primary dJ&F among arms with primary 95% CI lower bound > 0 and good-seed dJ&F >= 0; if none qualifies, no multimask arm advances. The pick would go to a separately registered DEV-B confirmation (not run here). Every arm is reported."
+}

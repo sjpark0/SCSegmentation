@@ -1,0 +1,77 @@
+masks /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev: 170 views, 3300 pairs, good 3007
+
+(P1) predicted partition per view (pooled over the 170 DEV-A views)
+  unclaimed px 35,852,662 = 0.0667 of all px;  of them GT seeded 0.588, GT unseeded-labelled 0.412, GT label 0 0.00000;  GT unseeded px overall 0.0315 of all px;  GT label-0 px overall 35 = 0.000000 of all px
+  unclaimed px whose GT owner is seeded: 21,099,087 = 0.0392 of all px; by gap width (distance to the nearest claimed px):
+    (0,1] px:   4,478,694 = 0.212 of the seeded-owner unclaimed px;  share of ALL unclaimed px in this width that is seeded-owner 0.978
+    (1,2] px:   2,763,039 = 0.131 of the seeded-owner unclaimed px;  share of ALL unclaimed px in this width that is seeded-owner 0.960
+    (2,4] px:   3,170,189 = 0.150 of the seeded-owner unclaimed px;  share of ALL unclaimed px in this width that is seeded-owner 0.917
+    (4,8] px:   2,926,062 = 0.139 of the seeded-owner unclaimed px;  share of ALL unclaimed px in this width that is seeded-owner 0.819
+    (8,inf] px:   7,761,103 = 0.368 of the seeded-owner unclaimed px;  share of ALL unclaimed px in this width that is seeded-owner 0.363
+  single-claimed px with the WRONG seeded owner: 7,941,657 = 0.0148 of px;  single-claimed px whose GT is unseeded: 2,175,798;  multiply-claimed px 166,091
+
+(P2) error pixels of the pairs, by what is on the other side
+  all DEV-A      n  3300  error px  39,031,415:  FN unclaimed 0.541  FN claimed-by-neighbour 0.204  FP on seeded-GT 0.200 (overlap 0.0009)  FP on unseeded-GT 0.055  [FN-unclaimed share CI 0.491, 0.589]
+                 inside +-2 (0.264 of error px): FN unc 0.452  FN nb 0.274  FP seeded 0.261  FP unseeded 0.013   | outside: FN unc 0.572  FN nb 0.178  FP seeded 0.179  FP unseeded 0.071
+                 pair-mean shares: FN unc 0.390  FN nb 0.266  FP seeded 0.336  FP unseeded 0.008
+  good seeds     n  3007  error px  26,538,997:  FN unclaimed 0.513  FN claimed-by-neighbour 0.205  FP on seeded-GT 0.234 (overlap 0.0002)  FP on unseeded-GT 0.049  [FN-unclaimed share CI 0.443, 0.587]
+                 inside +-2 (0.334 of error px): FN unc 0.451  FN nb 0.266  FP seeded 0.270  FP unseeded 0.012   | outside: FN unc 0.544  FN nb 0.174  FP seeded 0.215  FP unseeded 0.067
+                 pair-mean shares: FN unc 0.395  FN nb 0.258  FP seeded 0.341  FP unseeded 0.006
+  failing        n   293  error px  12,492,418:  FN unclaimed 0.599  FN claimed-by-neighbour 0.201  FP on seeded-GT 0.130 (overlap 0.0026)  FP on unseeded-GT 0.070  [FN-unclaimed share CI 0.498, 0.642]
+                 inside +-2 (0.116 of error px): FN unc 0.455  FN nb 0.320  FP seeded 0.206  FP unseeded 0.019   | outside: FN unc 0.618  FN nb 0.186  FP seeded 0.120  FP unseeded 0.076
+                 pair-mean shares: FN unc 0.345  FN nb 0.347  FP seeded 0.287  FP unseeded 0.021
+  good seeds by GT size:
+  <2k            n   228  error px      63,917:  FN unclaimed 0.227  FN claimed-by-neighbour 0.243  FP on seeded-GT 0.530 (overlap 0.0030)  FP on unseeded-GT 0.000  [FN-unclaimed share CI 0.164, 0.283]
+                 inside +-2 (0.708 of error px): FN unc 0.256  FN nb 0.252  FP seeded 0.491  FP unseeded 0.000   | outside: FN unc 0.157  FN nb 0.220  FP seeded 0.623  FP unseeded 0.000
+                 pair-mean shares: FN unc 0.269  FN nb 0.252  FP seeded 0.479  FP unseeded 0.001
+  2k-10k         n   620  error px     507,633:  FN unclaimed 0.294  FN claimed-by-neighbour 0.250  FP on seeded-GT 0.453 (overlap 0.0007)  FP on unseeded-GT 0.003  [FN-unclaimed share CI 0.224, 0.385]
+                 inside +-2 (0.665 of error px): FN unc 0.303  FN nb 0.257  FP seeded 0.438  FP unseeded 0.002   | outside: FN unc 0.276  FN nb 0.234  FP seeded 0.485  FP unseeded 0.005
+                 pair-mean shares: FN unc 0.281  FN nb 0.237  FP seeded 0.479  FP unseeded 0.002
+  10k-100k       n  1450  error px   4,135,682:  FN unclaimed 0.396  FN claimed-by-neighbour 0.278  FP on seeded-GT 0.322 (overlap 0.0009)  FP on unseeded-GT 0.004  [FN-unclaimed share CI 0.355, 0.439]
+                 inside +-2 (0.573 of error px): FN unc 0.372  FN nb 0.282  FP seeded 0.342  FP unseeded 0.004   | outside: FN unc 0.429  FN nb 0.271  FP seeded 0.296  FP unseeded 0.003
+                 pair-mean shares: FN unc 0.406  FN nb 0.279  FP seeded 0.311  FP unseeded 0.004
+  >=100k         n   709  error px  21,831,765:  FN unclaimed 0.541  FN claimed-by-neighbour 0.190  FP on seeded-GT 0.211 (overlap 0.0000)  FP on unseeded-GT 0.058  [FN-unclaimed share CI 0.461, 0.624]
+                 inside +-2 (0.280 of error px): FN unc 0.491  FN nb 0.261  FP seeded 0.232  FP unseeded 0.016   | outside: FN unc 0.560  FN nb 0.162  FP seeded 0.203  FP unseeded 0.075
+                 pair-mean shares: FN unc 0.512  FN nb 0.234  FP seeded 0.238  FP unseeded 0.016
+  good seeds by object type:
+  dynamic        n   818  error px   2,702,873:  FN unclaimed 0.480  FN claimed-by-neighbour 0.298  FP on seeded-GT 0.221 (overlap 0.0000)  FP on unseeded-GT 0.001  [FN-unclaimed share CI 0.433, 0.518]
+                 inside +-2 (0.577 of error px): FN unc 0.468  FN nb 0.327  FP seeded 0.204  FP unseeded 0.001   | outside: FN unc 0.497  FN nb 0.259  FP seeded 0.243  FP unseeded 0.002
+                 pair-mean shares: FN unc 0.437  FN nb 0.328  FP seeded 0.234  FP unseeded 0.001
+  static         n  1833  error px   6,590,846:  FN unclaimed 0.423  FN claimed-by-neighbour 0.289  FP on seeded-GT 0.278 (overlap 0.0006)  FP on unseeded-GT 0.010  [FN-unclaimed share CI 0.358, 0.491]
+                 inside +-2 (0.481 of error px): FN unc 0.375  FN nb 0.273  FP seeded 0.343  FP unseeded 0.009   | outside: FN unc 0.467  FN nb 0.304  FP seeded 0.218  FP unseeded 0.010
+                 pair-mean shares: FN unc 0.350  FN nb 0.240  FP seeded 0.405  FP unseeded 0.005
+  env            n   356  error px  17,245,278:  FN unclaimed 0.553  FN claimed-by-neighbour 0.158  FP on seeded-GT 0.218 (overlap 0.0000)  FP on unseeded-GT 0.071  [FN-unclaimed share CI 0.463, 0.654]
+                 inside +-2 (0.239 of error px): FN unc 0.503  FN nb 0.238  FP seeded 0.240  FP unseeded 0.019   | outside: FN unc 0.568  FN nb 0.132  FP seeded 0.212  FP unseeded 0.088
+                 pair-mean shares: FN unc 0.527  FN nb 0.187  FP seeded 0.261  FP unseeded 0.025
+  good seeds' unclaimed FN by gap width: (0,1] 0.280  (1,2] 0.164  (2,4] 0.175  (4,8] 0.142  (8,inf] 0.238
+
+(P3) GT-free nearest-claimed-mask fill of unclaimed px within k px (DEV-A); delta J&F vs the masks as decoded
+  all DEV-A    n  3300 base J&F 0.9078
+    fill k=  1: dJ&F +0.0016 [+0.0007, +0.0028]  up/down (+-0.01) 244/128  px added 4,572,988 of which correct 0.652
+    fill k=  2: dJ&F +0.0012 [-0.0002, +0.0029]  up/down (+-0.01) 424/348  px added 7,446,997 of which correct 0.635
+    fill k=  4: dJ&F -0.0000 [-0.0019, +0.0023]  up/down (+-0.01) 527/534  px added 10,895,984 of which correct 0.611
+    fill k=  8: dJ&F -0.0013 [-0.0037, +0.0017]  up/down (+-0.01) 538/707  px added 14,460,986 of which correct 0.579
+    fill k=inf: dJ&F -0.0084 [-0.0138, -0.0031]  up/down (+-0.01) 489/901  px added 35,822,653 of which correct 0.336
+    ORACLE fill (unclaimed px of the pair's own GT) k=  2: dJ&F +0.0256 [+0.0204, +0.0319]
+    ORACLE fill (unclaimed px of the pair's own GT) k=inf: dJ&F +0.0383 [+0.0302, +0.0484]
+  good seeds   n  3007 base J&F 0.9366
+    fill k=  1: dJ&F +0.0014 [+0.0006, +0.0027]  up/down (+-0.01) 201/117  px added 3,967,111 of which correct 0.646
+    fill k=  2: dJ&F +0.0009 [-0.0005, +0.0027]  up/down (+-0.01) 344/321  px added 6,372,239 of which correct 0.626
+    fill k=  4: dJ&F -0.0007 [-0.0025, +0.0017]  up/down (+-0.01) 430/491  px added 9,121,533 of which correct 0.598
+    fill k=  8: dJ&F -0.0024 [-0.0048, +0.0004]  up/down (+-0.01) 426/656  px added 11,798,506 of which correct 0.560
+    fill k=inf: dJ&F -0.0102 [-0.0154, -0.0054]  up/down (+-0.01) 397/829  px added 26,327,305 of which correct 0.328
+    ORACLE fill (unclaimed px of the pair's own GT) k=  2: dJ&F +0.0170 [+0.0144, +0.0199]
+    ORACLE fill (unclaimed px of the pair's own GT) k=inf: dJ&F +0.0241 [+0.0206, +0.0281]
+  failing      n   293 base J&F 0.6122
+    fill k=  1: dJ&F +0.0027 [+0.0016, +0.0038]  up/down (+-0.01) 43/11  px added 605,877 of which correct 0.694
+    fill k=  2: dJ&F +0.0040 [+0.0020, +0.0060]  up/down (+-0.01) 80/27  px added 1,074,758 of which correct 0.685
+    fill k=  4: dJ&F +0.0067 [+0.0029, +0.0106]  up/down (+-0.01) 97/43  px added 1,774,451 of which correct 0.676
+    fill k=  8: dJ&F +0.0109 [+0.0039, +0.0183]  up/down (+-0.01) 112/51  px added 2,662,480 of which correct 0.660
+    fill k=inf: dJ&F +0.0097 [-0.0066, +0.0254]  up/down (+-0.01) 92/72  px added 9,495,348 of which correct 0.358
+    ORACLE fill (unclaimed px of the pair's own GT) k=  2: dJ&F +0.1141 [+0.0822, +0.1490]
+    ORACLE fill (unclaimed px of the pair's own GT) k=inf: dJ&F +0.1844 [+0.1307, +0.2429]
+  view-pooled fill k=  1: px given 4,580,224, to the GT owner 0.651, to masks of objects with no scored pair (GT empty here) 7,236
+  view-pooled fill k=  2: px given 7,459,218, to the GT owner 0.633, to masks of objects with no scored pair (GT empty here) 12,221
+  view-pooled fill k=  4: px given 10,915,173, to the GT owner 0.609, to masks of objects with no scored pair (GT empty here) 19,189
+  view-pooled fill k=  8: px given 14,486,687, to the GT owner 0.578, to masks of objects with no scored pair (GT empty here) 25,701
+  view-pooled fill k=inf: px given 35,852,662, to the GT owner 0.336, to masks of objects with no scored pair (GT empty here) 30,009

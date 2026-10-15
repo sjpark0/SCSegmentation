@@ -1,0 +1,166 @@
+{
+ "views": [
+  [
+   "AlexaMeadeExhibit",
+   4,
+   "camera_0003"
+  ],
+  [
+   "AlexaMeadeExhibit",
+   4,
+   "camera_0004"
+  ],
+  [
+   "AlexaMeadeExhibit",
+   8,
+   "camera_0003"
+  ]
+ ],
+ "torch": "2.10.0+cu128",
+ "results": {
+  "src_fma=0 inner=plain outer=plain": {
+   "s1_bits": 2253484,
+   "s1_sign": 0,
+   "s2_bits": 16996675,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=plain outer=fma0": {
+   "s1_bits": 523579,
+   "s1_sign": 0,
+   "s2_bits": 9842327,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=plain outer=fma1": {
+   "s1_bits": 2772042,
+   "s1_sign": 0,
+   "s2_bits": 18885514,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma0 outer=plain": {
+   "s1_bits": 1980791,
+   "s1_sign": 0,
+   "s2_bits": 10539072,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma0 outer=fma0": {
+   "s1_bits": 129540,
+   "s1_sign": 0,
+   "s2_bits": 168304,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma0 outer=fma1": {
+   "s1_bits": 2531722,
+   "s1_sign": 0,
+   "s2_bits": 13199930,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma1 outer=plain": {
+   "s1_bits": 2371410,
+   "s1_sign": 0,
+   "s2_bits": 18643159,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma1 outer=fma0": {
+   "s1_bits": 693402,
+   "s1_sign": 0,
+   "s2_bits": 12275823,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=0 inner=fma1 outer=fma1": {
+   "s1_bits": 2875139,
+   "s1_sign": 0,
+   "s2_bits": 20324826,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=plain outer=plain": {
+   "s1_bits": 2165077,
+   "s1_sign": 0,
+   "s2_bits": 16890033,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=plain outer=fma0": {
+   "s1_bits": 407952,
+   "s1_sign": 0,
+   "s2_bits": 9717561,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=plain outer=fma1": {
+   "s1_bits": 2694688,
+   "s1_sign": 0,
+   "s2_bits": 18795452,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma0 outer=plain": {
+   "s1_bits": 1882998,
+   "s1_sign": 0,
+   "s2_bits": 10401443,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma0 outer=fma0": {
+   "s1_bits": 0,
+   "s1_sign": 0,
+   "s2_bits": 0,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma0 outer=fma1": {
+   "s1_bits": 2446616,
+   "s1_sign": 0,
+   "s2_bits": 13085173,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma1 outer=plain": {
+   "s1_bits": 2289633,
+   "s1_sign": 0,
+   "s2_bits": 18550975,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma1 outer=fma0": {
+   "s1_bits": 587303,
+   "s1_sign": 0,
+   "s2_bits": 12171605,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  },
+  "src_fma=1 inner=fma1 outer=fma1": {
+   "s1_bits": 2803703,
+   "s1_sign": 0,
+   "s2_bits": 20246452,
+   "s2_sign": 0,
+   "n1": 12192768,
+   "n2": 58982400
+  }
+ }
+}

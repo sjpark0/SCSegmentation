@@ -1,0 +1,85 @@
+DEV-A multimask grid: 170 views, 3300 pairs (good 3007, failing 293)
+  A0 all  : J 0.8672  F 0.9485  J&F 0.9078 (pair mean)
+  A0 good : J 0.9003  F 0.9729  J&F 0.9366 (pair mean)
+  A0 fail : J 0.5270  F 0.6974  J&F 0.6122 (pair mean)
+
+arm   subset  dJ&F    [95% CI]            dJ       dF       up>0.01 down>0.01  pair-mean dJ&F
+I4    all    +0.0008 [+0.0001, +0.0014]  +0.0010  +0.0006     259     167   +0.0009
+I4    good   +0.0003 [-0.0004, +0.0008]  +0.0006  -0.0000     210     135   +0.0004
+I4    fail   +0.0055 [+0.0003, +0.0112]  +0.0052  +0.0059      49      32   +0.0059
+I3    all    +0.0012 [+0.0000, +0.0024]  +0.0009  +0.0014     395     274   +0.0011
+I3    good   +0.0005 [-0.0006, +0.0016]  +0.0003  +0.0007     327     240   +0.0006
+I3    fail   +0.0084 [+0.0023, +0.0152]  +0.0088  +0.0079      68      34   +0.0069
+S4    all    -0.0013 [-0.0032, +0.0007]  -0.0020  -0.0007     247     312   -0.0019
+S4    good   -0.0026 [-0.0041, -0.0012]  -0.0029  -0.0023     193     258   -0.0028
+S4    fail   +0.0084 [-0.0037, +0.0224]  +0.0061  +0.0107      54      54   +0.0073
+SF    all    -0.0005 [-0.0013, +0.0002]  -0.0007  -0.0004      24      53   -0.0006
+SF    good   -0.0008 [-0.0016, -0.0002]  -0.0007  -0.0009       6      33   -0.0008
+SF    fail   +0.0027 [-0.0026, +0.0088]  +0.0021  +0.0034      18      20   +0.0017
+R4    all    -0.0007 [-0.0027, +0.0013]  -0.0010  -0.0003     413     420   -0.0013
+R4    good   -0.0021 [-0.0041, -0.0004]  -0.0024  -0.0018     332     362   -0.0023
+R4    fail   +0.0000 [-0.0231, +0.0165]  -0.0021  +0.0021      81      58   +0.0093
+RF    all    +0.0004 [-0.0001, +0.0010]  +0.0005  +0.0003      40      33   +0.0003
+RF    good   -0.0007 [-0.0013, -0.0002]  -0.0005  -0.0008       9      24   -0.0006
+RF    fail   +0.0045 [-0.0033, +0.0112]  +0.0039  +0.0050      31       9   +0.0100
+M4    all    -0.0011 [-0.0023, -0.0001]  -0.0017  -0.0006     179     223   -0.0012
+M4    good   -0.0014 [-0.0026, -0.0003]  -0.0015  -0.0013     114     162   -0.0013
+M4    fail   +0.0016 [-0.0024, +0.0055]  +0.0002  +0.0031      65      61   +0.0002
+M3    all    -0.0021 [-0.0038, -0.0005]  -0.0026  -0.0015     200     297   -0.0021
+M3    good   -0.0024 [-0.0040, -0.0009]  -0.0024  -0.0023     133     227   -0.0022
+M3    fail   +0.0026 [-0.0034, +0.0089]  +0.0010  +0.0042      67      70   -0.0007
+W4    all    -0.0003 [-0.0011, +0.0006]  -0.0002  -0.0003     176     193   -0.0003
+W4    good   -0.0006 [-0.0013, +0.0002]  -0.0003  -0.0008     113     139   -0.0004
+W4    fail   +0.0024 [-0.0015, +0.0064]  +0.0022  +0.0026      63      54   +0.0009
+X4    all    -0.0071 [-0.0127, -0.0015]  -0.0056  -0.0086     626     536   -0.0052
+X4    good   -0.0106 [-0.0178, -0.0037]  -0.0089  -0.0122     495     474   -0.0074
+X4    fail   +0.0172 [-0.0056, +0.0329]  +0.0205  +0.0140     131      62   +0.0172
+O4    all    +0.0121 [+0.0088, +0.0159]  +0.0142  +0.0100     778       0   +0.0119
+O4    good   +0.0068 [+0.0055, +0.0081]  +0.0085  +0.0051     603       0   +0.0071
+O4    fail   +0.0561 [+0.0399, +0.0736]  +0.0640  +0.0482     175       0   +0.0614
+
+good seeds by GT px: pair-mean dJ&F per arm (bins <2k, 2k-10k, 10k-100k, >=100k)
+  I4   n= 228 -0.0007  n= 620 -0.0007  n=1450 +0.0003  n= 709 +0.0018
+  I3   n= 228 -0.0015  n= 620 -0.0008  n=1450 +0.0004  n= 709 +0.0028
+  S4   n= 228 -0.0042  n= 620 -0.0065  n=1450 -0.0020  n= 709 -0.0009
+  SF   n= 228 -0.0044  n= 620 -0.0007  n=1450 -0.0004  n= 709 -0.0006
+  R4   n= 228 -0.0063  n= 620 -0.0030  n=1450 -0.0005  n= 709 -0.0040
+  RF   n= 228 -0.0022  n= 620 -0.0002  n=1450 -0.0004  n= 709 -0.0009
+  M4   n= 228 -0.0032  n= 620 -0.0008  n=1450 -0.0002  n= 709 -0.0035
+  M3   n= 228 -0.0043  n= 620 -0.0015  n=1450 -0.0007  n= 709 -0.0051
+  W4   n= 228 -0.0011  n= 620 -0.0005  n=1450 +0.0002  n= 709 -0.0015
+  X4   n= 228 -0.0194  n= 620 -0.0190  n=1450 -0.0045  n= 709 +0.0008
+  O4   n= 228 +0.0124  n= 620 +0.0071  n=1450 +0.0065  n= 709 +0.0067
+
+present object-views: 3338 (adopted fallback tokens: 137)
+  I4: object-views switched 1829 (0.548); pairs switched 1803; token counts [1458, 371, 1144, 365]
+  I3: object-views switched 3201 (0.959); pairs switched 3149; token counts [0, 952, 1642, 744]
+  S4: object-views switched 2037 (0.610); pairs switched 2013; token counts [1248, 735, 662, 693]
+  SF: object-views switched 83 (0.025); pairs switched 76; token counts [3201, 66, 38, 33]
+  R4: object-views switched 2841 (0.851); pairs switched 2806; token counts [472, 955, 1155, 756]
+  RF: object-views switched 84 (0.025); pairs switched 76; token counts [3201, 41, 58, 38]
+  I4: objects re-formed 1829, pair masks changed 2904, px added 3,421,059 removed 1,211,152
+  I3: objects re-formed 3201, pair masks changed 3269, px added 4,677,966 removed 1,890,201
+  S4: objects re-formed 2037, pair masks changed 3001, px added 4,008,718 removed 5,971,989
+  SF: objects re-formed 83, pair masks changed 375, px added 559,034 removed 3,012,296
+  R4: objects re-formed 2841, pair masks changed 3213, px added 4,824,655 removed 6,128,470
+  RF: objects re-formed 84, pair masks changed 335, px added 394,996 removed 1,991,405
+  M4: objects re-formed 3338, pair masks changed 3278, px added 1,567,512 removed 6,240,469
+  M3: objects re-formed 3338, pair masks changed 3278, px added 1,937,958 removed 7,447,711
+  W4: objects re-formed 3338, pair masks changed 3278, px added 1,561,765 removed 5,388,458
+  X4: objects re-formed 3338, pair masks changed 3278, px added 12,764,452 removed 866,575
+
+pairs with a present object: 3278; J&F with token k for that object only (others A0): t0 0.9134, t1 0.8913, t2 0.9020, t3 0.9132; A0 0.9139; oracle 0.9259
+  token J&F spread (max - min) > 0.01 on 1964 pairs; mean spread 0.0554
+  good seeds: t0 0.9359, t1 0.9145, t2 0.9229, t3 0.9354; A0 0.9366; oracle 0.9437
+  oracle-best token counts (ties -> lowest): [450, 598, 1507, 723]
+  signal iou4   : picks a best token on 0.320 of pairs; mean regret 0.0111; J&F 0.9149
+  signal stab4  : picks a best token on 0.261 of pairs; mean regret 0.0139; J&F 0.9120
+  signal agree4 : picks a best token on 0.340 of pairs; mean regret 0.0135; J&F 0.9125
+  signal adopted: picks a best token on 0.150 of pairs; mean regret 0.0120; J&F 0.9139
+  Spearman(signal_k - signal_0, J&F_k - J&F_0), k=1..3: iou +0.281 (n=9834)
+  Spearman(signal_k - signal_0, J&F_k - J&F_0), k=1..3: stab +0.130 (n=9834)
+  Spearman(signal_k - signal_0, J&F_k - J&F_0), k=1..3: agree +0.221 (n=9645)
+  reprojected reference P: |P| >= 64 on 3215/3278 pairs; IoU(P, GT) inside vis mean 0.660, median 0.748
+
+pre-registered pick (largest all-pairs dJ&F with CI lo > 0 and good-seed dJ&F >= 0): I3

@@ -1,0 +1,93 @@
+masks: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev
+pairs 3300, good seeds (J&F >= 0.8) 3007, failing 293
+
+(A) headline
+  all DEV-A               3300  J 0.8672 F 0.9485 J&F 0.9078 gap 0.0922 | or1 0.9480 or2 0.9617 or4 0.9728 | close2 0.584 | gainFN2 0.0392 gainFP2 0.0147 FNpx-share2 0.725 | 1-rec 0.0912 1-prec 0.0622 | disp|.| 1.235 net -0.557 px | orJ2 0.9339 orF2 0.9894  g288 0.9805 g576 0.9918 gridshare288 0.212
+  good seeds              3007  J 0.9003 F 0.9729 J&F 0.9366 gap 0.0634 | or1 0.9649 or2 0.9767 or4 0.9854 | close2 0.633 | gainFN2 0.0260 gainFP2 0.0140 FNpx-share2 0.717 | 1-rec 0.0637 1-prec 0.0418 | disp|.| 1.209 net -0.526 px | orJ2 0.9599 orF2 0.9936  g288 0.9845 g576 0.9936 gridshare288 0.245
+  failing                  293  J 0.5270 F 0.6974 J&F 0.6122 gap 0.3878 | or1 0.7743 or2 0.8069 or4 0.8436 | close2 0.502 | gainFN2 0.1747 gainFP2 0.0216 FNpx-share2 0.775 | 1-rec 0.3735 1-prec 0.2714 | disp|.| 1.419 net -0.781 px | orJ2 0.6665 orF2 0.9473  g288 0.9395 g576 0.9729 gridshare288 0.156
+
+  good seeds, band oracles (J&F / J / F) and closure of the gap:
+    +-1 px: J&F 0.9649  J 0.9355  F 0.9943  closes 0.447 of gap 0.0634;  error px inside band 0.187 (pooled);  FN share of in-band error px pooled 0.700 pair-mean 0.636
+    +-2 px: J&F 0.9767  J 0.9599  F 0.9936  closes 0.633 of gap 0.0634;  error px inside band 0.334 (pooled);  FN share of in-band error px pooled 0.717 pair-mean 0.647
+    +-4 px: J&F 0.9854  J 0.9787  F 0.9921  closes 0.769 of gap 0.0634;  error px inside band 0.484 (pooled);  FN share of in-band error px pooled 0.731 pair-mean 0.653
+    +-8 px: J&F 0.9900  J 0.9892  F 0.9908  closes 0.842 of gap 0.0634;  error px inside band 0.614 (pooled);  FN share of in-band error px pooled 0.738 pair-mean 0.655
+    +-1 px  fix-under-only (FN) +0.0188 [J +0.0216 F 0.0160]   fix-over-only (FP) +0.0100 [J +0.0132 F 0.0068]   both +0.0283;  FN/(FN+FP) of the one-sided gains 0.653
+    +-2 px  fix-under-only (FN) +0.0260 [J +0.0367 F 0.0153]   fix-over-only (FP) +0.0140 [J +0.0217 F 0.0063]   both +0.0401;  FN/(FN+FP) of the one-sided gains 0.650
+    +-4 px  fix-under-only (FN) +0.0311 [J +0.0481 F 0.0140]   fix-over-only (FP) +0.0169 [J +0.0282 F 0.0056]   both +0.0488;  FN/(FN+FP) of the one-sided gains 0.648
+    mean boundary displacement inside +-2 px band: |.| 1.209 px pooled (1.099 pair-mean), net (over - under) -0.526 px pooled (-0.347 pair-mean)
+    GT 288-grid round trip: J&F 0.9845 (J 0.9755 F 0.9934), 1 - g288 = 0.0155 = 0.245 of the gap;  576: 0.9936 (1 - g576 = 0.0064 = 0.100 of the gap)
+    seed error px that are also 288-round-trip error px (same direction): 0.059 pooled;  round-trip error px also seed error px: 0.598;  round-trip error FN share 0.580
+    all good-seed error px 26,538,997 (FN 19,045,391 = 0.718, FP 7,493,606); within +-1 0.187, +-2 0.334, +-4 0.484, +-8 0.614
+    outside +-2: FN 12,690,312  FP 4,988,761 (FN share 0.718)
+    scene-cluster bootstrap 95 % CIs (good seeds): JF [0.9301, 0.9433]; or2 [0.9735, 0.9800]; gain2 [0.0364, 0.0440]; close2 [0.6125, 0.6562]; fnshare_gain2 [0.6111, 0.6939]; fnpx_share2 [0.6908, 0.7446]; gainFN2_minus_gainFP2 [0.0086, 0.0159]; g288 [0.9820, 0.9870]; gridshare288 [0.2081, 0.2752]
+
+(B) good seeds by GT size (px)
+  <2k                      228  J 0.7902 F 0.9977 J&F 0.8940 gap 0.1060 | or1 0.9389 or2 0.9688 or4 0.9874 | close2 0.706 | gainFN2 0.0403 gainFP2 0.0319 FNpx-share2 0.508 | 1-rec 0.1097 1-prec 0.1186 | disp|.| 0.986 net -0.016 px | orJ2 0.9380 orF2 0.9997  g288 0.9598 g576 0.9876 gridshare288 0.379
+  2k-10k                   620  J 0.8524 F 0.9915 J&F 0.9219 gap 0.0781 | or1 0.9541 or2 0.9735 or4 0.9884 | close2 0.661 | gainFN2 0.0296 gainFP2 0.0209 FNpx-share2 0.560 | 1-rec 0.0845 1-prec 0.0739 | disp|.| 1.050 net -0.126 px | orJ2 0.9486 orF2 0.9984  g288 0.9772 g576 0.9916 gridshare288 0.292
+  10k-100k                1450  J 0.9142 F 0.9815 J&F 0.9479 gap 0.0521 | or1 0.9701 or2 0.9800 or4 0.9876 | close2 0.616 | gainFN2 0.0214 gainFP2 0.0105 FNpx-share2 0.654 | 1-rec 0.0600 1-prec 0.0296 | disp|.| 1.088 net -0.335 px | orJ2 0.9642 orF2 0.9957  g288 0.9880 g576 0.9945 gridshare288 0.231
+  >=100k                   709  J 0.9493 F 0.9312 J&F 0.9402 gap 0.0598 | or1 0.9722 or2 0.9755 or4 0.9776 | close2 0.590 | gainFN2 0.0277 gainFP2 0.0094 FNpx-share2 0.752 | 1-rec 0.0383 1-prec 0.0138 | disp|.| 1.278 net -0.644 px | orJ2 0.9682 orF2 0.9828  g288 0.9917 g576 0.9955 gridshare288 0.139
+    by GT size in 288-grid cells (cell = (W/288)(H/288) px)
+  <25 cells                 69  J 0.7555 F 0.9998 J&F 0.8776 gap 0.1224 | or1 0.9265 or2 0.9629 or4 0.9860 | close2 0.697 | gainFN2 0.0394 gainFP2 0.0424 FNpx-share2 0.436 | 1-rec 0.1094 1-prec 0.1582 | disp|.| 1.044 net 0.134 px | orJ2 0.9259 orF2 0.9998  g288 0.9364 g576 0.9802 gridshare288 0.519
+  25-100                   348  J 0.8241 F 0.9952 J&F 0.9096 gap 0.0904 | or1 0.9470 or2 0.9708 or4 0.9885 | close2 0.677 | gainFN2 0.0342 gainFP2 0.0252 FNpx-share2 0.510 | 1-rec 0.0966 1-prec 0.0934 | disp|.| 1.067 net -0.022 px | orJ2 0.9422 orF2 0.9994  g288 0.9702 g576 0.9882 gridshare288 0.330
+  100-1000                1293  J 0.8895 F 0.9868 J&F 0.9381 gap 0.0619 | or1 0.9637 or2 0.9774 or4 0.9876 | close2 0.634 | gainFN2 0.0251 gainFP2 0.0136 FNpx-share2 0.641 | 1-rec 0.0718 1-prec 0.0451 | disp|.| 1.081 net -0.304 px | orJ2 0.9577 orF2 0.9970  g288 0.9843 g576 0.9936 gridshare288 0.254
+  >=1000                  1297  J 0.9393 F 0.9517 J&F 0.9455 gap 0.0545 | or1 0.9730 or2 0.9785 or4 0.9824 | close2 0.605 | gainFN2 0.0241 gainFP2 0.0099 FNpx-share2 0.733 | 1-rec 0.0444 1-prec 0.0184 | disp|.| 1.236 net -0.577 px | orJ2 0.9687 orF2 0.9882  g288 0.9911 g576 0.9958 gridshare288 0.164
+    by image size
+  1080x1920 bp18          1022  J 0.9006 F 0.9725 J&F 0.9366 gap 0.0634 | or1 0.9661 or2 0.9780 or4 0.9858 | close2 0.654 | gainFN2 0.0258 gainFP2 0.0153 FNpx-share2 0.702 | 1-rec 0.0592 1-prec 0.0468 | disp|.| 1.120 net -0.453 px | orJ2 0.9636 orF2 0.9925  g288 0.9856 g576 0.9957 gridshare288 0.227
+  1088x1920 bp18           419  J 0.9060 F 0.9833 J&F 0.9446 gap 0.0554 | or1 0.9700 or2 0.9818 or4 0.9899 | close2 0.671 | gainFN2 0.0260 gainFP2 0.0109 FNpx-share2 0.706 | 1-rec 0.0682 1-prec 0.0304 | disp|.| 1.098 net -0.453 px | orJ2 0.9685 orF2 0.9951  g288 0.9879 g576 0.9956 gridshare288 0.218
+  1088x2048 bp19           364  J 0.9004 F 0.9724 J&F 0.9364 gap 0.0636 | or1 0.9660 or2 0.9789 or4 0.9872 | close2 0.668 | gainFN2 0.0267 gainFP2 0.0154 FNpx-share2 0.716 | 1-rec 0.0667 1-prec 0.0384 | disp|.| 1.171 net -0.507 px | orJ2 0.9637 orF2 0.9940  g288 0.9840 g576 0.9945 gridshare288 0.252
+  1920x2560 bp26           543  J 0.8832 F 0.9622 J&F 0.9227 gap 0.0773 | or1 0.9547 or2 0.9679 or4 0.9790 | close2 0.585 | gainFN2 0.0318 gainFP2 0.0139 FNpx-share2 0.725 | 1-rec 0.0767 1-prec 0.0473 | disp|.| 1.360 net -0.612 px | orJ2 0.9439 orF2 0.9919  g288 0.9822 g576 0.9926 gridshare288 0.230
+  2028x2704 bp28           659  J 0.9104 F 0.9760 J&F 0.9432 gap 0.0568 | or1 0.9677 or2 0.9777 or4 0.9861 | close2 0.607 | gainFN2 0.0212 gainFP2 0.0132 FNpx-share2 0.737 | 1-rec 0.0555 1-prec 0.0386 | disp|.| 1.212 net -0.574 px | orJ2 0.9600 orF2 0.9953  g288 0.9828 g576 0.9895 gridshare288 0.304
+    by object type (Data/<scene>/objects_labels.json type)
+  type dynamic             818  J 0.8956 F 0.9872 J&F 0.9414 gap 0.0586 | or1 0.9649 or2 0.9791 or4 0.9885 | close2 0.644 | gainFN2 0.0284 gainFP2 0.0089 FNpx-share2 0.795 | 1-rec 0.0784 1-prec 0.0322 | disp|.| 1.128 net -0.666 px | orJ2 0.9629 orF2 0.9954  g288 0.9886 g576 0.9962 gridshare288 0.194
+  type static             1833  J 0.8968 F 0.9796 J&F 0.9382 gap 0.0618 | or1 0.9657 or2 0.9779 or4 0.9873 | close2 0.642 | gainFN2 0.0225 gainFP2 0.0166 FNpx-share2 0.648 | 1-rec 0.0594 1-prec 0.0500 | disp|.| 1.123 net -0.332 px | orJ2 0.9596 orF2 0.9962  g288 0.9814 g576 0.9920 gridshare288 0.300
+  type env                 356  J 0.9293 F 0.9053 J&F 0.9173 gap 0.0827 | or1 0.9607 or2 0.9653 or4 0.9683 | close2 0.581 | gainFN2 0.0386 gainFP2 0.0122 FNpx-share2 0.741 | 1-rec 0.0519 1-prec 0.0215 | disp|.| 1.324 net -0.638 px | orJ2 0.9551 orF2 0.9756  g288 0.9906 g576 0.9962 gridshare288 0.113
+
+(C) frame border
+  touches frame            997  J 0.9270 F 0.9405 J&F 0.9338 gap 0.0662 | or1 0.9673 or2 0.9736 or4 0.9781 | close2 0.601 | gainFN2 0.0289 gainFP2 0.0120 FNpx-share2 0.741 | 1-rec 0.0509 1-prec 0.0250 | disp|.| 1.267 net -0.612 px | orJ2 0.9621 orF2 0.9851  g288 0.9873 g576 0.9936 gridshare288 0.191
+  inside frame            2010  J 0.8871 F 0.9890 J&F 0.9380 gap 0.0620 | or1 0.9638 or2 0.9783 or4 0.9890 | close2 0.650 | gainFN2 0.0246 gainFP2 0.0150 FNpx-share2 0.660 | 1-rec 0.0700 1-prec 0.0501 | disp|.| 1.091 net -0.349 px | orJ2 0.9589 orF2 0.9978  g288 0.9831 g576 0.9936 gridshare288 0.273
+    +-2 px band pixels by distance to the image edge d (pooled over good seeds):
+      d [0,4)     band px share 0.0168  inner-boundary px share 0.0218  error px share 0.0185  error rate (FN+FP)/band 0.3910  FN share 0.545
+      d [4,16)    band px share 0.0157  inner-boundary px share 0.0155  error px share 0.0159  error rate (FN+FP)/band 0.3584  FN share 0.701
+      d [16,64)   band px share 0.0747  inner-boundary px share 0.0748  error px share 0.0761  error rate (FN+FP)/band 0.3615  FN share 0.703
+      d [64,inf)  band px share 0.8928  inner-boundary px share 0.8879  error px share 0.8895  error rate (FN+FP)/band 0.3536  FN share 0.722
+    +-2 px oracle restricted to the band within 16 px of the frame: +0.0040; beyond 16 px: +0.0367; full band +0.0401  (near share of the restricted gains 0.098)
+    error px outside the +-2 band within 4 px of the frame: FN 275,695 FP 79,791 = 0.020 of the out-of-band error px
+
+(D) neighbour across the GT boundary (0 bg = unlabelled, seeded = another decoded object, unseeded = another labelled object not decoded)
+  rho = 0 px
+    bg        GT boundary px share 0.000  band-error px share 0.000  error rate/band px 0.2917  FN share 0.000  restricted +-2 oracle +0.0000 (0.000 of full band)  FP px beyond the band on it 0  pairs with such boundary 10
+    seeded    GT boundary px share 0.969  band-error px share 0.964  error rate/band px 0.3531  FN share 0.719  restricted +-2 oracle +0.0395 (0.985 of full band)  FP px beyond the band on it 3,802,635  pairs with such boundary 3007
+    unseeded  GT boundary px share 0.031  band-error px share 0.036  error rate/band px 0.4121  FN share 0.661  restricted +-2 oracle +0.0009 (0.022 of full band)  FP px beyond the band on it 1,186,126  pairs with such boundary 302
+    sum of restricted gains 0.0404 vs full band +0.0401
+    good seeds by the share of their GT boundary shared with an UNSEEDED labelled object (rho 0):
+  unseeded-shared 0       2705  J 0.8989 F 0.9785 J&F 0.9387 gap 0.0613 | or1 0.9656 or2 0.9781 or4 0.9872 | close2 0.643 | gainFN2 0.0249 gainFP2 0.0142 FNpx-share2 0.698 | 1-rec 0.0640 1-prec 0.0432 | disp|.| 1.172 net -0.465 px | orJ2 0.9612 orF2 0.9949  g288 0.9842 g576 0.9936 gridshare288 0.257
+  unseeded-shared (0,0.1]   177  J 0.9182 F 0.9190 J&F 0.9186 gap 0.0814 | or1 0.9588 or2 0.9644 or4 0.9688 | close2 0.563 | gainFN2 0.0393 gainFP2 0.0077 FNpx-share2 0.786 | 1-rec 0.0646 1-prec 0.0204 | disp|.| 1.314 net -0.751 px | orJ2 0.9505 orF2 0.9783  g288 0.9888 g576 0.9942 gridshare288 0.138
+  unseeded-shared >0.1     125  J 0.9071 F 0.9293 J&F 0.9182 gap 0.0818 | or1 0.9580 or2 0.9654 or4 0.9704 | close2 0.577 | gainFN2 0.0312 gainFP2 0.0178 FNpx-share2 0.722 | 1-rec 0.0564 1-prec 0.0408 | disp|.| 1.316 net -0.584 px | orJ2 0.9456 orF2 0.9853  g288 0.9834 g576 0.9934 gridshare288 0.203
+  rho = 3 px
+    bg        GT boundary px share 0.000  band-error px share 0.000  error rate/band px 0.3333  FN share 0.000  restricted +-2 oracle +0.0000 (0.000 of full band)  FP px beyond the band on it 0  pairs with such boundary 5
+    seeded    GT boundary px share 0.970  band-error px share 0.965  error rate/band px 0.3530  FN share 0.719  restricted +-2 oracle +0.0396 (0.987 of full band)  FP px beyond the band on it 3,806,979  pairs with such boundary 3007
+    unseeded  GT boundary px share 0.030  band-error px share 0.035  error rate/band px 0.4165  FN share 0.659  restricted +-2 oracle +0.0008 (0.020 of full band)  FP px beyond the band on it 1,181,782  pairs with such boundary 298
+    sum of restricted gains 0.0404 vs full band +0.0401
+    good seeds by the share of their GT boundary shared with an UNSEEDED labelled object (rho 3):
+  unseeded-shared 0       2709  J 0.8989 F 0.9785 J&F 0.9387 gap 0.0613 | or1 0.9656 or2 0.9781 or4 0.9872 | close2 0.643 | gainFN2 0.0249 gainFP2 0.0142 FNpx-share2 0.698 | 1-rec 0.0640 1-prec 0.0432 | disp|.| 1.171 net -0.465 px | orJ2 0.9612 orF2 0.9949  g288 0.9843 g576 0.9936 gridshare288 0.257
+  unseeded-shared (0,0.1]   182  J 0.9171 F 0.9216 J&F 0.9194 gap 0.0806 | or1 0.9593 or2 0.9654 or4 0.9698 | close2 0.571 | gainFN2 0.0385 gainFP2 0.0086 FNpx-share2 0.785 | 1-rec 0.0633 1-prec 0.0229 | disp|.| 1.314 net -0.750 px | orJ2 0.9517 orF2 0.9792  g288 0.9881 g576 0.9939 gridshare288 0.148
+  unseeded-shared >0.1     116  J 0.9082 F 0.9238 J&F 0.9160 gap 0.0840 | or1 0.9569 or2 0.9634 or4 0.9681 | close2 0.564 | gainFN2 0.0321 gainFP2 0.0173 FNpx-share2 0.723 | 1-rec 0.0571 1-prec 0.0388 | disp|.| 1.318 net -0.588 px | orJ2 0.9427 orF2 0.9841  g288 0.9841 g576 0.9936 gridshare288 0.190
+
+(E) per scene (good seeds)
+  AlexaMeadeExhibit        282  J 0.8609 F 0.9800 J&F 0.9204 gap 0.0796 | or1 0.9510 or2 0.9683 or4 0.9827 | close2 0.602 | gainFN2 0.0303 gainFP2 0.0173 FNpx-share2 0.723 | 1-rec 0.0843 1-prec 0.0647 | disp|.| 1.343 net -0.599 px | orJ2 0.9422 orF2 0.9945  g288 0.9737 g576 0.9899 gridshare288 0.331
+  AlexaMeadeFacePaint       90  J 0.9006 F 0.9547 J&F 0.9277 gap 0.0723 | or1 0.9561 or2 0.9665 or4 0.9748 | close2 0.537 | gainFN2 0.0325 gainFP2 0.0071 FNpx-share2 0.758 | 1-rec 0.0803 1-prec 0.0234 | disp|.| 1.317 net -0.680 px | orJ2 0.9431 orF2 0.9899  g288 0.9905 g576 0.9945 gridshare288 0.131
+  Barn                     263  J 0.8865 F 0.9695 J&F 0.9280 gap 0.0720 | or1 0.9612 or2 0.9740 or4 0.9824 | close2 0.638 | gainFN2 0.0273 gainFP2 0.0187 FNpx-share2 0.633 | 1-rec 0.0628 1-prec 0.0576 | disp|.| 1.092 net -0.291 px | orJ2 0.9554 orF2 0.9925  g288 0.9829 g576 0.9941 gridshare288 0.237
+  Blocks                   135  J 0.9411 F 0.9701 J&F 0.9556 gap 0.0444 | or1 0.9801 or2 0.9874 or4 0.9919 | close2 0.717 | gainFN2 0.0179 gainFP2 0.0140 FNpx-share2 0.722 | 1-rec 0.0304 1-prec 0.0319 | disp|.| 1.090 net -0.483 px | orJ2 0.9802 orF2 0.9946  g288 0.9866 g576 0.9978 gridshare288 0.302
+  Breakfast                212  J 0.8781 F 0.9652 J&F 0.9217 gap 0.0783 | or1 0.9578 or2 0.9729 or4 0.9826 | close2 0.654 | gainFN2 0.0337 gainFP2 0.0167 FNpx-share2 0.816 | 1-rec 0.0734 1-prec 0.0564 | disp|.| 1.164 net -0.735 px | orJ2 0.9564 orF2 0.9893  g288 0.9830 g576 0.9938 gridshare288 0.217
+  CBABasketball            146  J 0.8747 F 0.9814 J&F 0.9281 gap 0.0719 | or1 0.9571 or2 0.9742 or4 0.9841 | close2 0.641 | gainFN2 0.0378 gainFP2 0.0078 FNpx-share2 0.839 | 1-rec 0.0998 1-prec 0.0324 | disp|.| 1.089 net -0.739 px | orJ2 0.9570 orF2 0.9914  g288 0.9867 g576 0.9954 gridshare288 0.185
+  Carpark                  210  J 0.9184 F 0.9825 J&F 0.9505 gap 0.0495 | or1 0.9762 or2 0.9866 or4 0.9921 | close2 0.730 | gainFN2 0.0231 gainFP2 0.0130 FNpx-share2 0.701 | 1-rec 0.0542 1-prec 0.0311 | disp|.| 1.071 net -0.432 px | orJ2 0.9789 orF2 0.9944  g288 0.9874 g576 0.9945 gridshare288 0.254
+  CoffeeMartini            366  J 0.9237 F 0.9776 J&F 0.9507 gap 0.0493 | or1 0.9733 or2 0.9820 or4 0.9884 | close2 0.636 | gainFN2 0.0187 gainFP2 0.0126 FNpx-share2 0.757 | 1-rec 0.0463 1-prec 0.0328 | disp|.| 1.229 net -0.631 px | orJ2 0.9697 orF2 0.9943  g288 0.9841 g576 0.9912 gridshare288 0.322
+  Dog                       53  J 0.8957 F 0.8893 J&F 0.8925 gap 0.1075 | or1 0.9492 or2 0.9555 or4 0.9626 | close2 0.586 | gainFN2 0.0472 gainFP2 0.0196 FNpx-share2 0.662 | 1-rec 0.0677 1-prec 0.0410 | disp|.| 1.411 net -0.458 px | orJ2 0.9236 orF2 0.9874  g288 0.9891 g576 0.9939 gridshare288 0.102
+  Fencing                   79  J 0.9103 F 0.9961 J&F 0.9532 gap 0.0468 | or1 0.9742 or2 0.9863 or4 0.9936 | close2 0.708 | gainFN2 0.0203 gainFP2 0.0115 FNpx-share2 0.777 | 1-rec 0.0619 1-prec 0.0373 | disp|.| 1.107 net -0.613 px | orJ2 0.9735 orF2 0.9992  g288 0.9890 g576 0.9974 gridshare288 0.235
+  FlameSteak               293  J 0.8938 F 0.9741 J&F 0.9339 gap 0.0661 | or1 0.9607 or2 0.9722 or4 0.9833 | close2 0.579 | gainFN2 0.0243 gainFP2 0.0139 FNpx-share2 0.713 | 1-rec 0.0670 1-prec 0.0459 | disp|.| 1.193 net -0.507 px | orJ2 0.9479 orF2 0.9965  g288 0.9811 g576 0.9873 gridshare288 0.287
+  Frog                      50  J 0.9818 F 0.9865 J&F 0.9841 gap 0.0159 | or1 0.9917 or2 0.9936 or4 0.9945 | close2 0.595 | gainFN2 0.0068 gainFP2 0.0029 FNpx-share2 0.693 | 1-rec 0.0129 1-prec 0.0055 | disp|.| 1.061 net -0.409 px | orJ2 0.9922 orF2 0.9949  g288 0.9986 g576 0.9997 gridshare288 0.088
+  MATF                     139  J 0.8739 F 0.9619 J&F 0.9179 gap 0.0821 | or1 0.9560 or2 0.9707 or4 0.9804 | close2 0.643 | gainFN2 0.0341 gainFP2 0.0182 FNpx-share2 0.721 | 1-rec 0.0791 1-prec 0.0558 | disp|.| 1.150 net -0.509 px | orJ2 0.9537 orF2 0.9877  g288 0.9822 g576 0.9958 gridshare288 0.217
+  MartialArts              144  J 0.9140 F 0.9835 J&F 0.9487 gap 0.0513 | or1 0.9710 or2 0.9815 or4 0.9888 | close2 0.640 | gainFN2 0.0205 gainFP2 0.0120 FNpx-share2 0.638 | 1-rec 0.0537 1-prec 0.0376 | disp|.| 1.149 net -0.317 px | orJ2 0.9677 orF2 0.9953  g288 0.9903 g576 0.9972 gridshare288 0.189
+  Painter                  218  J 0.9175 F 0.9664 J&F 0.9420 gap 0.0580 | or1 0.9719 or2 0.9820 or4 0.9892 | close2 0.690 | gainFN2 0.0193 gainFP2 0.0205 FNpx-share2 0.654 | 1-rec 0.0445 1-prec 0.0423 | disp|.| 1.217 net -0.375 px | orJ2 0.9682 orF2 0.9958  g288 0.9822 g576 0.9939 gridshare288 0.307
+  PoznanStreet             209  J 0.8935 F 0.9840 J&F 0.9388 gap 0.0612 | or1 0.9637 or2 0.9770 or4 0.9878 | close2 0.624 | gainFN2 0.0289 gainFP2 0.0089 FNpx-share2 0.709 | 1-rec 0.0823 1-prec 0.0296 | disp|.| 1.119 net -0.468 px | orJ2 0.9581 orF2 0.9958  g288 0.9884 g576 0.9968 gridshare288 0.189
+  Welder                   118  J 0.9176 F 0.9582 J&F 0.9379 gap 0.0621 | or1 0.9648 or2 0.9735 or4 0.9809 | close2 0.573 | gainFN2 0.0281 gainFP2 0.0084 FNpx-share2 0.793 | 1-rec 0.0599 1-prec 0.0266 | disp|.| 1.379 net -0.807 px | orJ2 0.9576 orF2 0.9893  g288 0.9931 g576 0.9972 gridshare288 0.112

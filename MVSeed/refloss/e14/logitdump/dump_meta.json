@@ -1,0 +1,46 @@
+{
+ "frames_expected": 85,
+ "frames_done": 85,
+ "frames_missing": [],
+ "views": 170,
+ "object_views": 3952,
+ "n_absent": 614,
+ "n_fallback": 203,
+ "fp16_inexact_low_res": 0,
+ "fp16_inexact_mm": 2,
+ "views_recon_low_res_equal": 170,
+ "views_recon_ious_equal": 170,
+ "views_recon_presence_equal": 170,
+ "views_bf16_valued": 170,
+ "obj_rethr_vs_ref_identical": 3952,
+ "obj_rethr_vs_mem_identical": 3952,
+ "obj_mem_vs_ref_identical": 3952,
+ "obj_own_png_vs_ref_identical": 3952,
+ "obj_png_bytes_equal": 3952,
+ "pairs_total": 3300,
+ "pairs_found": 3300,
+ "pairs_rethr_vs_ref_identical": 3300,
+ "pairs_png_bytes_equal": 3300,
+ "npz_bytes": 312026975,
+ "mm_npz_bytes": 1476483376,
+ "dump_seconds": 647.6046056747437,
+ "low_res_dtype": [
+  "torch.float32"
+ ],
+ "mm_dtype": [
+  "torch.bfloat16"
+ ],
+ "env": {
+  "decoder_class": "sam3.sam.mask_decoder.MaskDecoder",
+  "dynamic_multimask_via_stability": true,
+  "stability_delta": 0.05,
+  "stability_thresh": 0.98,
+  "decoder_training": false,
+  "image_size": 1008,
+  "torch": "2.10.0+cu128",
+  "cuda": "12.8",
+  "gpu": "NVIDIA RTX 6000 Ada Generation"
+ },
+ "bad": [],
+ "root_bytes": 1943080408
+}
