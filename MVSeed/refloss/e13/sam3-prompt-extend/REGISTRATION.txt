@@ -1,0 +1,33 @@
+S1-E13 candidate C (sam3-prompt-extend) -- design fixed BEFORE any proposal was computed (2026-10-15).
+DEV ONLY: the 85 dev frames of geomem/runs/_e13_dev/index.json (non-ref train frames [3::4], ref+4..ref+20), the 2
+annotated non-reference cameras.  The keyframe (meta ref_frame) is never decoded, prompted or scored.
+
+Input per dev view (scene, t, cam): the target image at t; c_ini's GT at t restricted to the basic set (the dev protocol's
+input mask); the frame's Pi3 cache Cache/pi3_frames/<t>; the adopted geoset_rep_x dev masks D (geomem/runs/_e13_dev).
+P_o, vis = methods.geomem.run.project_reference_masks(c_ini GT_o, reproj_inputs(...))   (OCC_TOL 0.01, conf > 0.1)
+
+SAM 3 single image, no memory: SAM3InteractiveImagePredictor around model.tracker with the detector backbone's sam2-neck
+features (exactly as sam3-modes' probe_modes.py / Sam3Image.predict_inst).  A proposal S_o exists when |P_o| >= MIN_PROJ_PX.
+Prompt variants (all run, all reported; V1 is the declared primary):
+  V1 pts        (PRIMARY) up to 3 positive interior points of P_o (distance-transform maxima, suppression disk
+                radius max(2d, 40) px), multimask_output=True, SAM's own choice = argmax predicted IoU
+  V2 pts_whole  the same call, the LARGEST-area mask of the 3 ("whole-object" granularity)
+  V3 pts_neg    V1's positives + one negative point at the deepest interior point of every other object's
+                projection P_q with |P_q| >= MIN_PROJ_PX, multimask_output=False
+  V4 box        bounding box of P_o, multimask_output=False
+  V5 mask_box   P_o as dense mask_input (tracker's learned mask_downsample at 1152^2) + bounding box of P_o,
+                multimask_output=False (sam3-modes' best mask variant)
+Composition (add-only), per view, all seeded objects at once:
+  C_o = S_o AND NOT vis AND NOT D_o AND NOT (union of D_q, q != o)
+  A_o = pixels of C_o inside the 8-connected components of (C_o OR D_o) that contain a pixel of D_o
+  pixels in A_o of >= 2 objects (contested) are dropped from all of them;   N_o = D_o OR A_o
+Constants fixed a priori: MIN_PROJ_PX = 20; mask logit threshold 0; 8-connectivity; contested pixels dropped;
+  no predicted-IoU gate; no growth cap.
+Measured (dev only): delta J&F (mvseg2d.metrics.jf_pair) of all 3300 dev pairs (scene-cluster bootstrap 95 %, 10 000,
+  seed 0), of the 140 dev under-cover pairs (_e13_dev/dev_undercover.json) and its 67-pair clean subset (precision >= 0.85)
+  (object-cluster bootstrap); added-pixel precision (pooled / pair-mean) and GT label of added pixels (o / other object /
+  unlabelled), by visibility class; recovery of missed pixels; leak of the raw segment S_o vs the target GT:
+  clean (dominant GT label = o and precision >= 0.75) / spill (dominant = o, precision < 0.75) /
+  larger object (dominant != o, S_o holds >= 50 % of GT_o) / different object (dominant != o, < 50 % of GT_o).
+Sensitivity, reported ONLY as ranges (no value is selected): MIN_PROJ_PX in {20, 200, 2000}; predicted-IoU gate in
+  {none, 0.7, 0.85}; leak precision threshold in {0.5, 0.75, 0.9}.

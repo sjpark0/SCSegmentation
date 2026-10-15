@@ -1,0 +1,33 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+AlexaMeadeExhibit    300 pairs  22.1s
+AlexaMeadeFacePaint  90 pairs  11.8s
+Barn                 300 pairs  7.2s
+Blocks               149 pairs  4.2s
+Breakfast            241 pairs  5.4s
+CBABasketball        171 pairs  5.0s
+Carpark              220 pairs  4.9s
+CoffeeMartini        385 pairs  27.6s
+Dog                  65 pairs  9.7s
+Fencing              80 pairs  2.7s
+FlameSteak           320 pairs  25.6s
+Frog                 50 pairs  2.6s
+MATF                 165 pairs  5.0s
+MartialArts          155 pairs  4.6s
+Painter              230 pairs  6.8s
+PoznanStreet         228 pairs  5.4s
+Welder               151 pairs  11.8s
+done 3300 rows, 652 empty-GT pairs excluded, 163s

@@ -1,0 +1,58 @@
+S1-E13 candidate D (geometry-grow) -- design and constants fixed BEFORE any growth or score was computed (2026-10-15).
+Only GT-free Pi3 statistics were looked at before fixing them (explore.py: 2nd-difference of inverse depth and
+cross-camera depth agreement on 5 dev frames; no label map read).
+DEV ONLY: the 85 dev frames of geomem/runs/_e13_dev/index.json (non-ref train frames [3::4], ref+4..ref+20), targets = the
+2 annotated non-reference cameras.  The keyframe (meta ref_frame) is never read (asserted).  Host numpy/cv2 only, no GPU.
+
+Protocol-(i) inputs per dev frame t: c_ini's GT at t restricted to the basic set (the dev protocol's input mask), the RGB of
+ALL rig cameras at t (frames/<t>/images), the Pi3 caches of ALL cameras at t (Cache/pi3_frames/<t>), the adopted
+geoset_rep_x dev masks D (geomem/runs/_e13_dev).  No other camera's GT, no label names, no keyframe.
+
+Geometry (work resolution of the Pi3 cache; numpy port of reproj_inputs/project_reference_masks/reproject_coords that the
+protocol-inventory agent validated 6,608/6,608 against torch): CONF_MIN 0.1, OCC_TOL 0.01.
+Every camera X != c_ini, pixel p with valid Pi3 depth:
+  visible  = p projects into c_ini's image (full-res K, rounded) and passes the depth test (z <= d_cini (1 + OCC_TOL))
+  plab(p)  = c_ini label at the projected pixel if visible, INVISIBLE otherwise (labels outside the basic set read 0)
+  pero(p)  = same lookup in c_ini's label map with every object ERODED by a disk of R_ERODE work px (in c_ini full-res
+             pixels: round(R_ERODE * W / w_work)); image borders do not erode
+  cut(p)   = depth-discontinuity pixel: w = 1/depth, |w(p-1) - 2 w(p) + w(p+1)| > TAU_2 * w(p) horizontally or vertically
+             (both neighbours valid); a plane has zero 2nd difference of inverse depth in perspective
+  bin(p)   = Lab (cv2, 8 bit) of the work-res image (INTER_AREA), 8 bins per channel
+Appearance gate of object o (input-only, from c_ini): normalised histograms h_o (c_ini work-res pixels labelled o) and
+  h_bg (all other c_ini pixels), each smoothed by a 3x3x3 box; acc_o(bin) = h_o >= LR * h_bg and h_o > 0.
+Traversable for o in X:  valid & ~cut & ( plab == o  |  plab == INVISIBLE & acc_o(bin) )
+Seed pixels for o in X:  traversable & pero == o
+Components: 4-connected components of the traversable set, per camera (cv2.connectedComponents).
+Cross-camera links: every camera (c_ini excluded) to its K_LINK nearest cameras by Pi3 centre distance (symmetric union);
+  pixel correspondence X->Y when X's valid point projects into Y's image (rounded) onto a valid Y pixel with
+  |z - d_Y| <= TAU_X d_Y; two components are merged when >= M_LINK correspondences join them.
+Grown_o = every component connected (within camera or through links, transitively) to a component holding a seed pixel.
+Projection into the target T (one of the cameras):  G_o(T) = T's grown pixels; T pixels WITHOUT valid depth take the
+  label of the nearest point (z-buffer, rounded work-res pixel) splatted from all other cameras' valid points (c_ini's own
+  points carry its input labels): G_o = grown_o(source pixel) (c_ini source: its label == o).  Nearest upsampling to full res.
+Composition (add-only, IDENTICAL to candidate C, per view, all seeded objects at once):
+  C_o = G_o AND NOT vis_fullres AND NOT D_o AND NOT (union of D_q, q != o)
+  A_o = pixels of C_o inside the 8-connected components of (C_o OR D_o) that contain a pixel of D_o
+  pixels in A_o of >= 2 objects (contested) are dropped from all of them;   N_o = D_o OR A_o
+Constants fixed a priori: TAU_2 = 0.02 (about the 95-98th percentile of the GT-free 2nd-difference distribution),
+  LR = 1 (equal-prior likelihood ratio), K_LINK = 4, TAU_X = 0.02 (two-sided; the GT-free median disagreement of
+  neighbouring cameras is 0.1-0.7 % on good rigs), M_LINK = 5, R_ERODE = 2, 8 colour bins; 4-connectivity in growth,
+  8-connectivity in composition, contested pixels dropped, no growth cap, no confidence gate.
+Variants (all run, all reported; V1 is the declared primary):
+  V1 mv          (PRIMARY) multi-view growth over all cameras + links + target projection incl. no-depth splat
+  V2 mv_nosplat  V1 without the no-depth splat (target pixels with valid depth only)
+  V3 tv          target view only: components of T only, seeds in T only, no links, no splat
+  V4 mv_noapp    V1 without the appearance gate (geometry only: traversable = valid & ~cut & (plab == o | INVISIBLE))
+  V5 mv_plane    V1, but for objects detected PLANAR GT-free the invisible traversable pixels must also lie on the
+                 object's plane: RANSAC on c_ini's valid labelled points of o (work res, c_ini frame), 256 hypotheses
+                 (rng seed 0), inlier |n.p + d| <= EPS_PLANE ||p||, EPS_PLANE = 0.01; planar iff >= 100 points and
+                 inlier fraction >= 0.85; plane refit on inliers (SVD)
+Measured (dev only), as candidate C: delta J&F (mvseg2d.metrics.jf_pair) of all 3300 dev pairs (scene-cluster bootstrap
+  95 %, 10 000, seed 0), of the 140 dev under-cover pairs (_e13_dev/dev_undercover.json) and its 67-pair clean subset
+  (precision >= 0.85) (object-cluster bootstrap); added-pixel precision (pooled / pair-mean), GT label of added pixels
+  (o / other object / unlabelled), by visibility class; recovery of missed pixels; funnel; leak of the raw grown region
+  (G_o & ref-invisible) vs the target GT (clean / spill / larger / different, as C); failure modes by object type
+  (objects_labels.json type, diagnostic only) and planar flag.
+Sensitivity of the primary, one constant at a time, reported ONLY as ranges (no value is selected):
+  TAU_2 {0.01, 0.04}; LR {0.5, 2}; TAU_X {0.01, 0.04}; M_LINK {1, 25}; K_LINK {2, 8}; R_ERODE {0, 4};
+  EPS_PLANE {0.005, 0.02} (V5 only).

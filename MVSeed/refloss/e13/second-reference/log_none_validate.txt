@@ -1,0 +1,51 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+[0m[32mINFO 2026-10-15 09:43:30,852 1 sam3_video_base.py: 125:[0m setting max_num_objects=10000 and num_obj_for_compile=16
+AlexaMeadeExhibit    t=   4 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   2.5s | equal_to_adopted=True []
+AlexaMeadeExhibit    t=   4 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   2.7s | equal_to_adopted=True []
+AlexaMeadeFacePaint  t=   4 camera_0008  B=camera_0009  objs 12 cand 3 neigh 3 masks   9   1.3s | equal_to_adopted=True []
+AlexaMeadeFacePaint  t=   4 camera_0009  B=camera_0008  objs 12 cand 3 neigh 3 masks  10   1.3s | equal_to_adopted=True []
+Barn                 t=   4 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   2.2s | equal_to_adopted=True []
+Barn                 t=   4 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   2.3s | equal_to_adopted=True []
+Blocks               t=   4 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  14   1.3s | equal_to_adopted=True []
+Blocks               t=   4 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   1.3s | equal_to_adopted=True []
+Breakfast            t=   4 v5           B=v9           objs 27 cand 3 neigh 3 masks  26   2.1s | equal_to_adopted=True []
+Breakfast            t=   4 v9           B=v5           objs 27 cand 3 neigh 3 masks  25   2.1s | equal_to_adopted=True []
+CBABasketball        t=  94 v06          B=v24          objs 22 cand 3 neigh 3 masks  18   1.8s | equal_to_adopted=True []
+CBABasketball        t=  94 v24          B=v06          objs 22 cand 3 neigh 3 masks  18   1.8s | equal_to_adopted=True []
+Carpark              t=   4 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   1.5s | equal_to_adopted=True []
+Carpark              t=   4 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   1.7s | equal_to_adopted=True []
+CoffeeMartini        t=   4 cam02        B=cam10        objs 50 cand 3 neigh 3 masks  45   3.8s | equal_to_adopted=True []
+CoffeeMartini        t=   4 cam10        B=cam02        objs 50 cand 3 neigh 3 masks  36   3.8s | equal_to_adopted=True []
+Dog                  t=   4 camera_0003  B=camera_0004  objs  7 cand 2 neigh 2 masks   7   0.8s | equal_to_adopted=True []
+Dog                  t=   4 camera_0004  B=camera_0003  objs  7 cand 3 neigh 3 masks   6   1.0s | equal_to_adopted=True []
+Fencing              t=   4 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   0.9s | equal_to_adopted=True []
+Fencing              t=   4 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   0.9s | equal_to_adopted=True []
+FlameSteak           t=   4 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  20   3.8s | equal_to_adopted=True []
+FlameSteak           t=   4 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   3.8s | equal_to_adopted=True []
+Frog                 t= 184 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   0.8s | equal_to_adopted=True []
+Frog                 t= 184 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   0.8s | equal_to_adopted=True []
+MATF                 t=  34 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  23   2.0s | equal_to_adopted=True []
+MATF                 t=  34 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks   9   2.5s | equal_to_adopted=True []
+MartialArts          t=   4 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   1.6s | equal_to_adopted=True []
+MartialArts          t=   4 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   1.6s | equal_to_adopted=True []
+Painter              t=  44 v0           B=v15          objs 24 cand 3 neigh 3 masks  24   1.8s | equal_to_adopted=True []
+Painter              t=  44 v15          B=v0           objs 24 cand 3 neigh 3 masks  24   1.8s | equal_to_adopted=True []
+PoznanStreet         t=  94 v0           B=v8           objs 24 cand 3 neigh 3 masks  22   1.8s | equal_to_adopted=True []
+PoznanStreet         t=  94 v8           B=v0           objs 24 cand 3 neigh 3 masks  24   1.6s | equal_to_adopted=True []
+Welder               t=   4 camera_0003  B=camera_0004  objs 16 cand 3 neigh 3 masks  16   1.5s | equal_to_adopted=True []
+Welder               t=   4 camera_0004  B=camera_0003  objs 16 cand 2 neigh 2 masks  15   1.2s | equal_to_adopted=True []
+VALIDATE True 34 / 34

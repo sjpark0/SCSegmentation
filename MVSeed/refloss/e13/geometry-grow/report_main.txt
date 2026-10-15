@@ -1,0 +1,209 @@
+run main cfg {'TAU_2': 0.02, 'LR': 1.0, 'K_LINK': 4, 'TAU_X': 0.02, 'M_LINK': 5, 'R_ERODE': 2, 'EPS_PLANE': 0.01, 'NBINS': 8} variants ['mv', 'mv_nosplat', 'tv', 'mv_noapp', 'mv_plane']
+frames 85 views 170; scored pairs 3300 (dev_pairs.json 3300; equal sets True); max |J,F - dev_pairs| = 0.00e+00; GT class-count mismatches vs dev_pairs: 0
+cost: 4877 s CPU-process time over 85 frames (mean 57.4 s, max 150.9 s); cams per frame 21.7; linked camera pairs 50.8; correspondences per frame 5,842,751
+
+dJF = mean J&F change; CIs: all pairs scene-cluster, under-cover object-cluster bootstrap 95 % (10 000, seed 0)
+
+[mv]  ALL n=3300: dJF -0.00476 [-0.00780, -0.00223] (dJ -0.00451 dF -0.00501); changed 2416 up 1216 down 1200 (sum +4.586 / -20.302); added 12,804,334 px, precision pooled 0.270 (incl. 15,419 px on empty-GT objects 0.270), pair-mean 0.483; on other obj 0.730 (seeded at t 0.202), on unlabelled 0.000
+      by class (added px, precision): outside 9,789,708 0.216; occluded 1,697,883 0.497; nodepth 1,316,743 0.379
+   UC140: base 0.5414 dJF -0.00235 [-0.00793, +0.00219]  changed 78 up 42 down 36  added 777,461 prec 0.339 (pair-mean 0.568); on other obj 0.661; missed px recovered 0.0475 (pair-mean 0.0511; w/o Dog tree 0.0510; Dog tree 0.0437); dJF w/o Dog tree -0.00162, Dog tree -0.02206
+      recovered by class: outside 0.0510 of 2,378,298 (added 394,907 prec 0.307); occluded 0.1504 of 532,327 (added 161,691 prec 0.495); nodepth 0.0263 of 2,370,444 (added 220,863 prec 0.283)
+   CLEAN67: base 0.6461 dJF -0.00382 [-0.01061, +0.00206] up 24 down 21  added 705,306 prec 0.368 recovered 0.0487
+   NOT-UC n=3160: dJF -0.00487 [-0.00793, -0.00229] up 1174 down 1164 added 12,026,873 prec 0.265
+
+[mv_nosplat]  ALL n=3300: dJF -0.00420 [-0.00683, -0.00194] (dJ -0.00411 dF -0.00428); changed 2315 up 1181 down 1134 (sum +4.335 / -18.189); added 11,087,736 px, precision pooled 0.267 (incl. 73,405 px on empty-GT objects 0.265), pair-mean 0.498; on other obj 0.733 (seeded at t 0.165), on unlabelled 0.000
+      by class (added px, precision): outside 9,404,283 0.225; occluded 1,683,453 0.502; nodepth 0 nan
+   UC140: base 0.5414 dJF -0.00109 [-0.00558, +0.00273]  changed 74 up 40 down 34  added 525,306 prec 0.384 (pair-mean 0.593); on other obj 0.616; missed px recovered 0.0363 (pair-mean 0.0492; w/o Dog tree 0.0494; Dog tree 0.0220); dJF w/o Dog tree -0.00091, Dog tree -0.00606
+      recovered by class: outside 0.0511 of 2,378,298 (added 366,649 prec 0.332); occluded 0.1501 of 532,327 (added 158,657 prec 0.504); nodepth 0.0000 of 2,370,444 (added 0 prec nan)
+   CLEAN67: base 0.6461 dJF -0.00259 [-0.00881, +0.00250] up 24 down 21  added 463,895 prec 0.425 recovered 0.0370
+   NOT-UC n=3160: dJF -0.00434 [-0.00705, -0.00201] up 1141 down 1100 added 10,562,430 prec 0.261
+
+[tv]  ALL n=3300: dJF -0.00279 [-0.00528, -0.00091] (dJ -0.00278 dF -0.00279); changed 2163 up 1138 down 1025 (sum +3.826 / -13.020); added 8,287,521 px, precision pooled 0.351 (incl. 73,767 px on empty-GT objects 0.348), pair-mean 0.507; on other obj 0.649 (seeded at t 0.204), on unlabelled 0.000
+      by class (added px, precision): outside 6,455,914 0.307; occluded 1,831,607 0.506; nodepth 0 nan
+   UC140: base 0.5414 dJF -0.00027 [-0.00208, +0.00132]  changed 52 up 28 down 24  added 484,004 prec 0.442 (pair-mean 0.579); on other obj 0.558; missed px recovered 0.0386 (pair-mean 0.0386; w/o Dog tree 0.0523; Dog tree 0.0235); dJF w/o Dog tree -0.00003, Dog tree -0.00684
+      recovered by class: outside 0.0569 of 2,378,298 (added 302,726 prec 0.447); occluded 0.1475 of 532,327 (added 181,278 prec 0.433); nodepth 0.0000 of 2,370,444 (added 0 prec nan)
+   CLEAN67: base 0.6461 dJF -0.00065 [-0.00386, +0.00173] up 19 down 15  added 476,209 prec 0.445 recovered 0.0398
+   NOT-UC n=3160: dJF -0.00290 [-0.00545, -0.00095] up 1110 down 1001 added 7,803,517 prec 0.345
+
+[mv_noapp]  ALL n=3300: dJF +0.00040 [-0.00053, +0.00138] (dJ -0.00036 dF +0.00116); changed 1994 up 1234 down 760 (sum +5.320 / -3.992); added 6,688,812 px, precision pooled 0.318 (incl. 1,493 px on empty-GT objects 0.318), pair-mean 0.570; on other obj 0.682 (seeded at t 0.110), on unlabelled 0.000
+      by class (added px, precision): outside 5,012,848 0.225; occluded 628,350 0.710; nodepth 1,047,614 0.529
+   UC140: base 0.5414 dJF +0.00276 [-0.00374, +0.00947]  changed 74 up 49 down 25  added 1,510,723 prec 0.098 (pair-mean 0.653); on other obj 0.902; missed px recovered 0.0266 (pair-mean 0.0256; w/o Dog tree 0.0441; Dog tree 0.0074); dJF w/o Dog tree +0.00322, Dog tree -0.00973
+      recovered by class: outside 0.0399 of 2,378,298 (added 1,362,104 prec 0.070); occluded 0.0564 of 532,327 (added 36,367 prec 0.825); nodepth 0.0096 of 2,370,444 (added 112,252 prec 0.203)
+   CLEAN67: base 0.6461 dJF +0.00442 [-0.00896, +0.01829] up 30 down 14  added 1,507,761 prec 0.097 recovered 0.0274
+   NOT-UC n=3160: dJF +0.00030 [-0.00049, +0.00118] up 1185 down 735 added 5,178,089 prec 0.383
+
+[mv_plane]  ALL n=3300: dJF -0.00341 [-0.00596, -0.00158] (dJ -0.00321 dF -0.00361); changed 2335 up 1171 down 1164 (sum +4.821 / -16.075); added 12,040,020 px, precision pooled 0.279 (incl. 11,097 px on empty-GT objects 0.279), pair-mean 0.482; on other obj 0.721 (seeded at t 0.201), on unlabelled 0.000
+      by class (added px, precision): outside 9,069,178 0.227; occluded 1,647,912 0.490; nodepth 1,322,930 0.379
+   UC140: base 0.5414 dJF +0.00234 [-0.00540, +0.01160]  changed 76 up 48 down 28  added 615,188 prec 0.393 (pair-mean 0.610); on other obj 0.607; missed px recovered 0.0436 (pair-mean 0.0462; w/o Dog tree 0.0435; Dog tree 0.0437); dJF w/o Dog tree +0.00324, Dog tree -0.02206
+      recovered by class: outside 0.0414 of 2,378,298 (added 230,755 prec 0.427); occluded 0.1521 of 532,327 (added 163,570 prec 0.495); nodepth 0.0263 of 2,370,444 (added 220,863 prec 0.283)
+   CLEAN67: base 0.6461 dJF +0.00660 [-0.00536, +0.02410] up 29 down 14  added 541,699 prec 0.438 recovered 0.0445
+   NOT-UC n=3160: dJF -0.00366 [-0.00619, -0.00184] up 1123 down 1136 added 11,424,832 prec 0.273
+
+FUNNEL (primary mv): fraction of the missed px (GT_o & ~D_o) surviving each step
+   valid-depth branch: missed & ref-invisible & valid -> appearance-accepted -> traversable (acc & ~cut) -> grown
+   no-depth branch:    missed & no depth -> a splatted point lands -> splat source grown
+   composition:        in G -> & ref-invisible -> & unclaimed by other D -> & 8-connected to D_o -> & uncontested (= recovered)
+   all                  missed  29,044,825 | inv&valid 0.5506 -> acc 0.3134 -> trav 0.2575 -> grown 0.1853 | nodepth 0.1752 -> splat 0.1162 -> grown 0.0278 | in G 0.3136 invis 0.2131 unclaimed 0.1598 connected 0.1509 uncontested 0.1190
+   uc140                missed   5,545,786 | inv&valid 0.5248 -> acc 0.3103 -> trav 0.2820 -> grown 0.1013 | nodepth 0.4274 -> splat 0.2253 -> grown 0.0128 | in G 0.1294 invis 0.1141 unclaimed 0.0649 connected 0.0583 uncontested 0.0475
+   clean67              missed   5,327,644 | inv&valid 0.5122 -> acc 0.2973 -> trav 0.2712 -> grown 0.0858 | nodepth 0.4431 -> splat 0.2328 -> grown 0.0125 | in G 0.1128 invis 0.0983 unclaimed 0.0631 connected 0.0585 uncontested 0.0487
+   uc140 w/o Dog tree   missed   2,900,921 | inv&valid 0.9034 -> acc 0.5049 -> trav 0.4582 -> grown 0.1495 | nodepth 0.0075 -> splat 0.0068 -> grown 0.0037 | in G 0.1819 invis 0.1531 unclaimed 0.0806 connected 0.0681 uncontested 0.0510
+   Dog tree             missed   2,644,865 | inv&valid 0.1096 -> acc 0.0970 -> trav 0.0887 -> grown 0.0486 | nodepth 0.8880 -> splat 0.4650 -> grown 0.0228 | in G 0.0718 invis 0.0713 unclaimed 0.0478 connected 0.0475 uncontested 0.0437
+
+LEAK of the raw grown region R_o = G_o & ref-invisible vs target GT (scored pairs, non-empty R_o); classes at precision tau:
+   clean (dom = o, prec >= tau) / spill (dom = o, prec < tau) / larger (dom != o, R holds >= 50 % of GT_o) / different (dom != o, < 50 %)
+   mv         all    n  3099  clean 0.243 [0.160-0.378]  spill 0.190  larger 0.099  different 0.468 (obj 0.468 / unlabelled 0.000); raw px 779,984,660 precision 0.197 (outside 0.179 / occluded 0.194 / nodepth 0.435 of 388,321,126 / 356,851,512 / 34,812,022 px); median |R|/|GT| 0.70
+   mv         uc140  n   125  clean 0.144 [0.056-0.200]  spill 0.104  larger 0.328  different 0.424 (obj 0.424 / unlabelled 0.000); raw px 42,592,252 precision 0.121 (outside 0.096 / occluded 0.141 / nodepth 0.210 of 21,782,632 / 18,881,526 / 1,928,094 px); median |R|/|GT| 3.29
+   mv         raw regions on objects absent from the target GT: 300 (103,017,631 px)
+   mv_nosplat all    n  3061  clean 0.251 [0.168-0.378]  spill 0.181  larger 0.096  different 0.472 (obj 0.472 / unlabelled 0.000); raw px 745,172,638 precision 0.186 (outside 0.179 / occluded 0.194 / nodepth nan of 388,321,126 / 356,851,512 / 0 px); median |R|/|GT| 0.68
+   mv_nosplat uc140  n   123  clean 0.138 [0.057-0.211]  spill 0.114  larger 0.293  different 0.455 (obj 0.455 / unlabelled 0.000); raw px 40,664,158 precision 0.117 (outside 0.096 / occluded 0.141 / nodepth nan of 21,782,632 / 18,881,526 / 0 px); median |R|/|GT| 3.17
+   mv_nosplat raw regions on objects absent from the target GT: 263 (99,355,439 px)
+   tv         all    n  2788  clean 0.431 [0.297-0.613]  spill 0.230  larger 0.042  different 0.297 (obj 0.297 / unlabelled 0.000); raw px 240,408,495 precision 0.523 (outside 0.493 / occluded 0.552 / nodepth nan of 120,758,967 / 119,649,528 / 0 px); median |R|/|GT| 0.30
+   tv         uc140  n    85  clean 0.247 [0.200-0.435]  spill 0.188  larger 0.129  different 0.435 (obj 0.435 / unlabelled 0.000); raw px 7,682,732 precision 0.572 (outside 0.543 / occluded 0.595 / nodepth nan of 3,407,053 / 4,275,679 / 0 px); median |R|/|GT| 0.63
+   tv         raw regions on objects absent from the target GT: 44 (578,593 px)
+   mv_noapp   all    n  3188  clean 0.043 [0.023-0.088]  spill 0.093  larger 0.200  different 0.664 (obj 0.664 / unlabelled 0.000); raw px 3,690,732,555 precision 0.059 (outside 0.049 / occluded 0.064 / nodepth 0.176 of 2,080,898,574 / 1,501,941,685 / 107,892,296 px); median |R|/|GT| 11.60
+   mv_noapp   uc140  n   134  clean 0.000 [0.000-0.000]  spill 0.045  larger 0.679  different 0.276 (obj 0.276 / unlabelled 0.000); raw px 157,906,168 precision 0.069 (outside 0.080 / occluded 0.053 / nodepth 0.109 of 82,568,454 / 71,509,555 / 3,828,159 px); median |R|/|GT| 47.01
+   mv_noapp   raw regions on objects absent from the target GT: 492 (761,181,793 px)
+   mv_plane   all    n  3008  clean 0.336 [0.232-0.484]  spill 0.193  larger 0.061  different 0.410 (obj 0.410 / unlabelled 0.000); raw px 592,544,513 precision 0.245 (outside 0.225 / occluded 0.239 / nodepth 0.489 of 287,943,781 / 273,743,646 / 30,857,086 px); median |R|/|GT| 0.45
+   mv_plane   uc140  n   120  clean 0.233 [0.092-0.308]  spill 0.133  larger 0.225  different 0.408 (obj 0.408 / unlabelled 0.000); raw px 34,539,293 precision 0.145 (outside 0.110 / occluded 0.175 / nodepth 0.230 of 17,596,785 / 15,184,772 / 1,757,736 px); median |R|/|GT| 1.36
+   mv_plane   raw regions on objects absent from the target GT: 184 (63,881,852 px)
+
+FAILURE MODES [mv] by object type (objects_labels.json, diagnostic only) and GT-free planar flag:
+   type=dynamic  n   864  base 0.9223  dJF -0.00399  up 324 down 256  added 525,609 prec 0.201  (UC 22)
+   type=env      n   445  base 0.8708  dJF -0.00768  up 263 down 164  added 10,540,105 prec 0.279  (UC 36)
+   type=static   n  1991  base 0.9098  dJF -0.00445  up 629 down 780  added 1,738,620 prec 0.234  (UC 82)
+   planar=False    n  2042  base 0.9041  dJF -0.00458  up 859 down 763  added 11,137,016 prec 0.259  (UC 103)
+   planar=True     n  1258  base 0.9139  dJF -0.00506  up 357 down 437  added 1,667,318 prec 0.341  (UC 37)
+
+   worst 15 pairs by dJF [mv]:
+      CBABasketball      t= 98 v06          obj  13 person                   dynamic  base 0.902 dJF -0.7089 added 22,792 prec 0.002 other 0.998
+      Blocks             t=  8 cam0         obj   6 ground                   env      base 0.898 dJF -0.3812 added 121,350 prec 0.020 other 0.980
+      Blocks             t=  4 cam0         obj   6 ground                   env      base 0.887 dJF -0.3776 added 120,924 prec 0.021 other 0.979
+      Blocks             t= 12 cam0         obj   6 ground                   env      base 0.904 dJF -0.3738 added 122,724 prec 0.025 other 0.975
+      Blocks             t= 16 cam0         obj   6 ground                   env      base 0.904 dJF -0.3725 added 122,659 prec 0.022 other 0.978
+      Blocks             t= 20 cam0         obj   6 ground                   env      base 0.905 dJF -0.3700 added 120,892 prec 0.019 other 0.981
+      Welder             t=  4 camera_0003  obj  12 shelf                    static   base 0.898 dJF -0.3457 added 26,504 prec 0.095 other 0.905
+      FlameSteak         t= 20 cam01        obj  20 table_or_desk            static   base 0.946 dJF -0.3450 added 67,396 prec 0.016 other 0.984
+      FlameSteak         t= 16 cam01        obj  20 table_or_desk            static   base 0.947 dJF -0.3302 added 65,866 prec 0.013 other 0.987
+      FlameSteak         t= 12 cam01        obj  20 table_or_desk            static   base 0.946 dJF -0.3274 added 65,701 prec 0.015 other 0.985
+      FlameSteak         t=  4 cam01        obj  20 table_or_desk            static   base 0.947 dJF -0.3261 added 66,123 prec 0.013 other 0.987
+      FlameSteak         t=  8 cam01        obj  20 table_or_desk            static   base 0.946 dJF -0.3258 added 65,874 prec 0.015 other 0.985
+      Breakfast          t=  4 v9           obj  20 plate                    static   base 0.803 dJF -0.3206 added 312 prec 0.000 other 1.000
+      Welder             t=  8 camera_0003  obj   5 fire                     dynamic  base 0.863 dJF -0.3198 added 28,140 prec 0.030 other 0.970
+      FlameSteak         t=  8 cam10        obj  37 window                   static   base 0.948 dJF -0.2775 added 56,670 prec 0.037 other 0.963
+
+   best 15 pairs by dJF [mv]:
+      CoffeeMartini      t= 16 cam10        obj  40 wall                     env      base 0.838 dJF +0.0866 added 91,278 prec 0.912 
+      CoffeeMartini      t= 20 cam10        obj  40 wall                     env      base 0.839 dJF +0.0853 added 86,837 prec 0.936 
+      CoffeeMartini      t=  4 cam10        obj  40 wall                     env      base 0.849 dJF +0.0847 added 87,706 prec 0.930 
+      CoffeeMartini      t= 12 cam10        obj  40 wall                     env      base 0.840 dJF +0.0839 added 92,225 prec 0.905 
+      CoffeeMartini      t=  8 cam10        obj  40 wall                     env      base 0.840 dJF +0.0838 added 89,836 prec 0.914 
+      CoffeeMartini      t=  8 cam10        obj  47 book                     static   base 0.877 dJF +0.0670 added 711 prec 0.914 
+      CoffeeMartini      t=  4 cam10        obj  47 book                     static   base 0.877 dJF +0.0664 added 689 prec 0.922 
+      CoffeeMartini      t= 20 cam10        obj  47 book                     static   base 0.878 dJF +0.0651 added 690 prec 0.917 
+      CoffeeMartini      t= 16 cam10        obj  47 book                     static   base 0.880 dJF +0.0644 added 683 prec 0.925 
+      Breakfast          t= 16 v9           obj  21 plate                    static   base 0.799 dJF +0.0639 added 177 prec 0.989 
+      FlameSteak         t= 16 cam01        obj  39 chair_or_seat            static   base 0.802 dJF +0.0614 added 5,730 prec 0.974 
+      Welder             t=  4 camera_0004  obj   5 fire                     dynamic  base 0.793 dJF +0.0588 added 5,636 prec 0.641 
+      CoffeeMartini      t= 12 cam10        obj  47 book                     static   base 0.878 dJF +0.0569 added 722 prec 0.904 
+      MATF               t= 38 S1_CAM_1     obj  19 table_or_desk            static   base 0.830 dJF +0.0530 added 6,439 prec 0.931 
+      MATF               t= 34 S1_CAM_1     obj  19 table_or_desk            static   base 0.830 dJF +0.0488 added 7,563 prec 0.831 
+
+PRIMARY [mv] per scene: n  base J&F  dJF  added px  precision  (UC pairs: dJF)
+   AlexaMeadeExhibit     300  0.9097  -0.00186     392,306  0.632   (7: -0.0003)
+   AlexaMeadeFacePaint    90  0.9277  -0.02147   4,886,446  0.168   (0: +nan)
+   Barn                  300  0.9038  -0.00328     250,271  0.409   (23: +0.0038)
+   Blocks                149  0.8946  -0.01295     666,800  0.064   (10: +0.0000)
+   Breakfast             241  0.8785  -0.00713      78,516  0.409   (15: +0.0006)
+   CBABasketball         171  0.8681  -0.00326     432,766  0.550   (18: -0.0071)
+   Carpark               220  0.9417  -0.00017      22,519  0.620   (2: -0.0051)
+   CoffeeMartini         385  0.9382  +0.00108   2,757,883  0.339   (12: +0.0046)
+   Dog                    65  0.8580  -0.00340     801,773  0.376   (5: -0.0221)
+   Fencing                80  0.9506  -0.00088      55,745  0.559   (0: +nan)
+   FlameSteak            320  0.9074  -0.01199     830,032  0.141   (5: -0.0009)
+   Frog                   50  0.9841  -0.00051      21,156  0.457   (0: +nan)
+   MATF                  165  0.8431  -0.00278     228,613  0.437   (16: +0.0028)
+   MartialArts           155  0.9314  -0.00120     174,520  0.676   (6: +0.0002)
+   Painter               230  0.9305  -0.00265     106,907  0.284   (5: -0.0009)
+   PoznanStreet          228  0.9174  -0.00097      47,015  0.498   (2: +0.0021)
+   Welder                151  0.8501  -0.01844   1,051,066  0.275   (14: -0.0194)
+
+PRIMARY [mv] dev under-cover by (scene, cam, obj): n  base  dJF  recovered of missed  added prec  | funnel inv&valid acc trav grown
+   Dog                camera_0004    3 tree                       env     5  0.670  -0.0221  0.044 of 2,644,865  0.330 (350,032)  | 0.11 0.10 0.09 0.05; nod 0.89 splat 0.47 grown 0.02; conn 0.048
+   FlameSteak         cam01         32 wall                       env     5  0.732  -0.0009  0.002 of 1,413,280  0.511 (5,458)  | 0.95 0.50 0.46 0.01; nod 0.00 splat 0.00 grown 0.00; conn 0.007
+   Welder             camera_0003   13 wall                       env     1  0.714  +0.0056  0.034 of   275,218  0.679 (13,976)  | 0.87 0.04 0.04 0.02; nod 0.03 splat 0.03 grown 0.02; conn 0.034
+   CBABasketball      v06           20 grandstand                 env     5  0.436  +0.0000  0.000 of   257,103  nan (0)  | 1.00 0.76 0.71 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   CBABasketball      v24           20 grandstand                 env     5  0.360  +0.0062  0.041 of   164,727  1.000 (6,725)  | 0.69 0.61 0.59 0.57; nod 0.00 splat 0.00 grown 0.00; conn 0.041
+   Barn               v0            23 ground                     env     3  0.784  -0.0323  0.134 of   157,400  0.282 (75,015)  | 0.69 0.54 0.36 0.30; nod 0.00 splat 0.00 grown 0.00; conn 0.193
+   CBABasketball      v06           18 billboard_or_Bulletin_Board static  5  0.692  -0.0312  0.619 of   157,136  0.393 (247,458)  | 1.00 0.81 0.78 0.77; nod 0.00 splat 0.00 grown 0.00; conn 0.767
+   MartialArts        v13           11 rig                        env     5  0.754  +0.0003  0.003 of   118,672  0.962 (318)  | 0.99 0.26 0.24 0.01; nod 0.00 splat 0.00 grown 0.00; conn 0.005
+   Breakfast          v9             8 chair_or_seat              static  5  0.589  +0.0019  0.015 of    48,014  0.985 (713)  | 0.84 0.83 0.70 0.68; nod 0.00 splat 0.00 grown 0.00; conn 0.022
+   Welder             camera_0004   14 helmet                     static  3  0.000  +0.0000  0.000 of    42,026  nan (0)  | 0.91 0.83 0.78 0.78; nod 0.09 splat 0.09 grown 0.05; conn 0.000
+   CoffeeMartini      cam10         12 cushion_or_carpet          static  5  0.740  +0.0135  0.148 of    34,677  1.000 (5,133)  | 0.82 0.26 0.20 0.16; nod 0.00 splat 0.00 grown 0.00; conn 0.148
+   Welder             camera_0003    5 fire                       dynamic 2  0.661  -0.0210  0.005 of    25,205  0.021 (6,443)  | 0.76 0.24 0.20 0.16; nod 0.00 splat 0.00 grown 0.00; conn 0.107
+   Welder             camera_0004    8 box                        static  3  0.164  +0.0052  0.016 of    24,589  0.039 (9,965)  | 0.98 0.97 0.93 0.92; nod 0.02 splat 0.02 grown 0.02; conn 0.039
+   MATF               S1_CAM_1      26 bottle_or_cup              static  5  0.159  +0.0000  0.000 of    22,921  nan (0)  | 0.75 0.38 0.33 0.00; nod 0.13 splat 0.13 grown 0.00; conn 0.000
+   Welder             camera_0003   14 helmet                     static  3  0.016  -0.0028  0.000 of    22,257  0.000 (6,238)  | 0.96 0.86 0.80 0.80; nod 0.04 splat 0.04 grown 0.03; conn 0.004
+   Breakfast          v9            26 floor                      env     5  0.548  -0.0009  0.001 of    19,556  0.114 (167)  | 0.65 0.18 0.11 0.10; nod 0.00 splat 0.00 grown 0.00; conn 0.008
+   Painter            v0             9 table_or_desk              static  5  0.657  -0.0009  0.000 of    14,156  0.045 (67)  | 0.39 0.33 0.32 0.31; nod 0.00 splat 0.00 grown 0.00; conn 0.006
+   Blocks             cam0          14 chair_or_seat              static  5  0.313  +0.0000  0.000 of    11,825  nan (0)  | 0.89 0.79 0.48 0.43; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   CoffeeMartini      cam02         29 bottle_or_cup              static  5  0.607  +0.0000  0.000 of    11,790  nan (0)  | 1.00 0.66 0.41 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Breakfast          v5            26 floor                      env     1  0.771  +0.0037  0.011 of    10,902  0.868 (136)  | 0.54 0.36 0.27 0.24; nod 0.00 splat 0.00 grown 0.00; conn 0.117
+   Barn               v0            14 cart                       static  4  0.781  +0.0029  0.067 of     9,008  0.491 (1,225)  | 0.70 0.63 0.43 0.33; nod 0.00 splat 0.00 grown 0.00; conn 0.175
+   Welder             camera_0003    8 box                        static  2  0.352  -0.1209  0.119 of     8,942  0.023 (45,596)  | 1.00 0.92 0.91 0.91; nod 0.00 splat 0.00 grown 0.00; conn 0.196
+   CoffeeMartini      cam02         25 bottle_or_cup              static  2  0.701  -0.0064  0.003 of     6,329  0.080 (274)  | 0.73 0.73 0.36 0.35; nod 0.00 splat 0.00 grown 0.00; conn 0.170
+   Barn               v0             1 tool                       dynamic 4  0.722  +0.0000  0.000 of     5,383  nan (0)  | 0.55 0.29 0.10 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.002
+   Barn               v10           11 wood                       static  5  0.702  +0.0232  0.131 of     4,732  0.944 (656)  | 0.75 0.63 0.49 0.43; nod 0.00 splat 0.00 grown 0.00; conn 0.339
+   AlexaMeadeExhibit  camera_0003   24 handicrafts                static  5  0.667  -0.0005  0.000 of     4,660  0.000 (19)  | 1.00 0.68 0.68 0.67; nod 0.00 splat 0.00 grown 0.00; conn 0.043
+   Barn               v10           14 cart                       static  2  0.789  +0.0286  0.249 of     4,438  0.953 (1,161)  | 0.89 0.73 0.54 0.44; nod 0.00 splat 0.00 grown 0.00; conn 0.398
+   Barn               v10            1 tool                       dynamic 3  0.743  -0.0003  0.000 of     4,053  0.000 (12)  | 0.77 0.58 0.22 0.12; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   CBABasketball      v06           17 basket                     static  2  0.709  -0.0028  0.005 of     3,553  0.093 (183)  | 0.66 0.42 0.33 0.27; nod 0.00 splat 0.00 grown 0.00; conn 0.009
+   Carpark            v8            12 tree                       env     1  0.750  -0.0117  0.024 of     3,515  0.506 (164)  | 0.29 0.13 0.06 0.05; nod 0.51 splat 0.29 grown 0.17; conn 0.056
+   CBABasketball      v06            5 person                     dynamic 1  0.773  +0.0037  0.046 of     1,746  0.698 (116)  | 0.60 0.28 0.23 0.05; nod 0.00 splat 0.00 grown 0.00; conn 0.046
+   PoznanStreet       v0             5 tree                       dynamic 1  0.784  +0.0042  0.024 of     1,719  1.000 (41)  | 0.59 0.28 0.24 0.10; nod 0.00 splat 0.00 grown 0.00; conn 0.035
+   MATF               S1_CAM_1       6 person                     dynamic 2  0.371  +0.0013  0.008 of     1,499  1.000 (12)  | 0.76 0.61 0.46 0.06; nod 0.22 splat 0.21 grown 0.11; conn 0.025
+   AlexaMeadeExhibit  camera_0004   24 handicrafts                static  2  0.785  +0.0000  0.000 of     1,441  nan (0)  | 0.94 0.92 0.75 0.75; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   MATF               S1_CAM_1      21 microphone                 static  3  0.000  +0.0000  0.000 of     1,398  nan (0)  | 0.34 0.31 0.25 0.23; nod 0.60 splat 0.60 grown 0.55; conn 0.000
+   MartialArts        v13           15 door                       static  1  0.694  +0.0000  0.000 of     1,069  nan (0)  | 0.66 0.20 0.17 0.05; nod 0.00 splat 0.00 grown 0.00; conn 0.011
+   Blocks             cam0           3 toy                        dynamic 3  0.000  +0.0000  0.000 of       957  nan (0)  | 0.83 0.81 0.64 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   MATF               S1_CAM_1       7 person                     dynamic 2  0.346  +0.0017  0.020 of       890  0.600 (30)  | 0.14 0.08 0.06 0.04; nod 0.69 splat 0.69 grown 0.39; conn 0.040
+   MATF               S1_CAM_10     10 bottle_or_cup              static  4  0.546  +0.0098  0.100 of       803  0.860 (93)  | 0.81 0.77 0.71 0.71; nod 0.11 splat 0.11 grown 0.03; conn 0.118
+   Barn               v0            22 bag_or_package             static  1  0.689  +0.0000  0.000 of       789  nan (0)  | 0.15 0.15 0.12 0.12; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Barn               v10           22 bag_or_package             static  1  0.735  +0.0000  0.000 of       582  nan (0)  | 0.40 0.39 0.08 0.05; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Breakfast          v9            24 bottle_or_cup              static  1  0.462  +0.0000  0.000 of       483  nan (0)  | 0.90 0.25 0.21 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   PoznanStreet       v8             3 car                        dynamic 1  0.787  +0.0000  0.000 of       431  nan (0)  | 0.71 0.49 0.15 0.00; nod 0.02 splat 0.02 grown 0.00; conn 0.000
+   Carpark            v0            22 car                        static  1  0.776  +0.0015  0.057 of       315  0.514 (35)  | 0.31 0.19 0.17 0.17; nod 0.00 splat 0.00 grown 0.00; conn 0.057
+   Blocks             cam0           4 toy                        dynamic 1  0.713  +0.0000  0.000 of       290  nan (0)  | 0.99 0.79 0.71 0.71; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Breakfast          v5            14 bottle_or_cup              static  1  0.000  +0.0000  0.000 of       207  nan (0)  | 1.00 0.95 0.64 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Breakfast          v5            24 bottle_or_cup              static  1  0.000  +0.0000  0.000 of       113  nan (0)  | 0.70 0.27 0.00 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Blocks             cam9           3 toy                        dynamic 1  0.488  +0.0000  0.000 of        62  nan (0)  | 0.26 0.11 0.11 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+   Breakfast          v9            28 bottle_or_cup              dynamic 1  0.778  +0.0000  0.000 of        60  nan (0)  | 0.98 0.98 0.57 0.00; nod 0.00 splat 0.00 grown 0.00; conn 0.000
+
+SENSITIVITY (one constant at a time; registered values in brackets)
+   sens_EPS_PLANE_0.005 {'EPS_PLANE': 0.005}   mv         ALL dJF -0.00476 [-0.00780, -0.00223] added 12,804,334 prec 0.270 | UC140 dJF -0.00235 [-0.00793, +0.00219] prec 0.339 rec 0.0475 | CLEAN67 dJF -0.00382
+   sens_EPS_PLANE_0.005 {'EPS_PLANE': 0.005}   mv_plane   ALL dJF -0.00416 [-0.00682, -0.00209] added 12,250,082 prec 0.270 | UC140 dJF -0.00073 [-0.00638, +0.00414] prec 0.337 rec 0.0337 | CLEAN67 dJF +0.00067
+   sens_EPS_PLANE_0.02 {'EPS_PLANE': 0.02}    mv         ALL dJF -0.00476 [-0.00780, -0.00223] added 12,804,334 prec 0.270 | UC140 dJF -0.00235 [-0.00793, +0.00219] prec 0.339 rec 0.0475 | CLEAN67 dJF -0.00382
+   sens_EPS_PLANE_0.02 {'EPS_PLANE': 0.02}    mv_plane   ALL dJF -0.00370 [-0.00647, -0.00128] added 12,231,209 prec 0.284 | UC140 dJF +0.00388 [-0.00532, +0.01661] prec 0.423 rec 0.0507 | CLEAN67 dJF +0.01014
+   sens_K_LINK_2  {'K_LINK': 2}          mv         ALL dJF -0.00543 [-0.00923, -0.00237] added 13,346,957 prec 0.256 | UC140 dJF -0.00250 [-0.00807, +0.00208] prec 0.333 rec 0.0481 | CLEAN67 dJF -0.00387
+   sens_K_LINK_2  {'K_LINK': 2}          mv_nosplat ALL dJF -0.00487 [-0.00843, -0.00204] added 11,633,634 prec 0.252 | UC140 dJF -0.00127 [-0.00574, +0.00257] prec 0.374 rec 0.0369 | CLEAN67 dJF -0.00264
+   sens_K_LINK_8  {'K_LINK': 8}          mv         ALL dJF -0.00463 [-0.00767, -0.00213] added 12,827,414 prec 0.271 | UC140 dJF -0.00231 [-0.00789, +0.00221] prec 0.342 rec 0.0477 | CLEAN67 dJF -0.00375
+   sens_K_LINK_8  {'K_LINK': 8}          mv_nosplat ALL dJF -0.00406 [-0.00666, -0.00183] added 11,110,011 prec 0.268 | UC140 dJF -0.00106 [-0.00550, +0.00275] prec 0.388 rec 0.0365 | CLEAN67 dJF -0.00252
+   sens_LR_0.5    {'LR': 0.5}            mv         ALL dJF -0.00191 [-0.00390, -0.00041] added 12,100,086 prec 0.317 | UC140 dJF -0.00226 [-0.00946, +0.00368] prec 0.239 rec 0.2282 | CLEAN67 dJF -0.00598
+   sens_LR_0.5    {'LR': 0.5}            mv_nosplat ALL dJF -0.00173 [-0.00363, -0.00027] added 11,588,180 prec 0.313 | UC140 dJF -0.00205 [-0.00917, +0.00386] prec 0.241 rec 0.2250 | CLEAN67 dJF -0.00519
+   sens_LR_2      {'LR': 2.0}            mv         ALL dJF -0.00132 [-0.00236, -0.00037] added  2,065,425 prec 0.463 | UC140 dJF -0.00054 [-0.00271, +0.00130] prec 0.377 rec 0.0434 | CLEAN67 dJF -0.00212
+   sens_LR_2      {'LR': 2.0}            mv_nosplat ALL dJF -0.00132 [-0.00233, -0.00039] added  1,282,211 prec 0.496 | UC140 dJF -0.00029 [-0.00201, +0.00124] prec 0.418 rec 0.0336 | CLEAN67 dJF -0.00139
+   sens_M_LINK_1  {'M_LINK': 1}          mv         ALL dJF -0.00470 [-0.00777, -0.00216] added 12,783,282 prec 0.269 | UC140 dJF -0.00145 [-0.00722, +0.00344] prec 0.343 rec 0.0477 | CLEAN67 dJF -0.00366
+   sens_M_LINK_1  {'M_LINK': 1}          mv_nosplat ALL dJF -0.00414 [-0.00678, -0.00187] added 11,094,157 prec 0.265 | UC140 dJF -0.00021 [-0.00495, +0.00398] prec 0.389 rec 0.0365 | CLEAN67 dJF -0.00244
+   sens_M_LINK_25 {'M_LINK': 25}         mv         ALL dJF -0.00498 [-0.00832, -0.00224] added 12,961,833 prec 0.263 | UC140 dJF -0.00251 [-0.00802, +0.00200] prec 0.336 rec 0.0468 | CLEAN67 dJF -0.00364
+   sens_M_LINK_25 {'M_LINK': 25}         mv_nosplat ALL dJF -0.00442 [-0.00742, -0.00195] added 11,248,988 prec 0.259 | UC140 dJF -0.00126 [-0.00562, +0.00252] prec 0.380 rec 0.0356 | CLEAN67 dJF -0.00240
+   sens_R_ERODE_0 {'R_ERODE': 0}         mv         ALL dJF -0.00491 [-0.00795, -0.00236] added 12,767,552 prec 0.267 | UC140 dJF -0.00417 [-0.01058, +0.00084] prec 0.339 rec 0.0474 | CLEAN67 dJF -0.00386
+   sens_R_ERODE_0 {'R_ERODE': 0}         mv_nosplat ALL dJF -0.00434 [-0.00700, -0.00206] added 11,044,507 prec 0.264 | UC140 dJF -0.00290 [-0.00845, +0.00151] prec 0.384 rec 0.0362 | CLEAN67 dJF -0.00263
+   sens_R_ERODE_4 {'R_ERODE': 4}         mv         ALL dJF -0.00468 [-0.00767, -0.00222] added 12,806,363 prec 0.270 | UC140 dJF -0.00146 [-0.00565, +0.00229] prec 0.359 rec 0.0472 | CLEAN67 dJF -0.00518
+   sens_R_ERODE_4 {'R_ERODE': 4}         mv_nosplat ALL dJF -0.00410 [-0.00665, -0.00196] added 11,077,968 prec 0.268 | UC140 dJF -0.00100 [-0.00487, +0.00244] prec 0.393 rec 0.0359 | CLEAN67 dJF -0.00395
+   sens_TAU_2_0.01 {'TAU_2': 0.01}        mv         ALL dJF -0.00400 [-0.00737, -0.00129] added  9,852,686 prec 0.325 | UC140 dJF +0.00043 [-0.00323, +0.00360] prec 0.377 rec 0.0435 | CLEAN67 dJF +0.00021
+   sens_TAU_2_0.01 {'TAU_2': 0.01}        mv_nosplat ALL dJF -0.00362 [-0.00685, -0.00107] added  8,666,687 prec 0.318 | UC140 dJF +0.00126 [-0.00152, +0.00390] prec 0.448 rec 0.0355 | CLEAN67 dJF +0.00138
+   sens_TAU_2_0.04 {'TAU_2': 0.04}        mv         ALL dJF -0.00497 [-0.00811, -0.00234] added 13,168,010 prec 0.269 | UC140 dJF -0.00323 [-0.00974, +0.00209] prec 0.338 rec 0.0502 | CLEAN67 dJF -0.00571
+   sens_TAU_2_0.04 {'TAU_2': 0.04}        mv_nosplat ALL dJF -0.00443 [-0.00721, -0.00208] added 11,635,208 prec 0.262 | UC140 dJF -0.00186 [-0.00751, +0.00265] prec 0.378 rec 0.0387 | CLEAN67 dJF -0.00425
+   sens_TAU_X_0.01 {'TAU_X': 0.01}        mv         ALL dJF -0.00480 [-0.00782, -0.00228] added 12,775,364 prec 0.268 | UC140 dJF -0.00241 [-0.00800, +0.00217] prec 0.337 rec 0.0474 | CLEAN67 dJF -0.00382
+   sens_TAU_X_0.01 {'TAU_X': 0.01}        mv_nosplat ALL dJF -0.00424 [-0.00686, -0.00201] added 11,063,283 prec 0.265 | UC140 dJF -0.00118 [-0.00567, +0.00266] prec 0.381 rec 0.0363 | CLEAN67 dJF -0.00258
+   sens_TAU_X_0.04 {'TAU_X': 0.04}        mv         ALL dJF -0.00476 [-0.00781, -0.00221] added 12,820,958 prec 0.269 | UC140 dJF -0.00236 [-0.00790, +0.00214] prec 0.342 rec 0.0476 | CLEAN67 dJF -0.00380
+   sens_TAU_X_0.04 {'TAU_X': 0.04}        mv_nosplat ALL dJF -0.00419 [-0.00684, -0.00193] added 11,104,160 prec 0.266 | UC140 dJF -0.00111 [-0.00557, +0.00268] prec 0.388 rec 0.0364 | CLEAN67 dJF -0.00257

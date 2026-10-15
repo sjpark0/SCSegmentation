@@ -1,0 +1,186 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.0.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+[0m[32mINFO 2026-10-15 09:34:22,006 1 sam3_video_base.py: 125:[0m setting max_num_objects=10000 and num_obj_for_compile=16
+AlexaMeadeExhibit    t=   4 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   3.7s
+AlexaMeadeExhibit    t=   4 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   4.4s
+AlexaMeadeExhibit    t=   8 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   3.4s
+AlexaMeadeExhibit    t=   8 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   4.4s
+AlexaMeadeExhibit    t=  12 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   3.5s
+AlexaMeadeExhibit    t=  12 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   4.4s
+AlexaMeadeExhibit    t=  16 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   3.4s
+AlexaMeadeExhibit    t=  16 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   4.4s
+AlexaMeadeExhibit    t=  20 camera_0003  B=camera_0004  objs 33 cand 2 neigh 2 masks  32   3.4s
+AlexaMeadeExhibit    t=  20 camera_0004  B=camera_0003  objs 33 cand 3 neigh 3 masks  29   4.4s
+AlexaMeadeFacePaint  t=   4 camera_0008  B=camera_0009  objs 12 cand 2 neigh 2 masks   9   1.6s
+AlexaMeadeFacePaint  t=   4 camera_0009  B=camera_0008  objs 12 cand 2 neigh 2 masks  10   1.6s
+AlexaMeadeFacePaint  t=   8 camera_0008  B=camera_0009  objs 12 cand 2 neigh 2 masks   9   1.6s
+AlexaMeadeFacePaint  t=   8 camera_0009  B=camera_0008  objs 12 cand 2 neigh 2 masks  10   1.6s
+AlexaMeadeFacePaint  t=  12 camera_0008  B=camera_0009  objs 12 cand 2 neigh 2 masks   9   1.6s
+AlexaMeadeFacePaint  t=  12 camera_0009  B=camera_0008  objs 12 cand 2 neigh 2 masks  10   1.6s
+AlexaMeadeFacePaint  t=  16 camera_0008  B=camera_0009  objs 12 cand 2 neigh 2 masks   9   1.6s
+AlexaMeadeFacePaint  t=  16 camera_0009  B=camera_0008  objs 12 cand 2 neigh 2 masks  10   1.6s
+AlexaMeadeFacePaint  t=  20 camera_0008  B=camera_0009  objs 12 cand 2 neigh 2 masks   9   1.6s
+AlexaMeadeFacePaint  t=  20 camera_0009  B=camera_0008  objs 12 cand 2 neigh 2 masks  10   1.6s
+Barn                 t=   4 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   3.0s
+Barn                 t=   4 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=   8 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   3.0s
+Barn                 t=   8 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=  12 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   3.0s
+Barn                 t=  12 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=  16 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=  16 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=  20 v0           B=v10          objs 30 cand 3 neigh 3 masks  30   3.1s
+Barn                 t=  20 v10          B=v0           objs 30 cand 3 neigh 3 masks  30   3.1s
+Blocks               t=   4 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  14   2.1s
+Blocks               t=   4 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   2.1s
+Blocks               t=   8 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  14   2.1s
+Blocks               t=   8 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   2.1s
+Blocks               t=  12 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  13   2.1s
+Blocks               t=  12 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   2.1s
+Blocks               t=  16 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  14   2.1s
+Blocks               t=  16 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   2.1s
+Blocks               t=  20 cam0         B=cam9         objs 16 cand 3 neigh 3 masks  14   2.1s
+Blocks               t=  20 cam9         B=cam0         objs 16 cand 3 neigh 3 masks  15   2.1s
+Breakfast            t=   4 v5           B=v9           objs 27 cand 3 neigh 3 masks  27   3.5s
+Breakfast            t=   4 v9           B=v5           objs 27 cand 3 neigh 3 masks  25   3.4s
+Breakfast            t=   8 v5           B=v9           objs 26 cand 3 neigh 3 masks  26   3.4s
+Breakfast            t=   8 v9           B=v5           objs 26 cand 3 neigh 3 masks  23   3.4s
+Breakfast            t=  12 v5           B=v9           objs 27 cand 3 neigh 3 masks  24   3.5s
+Breakfast            t=  12 v9           B=v5           objs 27 cand 3 neigh 3 masks  25   3.4s
+Breakfast            t=  16 v5           B=v9           objs 27 cand 3 neigh 3 masks  25   3.5s
+Breakfast            t=  16 v9           B=v5           objs 27 cand 3 neigh 3 masks  24   3.4s
+Breakfast            t=  20 v5           B=v9           objs 25 cand 3 neigh 3 masks  24   3.4s
+Breakfast            t=  20 v9           B=v5           objs 25 cand 3 neigh 3 masks  24   3.4s
+CBABasketball        t=  94 v06          B=v24          objs 22 cand 3 neigh 3 masks  18   2.8s
+CBABasketball        t=  94 v24          B=v06          objs 22 cand 3 neigh 3 masks  18   2.9s
+CBABasketball        t=  98 v06          B=v24          objs 22 cand 3 neigh 3 masks  18   2.9s
+CBABasketball        t=  98 v24          B=v06          objs 22 cand 3 neigh 3 masks  18   2.9s
+CBABasketball        t= 102 v06          B=v24          objs 22 cand 3 neigh 3 masks  17   2.8s
+CBABasketball        t= 102 v24          B=v06          objs 22 cand 3 neigh 3 masks  18   2.9s
+CBABasketball        t= 106 v06          B=v24          objs 22 cand 3 neigh 3 masks  17   2.8s
+CBABasketball        t= 106 v24          B=v06          objs 22 cand 3 neigh 3 masks  17   2.9s
+CBABasketball        t= 110 v06          B=v24          objs 20 cand 3 neigh 3 masks  16   2.7s
+CBABasketball        t= 110 v24          B=v06          objs 20 cand 3 neigh 3 masks  16   2.8s
+Carpark              t=   4 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   2.1s
+Carpark              t=   4 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   2.3s
+Carpark              t=   8 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   2.1s
+Carpark              t=   8 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   2.3s
+Carpark              t=  12 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   2.1s
+Carpark              t=  12 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   2.0s
+Carpark              t=  16 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   2.3s
+Carpark              t=  16 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   2.3s
+Carpark              t=  20 v0           B=v8           objs 22 cand 3 neigh 3 masks  22   2.0s
+Carpark              t=  20 v8           B=v0           objs 22 cand 3 neigh 3 masks  22   2.0s
+CoffeeMartini        t=   4 cam02        skip (DONE)
+CoffeeMartini        t=   4 cam10        skip (DONE)
+CoffeeMartini        t=   8 cam02        B=cam10        objs 50 cand 3 neigh 3 masks  45   6.4s
+CoffeeMartini        t=   8 cam10        B=cam02        objs 50 cand 3 neigh 3 masks  36   6.3s
+CoffeeMartini        t=  12 cam02        B=cam10        objs 50 cand 3 neigh 3 masks  45   6.4s
+CoffeeMartini        t=  12 cam10        B=cam02        objs 50 cand 3 neigh 3 masks  36   6.3s
+CoffeeMartini        t=  16 cam02        B=cam10        objs 50 cand 3 neigh 3 masks  45   6.4s
+CoffeeMartini        t=  16 cam10        B=cam02        objs 50 cand 3 neigh 3 masks  36   6.3s
+CoffeeMartini        t=  20 cam02        B=cam10        objs 50 cand 3 neigh 3 masks  45   6.4s
+CoffeeMartini        t=  20 cam10        B=cam02        objs 50 cand 3 neigh 3 masks  36   6.3s
+Dog                  t=   4 camera_0003  skip (DONE)
+Dog                  t=   4 camera_0004  skip (DONE)
+Dog                  t=   8 camera_0003  B=camera_0004  objs  7 cand 2 neigh 2 masks   7   1.1s
+Dog                  t=   8 camera_0004  B=camera_0003  objs  7 cand 2 neigh 2 masks   6   1.0s
+Dog                  t=  12 camera_0003  B=camera_0004  objs  7 cand 2 neigh 2 masks   7   1.1s
+Dog                  t=  12 camera_0004  B=camera_0003  objs  7 cand 3 neigh 3 masks   6   1.3s
+Dog                  t=  16 camera_0003  B=camera_0004  objs  7 cand 2 neigh 2 masks   7   1.1s
+Dog                  t=  16 camera_0004  B=camera_0003  objs  7 cand 3 neigh 3 masks   6   1.3s
+Dog                  t=  20 camera_0003  B=camera_0004  objs  7 cand 2 neigh 2 masks   7   1.1s
+Dog                  t=  20 camera_0004  B=camera_0003  objs  7 cand 2 neigh 2 masks   6   1.0s
+Fencing              t=   4 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=   4 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=   8 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=   8 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  12 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  12 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  16 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  16 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  20 v0           B=v9           objs  8 cand 3 neigh 3 masks   8   1.3s
+Fencing              t=  20 v9           B=v0           objs  8 cand 3 neigh 3 masks   8   1.3s
+FlameSteak           t=   4 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  19   6.4s
+FlameSteak           t=   4 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   6.4s
+FlameSteak           t=   8 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  19   6.4s
+FlameSteak           t=   8 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   6.4s
+FlameSteak           t=  12 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  19   6.4s
+FlameSteak           t=  12 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   6.4s
+FlameSteak           t=  16 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  19   6.4s
+FlameSteak           t=  16 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   6.4s
+FlameSteak           t=  20 cam01        B=cam10        objs 50 cand 3 neigh 3 masks  19   6.4s
+FlameSteak           t=  20 cam10        B=cam01        objs 50 cand 3 neigh 3 masks  44   6.4s
+Frog                 t= 184 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 184 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 188 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 188 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 192 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 192 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 196 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 196 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 200 v10          B=v4           objs  5 cand 3 neigh 3 masks   5   1.1s
+Frog                 t= 200 v4           B=v10          objs  5 cand 3 neigh 3 masks   5   1.1s
+MATF                 t=  34 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  24   3.3s
+MATF                 t=  34 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks  10   4.2s
+MATF                 t=  38 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  26   3.3s
+MATF                 t=  38 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks  10   4.2s
+MATF                 t=  42 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  25   3.3s
+MATF                 t=  42 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks  10   4.2s
+MATF                 t=  46 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  26   3.3s
+MATF                 t=  46 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks   9   4.3s
+MATF                 t=  50 S1_CAM_1     B=S1_CAM_10    objs 33 cand 2 neigh 2 masks  26   3.3s
+MATF                 t=  50 S1_CAM_10    B=S1_CAM_1     objs 33 cand 3 neigh 3 masks  10   4.2s
+MartialArts          t=   4 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   2.6s
+MartialArts          t=   4 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   2.7s
+MartialArts          t=   8 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   2.6s
+MartialArts          t=   8 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   2.7s
+MartialArts          t=  12 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   2.6s
+MartialArts          t=  12 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   2.7s
+MartialArts          t=  16 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   2.6s
+MartialArts          t=  16 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   2.7s
+MartialArts          t=  20 v13          B=v5           objs 19 cand 3 neigh 3 masks  15   2.6s
+MartialArts          t=  20 v5           B=v13          objs 19 cand 3 neigh 3 masks  17   2.7s
+Painter              t=  44 v0           B=v15          objs 24 cand 3 neigh 3 masks  24   2.5s
+Painter              t=  44 v15          B=v0           objs 24 cand 3 neigh 3 masks  24   2.5s
+Painter              t=  48 v0           B=v15          objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  48 v15          B=v0           objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  52 v0           B=v15          objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  52 v15          B=v0           objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  56 v0           B=v15          objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  56 v15          B=v0           objs 23 cand 3 neigh 3 masks  23   2.4s
+Painter              t=  60 v0           B=v15          objs 23 cand 3 neigh 3 masks  22   2.9s
+Painter              t=  60 v15          B=v0           objs 23 cand 3 neigh 3 masks  22   2.9s
+PoznanStreet         t=  94 v0           B=v8           objs 24 cand 3 neigh 3 masks  23   2.5s
+PoznanStreet         t=  94 v8           B=v0           objs 24 cand 3 neigh 3 masks  24   2.8s
+PoznanStreet         t=  98 v0           B=v8           objs 23 cand 3 neigh 3 masks  22   2.1s
+PoznanStreet         t=  98 v8           B=v0           objs 23 cand 3 neigh 3 masks  23   2.7s
+PoznanStreet         t= 102 v0           B=v8           objs 23 cand 3 neigh 3 masks  22   2.1s
+PoznanStreet         t= 102 v8           B=v0           objs 23 cand 3 neigh 3 masks  23   2.7s
+PoznanStreet         t= 106 v0           B=v8           objs 23 cand 3 neigh 3 masks  22   2.1s
+PoznanStreet         t= 106 v8           B=v0           objs 23 cand 3 neigh 3 masks  23   2.9s
+PoznanStreet         t= 110 v0           B=v8           objs 24 cand 3 neigh 3 masks  23   2.8s
+PoznanStreet         t= 110 v8           B=v0           objs 24 cand 3 neigh 3 masks  23   2.9s
+Welder               t=   4 camera_0003  B=camera_0004  objs 16 cand 3 neigh 3 masks  16   2.3s
+Welder               t=   4 camera_0004  B=camera_0003  objs 16 cand 2 neigh 2 masks  15   1.6s
+Welder               t=   8 camera_0003  B=camera_0004  objs 16 cand 3 neigh 3 masks  16   2.3s
+Welder               t=   8 camera_0004  B=camera_0003  objs 16 cand 2 neigh 2 masks  15   1.6s
+Welder               t=  12 camera_0003  B=camera_0004  objs 16 cand 3 neigh 3 masks  16   2.3s
+Welder               t=  12 camera_0004  B=camera_0003  objs 16 cand 3 neigh 3 masks  15   2.0s
+Welder               t=  16 camera_0003  B=camera_0004  objs 15 cand 3 neigh 3 masks  15   2.2s
+Welder               t=  16 camera_0004  B=camera_0003  objs 15 cand 2 neigh 2 masks  14   1.5s
+Welder               t=  20 camera_0003  B=camera_0004  objs 15 cand 3 neigh 3 masks  15   2.2s
+Welder               t=  20 camera_0004  B=camera_0003  objs 15 cand 2 neigh 2 masks  14   1.5s

@@ -1,0 +1,35 @@
+== pts
+   pts|20|None            all -0.00122 [-0.00263,+0.00018]  UC140 +0.00557  UC135 w/o CBA v06 billboard +0.00027 [-0.00158,+0.00216]  clean67 +0.01225  added prec 0.359  UC prec 0.776
+   pts|200|None           all -0.00115 [-0.00253,+0.00023]  UC140 +0.00556  UC135 w/o CBA v06 billboard +0.00026 [-0.00160,+0.00215]  clean67 +0.01223  added prec 0.357  UC prec 0.777
+   pts|2000|None          all -0.00061 [-0.00156,+0.00011]  UC140 +0.00028  UC135 w/o CBA v06 billboard +0.00029 [-0.00110,+0.00186]  clean67 +0.00081  added prec 0.327  UC prec 0.603
+   pts|20|0.7             all +0.00004 [-0.00054,+0.00046]  UC140 +0.00097  UC135 w/o CBA v06 billboard +0.00101 [+0.00014,+0.00215]  clean67 +0.00098  added prec 0.350  UC prec 0.774
+   pts|20|0.85            all +0.00032 [+0.00004,+0.00059]  UC140 +0.00058  UC135 w/o CBA v06 billboard +0.00060 [+0.00004,+0.00137]  clean67 +0.00111  added prec 0.595  UC prec 0.910
+   RANGE over the 5 registered configs: all dJF [-0.00122, +0.00032]; UC140 dJF [+0.00028, +0.00557]; added precision [0.327, 0.595]
+== pts_whole
+   pts_whole|20|None      all -0.00523 [-0.00787,-0.00250]  UC140 +0.00439  UC135 w/o CBA v06 billboard -0.00006 [-0.00361,+0.00348]  clean67 +0.01239  added prec 0.316  UC prec 0.656
+   pts_whole|200|None     all -0.00521 [-0.00788,-0.00247]  UC140 +0.00458  UC135 w/o CBA v06 billboard +0.00014 [-0.00339,+0.00362]  clean67 +0.01238  added prec 0.315  UC prec 0.657
+   pts_whole|2000|None    all -0.00345 [-0.00527,-0.00154]  UC140 +0.00082  UC135 w/o CBA v06 billboard +0.00085 [-0.00143,+0.00370]  clean67 +0.00319  added prec 0.304  UC prec 0.350
+   pts_whole|20|0.7       all -0.00035 [-0.00088,+0.00011]  UC140 +0.00080  UC135 w/o CBA v06 billboard +0.00083 [-0.00006,+0.00217]  clean67 +0.00174  added prec 0.353  UC prec 0.829
+   pts_whole|20|0.85      all +0.00006 [-0.00007,+0.00022]  UC140 +0.00044  UC135 w/o CBA v06 billboard +0.00045 [+0.00000,+0.00117]  clean67 +0.00091  added prec 0.559  UC prec 0.835
+   RANGE over the 5 registered configs: all dJF [-0.00523, +0.00006]; UC140 dJF [+0.00044, +0.00458]; added precision [0.304, 0.559]
+== pts_neg
+   pts_neg|20|None        all -0.00060 [-0.00099,-0.00020]  UC140 +0.00040  UC135 w/o CBA v06 billboard +0.00040 [-0.00009,+0.00100]  clean67 +0.00008  added prec 0.395  UC prec 0.388
+   pts_neg|200|None       all -0.00060 [-0.00099,-0.00020]  UC140 +0.00033  UC135 w/o CBA v06 billboard +0.00032 [-0.00015,+0.00089]  clean67 +0.00008  added prec 0.394  UC prec 0.388
+   pts_neg|2000|None      all -0.00029 [-0.00062,+0.00000]  UC140 +0.00023  UC135 w/o CBA v06 billboard +0.00024 [-0.00020,+0.00078]  clean67 +0.00001  added prec 0.396  UC prec 0.392
+   pts_neg|20|0.7         all +0.00000 [-0.00000,+0.00001]  UC140 +0.00000  UC135 w/o CBA v06 billboard +0.00000 [+0.00000,+0.00000]  clean67 +0.00000  added prec 0.519  UC prec nan
+   pts_neg|20|0.85        all +0.00000 [+0.00000,+0.00000]  UC140 +0.00000  UC135 w/o CBA v06 billboard +0.00000 [+0.00000,+0.00000]  clean67 +0.00000  added prec 0.862  UC prec nan
+   RANGE over the 5 registered configs: all dJF [-0.00060, +0.00000]; UC140 dJF [+0.00000, +0.00040]; added precision [0.394, 0.862]
+== box
+   box|20|None            all -0.00115 [-0.00192,-0.00038]  UC140 +0.00176  UC135 w/o CBA v06 billboard +0.00183 [-0.00111,+0.00522]  clean67 +0.00316  added prec 0.444  UC prec 0.500
+   box|200|None           all -0.00116 [-0.00193,-0.00039]  UC140 +0.00176  UC135 w/o CBA v06 billboard +0.00183 [-0.00111,+0.00521]  clean67 +0.00315  added prec 0.441  UC prec 0.499
+   box|2000|None          all -0.00061 [-0.00114,-0.00006]  UC140 +0.00226  UC135 w/o CBA v06 billboard +0.00234 [+0.00006,+0.00554]  clean67 +0.00300  added prec 0.447  UC prec 0.526
+   box|20|0.7             all -0.00083 [-0.00141,-0.00028]  UC140 +0.00085  UC135 w/o CBA v06 billboard +0.00089 [-0.00019,+0.00260]  clean67 +0.00133  added prec 0.446  UC prec 0.454
+   box|20|0.85            all -0.00029 [-0.00065,+0.00004]  UC140 -0.00001  UC135 w/o CBA v06 billboard -0.00002 [-0.00007,+0.00002]  clean67 -0.00003  added prec 0.446  UC prec 0.016
+   RANGE over the 5 registered configs: all dJF [-0.00116, -0.00029]; UC140 dJF [-0.00001, +0.00226]; added precision [0.441, 0.447]
+== mask_box
+   mask_box|20|None       all -0.00094 [-0.00189,-0.00017]  UC140 +0.00077  UC135 w/o CBA v06 billboard +0.00081 [-0.00019,+0.00269]  clean67 +0.00060  added prec 0.428  UC prec 0.360
+   mask_box|200|None      all -0.00094 [-0.00188,-0.00017]  UC140 +0.00080  UC135 w/o CBA v06 billboard +0.00083 [-0.00016,+0.00271]  clean67 +0.00059  added prec 0.422  UC prec 0.357
+   mask_box|2000|None     all -0.00035 [-0.00081,+0.00005]  UC140 +0.00065  UC135 w/o CBA v06 billboard +0.00068 [-0.00023,+0.00252]  clean67 +0.00046  added prec 0.435  UC prec 0.345
+   mask_box|20|0.7        all -0.00054 [-0.00118,-0.00005]  UC140 +0.00006  UC135 w/o CBA v06 billboard +0.00006 [+0.00001,+0.00013]  clean67 +0.00006  added prec 0.434  UC prec 0.341
+   mask_box|20|0.85       all -0.00012 [-0.00035,+0.00010]  UC140 +0.00002  UC135 w/o CBA v06 billboard +0.00002 [+0.00000,+0.00005]  clean67 +0.00003  added prec 0.459  UC prec 0.303
+   RANGE over the 5 registered configs: all dJF [-0.00094, -0.00012]; UC140 dJF [+0.00002, +0.00080]; added precision [0.422, 0.459]

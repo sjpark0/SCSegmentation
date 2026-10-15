@@ -1,0 +1,1216 @@
+{
+  "summary": "Inventory protocol-compatible new information sources for the under-cover block, measure their ceilings on a non-keyframe dev set, and synthesize an S1-E13 plan plus the protocol decisions for the user",
+  "agentCount": 10,
+  "logs": [
+    "understand done 3/3",
+    "measure done 4/4"
+  ],
+  "result": {
+    "maps": [
+      {
+        "summary": "I sorted what could tell stage 1 how far an object extends beyond what c_ini shows, using the protocol rules in docs/muvod-protocol.md, docs/mvvos-algorithm-analysis.md §1 and docs/stage1-E8.md. Every new number is from the DEV set (20 non-keyframe frames × 2 non-c_ini annotated cameras × 17 scenes = 13,239 rows). No keyframe label map, cache or prediction was opened. Keyframe numbers below are quoted from existing files (extent_vis_report.txt, coupling3.txt, the E2 docs), not recomputed.\n\n**What counts as beyond-c_ini on DEV.** I ported the S1-E11 visibility classes to numpy. The port gives identical class counts to the torch rows (train_vis.json) on all 6,608 overlapping DEV rows. On DEV, 47.7% of target GT is invisible from c_ini: outside 20.1%, occluded 20.1%, no depth 7.5% (all as shares of target GT). For the same 22 under-cover (scene, camera, object) on DEV frames it is 66.4%: outside 34.7%, occluded 17.1%, no depth 14.6%. The keyframe missed region, quoted from extent_vis_report.txt, is 1,325,193 px: visible from c_ini 0.091, outside 0.366, occluded 0.160, no depth 0.384.\n\n**(i) Allowed under the protocol we adopted.** All exist for 17/17 scenes.\n- **c_ini frame-0 mask (the input).** By definition it reaches only the visible class.\n  - Reprojected onto its own GT, it covers 1.9% of the keyframe missed region.\n  - 60.4% of DEV occluded pixels are hidden by the same object (c_ini sees that object along the ray); 49.4% for the 22 objects.\n  - Splatting c_ini's labelled Pi3 points forward into the target reaches 14.8% of DEV no-depth pixels, but only 0.5% for the 22 objects and 0% for the Dog tree.\n- **RGB of all rig cameras at the same instant** (9–46 per scene, 369 in total), plus Pi3 geometry derived from them. Points visible from at least one other camera: outside 0.888, occluded 0.931, no depth 0 (DEV); 0.682 of beyond-c_ini for the 22 objects. Applied to the keyframe class mix this gives 0.458–0.474, matching the 0.459 the E11 report measured on the keyframe. But those cameras carry no labels, and existing neighbour seeds cover only 0.189 of the keyframe missed region.\n- **c_ini RGB at other times** (video). The protocol allows it, but it falls outside the single-instant stage-1 scope.\n  - It cannot reach outside pixels: the rig is fixed (Pi3 relative rotation varies at most 0.67° across frames).\n  - Occluded: 16.0% of DEV occluded pixels have a moving occluder. The cross-time visibility gain above the noise floor is 3.8% of occluded pixels on DEV and 0.0% for the 22 objects.\n  - No depth: the same target pixel has valid depth at another frame for 10.9% (3.4% for the Dog tree).\n- **SAM 3 visual exemplar from c_ini's box, and the target's own appearance.** These act on the target image, so in principle they reach every class including no-depth. The existing E2 exemplar-detection gate failed (9/19 pairs, hallucination on 129/132 empty rows).\n- **Fold-trained priors** (other scenes' GT). Allowed with the training-data caveat from E8; E12 showed this route made the model more conservative.\n\n**(ii) Separate track only.**\n- **Label names as SAM 3 text prompts.** Source: Data/MVSeg/<s>/Mask/objects_labels.json, identical to stage1/Data/<s>/objects_labels.json; 17/17 scenes, 459 objects, 73 names, 11 of them merged names such as handrail_or_fence. No method uses these files today, only evaluation and diagnostics.\n  - In principle the prompt reaches 100% of the beyond-c_ini region in every class, including no-depth.\n  - Ambiguity: 297 of the 398 basic objects share their name with another object in the same scene.\n  - Pixel-weighted, scene-unique names cover 79.4% of the DEV beyond-c_ini region and 97.9% for the 22 objects.\n  - 13 of the 22 under-cover objects have a unique name, including all 9 env objects; all 50 env objects in the dataset have scene-unique names.\n  - The same metadata names the 61 complete-only objects, which must not be prompted in the main track.\n- **A second annotated reference camera B.** Every annotated camera is a scoring camera, so J&F³ itself would change.\n  - Label transfer from B's GT reaches 17.7% of the DEV beyond-c_ini region (outside 0.130, occluded 0.290, no depth 0) and 7.8% for the 22 objects (outside 0.018).\n  - On the keyframe (existing coupling3.txt), B's warped GT covers at least 50% of the missed pixels in 2/22 pairs and at most 3% in 11/22, including the Dog tree, both CBABasketball grandstands and the Welder ground.\n- **Calibration from the source datasets** (models.json, poses_bounds.npy). Not in the MUVOD distribution or the repo, and gives no labels or depth.\n\n**(iii) Forbidden.**\n- Any annotated camera's GT as input: the scoring cameras at any frame, and c_ini at frames other than the reference frame (those 20 frames are scored).\n- Per-camera object-presence sets.\n- Training on the test scene.\n- Choosing or tuning anything on the keyframe.\n\n**Conclusion.** For the under-cover region, nothing within (i) carries labels into the outside and no-depth classes. The geometric sources give zero reach on no-depth, and the label-carrying ones barely reach the outside class. The only sources that reach all three classes in principle act on the target image: label names (ii) and exemplars or appearance (i). Name ambiguity is small on exactly the objects that fail.",
+        "measurements": [
+          {
+            "name": "numpy port vs torch visibility machinery (DEV rows)",
+            "value": "6,608 / 6,608 (scene,t,cam,obj) rows with identical vis/outside/occluded/nodepth counts; pixel shares 0.52321/0.20061/0.20140/0.07479 both",
+            "how": "validate_port.py: dev_reach.py full-res classes (port of reproj_inputs + project_reference_masks + reproject_coords, OCC_TOL 0.01, conf>0.1) vs scratchpad/visibility-signal/train_vis.json torch rows, restricted to ref == c_ini and t != ref_frame"
+          },
+          {
+            "name": "DEV beyond-c_ini region R (all 13,239 DEV rows)",
+            "value": "R = 993,242,114 px = 0.477 of target GT (2,083,737,608 px); vis 0.523 / outside 0.201 / occluded 0.201 / nodepth 0.075",
+            "how": "dev_reach.py: 17 scenes x 20 non-ref train frames x 2 non-c_ini annotated targets, objects = basic-set ids (docs/raw/muvod_object_sets.json seed_ids_c_ini) present in target label map; reference = c_ini at same frame t; Pi3 from Cache/pi3_frames/<t>"
+          },
+          {
+            "name": "DEV R for the same 22 under-cover (scene,cam,obj) on non-keyframe frames",
+            "value": "440 rows; R = 0.664 of GT; outside 0.347 / occluded 0.171 / nodepth 0.146 (Dog camera_0004 tree: R 0.830, nodepth 0.511 of GT)",
+            "how": "summarize.py block 'SAME 22' (identities from extent_vis_report.txt used only to select DEV rows)"
+          },
+          {
+            "name": "keyframe under-cover missed-region class mix (QUOTED, not recomputed)",
+            "value": "1,325,193 px: vis 0.091, outside 0.366, occluded 0.160, nodepth 0.384 (pixel-weighted); without Dog tree 798,194 px: 0.149/0.591/0.227/0.033; visible from >=1 other non-ref cam 0.459; covered by neighbour seeds 0.189; on ref GT 0.019",
+            "how": "MVSeed/refloss/e11/extent_vis_report.txt summary block '== under-cover failing (22)'"
+          },
+          {
+            "name": "availability of sources (17 scenes)",
+            "value": "c_ini frame-0 mask 17/17; RGB video of every rig camera 17/17 (369 cams, 9-46 per scene, 65-300 frames/cam); Pi3 caches 21 frames x all cams 17/17 (357 frames); SAM3 feats all cams on 11 stride-2 frames; objects_labels.json 17/17 (raw == stage1 copy); 3 annotated cams x 21 frames 17/17; c_ini RGB frames after the 21-frame window 44-279; before ref frame only CBABasketball 90, PoznanStreet 90, Frog 180, MATF 30, Painter 40",
+            "how": "availability.py over Data/MVSeg/<s>/{Video,Mask}, stage1/Data/<s>/{meta.json,Cache/pi3_frames,Cache/sam3_feats}, SCSam3/demo/MVSeg.json; output availability.json"
+          },
+          {
+            "name": "label metadata statistics",
+            "value": "459 labelled objects, 73 distinct names (11 merged '_or_' names), types dynamic 96 / static 313 / env 50; basic 398, complete-only 61; 297/398 basic objects share their name with another object of the same scene; 50/50 env objects scene-unique; 13/22 under-cover objects scene-unique (all 9 env)",
+            "how": "availability.py + one-off python over stage1/Data/<s>/objects_labels.json; summarize.py label-multiplicity block"
+          },
+          {
+            "name": "reach: label-name (text) prompt, DEV",
+            "value": "in principle 1.0 of R in every class (acts on the target image, needs no geometry); share of R in scene-unique-name objects: outside 0.836 / occluded 0.693 / nodepth 0.954 / R 0.794; same-22 DEV 0.979; same-label twin present in the target: R 0.194 (same-22 0.021)",
+            "how": "summarize.py: R pixels weighted by Counter(label names of scene)[label]==1 and by row flag same_label_in_x"
+          },
+          {
+            "name": "reach: third annotated camera B GT (2nd reference), DEV",
+            "value": "B visible: outside 0.147 / occluded 0.329 / nodepth 0 / R 0.201; lands on B's GT of o: 0.130 / 0.290 / 0 / R 0.177; same-22: R 0.078 (outside 0.018); Dog tree R 0.140",
+            "how": "dev_reach.py full-res reprojection of target pixels into B (same machinery), nearest B label lookup == o"
+          },
+          {
+            "name": "reach: B GT on keyframe under-cover pairs (QUOTED)",
+            "value": "non-c_ini annotated cam's warped GT covers >=50% of missed px in 2/22 pairs (Fencing weapon 50%, MATF microphone 89%), <=3% in 11/22 incl. Dog tree 3%, CBA v24 0%, CBA v06 0%, Welder ground 0%; best other annotated cam cost-weighted 0.156",
+            "how": "MVSeed/refloss/e11/coupling3.txt section (1)"
+          },
+          {
+            "name": "reach: unlabelled multi-view RGB (visible from >=1 other rig camera), DEV",
+            "value": "all cams except c_ini and target: outside 0.888 / occluded 0.931 / nodepth 0.000 / R 0.767; non-annotated cams only 0.887 / 0.917 / 0 / 0.761; same-22 R 0.682; Dog tree R 0.383",
+            "how": "dev_reach.py: per other camera, work-resolution reprojection with its Pi3 depth test, union, nearest-upsampled; nodepth is 0 by construction (target depth needed)"
+          },
+          {
+            "name": "DEV per-class rates applied to the quoted keyframe class mix",
+            "value": "fractions of all 1,325,193 missed px, (all-DEV rates / same-22 rates): any_vis 0.474/0.458 (keyframe measured 0.459), B_ongt 0.094/0.049, c_ini forward splat 0.129/0.063, scene-unique label 0.783/0.896",
+            "how": "summarize.py: sum over classes of quoted keyframe share x DEV reach rate of that class"
+          },
+          {
+            "name": "reach: c_ini GT forward-splat into target (protocol input only)",
+            "value": "DEV: outside 0.004 / occluded 0.442 / nodepth 0.148 / R 0.212, precision 0.523/0.759/0.779; same-22: 0.002/0.374/0.005, precision 0.51/0.41/0.25; Dog tree nodepth 0.000",
+            "how": "dev_reach.py: c_ini labelled Pi3 points (work res, conf>0.1) projected into target, z-buffer nearest wins, nearest-upsampled; hit = splat label == target GT"
+          },
+          {
+            "name": "occluded-class occluder split (DEV)",
+            "value": "occluder = c_ini label at the reprojected spot: self (same object) 0.604, dynamic 0.160, other static/env 0.236; same-22: self 0.494, dynamic 0.153, other 0.353; Dog tree self 0.486",
+            "how": "dev_reach.py: L_cini[round(v),round(u)] for occluded pixels, typed via objects_labels.json"
+          },
+          {
+            "name": "reach: c_ini RGB at other times (video), DEV",
+            "value": "outside 0 by construction (fixed rig; Pi3 relative rotation c_ini->target varies <= 0.67 deg across the 20 DEV runs); occluded static/env px visible from c_ini at >=1 other DEV frame: dynamic-occluder px 0.298 vs noise floor 0.028 (static occluder) / 0.162 (self) -> excess 0.038 of all occluded px; same-22 0.037 vs floor 0.036 -> 0.000; Dog tree 0.000; nodepth px with valid same-pixel Pi3 depth at another frame 0.109 (same-22 0.042, Dog tree 0.034)",
+            "how": "dev_reach.py: c_ini Pi3 depth of each other DEV frame scale-aligned by median depth ratio, depth test z <= s*d'*(1.01) with d'>0; floor = same test on occluders that cannot move"
+          },
+          {
+            "name": "DEV subset non-ref[3::4] (the dev-route agent's frames)",
+            "value": "same numbers within 0.002: R 0.476 of GT, B_ongt R 0.177, any_vis R 0.765, unique-label R 0.795",
+            "how": "summarize.py block 'DEV subset non-ref[3::4]'"
+          },
+          {
+            "name": "runtime",
+            "value": "availability <1 min; dev_reach 173 s on 9 host processes (CPU only, no GPU); summarize and validate seconds",
+            "how": "wall clock"
+          }
+        ],
+        "implications": [
+          "Within the adopted protocol (i), no source carries labels into the outside and no-depth classes. The c_ini mask, its forward splat, c_ini video frames and B do not reach the outside class. Geometric transfer cannot reach no-depth by construction. That leaves 0.75 of the keyframe missed region (outside 0.366 + no-depth 0.384) for target-image-based sources only.",
+          "Other rig cameras see 0.888 of DEV outside and 0.931 of DEV occluded pixels, matching the keyframe 0.459 when projected. So the gap is labels, not visibility: any (i) design must create labels in non-annotated views without them all descending from the one c_ini memory. E11 already measured that today's neighbour seeds cover only 0.189 of the keyframe missed region.",
+          "c_ini RGB at later frames is effectively worthless for the under-cover block. It gets 0 on outside (fixed rig), 0.000 net gain on occluded for the 22 objects and 0.034 on the Dog tree's no-depth pixels. It would also break single-instant stage-1 scope, so it is not worth pursuing.",
+          "A second annotated reference camera (ii) is weak exactly where it is needed. It reaches 0.078 of the beyond-c_ini region for the 22 objects (outside 0.018) and at most 3% of missed pixels on the four costliest keyframe pairs (quoted). It also changes J&F³ because every annotated camera is scored. Not recommended.",
+          "Label-name text prompts (ii) are the only listed source that in principle reaches all three classes, Dog-tree no-depth included. They are nearly unambiguous on the failing objects (97.9% of their beyond-c_ini pixels have scene-unique names; all env objects are unique) but ambiguous in general (297/398 basic objects share a name). Any experiment must be reported as a separate track, split the merged '_or_' names, and never prompt the 61 complete-only objects in the main track.",
+          "The (i)-legal counterpart of the text prompt is a SAM 3 visual exemplar from c_ini's box. It has the same in-principle reach, but the existing E2 gate failed (keyframe, pre-rule), mostly on hallucination. Measuring exemplar or text precision on large env objects (wall, ground, grandstand, tree) needs a DEV GPU run; that is not done here.",
+          "In the occluded class, 49–60% of pixels are hidden by the same object, so the reference input already labels that ray. That is decode/geometry-tolerance territory (input already available), not new information, and E11 already found decode-only changes do not move the 22 pairs.",
+          "Caveat: forward-splat and multi-view reach are computed at Pi3 work resolution and nearest-upsampled. The cross-time test relies on per-frame Pi3 runs aligned by median depth ratio, so its noise floor (0.028–0.162) is reported next to the signal."
+        ],
+        "scripts": [
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/protocol-inventory/availability.py -> availability.json (per-scene source availability, label stats)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/protocol-inventory/dev_reach.py -> dev_reach.json (13,239 DEV rows, per-class reach counts; host numpy, `PYTHONDONTWRITEBYTECODE=1 stage1/.venv/bin/python -I dev_reach.py dev_reach.json --procs 9`)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/protocol-inventory/validate_port.py (port check against scratchpad/visibility-signal/train_vis.json torch rows: 6,608/6,608 identical)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/protocol-inventory/summarize.py -> dev_reach_report.txt (all tables quoted above)",
+          "No repository file was modified; no container/GPU job was run; nothing written under stage1/geomem/runs/."
+        ]
+      },
+      {
+        "summary": "I probed the frozen SAM 3 package (SCSam3/sam3/sam3; the scsam3 image's /opt/sam3/sam3 is byte-identical by `diff -rq`, excluding __pycache__) and sorted its single-image, no-memory prompting modes. Everything ran in scsam3 with the cached facebook/sam3 checkpoint (SCSam3/hf_cache snapshot 3c879f39, sam3.pt), offline, with strict state-dict loading and no missing-key or warning lines in the logs. A single `methods/sam3_single.load_model()` (build_scsam3_video_model) serves every mode: the detector (model.detector, a Sam3ImageOnVideoMultiGPU) and the tracker (model.tracker, an SCSam3TrackerPredictor) live in the same checkpoint.\n\nThe probe ran on three DEV frames (t=10; ref_frame is 0 in all three scenes and the script asserts t != ref_frame): Dog camera_0004, Welder camera_0004 and Carpark v0. No keyframe was touched and nothing was tuned. The task asked for one frame. I added Welder and Carpark because Dog's Pi3 geometry turned out to be degenerate, which made the mask-prompt question unanswerable on Dog alone.\n\n**Supported modes and exact call paths:**\n\n1. **Point and box prompts through the tracker used as an image model** (the existing repo path). `methods/sam3_single.segment()` calls `model.init_state([frame])`, then `SCSam3VideoInference.add_tracker_new_points` (SCSam3VideoInference.py:1425). That runs `_prepare_backbone_feats` (a full backbone pass plus a detector grounding pass), then `SCSam3TrackerPredictor.add_new_points`, then `Sam3TrackerBase._forward_sam_heads` on an initial-conditioning frame with `no_mem_embed`. Labels are 1/0 for points and 2/3 for box corners. It returns a bool [H,W] mask.\n\n2. **The SAM-1-task interactive predictor**, `sam1_task_predictor.SAM3InteractiveImagePredictor.predict(point_coords, point_labels, box, mask_input, multimask_output)`. It returns masks [C,H,W] with C=3 or 1, predicted IoUs [C], and low-res logits [C,288,288]. Upstream wires it through `build_sam3_image_model(enable_inst_interactivity=True)` + `Sam3Processor.set_image` + `Sam3Image.predict_inst` (sam3_image.py:596); nothing in this repo uses that route. My probe wraps `model.tracker` (the same tracker.* weights) and builds its features exactly as `predict_inst` does: the detector backbone's sam2 neck, then `sam_mask_decoder.conv_s0/conv_s1`, `_prepare_backbone_features` and `+ no_mem_embed`. Its point masks agree with path 1 at IoU 0.89–0.97.\n\n3. **Dense mask prompts**, which exist in two forms:\n   - (a) `predict(mask_input=[1,288,288])` sends the mask through the SAM prompt encoder's `mask_downscaling` as a dense embedding, so it really goes through the decoder.\n   - (b) The tracker's `add_tracker_new_mask` (SCSam3VideoInference.py:1677) → `SCSam3TrackerPredictor.add_new_mask` (:360) → `_use_mask_as_output` (sam3_tracker_base.py:388) is a pass-through. The output equals the input (IoU vs input 1.000 for all 28 objects tested across the three frames); the decoder only makes the object pointer and memory.\n\n4. **Text (concept) prompts to the detector.** `Sam3Processor(model.detector).set_image(PIL)` then `.set_text_prompt(str)` calls `Sam3Image.forward_grounding`. The video-level equivalent is `SCSam3VideoInference.add_prompt(text_str=...)` (:848). Of 200 queries, those with sigmoid(logit)·presence > 0.5 are kept. It returns state['masks'] [N,1,H,W] bool, 'boxes' (xyxy pixels) and 'scores'.\n\n5. **Image-exemplar boxes.** `Sam3Processor.add_geometric_prompt(box_cxcywh_norm, label)` works on the same image only. Every shipped API is same-image: the video `add_prompt` keeps the visual box only on its own frame via `per_frame_geometric_prompt`. There is no shipped cross-image API.\n   - Cross-image still works without changing the package. Encode the box with `det.geometry_encoder` on the reference image's features, then put that token sequence after the text tokens in the target image's prompt — the same concatenation `Sam3Image._encode_prompt` does — and run `_run_encoder`, `_run_decoder` and `_run_segmentation_heads`.\n   - Check: when the exemplar image is the target itself, this reproduces `add_geometric_prompt`'s logits exactly (max abs diff 0.0).\n   - Caveat: the box token carries the reference image's box coordinates (direct projection and position encoding) as well as ROI-pooled features, and 3 encoder layers cross-attend the reference image.\n\n6. **The detector takes no mask prompts** (`geometry_encoder.mask_encoder` is None). `Sam3Image.forward` ignores point prompts for concept segmentation, and `Sam3Processor` exposes only boxes.\n\n7. **There is no automatic \"everything\" mode.** The package has no automatic mask generator. Generic text ('object', 'thing') returns 0 detections on all three frames. I emulated a SAM-1-style everything mode instead: a point grid through the interactive head, 3 masks per point, filters pred-IoU ≥ 0.8, stability ≥ 0.95 and object score > 0, then box NMS at 0.7.\n\n**Can the interactive predictor take a dense mask from the reprojected reference GT?** Yes, mechanically. The reference GT of the same dev frame goes through `project_reference_masks(*reproj_inputs(Cache/pi3_frames/<t>, ...))`. It is fed either as ±10 logits at 288², or the tracker's own way: its learned `mask_downsample` conv applied at 1152². Either way:\n- **Mask alone does nothing useful.** The output is about the projection, so the part not seen from c_ini is not recovered.\n- **Mask plus the projection's bounding box is the only mask variant that adds recall.** On Carpark recall goes from 0.70 to 0.83 at precision 0.91, and IoU from 0.680 to 0.798.\n- **The gain depends on how good the projection is.** Welder improves only from 0.364 to 0.436. On Dog camera_0004 the Pi3 geometry is broken: only 25.4 % of pixels are visible from c_ini, 50 % have valid depth, and the projected dog has precision 0.38. A host-side numpy re-check gave the same projection IoUs, and Dog t=5 behaves the same as t=10.\n\nOn repeated runs the outputs are deterministic: all 412 non-timing values were identical between two Dog runs.\n\nCosts were measured on an RTX 6000 Ada, as the median of 3 CUDA-synchronised calls after one warm-up, with backbone features cached where noted:\n- **Backbone:** about 70 ms per image.\n- **Prompts:** a mask-prompt pass is 6–14 ms; a text prompt about 44 ms; an exemplar grounding about 30 ms.\n- **sam3_single.segment:** about 120–130 ms per call, because each call reruns the backbone and the detector.\n- **Everything-mode emulation:** 0.65 s for a 32×32 grid.\n- **Model load and memory:** load takes 8.5 s warm (27 s cold); the whole probe peaked at 12.7 GB.",
+        "measurements": [
+          {
+            "name": "Package identity",
+            "value": "No differences between the scsam3 image's /opt/sam3/sam3 and the repo's SCSam3/sam3/sam3 (__pycache__ excluded); torch 2.10.0+cu128, torchvision 0.25.0",
+            "how": "`docker run scsam3 diff -rq -x __pycache__ /opt/sam3/sam3 /host/.../SCSam3/sam3/sam3` printed nothing"
+          },
+          {
+            "name": "Model load time",
+            "value": "27.2 s cold (first run), 8.4–8.7 s warm",
+            "how": "Wall time of sam3_single.load_model() (build_scsam3_video_model, cached sam3.pt, HF offline) in probe_modes.py"
+          },
+          {
+            "name": "Backbone cost per image",
+            "value": "67.1 ms (Carpark 1920x1088), 69.2 ms (Welder), 71.3 ms (Dog 2560x1920)",
+            "how": "Sam3Processor(model.detector).set_image(PIL): ViT at 1008 plus both necks; median of 3 synchronised calls after warm-up"
+          },
+          {
+            "name": "sam3_single.segment cost per call",
+            "value": "118.6 / 128.5 / 129.4 ms (Carpark / Welder / Dog); 177 ms in the first, cold Dog run",
+            "how": "One-point call timed as above; each call reruns init_state, the backbone, the detector grounding pass and the SAM head"
+          },
+          {
+            "name": "Interactive predictor cost per prompt (features cached)",
+            "value": "Point with 3 masks: 15.9 / 34.2 / 33.3 ms. Mask prompt with 1 mask: 6.1 / 12.0 / 13.8 ms (Carpark / Welder / Dog)",
+            "how": "SAM3InteractiveImagePredictor.predict, including upsampling to full resolution and the host copy; median of 3"
+          },
+          {
+            "name": "Text prompt cost (backbone cached)",
+            "value": "43.4 / 45.7 / 43.5 ms per text",
+            "how": "Sam3Processor.set_text_prompt('dog'): text encoder plus forward_grounding; median of 3"
+          },
+          {
+            "name": "Exemplar grounding cost (backbones cached)",
+            "value": "30.0–31.0 ms",
+            "how": "Cross-image transplant: encoder, decoder and segmentation heads on the target; median of 3"
+          },
+          {
+            "name": "Everything-mode emulation cost",
+            "value": "16x16 grid: 162 ms; 32x32 grid: 648–650 ms (head only)",
+            "how": "Point grid through tracker.sam_prompt_encoder/sam_mask_decoder in chunks of 256, 3 masks per point, filters and NMS; median of 2"
+          },
+          {
+            "name": "Peak GPU memory",
+            "value": "12.64–12.82 GB for the whole probe",
+            "how": "torch.cuda.max_memory_allocated after model load"
+          },
+          {
+            "name": "Point / box with target-GT prompts (oracle, sam3_single)",
+            "value": "Mean IoU: Dog 0.568 / 0.685 (7 objects), Welder 0.686 / 0.823 (15), Carpark 0.604 / 0.860 (22)",
+            "how": "Point = distance-transform maximum of the target GT; box = target GT bounding box; IoU vs the dev-frame GT, averaged over objects"
+          },
+          {
+            "name": "Interactive predictor with target-GT prompts (oracle)",
+            "value": "Point (best of 3) / box mean IoU: Dog 0.567 / 0.683, Welder 0.685 / 0.826, Carpark 0.611 / 0.862. Point-mask agreement with sam3_single: IoU 0.966 / 0.890 / 0.969",
+            "how": "Same prompts through SAM3InteractiveImagePredictor built on model.tracker"
+          },
+          {
+            "name": "Reprojected reference GT, used directly",
+            "value": "IoU (precision, recall): Carpark 0.680 (0.896, 0.702), Welder 0.364 (0.659, 0.381), Dog 0.119 (0.383, 0.185)",
+            "how": "project_reference_masks(reference GT of the same dev frame, reproj_inputs(Cache/pi3_frames/000010)); host numpy re-check (proj_check.py) gives the same per-object IoU, e.g. Dog object 2: 0.278"
+          },
+          {
+            "name": "Dense mask_input alone",
+            "value": "Learned-downsample conversion: Carpark 0.659, Welder 0.398, Dog 0.107. ±10-logit conversion: 0.681 / 0.381 / 0.132",
+            "how": "predict(mask_input=..., multimask_output=False); mean IoU vs dev GT"
+          },
+          {
+            "name": "Mask plus projection bounding box",
+            "value": "Carpark 0.798 (precision 0.912, recall 0.830; 17/22 objects improve over the projection), Welder 0.436 (9/15), Dog 0.290 (3/6)",
+            "how": "predict(mask_input=learned downsample, box = projection bounding box)"
+          },
+          {
+            "name": "Other prompts derived from the projection",
+            "value": "Box only 0.720 / 0.459 / 0.365. Point only 0.574 / 0.505 / 0.162. Mask+point 0.673 / 0.500 / 0.045. Box+3 points 0.761 / 0.459 / 0.215. Mask+box+3 points 0.780 / 0.409 / 0.143 (Carpark / Welder / Dog)",
+            "how": "Points are distance-transform maxima of the projected mask with suppression disks; mean IoU vs dev GT"
+          },
+          {
+            "name": "Tracker add_tracker_new_mask",
+            "value": "IoU of output vs input mask = 1.000 for all 28 objects with a usable projection (Carpark 22, Welder 15, Dog 6 per-scene counts in the JSONs)",
+            "how": "model.init_state([frame]); model.add_tracker_new_mask(obj_id=1, mask=projected mask); out['out_binary_masks']"
+          },
+          {
+            "name": "Text prompt with the label name",
+            "value": "Best-instance IoU: Dog 0.476, Welder 0.535, Carpark 0.734. Objects with 0 detections: 1 / 1 / 3. Union-of-detections IoU 0.553 / 0.295 / 0.140 (low when names repeat). Dog: sky 0.947, dog 0.894, tree union 0.838 over 15 instances, 'wood' about 0, 'cage' 0 detections",
+            "how": "set_text_prompt(label from objects_labels.json, '_' replaced by ' '); per-detection IoU vs the GT object (oracle instance choice) and IoU of the union"
+          },
+          {
+            "name": "Same-image exemplar box (oracle)",
+            "value": "Best-instance IoU 0.751 / 0.862 / 0.856 (Dog / Welder / Carpark). Dog tree: 0.845 with the exemplar vs 0.040 with an interactive box",
+            "how": "Sam3Processor.add_geometric_prompt(target GT box, True) with no text"
+          },
+          {
+            "name": "Cross-image exemplar from the reference box",
+            "value": "Top-score-instance IoU: Carpark 0.793, Welder 0.582, Dog 0.157 (best-instance 0.800 / 0.643 / 0.157). With label text: top 0.609 / 0.398 / 0.529, best 0.862 / 0.680 / 0.665",
+            "how": "Geometry encoder on the reference camera image with its GT box, token sequence placed after the 'visual' or label text tokens in the target prompt, then _run_encoder, _run_decoder, _run_segmentation_heads"
+          },
+          {
+            "name": "Transplant sanity check",
+            "value": "Max abs logit difference 0.0",
+            "how": "Transplant with exemplar image = target vs Sam3Processor.add_geometric_prompt, same box"
+          },
+          {
+            "name": "Generic text prompts",
+            "value": "0 detections for 'object', 0 for 'thing', and 0 for 'visual' with no box, on all three frames",
+            "how": "set_text_prompt; threshold 0.5"
+          },
+          {
+            "name": "Everything-mode emulation coverage",
+            "value": "32x32 grid keeps 51 / 55 / 17 masks (Carpark / Welder / Dog). Mean best IoU per GT object 0.371 / 0.261 / 0.259; objects with best IoU ≥ 0.5: 8/22, 4/15, 2/7",
+            "how": "Maximum over kept masks of the IoU with each GT object at full resolution"
+          },
+          {
+            "name": "Determinism",
+            "value": "412 / 412 non-timing values identical between two Dog runs",
+            "how": "Recursive comparison of the run-1 and run-2 JSONs"
+          },
+          {
+            "name": "Dog camera_0004 Pi3 quality",
+            "value": "Pixels visible from c_ini 0.254; valid depth 0.50. Projected dog precision 0.382 even where 81.5 % of the dog is visible. Dog t=5 behaves the same",
+            "how": "proj_check.py (host numpy replica of reproj_inputs and project_reference_masks)"
+          }
+        ],
+        "implications": [
+          "A dense mask prompt cannot add the part of an object that c_ini does not see. Mask-only output stays at about the projection (Carpark 0.659 vs 0.680), and the tracker's add_new_mask is a pure pass-through. Mask plus the projection's bounding box adds recall only inside the box the projection already spans (Carpark recall 0.70 to 0.83), so it cannot reach the under-cover pixels outside c_ini's view.",
+          "The only single-image modes that can produce extent independent of the reference memory are the detector modes (text and exemplar boxes). The detector also handles large background regions far better than the SAM head: the same-image exemplar on Dog's tree gives 0.845 against 0.040 for an interactive box. Of the 22 failing under-cover pairs, 5 are such regions (env objects), Dog camera_0004's tree among them.",
+          "Text prompts need label names. Those come from annotation metadata, so whether text is a legal input under the MUVOD protocol has to be decided before any text-based arm is registered. Text also returns instance sets (Carpark 'car', Dog 'tree' with 15 instances), so it would need a selection or merge rule, for example overlap with the current seed or the projection.",
+          "Cross-image exemplars are feasible without touching the frozen package, verified with an exact-logit sanity check. They work on the small-baseline pinhole rig (Carpark top-instance 0.793) but fail on the hemisphere rig (Dog 0.157). A likely cause is that the box token also encodes the reference image's box position. Adding label text helps when the object is a large region (Dog sky 0.015 to 0.923) but can pick the wrong instance (Carpark top-score 0.793 to 0.609).",
+          "Projection-derived prompts depend entirely on Pi3 quality. Dog's Pi3 cache is degenerate (25 % of pixels visible from c_ini, projected dog precision 0.38), so prompts built from reprojection fail there regardless of the prompt mode. Dog was the motivating under-cover case.",
+          "Cost is not a constraint. Any of these modes adds roughly 70 ms of backbone per view plus tens of ms per prompt. Calling sam3_single.segment per object wastes about 50–60 ms per call on the repeated backbone and detector pass; computing features once and reusing them avoids that.",
+          "SAM 3 has no everything mode. The point-grid emulation misses most large regions (mean best IoU 0.26–0.37), so it is a poor source of candidate extents.",
+          "All numbers come from three DEV frames (t=10) with 7–22 objects each. They are descriptive only, not a registered result; any design built on them needs its own dev-set registration before keyframe scoring."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3modes/probe_modes.py (git-ignored; GPU probe of every mode; run inside scsam3 from stage1 as: flock <gpu.lock> scripts/docker_run.sh scsam3 python geomem/runs/_e13_sam3modes/probe_modes.py --scene Dog --t 10 --tgt camera_0004)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3modes/probe_modes_Dog_t10_camera_0004.json",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3modes/probe_modes_Welder_t10_camera_0004.json",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3modes/probe_modes_Carpark_t10_v0.json",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3modes/probe_modes_viz_{Dog_t10_camera_0004,Welder_t10_camera_0004,Carpark_t10_v0}.jpg (one row per object; columns: GT | projected reference GT | mask+box prompt | label-text union)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3modes/proj_check.py (host numpy re-check of the reprojection on dev frames)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3modes/summarise.py (per-frame object-mean table from the JSONs)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3modes/run1.log, run2_{Dog,Welder,Carpark}.log (container logs)"
+        ]
+      },
+      {
+        "summary": "I built a DEV set and a scratch decode route for the adopted stage-1 preset geoset_rep_x (arm geoset_pred_ft, --gate reproj --xcl out, the held-out fold checkpoint). The keyframe was never decoded or scored, and no tracked file changed; git status is the same as at the start.\n\nDEV set (fixed before any decode):\n- 17 scenes. For each scene, the train frames other than the ref frame, every 4th (index [3::4]), which gives t = ref+4, +8, +12, +16, +20: 85 frames.\n- Cameras: the 2 annotated non-reference cameras (meta mask_cams minus ref_cam).\n- Reference: c_ini = meta ref_cam at frame t. Reference mask = c_ini GT at t, restricted to the scene's basic object set (docs/raw/muvod_object_sets.json seed_ids_c_ini).\n- A pair is (scene, t, cam, obj) with obj present in c_ini at t and GT non-empty in cam. This is the same gt_px > 0 rule as the 664 keyframe pairs.\n\nCan decode_scene run on frame t? Yes, unchanged. Only one thing ties it to the keyframe: `cache = cache_dir(data, scene, \"pi3\")`. Before relying on that, I diffed the inputs. For all 17 scenes, the root images/ and masks/ and Cache/pi3 are byte-identical to frames/<ref>/ and Cache/pi3_frames/<ref>. So pointing at frame t uses the same code path. Every dev frame has images, Pi3 caches with a MANIFEST for all cameras, and GT for the 3 annotated cameras. Backbone caches are not needed, because decode_scene computes features live.\n\nThe wrapper is stage1/geomem/runs/_e13_dev-route/dev_decode.py, with three changes around an unmodified decode_scene:\n1. Scene: `common.load_scene(data, scene, frame=t)`, with the c_ini label map restricted to the basic set.\n2. Pi3: `run.cache_dir` is patched to Cache/pi3_frames/<t>.\n3. Cameras: scene.cams is restricted to {c_ini} + the 2 eval cameras + the k=3 nearest candidates of each (from the frame's own Pi3 centres).\n\nOn the first dev frame of every scene, the restricted decode gave the same eval-camera masks, byte for byte, as a full all-camera decode (17/17 frames). Each decode loads the scene's own-fold checkpoint, and the leak guard (stage1.check_preflight) passes.\n\nResults on the DEV set: mean J&F 0.9078 over 3300 pairs. Under the task's definition, 140 pairs (49 distinct scene/cam/object) are under-cover. 95.2 % of their missed pixels (pixel-weighted) are not visible from c_ini, and the round-1 masks of the 3 nearest cameras cover only 8.3 % of them. This matches the keyframe anatomy already on record (91 % invisible, 19 % neighbour cover), so the dev set reproduces the failure.",
+        "measurements": [
+          {
+            "name": "DEV set size",
+            "value": "85 frames (17 scenes x 5: ref+4..ref+20) x 2 non-ref annotated cams = 3300 pairs with non-empty GT. 652 (t, cam, obj) with empty GT were excluded; 60 of those have a non-empty prediction (false positives not counted in J&F, as at the keyframe). Per scene: AlexaMeadeExhibit 300, AlexaMeadeFacePaint 90, Barn 300, Blocks 149, Breakfast 241, CBABasketball 171, Carpark 220, CoffeeMartini 385, Dog 65, Fencing 80, FlameSteak 320, Frog 50, MATF 165, MartialArts 155, Painter 230, PoznanStreet 228, Welder 151",
+            "how": "dev_score.py: objects = basic set (muvod_object_sets.json seed_ids_c_ini) present in c_ini GT at t; pair kept when gt_px > 0. Frames are listed in stage1/geomem/runs/_e13_dev/index.json"
+          },
+          {
+            "name": "Reference-object restriction",
+            "value": "Non-basic labels were zeroed in c_ini GT on 10 dev frames: Breakfast (objects 16, 17; 5 frames) and Painter (16, 26; 5 frames). On 12 frames some basic objects are absent from c_ini, so they are not seeded or scored: Breakfast 8 and 20, CBABasketball 110, Painter 48-60, PoznanStreet 98-106, Welder 16 and 20",
+            "how": "host check of stage1/Data/<scene>/frames/<t>/masks/<ref_cam>.png labels against the basic set"
+          },
+          {
+            "name": "Restricted decode equals full decode",
+            "value": "17/17 validation frames (first dev frame of each scene) give byte-identical eval-camera final masks (same objects present, same pixels)",
+            "how": "dev_decode.py --validate: decode_scene on the restricted camera set and again on all cameras, np.array_equal per (cam, obj); result in _e13_dev/_validate.json"
+          },
+          {
+            "name": "Decode cost",
+            "value": "85 frames in 657 s of restricted decode (7.7 s per frame; 142 of 369 cameras on a frame-0 count). On the 17 validation frames: restricted 131 s vs full 368 s. The whole job, including validation and model load, took about 19 min. Peak decode about 7-18 s per frame for the 50-object scenes",
+            "how": "sum of config.json 'seconds' over _e13_dev/*/*/config.json; _validate.json restricted_s / full_s"
+          },
+          {
+            "name": "DEV mean J&F (geoset_rep_x)",
+            "value": "J&F 0.9078 (J 0.8672, F 0.9485); scene-cluster bootstrap 95 % CI [0.8929, 0.9213]; scene-mean 0.9079. By frame offset: +4 0.9081, +8 0.9131, +12 0.9059, +16 0.9056, +20 0.9064",
+            "how": "mean over 3300 pairs of (J+F)/2 from mvseg2d.metrics.jf_pair (bound_pix of the frame); bootstrap = 10 000 resamples of scenes, seed 0 (dev_report.py)"
+          },
+          {
+            "name": "Per-scene DEV J&F (failing pairs < 0.8)",
+            "value": "AlexaMeadeExhibit 0.9097 (18), AlexaMeadeFacePaint 0.9277 (0), Barn 0.9038 (37), Blocks 0.8946 (14), Breakfast 0.8785 (29), CBABasketball 0.8681 (25), Carpark 0.9417 (10), CoffeeMartini 0.9382 (19), Dog 0.8580 (12), Fencing 0.9506 (1), FlameSteak 0.9074 (27), Frog 0.9841 (0), MATF 0.8431 (26), MartialArts 0.9314 (11), Painter 0.9305 (12), PoznanStreet 0.9174 (19), Welder 0.8501 (33)",
+            "how": "dev_report.py section (1)"
+          },
+          {
+            "name": "Round 1 vs round 2 on DEV",
+            "value": "round-1 J&F 0.9030; round 2 minus round 1 = +0.0049",
+            "how": "dev_score.py --r1 scores <t>/_r1/<cam> masks on the same 3300 pairs"
+          },
+          {
+            "name": "Failing pairs on DEV",
+            "value": "293 / 3300 (8.9 %) have J&F < 0.8 and carry 37.4 % of sum(1-J&F). By seedcat kind: boundary/mixed 74, under-cover 72, under-cover(beyond c_ini) 47, spill-onto-other(twin) 39, miss 22, wrong-object 21, spill-onto-other 18",
+            "how": "kind() copied verbatim from MVSeed/refloss/seedcat.py (vis_ratio = gt_px(cam) / gt_px(c_ini) at t)"
+          },
+          {
+            "name": "DEV under-cover population (task definition)",
+            "value": "140 pairs (4.2 %), 49 distinct (scene, cam, obj), 14 scenes; mean J&F 0.5414; 21.1 % of the dev J&F deficit. Per scene: AlexaMeadeExhibit 7, Barn 23, Blocks 10, Breakfast 15, CBABasketball 18, Carpark 2, CoffeeMartini 12, Dog 5, FlameSteak 5, MATF 16, MartialArts 6, Painter 5, PoznanStreet 2, Welder 14. Spread evenly over frame offsets (28/28/28/30/26)",
+            "how": "J&F < 0.8 AND gt_invis_frac >= 0.5 AND recall < 0.85, where gt_invis_frac = 1 - |GT & vis| / |GT|. vis comes from reproj_inputs + project_reference_masks of methods.geomem.run on Cache/pi3_frames/<t> (OCC_TOL 0.01, conf > 0.1 & depth > 0), the same machinery as MVSeed/refloss/e11/extent_vis.py"
+          },
+          {
+            "name": "DEV under-cover missed-pixel class split",
+            "value": "5,545,786 missed px. Pixel-weighted: visible from c_ini 0.048 / outside c_ini image 0.429 / occluded 0.096 / no Pi3 depth 0.427, so not visible 0.952. Pair-mean: 0.173 / 0.300 / 0.454 / 0.073. Visible and on c_ini GT of the same object: 0.022 (pair-mean 0.042). Covered by the k=3 candidates' round-1 masks reprojected into the camera: 0.083 (pair-mean 0.209)",
+            "how": "dev_score.py per-pair counts of (GT \\ seed) by class (they partition missed_px; asserted in dev_report.py); dev_report.py section (3)"
+          },
+          {
+            "name": "Without the Dog camera_0004 tree",
+            "value": "That object is 2,644,865 of the 5,545,786 missed px (47.7 %; 89 % no-depth). Without it: 135 pairs, pixel-weighted vis 0.089 / outside 0.777 / occluded 0.127 / no depth 0.007, not visible 0.911; k3 round-1 cover 0.152",
+            "how": "dev_report.py split with the largest (scene, cam, obj) group removed"
+          },
+          {
+            "name": "Precision split inside the population",
+            "value": "precision >= 0.85 (clean under-cover): 67 pairs, 24 objects, all seedcat under-cover kinds (39 beyond c_ini, 28 within); mean J&F 0.646; not visible 0.955; k3-r1 cover 0.076; 7.8 % of the deficit. The other 73 pairs (spill 25, boundary/mixed 19, wrong-object 15, miss 14): mean J&F 0.445, not visible 0.876, k3-r1 cover 0.245, 13.3 % of the deficit",
+            "how": "dev_report.py section (3) subsets"
+          },
+          {
+            "name": "Keyframe-rule comparison on DEV",
+            "value": "seedcat under-cover failing (recall < 0.85, precision >= 0.85, J&F < 0.8): 119 pairs, 40 objects; not visible 0.886 pixel-weighted; k3 round-1 cover 0.085; overlaps the task population in 67 pairs. Keyframe figures already on record (not recomputed): 22 pairs, 0.909 not visible, k3 final-seed cover 0.074",
+            "how": "dev_report.py section (4); keyframe numbers quoted from MVSeed/refloss/e11/extent_vis_report.txt"
+          },
+          {
+            "name": "Scoring cost",
+            "value": "420 s on GPU for 3300 pairs with --r1. Most of it is the neighbour reprojection; without --r1 it is cheaper",
+            "how": "dev_score.py meta.seconds"
+          }
+        ],
+        "implications": [
+          "The dev route is cheap and exact. decode_scene runs unchanged on any non-keyframe frame given frame-t images and GT, Cache/pi3_frames/<t> and a camera restriction, and it reproduces the full decode byte for byte. Any decode-side candidate can reuse dev_decode.py by changing PRESET or args, at about 11 min for all 85 frames, and be scored with dev_score.py --masks <root> in the same layout without touching the keyframe.",
+          "Under-cover failures on the dev set look the same as on the keyframe: 95 % of the missed pixels are invisible to c_ini (91 % without the Dog tree), and the nearest neighbours' round-1 masks cover only about 8 % of them. A design for 'new information' can therefore be built and measured on the dev set.",
+          "Pixel-weighted statistics are dominated by Dog camera_0004 tree (48 % of missed pixels, mostly no Pi3 depth) and by the FlameSteak cam01 wall (25 %, outside the c_ini image). Report pair-mean figures and the without-Dog variant next to the pixel-weighted ones.",
+          "The task's under-cover definition has no precision condition, so it also takes in 73 spill, miss and wrong-object pairs where the seed is on the wrong pixels as well. For a method aimed at under-coverage, use the clean subset (precision >= 0.85: 67 pairs, 24 objects) as the target. Report the full population as a side effect.",
+          "Dev pairs are near-replicates: 5 frames within 20 frames of the keyframe, the same objects, 49 distinct under-cover objects behind 140 pairs. Use scene- or object-cluster bootstrap CIs, not pair-level ones. A dev gain is evidence about the same scenes, not an independent test.",
+          "The k=3 neighbour sets come from each frame's own Pi3, so they change from frame to frame in 8 scenes (5 distinct sets over 5 frames in Dog, Welder and AlexaMeadeFacePaint). The dev decode is faithful to running the preset at frame t, but this is one source of difference between dev and keyframe behaviour.",
+          "If more dev statistics are needed, the full set of 20 non-reference frames would cost about 45 min of restricted decode, split into jobs under 20 min. dev_decode.py would need OFFSET/STRIDE changed, and it skips frames that already have a DONE marker."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev-route/dev_decode.py (container: flock <lock> stage1/scripts/docker_run.sh scsam3 python geomem/runs/_e13_dev-route/dev_decode.py [--scenes A,B] [--validate] [--overwrite]; writes _e13_dev/index.json and per-frame outputs; resumable by DONE marker)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev-route/dev_score.py (container: ... python geomem/runs/_e13_dev-route/dev_score.py --masks geomem/runs/_e13_dev --out geomem/runs/_e13_dev/dev_pairs.json --r1; per-pair J/F/JF, recall/precision, seedcat kind, GT and missed pixel classes vis/outside/occluded/nodepth/on_refgt, round-1 J&F, k3 round-1 neighbour coverage)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev-route/dev_report.py (host: stage1/.venv/bin/python dev_report.py _e13_dev/dev_pairs.json --uc-json _e13_dev/dev_undercover.json)",
+          "Copies of the three scripts, plus decode_all.log, dev_report.txt, _validate.json and index.json: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/dev-route/",
+          "Masks: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev/<scene>/<t:06d>/<cam>/<obj>.png. Eval cams hold round-2 final masks and the c_ini folder holds its GT (Result/<out> layout); an absent PNG means an empty prediction. <t>/_r1/<cam>/<obj>.png holds round-1 masks of every decoded non-ref camera (eval cams + k3 candidates, equal to the full decode's round 1). <t>/{config,round1_conf,xcl_conf}.json, DONE",
+          "Shared outputs in _e13_dev/: index.json (dev set definition), _validate.json, dev_pairs.json (3300 rows + 652 empty-GT records), dev_undercover.json (140 population rows + summary), dev_report.txt"
+        ]
+      }
+    ],
+    "measures": [
+      {
+        "summary": "Candidate C does not work on the DEV set. Prompting SAM 3 (single image, no memory) with the part of the reference GT that reprojects visibly into each target view, then adding SAM's segment to the adopted dev mask under the add-only rules, lowers mean J&F over all 3300 dev pairs. The registered primary variant moves it from 0.90782 to 0.90660 (−0.00122, scene-cluster 95 % CI [−0.00263, +0.00018]). On the 140-pair dev under-cover population it gains +0.00557 [−0.00110, +0.01744]. That gain comes almost entirely from one object, the CBABasketball v06 billboard (5 pairs, +0.149 each). Without it the other 135 under-cover pairs gain +0.00027 [−0.00158, +0.00216].\n\nOf the added pixels, 0.359 belong to the target object; 0.626 land on other seeded objects. SAM's segment touches only 3.8 % of the under-cover missed pixels at all, so no composition rule can recover more than that. No keyframe frame was decoded, prompted or scored, and no tracked file was changed (the only modified tracked file, MVSeed/runs/e4c_project.json, was already modified before this run).\n\n**How it was run.** The design was written to REGISTRATION.txt before any proposal was computed.\n\n*Per view.* For each dev view (85 non-keyframe frames × 2 annotated non-reference cameras = 170 views), I took c_ini's GT at frame t, restricted to the basic object set. I reprojected it with that frame's Pi3 cache using project_reference_masks (OCC_TOL 0.01), which gives P_o, the visible-from-c_ini part of each object, and the visibility mask. The target image's features were computed once per view, as Sam3Image.predict_inst does, and fed to SAM3InteractiveImagePredictor around model.tracker. Every object with |P_o| ≥ 20 px (3389 of 3952 seeded objects) was prompted with 5 registered variants:\n- **pts (primary):** 3 interior points of P_o, 3 output masks, SAM's own choice by highest predicted IoU.\n- **pts_whole:** the same call, keeping the largest of the 3 masks.\n- **pts_neg:** the same points plus one negative point inside each other object's projection.\n- **box:** the bounding box of P_o.\n- **mask_box:** P_o as a dense mask through the tracker's learned downsampler, plus its box.\n\n*Composition, applied to all seeded objects at once.* For object o with dev mask D_o and SAM segment S_o:\n1. Candidate pixels C_o: in S_o, not visible from c_ini, outside D_o, and outside every other object's dev mask.\n2. A_o: the C_o pixels in the 8-connected components of C_o ∪ D_o that contain a D_o pixel.\n3. Pixels claimed by two or more objects are dropped.\n4. New mask N_o = D_o ∪ A_o.\n\n*Fixed constants:* MIN_PROJ_PX 20, no predicted-IoU gate, no growth cap.\n\n*Scoring.* I scored with mvseg2d.metrics.jf_pair. The baseline J/F I recomputed equals dev_pairs.json exactly, on all 3300 pairs, with 0 class-count mismatches. I also wrote the primary's composed masks and re-scored them independently with the dev-route's dev_score.py in the container: the per-pair deltas match to 1.1e-16.\n\n**Primary (pts | 20 | no gate):**\n- **All 3300 pairs:** ΔJ&F −0.00122 (ΔJ −0.00156, ΔF −0.00088). 2535 pairs changed: 1448 up (sum +4.95), 1087 down (sum −8.98). Pairs that already had J&F ≥ 0.8 lose −5.36 in total.\n- **Under-cover 140:** +0.00557 [−0.00110, +0.01744] (object-cluster bootstrap); 51 up, 32 down. 12 of the 140 had no prompt at all (|P_o| < 20); for example CBABasketball v06 grandstand has a 0-px projection.\n- **Clean 67** (the under-cover pairs whose dev mask already has precision ≥ 0.85): +0.01225 [−0.00012, +0.03601].\n- **The other 3160 pairs:** −0.00152 [−0.00284, −0.00027].\n- **Added pixels:** 2,160,330 px; precision 0.359 pooled (0.533 pair-mean). By class: outside 0.284, occluded 0.461, no-depth 0.309. On the under-cover pairs the precision is 0.776, but 140,869 of the 161,152 added px there are the billboard.\n- **Missed pixels recovered (under-cover):** 0.0226 (pair-mean 0.039). By class: outside 0.049, occluded 0.015, no-depth 0.0002. Dog camera_0004 tree 0.001; FlameSteak cam01 wall 0.002; CBABasketball v24 grandstand 0.002.\n\n**Where the added pixels go.** MUVOD's GT labels essentially every pixel (label 0 is 6.5e-8 of pixels), so nothing lands on unlabelled background. The 64 % of added pixels that are wrong sit on other objects, nearly all of them seeded ones whose dev masks left those pixels unclaimed. By distance from the dev mask:\n- within 3 px: 32 % of added pixels, precision 0.60\n- 3 px up to the boundary tolerance: 30 %, precision 0.40\n- beyond the tolerance (the \"new extent\" part): 37.5 %, precision 0.12\n\n**Leak of SAM's raw segment** (3258 segments on scored pairs). Classes: clean (mostly o, precision ≥ 0.75), spill (mostly o, precision < 0.75), larger object (mostly another object but containing ≥ 50 % of o), different object.\n\n| Variant | Population | Clean | Spill | Larger object | Different object |\n|---|---|---|---|---|---|\n| pts | all segments | 0.714 | 0.092 | 0.057 | 0.137 |\n| pts | under-cover | 0.305 | 0.156 | 0.062 | 0.477 |\n| pts_whole | all segments | 0.399 | 0.129 | 0.258 | 0.213 |\n\n- For pts, the clean share ranges from 0.584 to 0.789 as the precision threshold goes from 0.9 to 0.5. The segment's dominant label is not o in 19.4 % of all segments and 53.9 % of under-cover ones.\n- 131 segments fall on objects that are absent from the target GT (10.4 Mpx).\n- On the under-cover pairs, pts_whole segments are a median 10.2 × the object's GT size.\n\n**Other variants** (registered config, all pairs; under-cover 140):\n- pts_whole −0.00523 [−0.00787, −0.00250]; +0.00439\n- pts_neg −0.00060 [−0.00099, −0.00020]; +0.00040\n- box −0.00115 [−0.00192, −0.00038]; +0.00176\n- mask_box −0.00094 [−0.00189, −0.00017]; +0.00077\n\nBox-bounded prompts essentially cannot reach the outside class: outside recovery 0.0002 (box) and 0.0001 (mask_box).\n\n**Sensitivity, reported only as ranges.** For pts over MIN_PROJ_PX {20, 200, 2000} and predicted-IoU gate {none, 0.7, 0.85}:\n- all-pairs ΔJ&F [−0.00122, +0.00032]\n- under-cover ΔJ&F [+0.00028, +0.00557]\n- added-pixel precision [0.327, 0.595]\n\nEither constant removes the billboard, whose projection is about 1,500 px and whose predicted IoU is 0.32–0.62.\n\n**Why it fails, from the visual checks.** The part c_ini cannot see is usually a different visual segment from the part it can:\n- Dog: the missed tree canopy is a separate blob in the sky.\n- FlameSteak: the missed region is the left wall; SAM segments the slatted panel next to the visible strip.\n- AlexaMeadeFacePaint: the ground segment leaks into the camouflage-painted wall (ΔJ&F −0.012 for that scene).\n- The one success is a thin, uniform billboard strip, which SAM simply continues.",
+        "measurements": [
+          {
+            "name": "Registered design",
+            "value": "5 prompt variants (pts = primary, pts_whole, pts_neg, box, mask_box); MIN_PROJ_PX 20; no IoU gate; no growth cap; contested pixels dropped; 8-connectivity; sensitivity grid MIN_PROJ_PX {20, 200, 2000} x gate {none, 0.7, 0.85}; leak threshold {0.5, 0.75, 0.9}",
+            "how": "Written to stage1/geomem/runs/_e13_sam3-prompt-extend/REGISTRATION.txt before propose.py ran; nothing chosen afterwards"
+          },
+          {
+            "name": "Proposal coverage and cost",
+            "value": "170 views; 3952 seeded objects, 3389 prompted (projection >= 20 px); 4.75 s per view (808 s total), peak GPU 5.0 GB; two jobs of 465 s and 336 s plus a 38 s Dog run",
+            "how": "propose.py in scsam3 under the GPU flock; per-view meta.json 'seconds'; one backbone pass per view, 4 predict calls per object"
+          },
+          {
+            "name": "Baseline consistency",
+            "value": "3300 / 3300 pairs equal to dev_pairs.json; max |J,F difference| 0.0; GT visibility-class counts 0 mismatches; dev masks overlap on 166,091 px in total",
+            "how": "compose_score.py recomputes the baseline J,F with jf_pair and counts GT pixels per class from cls.png; report.py asserts equality with _e13_dev/dev_pairs.json"
+          },
+          {
+            "name": "Independent re-score of the primary",
+            "value": "Max |dev_score delta - compose delta| = 1.1e-16 over 3300 pairs; mean J&F 0.907820 -> 0.906601",
+            "how": "compose_write.py writes N_o to composed_pts/ in the dev layout; the dev-route's dev_score.py --masks composed_pts runs in the container (164 s); composed_pts_pairs.json compared with rows.json"
+          },
+          {
+            "name": "Primary: delta J&F, all dev pairs",
+            "value": "-0.00122, scene-cluster 95 % CI [-0.00263, +0.00018]; dJ -0.00156, dF -0.00088; 2535 pairs changed, 1448 up (sum +4.954), 1087 down (sum -8.977)",
+            "how": "Mean over 3300 pairs of (dJ + dF)/2; bootstrap = 10,000 resamples of the 17 scenes, seed 0"
+          },
+          {
+            "name": "Primary: delta J&F, dev under-cover 140",
+            "value": "+0.00557 [-0.00110, +0.01744] (base 0.5414); 51 up, 32 down; 128 of 140 prompted",
+            "how": "Pairs from _e13_dev/dev_undercover.json; bootstrap over (scene, cam, obj) clusters"
+          },
+          {
+            "name": "Primary: under-cover without CBABasketball v06 billboard (obj 18)",
+            "value": "135 pairs +0.00027 [-0.00158, +0.00216]; the billboard's 5 pairs gain +0.1486 each and recover 0.727 of their 157,136 missed px",
+            "how": "extra.py; same object-cluster bootstrap; the billboard is the only (scene, cam, obj) with a delta above +0.04"
+          },
+          {
+            "name": "Primary: clean 67 / other 3160 pairs",
+            "value": "Clean 67 (under-cover pairs whose dev mask has precision >= 0.85): +0.01225 [-0.00012, +0.03601]; other 3160 pairs: -0.00152 [-0.00284, -0.00027]",
+            "how": "report.py subsets of the same rows"
+          },
+          {
+            "name": "Primary: precision of added pixels",
+            "value": "2,160,330 px added; pooled precision 0.359 (0.358 including 4,107 px added to objects absent from the target GT); pair-mean 0.533; on other objects 0.641 (0.626 on other seeded objects); on unlabelled 0.000 because MUVOD GT labels 99.99999 % of pixels. By class: outside 1,059,336 px at 0.284, occluded 879,316 at 0.461, no-depth 221,678 at 0.309. Under-cover pairs: 161,152 px at 0.776",
+            "how": "Added pixels A_o counted against the target GT label map of the dev frame"
+          },
+          {
+            "name": "Primary: added pixels by distance from the dev mask",
+            "value": "Within 3 px: 693,815 px (0.321), precision 0.597. From 3 px to the boundary tolerance: 656,879 (0.304), precision 0.400. Beyond the tolerance: 809,636 (0.375), precision 0.121. For box beyond the tolerance: 0.057 of added at 0.094; for mask_box: 0.023 at 0.070",
+            "how": "rim.py: cv2 L2 distance transform of the complement of D_o; boundary tolerance = mvseg2d bound_pix (0.8 % of the image diagonal)"
+          },
+          {
+            "name": "Primary: missed-pixel recovery, under-cover 140",
+            "value": "0.0226 pixel-weighted (pair-mean 0.0391; 0.0425 without the Dog tree). By class: outside 0.0492 of 2,378,298; occluded 0.0147 of 532,327; no-depth 0.0002 of 2,370,444. Dog camera_0004 tree 0.001; FlameSteak cam01 wall 0.002; CBABasketball v06 grandstand 0 (never prompted, 0-px projection); CBABasketball v24 grandstand 0.002",
+            "how": "Added pixels on GT_o divided by the dev mask's missed pixels (GT_o minus D_o), split by c_ini visibility class"
+          },
+          {
+            "name": "Funnel: share of missed pixels surviving each step (primary)",
+            "value": "Under-cover 140: inside S 0.0377, then not visible from c_ini 0.0311, then unclaimed 0.0237, then 8-connected 0.0228, then uncontested 0.0226. All pairs: 0.0925 / 0.0484 / 0.0321 / 0.0307 / 0.0267",
+            "how": "compose_score.py per-pair counts at the registered config; pixel-weighted"
+          },
+          {
+            "name": "Funnel ceiling for the other variants (under-cover, missed px inside S)",
+            "value": "pts_whole 0.0486, pts_neg 0.0078, box 0.0173, mask_box 0.0050",
+            "how": "Same funnel, first step only"
+          },
+          {
+            "name": "Leak of the raw SAM segment: pts",
+            "value": "All 3258 segments: clean 0.714 (0.584-0.789 across thresholds 0.9-0.5), spill 0.092, larger object 0.057, different object 0.137; dominant label not o 0.194; pixel precision 0.729. Under-cover 128 segments: clean 0.305, spill 0.156, larger 0.062, different 0.477; dominant label not o 0.539; median segment size / GT size 1.28. Plus 131 non-empty segments on objects absent from the target GT (10,422,870 px)",
+            "how": "Dominant GT label of S_o over the target label map. Clean: dominant = o and precision >= 0.75. Spill: dominant = o and precision < 0.75. Larger: dominant != o and S holds >= 50 % of GT_o. Different: otherwise"
+          },
+          {
+            "name": "Leak of the raw SAM segment: other variants (all segments; under-cover)",
+            "value": "pts_whole: larger object 0.258, different 0.213, clean 0.399; under-cover different 0.609, median segment size / GT size 10.15. pts_neg: clean 0.590, different 0.189. box: clean 0.697, different 0.158. mask_box: clean 0.775, different 0.095 (mask_box segments are a median 0.30 x GT size on under-cover pairs)",
+            "how": "Same classification"
+          },
+          {
+            "name": "Other variants at the registered config: delta J&F (all pairs; under-cover 140; added-pixel precision)",
+            "value": "pts_whole -0.00523 [-0.00787, -0.00250]; +0.00439; 0.316. pts_neg -0.00060 [-0.00099, -0.00020]; +0.00040; 0.395. box -0.00115 [-0.00192, -0.00038]; +0.00176; 0.444. mask_box -0.00094 [-0.00189, -0.00017]; +0.00077; 0.428",
+            "how": "report.py and extra.py"
+          },
+          {
+            "name": "Sensitivity ranges over the 5 registered configs",
+            "value": "pts: all [-0.00122, +0.00032], under-cover [+0.00028, +0.00557], precision [0.327, 0.595]. pts_whole: all [-0.00523, +0.00006], under-cover [+0.00044, +0.00458]. pts_neg: all [-0.00060, 0.00000], under-cover [0, +0.00040]. box: all [-0.00116, -0.00029], under-cover [-0.00001, +0.00226]. mask_box: all [-0.00094, -0.00012], under-cover [+0.00002, +0.00080]",
+            "how": "extra.py RANGE lines; ranges only, no value selected"
+          },
+          {
+            "name": "Why the gain is fragile",
+            "value": "Billboard projection 1,476-1,593 px (below 2000) and predicted IoU 0.32-0.62 (below 0.7) on all 5 frames, so either sensitivity constant removes the only large under-cover gain",
+            "how": "Proposal meta.json for CBABasketball/<t>/v06, object 18"
+          },
+          {
+            "name": "Per-scene delta J&F (primary)",
+            "value": "Largest losses: AlexaMeadeFacePaint -0.01197 (838,280 px added, precision 0.137), AlexaMeadeExhibit -0.00538, Breakfast -0.00357, Barn -0.00339. Largest gain: CBABasketball +0.00542 (precision 0.806)",
+            "how": "report.py PRIMARY per-scene table"
+          }
+        ],
+        "implications": [
+          "Candidate C is a negative result on DEV and should not become a keyframe arm. At the registered setting it lowers all-pair J&F (-0.00122). Its under-cover gain is carried by a single object and is not significant without it (+0.00027 [-0.00158, +0.00216] on the other 135 pairs).",
+          "The limit is the proposals, not the composition rule. SAM's segment prompted from the c_ini-visible part covers only 3.8 % (pts) to at most 4.9 % (pts_whole) of the under-cover missed pixels. The invisible extent is usually a different visual segment: Dog's canopy is disconnected, FlameSteak's left wall sits next to a slatted panel, and the v06 grandstand has no projection at all (12/140 under-cover pairs get no prompt). Prompts derived from the projection cannot bring in information c_ini lacks, which agrees with the protocol-inventory conclusion.",
+          "Box-bounded prompts (box, mask_box) cannot reach the outside class by construction (outside recovery 0.0001-0.0002). The point prompts that can reach it leak: 47.7 % of pts segments on under-cover pairs are a different object, and pts_whole segments are a median 10x the GT size.",
+          "The add-only rules (not visible from c_ini, unclaimed, 8-connected, uncontested) do not make additions safe. MUVOD GT labels every pixel, and the unclaimed, c_ini-invisible region is mostly other seeded objects' pixels left between dev masks. 62.6 % of added pixels land there, and additions more than the boundary tolerance from the dev mask have precision 0.12. Pairs that already had J&F >= 0.8 lose -5.36 in summed J&F.",
+          "The only working case is a thin, uniform object whose visible strip SAM simply continues (the CBABasketball v06 billboard). This is a narrow mechanism, and it disappears under either sensitivity constant (projection about 1,500 px, predicted IoU < 0.7).",
+          "The most favourable sensitivity point (IoU gate 0.85: all +0.00032 [+0.00004, +0.00059], under-cover +0.00058) is reported only as the edge of a range. It is about 0.03 J&F points and does not touch the under-cover block, so it is not a reason to register this candidate.",
+          "For the under-cover block, the remaining legal sources are those that act on the target image independently of the c_ini projection (exemplar or appearance; label-name text as a separate track), as protocol-inventory concluded. A dense or point prompt seeded from the reprojection is now measured and ruled out.",
+          "The dev route and scoring are reusable for those candidates. propose.py's feature path and the compose_score.py / report.py pipeline reproduce the dev baseline exactly, and the deltas were re-scored independently by dev_score.py with agreement to 1e-16."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/REGISTRATION.txt (design fixed before any run)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/propose.py (container GPU job: flock <gpu.lock> stage1/scripts/docker_run.sh scsam3 python geomem/runs/_e13_sam3-prompt-extend/propose.py [--scenes A,B]; writes props/<scene>/<t>/<cam>/{cls.png, proj/<o>.png, <variant>/<o>.png, meta.json, DONE}, 437 MB)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/props/ (proposals for the 170 dev views)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/composed_pts/ (primary composed masks in the dev layout) and composed_pts_pairs.json (independent dev_score.py output)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/compose_score.py (host: PYTHONDONTWRITEBYTECODE=1 stage1/.venv/bin/python -I compose_score.py --out rows.json --procs 14; composes and scores all variants and configs, about 5 min)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/report.py (host: report.py rows.json --json summary.json > report.txt; asserts baseline equality, then prints delta J&F with CIs, precision, recovery, funnel, leak, per-scene and per-object tables)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/extra.py (under-cover without the billboard, sensitivity ranges -> extra.txt)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/rim.py (distance bands of added pixels -> rim.txt)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/compose_write.py (writes composed masks for dev_score.py)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/viz.py (visual checks -> viz_dog.jpg, viz_cba.jpg, viz_cases.jpg)",
+          "/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/sam3-prompt-extend/{rows.json, summary.json, report.txt, extra.txt, rim.txt, propose_a.log, propose_b.log}",
+          "Persistent copies of the host scripts, reports, logs and images (rows.json not copied; it stays in the scratchpad): /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/host/ (git-ignored)",
+          "No tracked file modified (git status shows only the pre-existing MVSeed/runs/e4c_project.json change); no keyframe decoded, prompted or scored"
+        ]
+      },
+      {
+        "summary": "I built candidate D (multi-view geometric-continuity growth) and measured it on the DEV set only: 85 non-keyframe frames, 3300 pairs, the 140-pair dev under-cover population and its 67-pair clean subset. No keyframe was read, scored or used for tuning; the scripts assert t != ref_frame. Everything ran on the host CPU with numpy/cv2; there was no GPU job and no tracked file changed (git status is the same as at the start).\n\n**What I ran.** The design and every constant were written down in REGISTRATION.txt before any growth or score was computed. The only data looked at beforehand were GT-free Pi3 statistics.\n- **Growth:** in every rig camera at frame t (21.7 cameras per frame on average), take the pixels that c_ini cannot see, that have valid depth, are not on a depth discontinuity, and whose colour passes a gate. The colour gate is learned from c_ini's own input mask (object vs rest, likelihood ratio ≥ 1). Join them into 4-connected components, link components across the 4 nearest cameras through depth-consistent correspondences, and keep every component reachable from a seed. A seed is a pixel that lands on c_ini's eroded mask of the object.\n- **Projection into the target:** the target's own grown pixels, plus a nearest-point splat from all other cameras into target pixels that have no depth.\n- **Composition:** add-only, the same rule as candidate C.\n- **Variants:** mv (multi-view + splat, the declared primary), mv_nosplat, tv (target camera only), mv_noapp (no colour gate) and mv_plane (planar continuation for objects detected planar without GT).\n- **Checks:** the pair set and baseline J and F match dev_pairs.json exactly, as do the visibility-class counts on all 3300 pairs.\n\n**Result: candidate D does not help.**\n- **Primary (mv):** J&F changes by −0.00476 on all pairs [−0.00780, −0.00223] and by −0.00235 on the under-cover pairs [−0.00793, +0.00219]. Only 27.0% of added pixels belong to the object (33.9% on under-cover pairs). It recovers 4.75% of the under-cover missed pixels.\n- **Every variant and every constant setting tested** has an all-pair interval entirely below zero. The one exception is mv_noapp: it is about zero, but only because its huge, imprecise regions (precision 0.059) collide with each other and are thrown out as contested.\n- **No setting improves the under-cover pairs reliably:** every interval includes zero.\n\n**Why it fails.**\n- **Leaks into objects the reference input does not contain.** Pixels c_ini cannot see include surfaces of objects outside the scored object set. Of the candidate pixels left after removing everything the existing masks already claim, 43.9% belong to such objects and 49.0% to other seeded objects whose masks do not claim them. Ground, wall and table growth floods furniture, painted props and counter items.\n- **It cannot reach the costliest objects.**\n  - FlameSteak cam01 wall: the colour gate separates its outside-view part from the seeds. Loosening the gate connects it but floods (4.9 M pixels added at precision 0.23).\n  - CBA v06 grandstand: no target pixel projects onto c_ini's grandstand, and the sections are physically separate, so there is no seed and no chain.\n  - Dog tree: 89% of its missed pixels have no depth, and the splat source is rarely grown.\n- **Multi-view linking adds leaks, not reach.** Away from the Dog tree it recovers no more than growing in the target camera alone.",
+        "measurements": [
+          {
+            "name": "Validation against the dev scorer",
+            "value": "170 views, 3300 scored pairs (set equal to dev_pairs.json); max |J,F − dev_pairs| = 0; GT visibility-class counts (vis/outside/occluded/nodepth) identical on 3300/3300 pairs",
+            "how": "report.py consistency block; the numpy reprojection uses reproj_inputs' float path (float64 local points → float32 c_ini-frame points, full-res c_ini K, nearest-upsampled c_ini depth, OCC_TOL 0.01)"
+          },
+          {
+            "name": "Cost",
+            "value": "85 frames in 311 s wall time on 16 host processes, no GPU. Per-frame process time: mean 57 s, max 151 s under machine load ~40–50 from other agents; uncontended debug runs took 3.5–24 s per frame. Each sensitivity pass took 142–197 s on 14 processes. Per frame: 21.7 cameras, 50.8 linked camera pairs, 5.84 M correspondences",
+            "how": "main.log, sens_all.log, per-frame 'seconds' in main/frames/*.json"
+          },
+          {
+            "name": "PRIMARY mv, all 3300 dev pairs",
+            "value": "J&F change −0.00476 [−0.00780, −0.00223] (dJ −0.00451, dF −0.00501). 2416 pairs changed: 1216 up, 1200 down (sum +4.586 / −20.302). Added 12,804,334 px at precision 0.270 pooled (pair-mean 0.483). Of the added px, 0.730 land on another object: 0.202 on other seeded objects and 0.529 on objects not in the reference input; 0.000 on unlabelled. Precision by class: outside 0.216 (9.79 M px), occluded 0.497 (1.70 M), nodepth 0.379 (1.32 M). A further 15,419 px went to objects absent from the target GT",
+            "how": "grow.py (registered constants) + report.py: J&F from mvseg2d.metrics.jf_pair of N_o = D_o ∪ A_o minus that of D_o; 95 % scene-cluster bootstrap (10,000 resamples, seed 0)"
+          },
+          {
+            "name": "PRIMARY mv, dev under-cover (140 pairs; clean 67; not-under-cover 3160)",
+            "value": "Under-cover (baseline J&F 0.5414): change −0.00235 [−0.00793, +0.00219]; 42 up, 36 down. Added 777,461 px at precision 0.339 (pair-mean 0.568). Recovered 0.0475 of 5,545,786 missed px (pair-mean 0.0511): 0.0510 without the Dog tree, 0.0437 on the Dog tree. Recovered by class: outside 0.0510, occluded 0.1504, nodepth 0.0263. Change without the Dog tree −0.00162; Dog tree pairs −0.02206. Clean 67: −0.00382 [−0.01061, +0.00206], precision 0.368, recovered 0.0487. Not-under-cover: −0.00487 [−0.00793, −0.00229]",
+            "how": "report.py on _e13_dev/dev_undercover.json (clean = baseline precision ≥ 0.85); object-cluster bootstrap for under-cover and clean, scene-cluster otherwise"
+          },
+          {
+            "name": "Variant mv_nosplat",
+            "value": "All pairs −0.00420 [−0.00683, −0.00194], added precision 0.267. Under-cover −0.00109 [−0.00558, +0.00273], precision 0.384, recovered 0.0363. Clean 67: −0.00259",
+            "how": "same growth as the primary, target pixels with valid depth only"
+          },
+          {
+            "name": "Variant tv (target camera only)",
+            "value": "All pairs −0.00279 [−0.00528, −0.00091], added precision 0.351. Under-cover −0.00027 [−0.00208, +0.00132], precision 0.442, recovered 0.0386 (0.0523 without the Dog tree). Clean 67: −0.00065",
+            "how": "components and seeds in the target camera only; no links, no splat"
+          },
+          {
+            "name": "Variant mv_noapp (geometry only)",
+            "value": "All pairs +0.00040 [−0.00053, +0.00138], added 6.69 M px at precision 0.318. Under-cover +0.00276 [−0.00374, +0.00947], but added precision only 0.098 and recovered 0.0266. The raw grown region is 3.69 G px at precision 0.059 (median |R|/|GT| 11.6), so most of it is thrown out as contested. Large losses: 60 pairs below −0.01 (286 for the primary)",
+            "how": "traversable = valid & ~cut & (lands on o | ref-invisible), no colour gate"
+          },
+          {
+            "name": "Variant mv_plane (planar continuation)",
+            "value": "All pairs −0.00341 [−0.00596, −0.00158]. Under-cover +0.00234 [−0.00540, +0.01160], precision 0.393, recovered 0.0436. Clean 67: +0.00660 [−0.00536, +0.02410]. 1258 of 3300 pairs belong to objects detected planar",
+            "how": "RANSAC plane on c_ini's labelled valid points (256 hypotheses, seed 0); inlier test |n·p+d| ≤ 0.01·‖p‖; planar if ≥ 100 points and inlier fraction ≥ 0.85; ref-invisible traversable pixels must lie on the plane"
+          },
+          {
+            "name": "Funnel of missed pixels (primary), under-cover 140",
+            "value": "5,545,786 missed px. Valid-depth branch: ref-invisible with valid depth 0.525 → colour-accepted 0.310 → traversable 0.282 → grown 0.101. No-depth branch: 0.427 → a splatted point lands 0.225 → grown 0.013. Composition: in G 0.129 → ref-invisible 0.114 → unclaimed 0.065 → connected to D_o 0.058 → uncontested 0.0475. Without the Dog tree (2.90 M missed): 0.903 → 0.505 → 0.458 → grown 0.150; final 0.051. Dog tree alone: 0.888 of its missed px have no depth; a splat lands on 0.465 of them, 0.023 are grown",
+            "how": "grow.score_view funnel: target-side traversable/accept/splat-source maps nearest-upsampled to full resolution, intersected with GT_o & ~D_o"
+          },
+          {
+            "name": "Leak of the raw grown region R_o = G_o & ref-invisible (primary)",
+            "value": "All pairs: 3099 non-empty. At τ = 0.75: clean 0.243 (0.160–0.378 for τ 0.9–0.5), spill 0.190, larger 0.099, different 0.468. Raw region 780 M px at precision 0.197 (outside 0.179, occluded 0.194, nodepth 0.435); median |R|/|GT| 0.70. Under-cover: clean 0.144, larger 0.328, different 0.424; precision 0.121; median |R|/|GT| 3.29. 300 regions (103 M px) on objects absent from the target GT. For comparison, raw precision is 0.523 for tv, 0.245 for mv_plane and 0.059 for mv_noapp",
+            "how": "report.py LEAK block; categories as candidate C (dominant GT label vs o, precision threshold τ)"
+          },
+          {
+            "name": "GT label of unclaimed candidate pixels (primary)",
+            "value": "C_o = G_o & ref-invisible & ~D_o & ~(other D_q): 71,127,732 px. On o 0.065; other seeded object 0.490; basic object absent from c_ini at t 0.006; non-basic (complete-only) object 0.439",
+            "how": "unseeded.py over all 170 views from the saved primary masks (main/masks) + dev masks + target GT (diagnostic only)"
+          },
+          {
+            "name": "Where the wrong added pixels go (primary)",
+            "value": "10 (scene, cam, object) groups carry 0.787 of the wrong added px (top 30: 0.909 of 576 groups). AlexaMeadeFacePaint camera_0009 wall: 3.06 M px, precision 0.138, 0.843 on objects not in the input. CoffeeMartini cam02 wall: 2.15 M, 0.226. AlexaMeadeFacePaint camera_0008 wall: 1.42 M, 0.240. Blocks cam0 ground: 0.61 M, 0.021, summed J&F change −1.875 over 5 pairs. FlameSteak cam01 table: 0.33 M, 0.014, −1.655. Worst single pair: CBABasketball t=98 v06 person −0.709. Best: CoffeeMartini cam10 wall +0.084 to +0.087 in all 5 frames (precision 0.91–0.94)",
+            "how": "harm.py over main/frames; viz_harm.jpg"
+          },
+          {
+            "name": "By object type / planar flag (primary)",
+            "value": "Dynamic: 864 pairs, −0.00399, precision 0.201. Env: 445 pairs, −0.00768, 10.5 M px added, precision 0.279. Static: 1991 pairs, −0.00445, precision 0.234. Planar: 1258 pairs, −0.00506, precision 0.341. Non-planar: 2042 pairs, −0.00458, precision 0.259",
+            "how": "report.py FAILURE MODES; type from objects_labels.json (diagnostic only)"
+          },
+          {
+            "name": "Costliest under-cover objects (primary; diag.py on t=4)",
+            "value": "FlameSteak cam01 wall (1.41 M missed): traversable 0.46, grown 0.01, recovered 0.002. Its largest missed component (5,180 of 12,628 px) holds no seed; its border is 70 % colour-rejected and 27 % depth-cut, and the component is only 23.5 % wall. CBA v06 grandstand: 0 seeds in the target (no v06 pixel lands on c_ini's grandstand), recovered 0. CBA v06 billboard: recovered 0.619 at precision 0.393, change −0.031. Barn v0 ground: recovered 0.134 at precision 0.282, change −0.032. Dog tree: recovered 0.044 at precision 0.330, change −0.022",
+            "how": "report.py per-object table + diag.py (recomputes the target-side traversable map and its components, reads the saved grown masks); viz_undercover.jpg"
+          },
+          {
+            "name": "Sensitivity of the primary (12 one-at-a-time changes + registered)",
+            "value": "Constants varied: TAU_2 {0.01, 0.04}, LR {0.5, 2}, TAU_X {0.01, 0.04}, M_LINK {1, 25}, K_LINK {2, 8}, R_ERODE {0, 4}. All pairs: change −0.00543 … −0.00132; every interval's upper bound < 0 (−0.00237 … −0.00037); added precision 0.256 … 0.463. Under-cover: −0.00417 … +0.00043; every interval includes 0; added precision 0.239 … 0.377; recovered 0.0434 … 0.2282. Clean 67: −0.00598 … +0.00021. The high recovery end is LR 0.5: FlameSteak wall connects, 0.798 recovered, but 4.94 M px added at precision 0.229 (−0.056 on those pairs); all-pair change −0.00191. mv_nosplat: all pairs −0.00487 … −0.00132, under-cover −0.00290 … +0.00126",
+            "how": "run_sens.sh → sens_*/; report.py --sens; ranges only, no value selected"
+          },
+          {
+            "name": "Sensitivity of mv_plane (EPS_PLANE 0.005 / 0.01 / 0.02)",
+            "value": "All pairs −0.00416 / −0.00341 / −0.00370 (intervals all below 0). Under-cover −0.00073 / +0.00234 / +0.00388 (intervals include 0). Clean 67: +0.00067 / +0.00660 / +0.01014 (intervals include 0)",
+            "how": "sens_EPS_PLANE_*; registered value 0.01 from the main run"
+          },
+          {
+            "name": "Candidate C reference (QUOTED from scratchpad/sam3-prompt-extend/report.txt, not recomputed)",
+            "value": "C primary pts|20|None: all pairs −0.00122 [−0.00263, +0.00018]; under-cover +0.00557 [−0.00110, +0.01744], added precision 0.776, recovered 0.0226. D's primary recovers about 2× as many missed px (0.0475) at under half the precision (0.339)",
+            "how": "same dev pairs, same composition rule and scorer"
+          }
+        ],
+        "implications": [
+          "Candidate D should not be registered for the keyframe. At the registered constants and all 12 one-at-a-time changes, every all-pair interval lies entirely below zero. No setting gives an under-cover gain distinguishable from zero.",
+          "The main failure is a protocol-structural leak. The region c_ini cannot see contains surfaces of objects outside the reference input: complete-only objects make up 0.439 of the unclaimed candidate pixels. Another 0.490 belong to seeded objects whose dev masks do not claim them. Geometry plus colour cannot separate these, because of contact surfaces (ground under furniture, wall behind props painted the wall's colour in AlexaMeadeFacePaint) and smooth Pi3 depth at object edges. The 'unclaimed by other D' rule only protects pixels some D already claims.",
+          "The costliest under-cover objects are out of reach of geometric continuity by construction. The CBA grandstand sections are physically disjoint, so there is no seed and no chain. The FlameSteak wall's outside-view part is separated by a colour change; a looser gate connects it but floods (precision 0.23). The Dog tree is mostly without depth, and its Pi3 is degenerate. This matches the protocol inventory: geometry carries no object identity into those pixels.",
+          "Multi-view linking adds leaks, not reach. Away from the Dog tree, target-only growth (tv) recovers as much (0.0523 vs 0.0510) at more than twice the raw precision (0.523 vs 0.197). The no-depth splat helps only the Dog tree, and even there it loses J&F (−0.022).",
+          "Recovery and precision trade off and never net positive. Recovery of the under-cover missed pixels ranges 0.043–0.228 across constants, but the best recovery comes at precision 0.239 and the best all-pair setting (LR 2) still loses 0.0013. A precision gate or limiting growth to particular object types would be a new design; it would need its own dev registration before any keyframe use.",
+          "The near-zero all-pair result of the geometry-only variant (+0.0004) is an artefact. Its huge regions (raw precision 0.059) overlap each other and are dropped as contested; it is not evidence that geometry alone is safe.",
+          "Planar continuation is the only sub-variant with positive clean-subset estimates (+0.0007 to +0.0101 across EPS_PLANE), but every interval includes zero and its all-pair change stays negative. At most it is a weak hint for wall/ground objects, not a basis for adoption.",
+          "Against candidate C (numbers quoted from C's report, not recomputed), D recovers about twice as many missed pixels but at under half the precision. Neither moves the under-cover J&F reliably. The remaining route still points to a source with object identity in the target image (detector or exemplar prompts), as the protocol inventory concluded.",
+          "Dev caveats. The 85 frames are near-replicates within 20 frames of the keyframe, and 49 objects lie behind the 140 under-cover pairs, which is why intervals are object- or scene-clustered. Pixel-weighted figures are dominated by the Dog tree, so without-Dog-tree figures are reported alongside."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/REGISTRATION.txt: design and a-priori constants, written before any growth or score",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/grow.py: growth, projection, composition and scoring per dev frame. Host-only; run as `PYTHONDONTWRITEBYTECODE=1 stage1/.venv/bin/python -I grow.py --out DIR --procs 16 [--set K=V] [--variants ...] [--save-masks]`. Writes DIR/frames/<scene>_<t>.json, plus DIR/masks/<scene>/<t>/<cam>.npz (packed work-resolution grown masks per variant and object) when --save-masks is given",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/report.py: all tables. `report.py main --sens sens_*/ --json summary_main.json` produces report_main.txt and summary_main.json in the same folder",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/diag.py: per-view failure diagnosis and viz panels (viz_undercover.jpg: FlameSteak wall, CBA grandstand, Dog tree, Barn ground; viz_harm.jpg: AlexaMeadeFacePaint wall, Blocks ground, FlameSteak table, CoffeeMartini wall)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/harm.py: where wrong added pixels go. unseeded.py: GT label category of unclaimed candidate pixels. check.py: consistency check against dev_pairs. explore.py: the GT-free Pi3 statistics consulted before fixing constants. run_sens.sh: the 14 sensitivity passes",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/main/: primary run (frames/*.json per-pair records for all 5 variants, masks/*.npz). sens/sens_*/: frame JSONs and config of each sensitivity pass. report_main.txt, report_LR_0.5.txt, summary_main.json, main.log, sens_all.log",
+          "Scratch copies of everything: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/geometry-grow/",
+          "No tracked repository file was modified; no container or GPU job was run"
+        ]
+      },
+      {
+        "summary": "Candidate E1 (text-concept) is a PROTOCOL CHANGE and diagnostic only. At test time it needs each object's class name from the annotation metadata (stage1/Data/<scene>/objects_labels.json, the same file as Data/MVSeg/<scene>/Mask/objects_labels.json). MUVOD's input is only c_ini's frame-0 mask, so the class name is not part of it. Two post-hoc arms also use the metadata field 'type'. Every number below is from the DEV set: 85 non-keyframe frames × 2 non-reference annotated cameras = 3300 pairs. No keyframe was read, prompted or scored (t != ref_frame is asserted in every script), and no tracked file was changed (git status is the same as at the start).\n\n**Design.** I registered it before any detection was computed (REGISTRATION.txt):\n- **Prompts.** Each seeded basic object's label is turned into SAM 3 text prompts. Primary rule: split '_or_' names into separate prompts, replace '_' with a space, drop a leading 'other '. Detections come from Sam3Processor(model.detector).set_image, then set_text_prompt, once per distinct prompt string per view, kept when prob > TAU (0.5).\n- **Selection.**\n  - V1 best_ov (primary): the detection with the largest overlap with P_o, the reprojected c_ini GT.\n  - V2 best_iou: the detection with the highest IoU against P_o.\n  - V3 union_maj: the union of detections whose c_ini-visible part mostly projects from o.\n  - V4 union_all: every detection of the name, with no reference selection.\n  - Diagnostic only: an oracle that picks the detection with the best IoU against the target GT.\n- **Composition.** Add-only and identical to candidate C: add only pixels that c_ini cannot see, not claimed by any adopted geoset_rep_x dev mask, 8-connected to D_o, and not contested by another object.\n- **Reused inputs.** P_o and the visibility classes come from candidate C's props.\n\n**Registered result: effectively null.**\n- **Primary on the 140 dev under-cover pairs (UC140):** +0.00052 J&F [-0.00028, +0.00151]. It recovers 0.11 % of their missed pixels.\n- **Primary on all 3300 pairs:** +0.00029 [+0.00000, +0.00061].\n- **Best registered variant, union_all:** UC140 +0.00676 [+0.00148, +0.01311], recovering 4.3 % of missed pixels, but all pairs -0.00025 [-0.00113, +0.00073].\n\n**Why it fails.** The detector can see the region; the registered pipeline throws it away.\n- The union of all detections of the name covers 50.7 % of the UC140 missed pixels, and 75.7 % of the missed pixels that have no Pi3 depth.\n- Two registered steps throw this away:\n  1. Selecting by overlap with the projection picks the instance c_ini already sees. The new extent sits in *other* detections. Example: Dog camera_0004's overhanging branches are a separate 'tree' detection (prob 0.87) with zero overlap with the projection.\n  2. C's 8-connectivity rule cuts union_all's reach from 0.481 to 0.046 of missed pixels.\n\n**Post-hoc check (not registered, written after seeing the results).** I removed the connectivity step and prompted only objects whose metadata type is 'env':\n- **Dev results:** UC140 +0.00889 [+0.00001, +0.02334] (16 pairs up, 0 down); all pairs +0.00078 [+0.00001, +0.00215]; added-pixel precision 0.889.\n- **Where the gain comes from:** almost entirely 2 of 49 under-cover objects:\n  - the Dog tree: +0.173 per pair, recovering 72.5 % of its missed pixels at 0.987 precision;\n  - FlameSteak cam01's wall: +0.072 per pair.\n- **Without the env restriction:** removing connectivity for all objects is harmful (all pairs -0.00251), because names also match unseeded objects of the same class.\n\n**Out of reach for text.** Several under-cover concepts get no detection at prob 0.3 or above on any of their dev views (5 frames each): 'grandstand' (CBABasketball v06 and v24), 'billboard' / 'bulletin board', 'rig' (MartialArts v13), 'floor' (Breakfast v9), 'fire' (Welder camera_0003) and 'cushion' / 'carpet' (CoffeeMartini cam10).",
+        "measurements": [
+          {
+            "name": "Consistency with the dev scorer",
+            "value": "170 views; 3300 scored pairs, the same set as dev_pairs.json; max |J,F - dev_pairs| = 0.00e+00; 0 GT visibility-class count mismatches; 12,440 detections stored at prob > 0.3",
+            "how": "report.py recomputes the base J&F of D_o (mvseg2d.metrics.jf_pair) and the GT class counts in compose_score.py and asserts they equal _e13_dev/dev_pairs.json"
+          },
+          {
+            "name": "GPU cost and determinism",
+            "value": "Model load 9.3 s; median 0.86 s per view (max 2.5 s); 2,628 prompt strings in total (median 13 per view, max 32); 175 s for 160 views (Dog's 10 views were done in an earlier test run); peak 6.6 GB. Rerunning Dog's 10 views gave byte-identical dets.npz arrays (10/10). Host composition and scoring 442 s on 14 processes",
+            "how": "detect.log, dets/*/meta.json 'seconds', torch.cuda.max_memory_allocated; rerun into a temporary folder and np.array_equal on every npz array"
+          },
+          {
+            "name": "Detector reach, all 3300 pairs (TAU 0.5, split names)",
+            "value": "At least one detection: 0.716; mean best-instance IoU vs GT_o 0.474 (>= 0.5 for 0.517); union of the name's detections covers 0.209 of missed px (outside 0.253 / occluded 0.106 / no depth 0.502). By type, best-instance IoU: dynamic 0.690, static 0.418, env 0.308",
+            "how": "compose_score.py 'det' block per scored pair: pool = detections of the object's prompt strings with prob > TAU; missed = GT_o & ~D_o"
+          },
+          {
+            "name": "Detector reach, UC140 (TAU 0.5, split names)",
+            "value": "At least one detection: 0.550; mean best-instance IoU 0.184 (>= 0.5 for 0.171); union covers 0.5070 of 5,545,786 missed px (c_ini-invisible part 0.5042; outside 0.391 / occluded 0.136 / no depth 0.757). Without the Dog tree 0.3067; Dog tree alone 0.7268. With TAU 0.3: 0.5162; with TAU 0.7: 0.4183",
+            "how": "Same as above, restricted to the 140 rows of _e13_dev/dev_undercover.json"
+          },
+          {
+            "name": "Concepts with no detection at prob 0.3 or above",
+            "value": "'grandstand' (CBABasketball v06, v24), 'billboard' and 'bulletin board' (CBABasketball v06), 'rig' (MartialArts v13), 'floor' (Breakfast v9), 'fire' (Welder camera_0003), 'cushion' and 'carpet' (CoffeeMartini cam10): max prob below 0.3 on all 5 dev frames of each",
+            "how": "dets/*/meta.json max_prob per prompt string"
+          },
+          {
+            "name": "REGISTERED PRIMARY best_ov | TAU 0.5 | split | MIN_PROJ_PX 20",
+            "value": "ALL: dJF +0.00029 [+0.00000, +0.00061]; 1207 up / 417 down; 627,192 px added at precision 0.435 (pair-mean 0.679). UC140: 56/140 pairs get a selection; dJF +0.00052 [-0.00028, +0.00151], 24 up / 14 down; 12,029 px added at precision 0.499; recovers 0.0011 of missed px (outside 0.0013 / occluded 0.0055 / no depth 0.0000); Dog tree -0.00006. CLEAN67: +0.00057 [+0.00002, +0.00139]. NOT-UC: +0.00028 [-0.00001, +0.00061]",
+            "how": "compose_score.py + report.py; dJF = mean change of (J+F)/2 per pair; 95 % bootstrap with 10 000 resamples, seed 0; scene clusters for ALL and NOT-UC, (scene, cam, obj) clusters for UC140 and CLEAN67 (candidate C's statistics)"
+          },
+          {
+            "name": "Registered V2 best_iou (TAU 0.5, split, 20)",
+            "value": "ALL +0.00042 [+0.00018, +0.00068]; UC140 +0.00070 [+0.00005, +0.00161], recovers 0.0014 of missed px at added precision 0.681; CLEAN67 +0.00056 [+0.00003, +0.00137]",
+            "how": "As for the primary"
+          },
+          {
+            "name": "Registered V3 union_maj (TAU 0.5, split, 20)",
+            "value": "ALL +0.00025 [+0.00006, +0.00046]; UC140 +0.00063 [+0.00009, +0.00141], 26/140 selected, 25 up / 1 down, 52,029 px added at precision 0.795, recovers 0.0075 (without the Dog tree 0.0130); CLEAN67 +0.00096 [+0.00019, +0.00198]",
+            "how": "As for the primary"
+          },
+          {
+            "name": "Registered V4 union_all (TAU 0.5, split)",
+            "value": "ALL -0.00025 [-0.00113, +0.00073], 1289 up / 429 down; UC140 +0.00676 [+0.00148, +0.01311], 34 up / 13 down, 270,247 px added at precision 0.891, recovers 0.0434 (outside 0.0919; without the Dog tree 0.0772); CLEAN67 +0.00225 [+0.00006, +0.00646]; NOT-UC -0.00056 [-0.00147, +0.00040]. Per object: FlameSteak cam01 wall +0.0262, Welder camera_0004 box +0.0526, MATF S1_CAM_1 bottle +0.0671",
+            "how": "As for the primary"
+          },
+          {
+            "name": "Diagnostic oracle (single detection with the best IoU against the target GT, registered composition)",
+            "value": "ALL +0.00128 [+0.00034, +0.00289]; UC140 +0.01896 [+0.00138, +0.05140] but recovers only 0.0049 of missed px; CLEAN67 +0.00058",
+            "how": "Uses the target GT; it bounds what a single-detection selection could deliver and is not a candidate"
+          },
+          {
+            "name": "Sensitivity ranges, one constant at a time (TAU 0.3/0.7, MIN_PROJ_PX 200/2000, joined names; nothing selected)",
+            "value": "dJF ALL | UC140 | CLEAN67. best_ov [+0.00006, +0.00046] | [+0.00024, +0.00310] | [+0.00040, +0.00097]. best_iou [+0.00031, +0.00049] | [+0.00043, +0.00309] | [+0.00039, +0.00062]. union_maj [+0.00010, +0.00027] | [+0.00038, +0.00142] | [+0.00045, +0.00217]. union_all [-0.00092, +0.00012] | [+0.00436, +0.01393] | [+0.00122, +0.00489]. Oracle [+0.00069, +0.00140] | [+0.00454, +0.01901] | [+0.00042, +0.00169]",
+            "how": "report.py SENSITIVITY RANGES section"
+          },
+          {
+            "name": "Funnel, UC140 (share of 5,545,786 missed px surviving each step; TAU 0.5, split)",
+            "value": "Primary best_ov: name-union 0.5070 -> in S_o 0.0123 -> c_ini-invisible 0.0100 -> unclaimed 0.0034 -> 8-connected 0.0011 -> uncontested 0.0011. union_all: 0.5070 -> 0.5042 -> 0.4813 -> 0.0464 -> 0.0434. Oracle: in S_o 0.3656 -> 0.3635 -> 0.3497 -> 0.0049 -> 0.0049",
+            "how": "Per-pair funnel counts in compose_score.py; the first column is the union of all detections of the name"
+          },
+          {
+            "name": "Selection quality and leak of the raw selected segment (TAU 0.5)",
+            "value": "best_ov picks the GT-best detection in 0.918 of selected pairs overall and 0.750 in UC140; mean GT IoU of the pick vs the GT-best on the same pairs: 0.733 vs 0.752 overall, 0.322 vs 0.359 in UC140. Leak of the best_ov segment (all, n 2049): clean 0.884 / spill 0.030 / larger 0.014 / different 0.071, pixel precision 0.881; UC140 (n 56): clean 0.536 / different 0.429. union_all segments: the dominant label is another object in 0.667 of cases, median |S|/|GT| 4.80",
+            "how": "report.py SELECTION QUALITY and LEAK sections (candidate C's leak classes, tau 0.75, range over 0.5 and 0.9)"
+          },
+          {
+            "name": "POST-HOC (not registered): union_all without 8-connectivity, env-type objects only",
+            "value": "ALL +0.00078 [+0.00001, +0.00215], 177 up / 65 down, 4,917,567 px added at precision 0.889; UC140 +0.00889 [+0.00001, +0.02334], 16 up / 0 down, recovers 0.4747 of missed px (outside 0.354 / occluded 0.010 / no depth 0.754); CLEAN67 +0.01858 [+0.00003, +0.04760]; UC without the Dog tree +0.00282 [+0.00001, +0.00862], recovers 0.2469; NOT-UC +0.00042 [-0.00007, +0.00114]",
+            "how": "posthoc.py arm 'union_all|noconn|env' (type from objects_labels.json; contested pixels still dropped), posthoc_report.py; same bootstrap"
+          },
+          {
+            "name": "POST-HOC per under-cover object (env-only, no connectivity)",
+            "value": "Dog camera_0004 tree: +0.1729 per pair (base 0.670), recovers 0.725 of 2,644,865 px at 0.987 precision. FlameSteak cam01 wall: +0.0721 (base 0.732), 0.502 of 1,413,280 at 0.947. Barn v0 ground +0.0061; Welder camera_0003 wall +0.0010. CBABasketball grandstands, CBABasketball billboard, MartialArts rig: 0 (no detections)",
+            "how": "posthoc_report.py under-cover table"
+          },
+          {
+            "name": "POST-HOC: no connectivity, all objects (no type restriction)",
+            "value": "ALL -0.00251 [-0.00537, -0.00007]; UC140 +0.00891 [+0.00001, +0.02336]. Precision of added pixels: static 0.014, dynamic 0.149, env 0.893. Worst pairs: Welder tool -0.657; FlameSteak cam01 chair_or_seat -0.41 to -0.48 ('chair' also detects an unseeded chair); Microwave_oven -0.35; Welder metal_part -0.19 to -0.47. With the 8-connectivity kept (unique names only): ALL +0.00015, UC140 +0.00102. Oracle without connectivity: UC140 +0.03397 [-0.00965, +0.08815]",
+            "how": "posthoc.py arms union_all|noconn, union_all|noconn|unique, union_all|conn|unique, oracle|noconn"
+          },
+          {
+            "name": "Reference: candidate C on the same dev set and composition (QUOTED from its report.txt)",
+            "value": "C primary (pts | 20 | no gate): ALL -0.00122 [-0.00263, +0.00018]; UC140 +0.00557 [-0.00110, +0.01744], recovers 0.0226 of missed px",
+            "how": "geomem/runs/_e13_sam3-prompt-extend/host/report.txt, not recomputed"
+          }
+        ],
+        "implications": [
+          "The registered text-concept candidate is a null result and weaker than candidate C. The primary moves the 140 under-cover pairs by +0.0005 J&F and recovers 0.1 % of their missed pixels. Nothing in the registered set is worth carrying further, and it needs the class name at test time, which MUVOD does not provide.",
+          "The detector is not the bottleneck on the objects it can name: its union covers 51 % of the under-cover missed pixels and 76 % of the no-depth ones. The losses come from two parts of the registered pipeline. Selecting by overlap with the projection picks the instance c_ini already sees (the useful extent is a different detection), and candidate C's 8-connectivity rule cuts the reach from 0.48 to 0.05. The same connectivity rule probably limits candidate C and D's pipeline too, wherever the missing part is a disconnected region (the Dog tree's branches, FlameSteak's left wall).",
+          "Post hoc only: dropping connectivity and prompting only metadata-type 'env' objects gives dev UC140 +0.0089 and all pairs +0.0008, with 16 up / 0 down. But both CIs barely clear 0, and the gain is essentially two objects (Dog tree, FlameSteak cam01 wall), 10 of 140 pairs. Treat it as a hypothesis for a separately pre-registered follow-up on fresh dev frames, not as a result. It uses two metadata fields (name and type) that are outside MUVOD's input.",
+          "Without the env restriction, text additions are harmful: added-pixel precision is 0.01 for static and 0.15 for dynamic objects. Names also match unseeded or unlabelled objects of the same class (FlameSteak chair, Welder tool and metal part). Being unique within the scene's basic set does not make a name unique in the image.",
+          "Text cannot reach several of the costly under-cover objects at all. 'grandstand', 'billboard', 'rig', 'floor' (Breakfast), 'fire' and 'cushion/carpet' give no detection at prob 0.3 or above. Both CBABasketball grandstands and the billboard stay unsolved under any composition rule.",
+          "For a protocol-(i)-legal version (cross-image exemplar instead of the label), the lesson carries over. A proposal must be allowed to add instances that do not overlap the reference projection and are not connected to the current seed, and it then needs a precision guard; the env type served as that guard here.",
+          "All of this is dev-only, and the dev pairs are near-replicates (5 frames within 20 of the keyframe, the same objects). The post-hoc gains rest on 2 objects. No keyframe J&F was computed."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/REGISTRATION.txt (design fixed before any detection)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/detect.py (GPU; flock <gpu.lock> stage1/scripts/docker_run.sh scsam3 python geomem/runs/_e13_text-concept/detect.py) -> dets/<scene>/<t>/<cam>/{dets.npz, meta.json, DONE}, detect.log",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/compose_score.py (host; stage1/.venv/bin/python -I compose_score.py --out rows.json --procs 14) -> rows.json, compose.log",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/report.py (host; report.py rows.json --json summary.json) -> report.txt, summary.json",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/posthoc.py + posthoc_report.py (POST-HOC, not registered) -> posthoc_rows.json, posthoc_report.txt, posthoc_summary.json, posthoc.log",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/viz_one.py + viz_dog_tree.jpg, viz_FlameSteak_cam01_32.jpg, viz_FlameSteak_cam01_39.jpg (diagnostic panels: image | GT | D | visibility classes | projection | union of detections | top detections)",
+          "Copies of all scripts, reports, logs and viz: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/text-concept/",
+          "Read-only inputs reused: geomem/runs/_e13_dev (D masks, index.json, dev_pairs.json, dev_undercover.json) and geomem/runs/_e13_sam3-prompt-extend/props (P_o, cls.png)"
+        ]
+      },
+      {
+        "summary": "**This changes the task: stage 1 gets two annotated input views instead of one.** MUVOD gives stage 1 only c_ini's mask. Here each DEV target X (one of the 2 annotated non-reference cameras) also gets the GT of the other annotated non-reference camera B, from the same frame t, as a second reference. Under a real two-reference protocol B would be an input, not a scoring camera, so J&F³ itself would change. In these numbers each camera is scored only when the other one is the input. Treat everything below as a diagnostic upper bound, not a main-track candidate. Only DEV frames were decoded or scored (85 frames, 3300 pairs from the dev-route). No keyframe was read, and no tracked file changed; git status is the same as at the start.\n\n**What I ran.** I did the full decode, not just the coverage measure. `dev_decode_2ref.py` rebuilds `decode_scene`'s path for the adopted preset `geoset_rep_x` for one target X:\n- arm `geoset_pred_ft` with its own-fold checkpoint and leak guard;\n- gate `reproj`, `--xcl out`, round 2 from predictions.\n\nB's view is `wrapper.encode_reference(B image, B backbone, B GT of the c_ini objects, B's Pi3 grid in c_ini's frame)`, the GeoProj proj_bin / geoset_ft GT-memory path. Its confidence is \"object present in B's GT\", so an object B does not see adds nothing from B. The reproj gate still compares against c_ini's GT. All of this was fixed before any run. Three modes:\n- **none** (control): no B.\n- **both** (the two-reference protocol): references {c_ini, B} in round 1 for X and its candidates, and in round 2. The round-2 candidates are X's 3 nearest cameras minus {c_ini, B}.\n- **r2**: B is added in round 2 only.\n\n**The control matches.** Mode none reproduces the adopted dev masks byte for byte on 34/34 targets (first dev frame of each of the 17 scenes × 2 cameras).\n\n**Overall result (mode both).**\n- All 3300 dev pairs: J&F 0.9078 → 0.9145 (+0.0067).\n- Dev under-cover population (140 pairs, fixed on the adopted decode): 0.5414 → 0.6486 (+0.1073). 111 of the 140 pairs are still below 0.8.\n- Clean under-cover (precision ≥ 0.85, 67 pairs, the actual under-coverage case): only +0.0346, and +0.0257 without the Dog camera_0004 tree.\n\n**Most of the under-cover gain is not about extent.** 62% of the summed gain comes from 4 Welder helmet/box groups. Those are miss and wrong-object pairs, where B's GT fixes which object is meant. Without those 4 groups the under-cover gain is +0.0447.\n\n**The biggest misses barely move.**\n\n| Object | J&F (adopted → both) | Missed pixels |\n|---|---|---|\n| FlameSteak cam01 wall | 0.732 → 0.797 (gain comes from fewer false-positive pixels) | 1.413M → 1.412M (unchanged) |\n| CBABasketball v24 grandstand | 0.360 → 0.357 | — |\n| CBABasketball v06 grandstand | 0.436 → 0.557 | — |\n| Dog camera_0004 tree | 0.670 → 0.815 | 2.64M → 0.80M |\n\nAcross the 140 pairs the net drop in missed pixels is 5.55M → 3.32M (−40%). Most of that is the Dog tree: without it the drop is only −13%.\n\n**Geometric reach of B is small.** Projecting the adopted decode's missed under-cover pixels from X into B:\n- 0.071 of them are visible from B and 0.035 land on B's GT (pixel-weighted); 0.050 land on B's GT or c_ini's GT.\n- By c_ini class: outside 0.029, occluded 0.128, no-depth 0 (by construction).\n- In 20 of the 140 pairs, B's GT does not contain the object at all.\n\nMode both still recovers 0.424 of those missed pixels gross, but only 4.6% of what it recovers lies on B's projected GT (19.9% without the Dog tree). So the gain comes mostly from the B view in memory attention, not from labels carried over by reprojection.\n\n**Round 1 matters.** The Dog tree, whose pixels mostly have no Pi3 depth, improves only when B is in round 1: clean pairs dominated by no-depth pixels gain +0.121 with both, −0.008 with r2. Mode r2 overall: all pairs +0.0056, under-cover +0.0921, clean +0.0119.",
+        "measurements": [
+          {
+            "name": "Control: mode none vs adopted dev masks",
+            "value": "34 / 34 targets byte-identical (same non-empty objects, same pixels)",
+            "how": "dev_decode_2ref.py --mode none --first-only --validate: first dev frame of each of 17 scenes x 2 eval cams, np.array_equal against geomem/runs/_e13_dev/<scene>/<t>/<X>/<obj>.png; none/_validate.json"
+          },
+          {
+            "name": "Mode both: all 3300 DEV pairs",
+            "value": "J&F 0.9078 -> 0.9145, delta +0.0067. 95% CI: scene [+0.0014, +0.0148], object [+0.0031, +0.0106]. 614 pairs up / 191 down (|d| > 0.005). Pairs below 0.8: 293 -> 237. Recall 0.909 -> 0.916, precision 0.944 -> 0.948",
+            "how": "dev_score.py (unchanged dev-route scorer) on both/, paired with _e13_dev/dev_pairs.json in report_2ref.py; cluster bootstrap 10,000 resamples, seed 0, over scenes and over (scene, cam, obj)"
+          },
+          {
+            "name": "Mode both: dev under-cover population (140 pairs, 49 objects)",
+            "value": "J&F 0.5414 -> 0.6486, delta +0.1073. CI: scene [+0.0258, +0.2457], object [+0.0495, +0.1811]. 77 up / 17 down. Still below 0.8: 111/140. Recall 0.530 -> 0.654, precision 0.765 -> 0.832. Missed px 5,545,786 -> 3,320,355 (net -0.401). Net recovered by c_ini class (pixel-weighted): visible 0.099, outside 0.183, occluded 0.105, no-depth 0.721",
+            "how": "Population fixed on the adopted decode: JF < 0.8 and gt_invis_frac >= 0.5 and recall < 0.85 (same rule as dev_report.py); report_2ref.txt section B"
+          },
+          {
+            "name": "Mode both: under-cover without the Dog camera_0004 tree",
+            "value": "135 pairs: delta +0.1059 [scene +0.0224, +0.2545]. Missed px 2,900,921 -> 2,523,703 (net -0.130)",
+            "how": "report_2ref.py"
+          },
+          {
+            "name": "Mode both: clean under-cover (precision >= 0.85; equals the seedcat under-cover kinds)",
+            "value": "67 pairs: J&F 0.6461 -> 0.6807, delta +0.0346. CI: scene [+0.0135, +0.0605], object [+0.0110, +0.0621]. Still below 0.8: 57/67. Recall 0.654 -> 0.702. Without the Dog tree (62 pairs, 23 objects): +0.0257, missed px net -0.104",
+            "how": "report_2ref.py; breakdown_2ref.py section 5"
+          },
+          {
+            "name": "Mode both: pairs outside the under-cover population",
+            "value": "3160 pairs: 0.9241 -> 0.9263, delta +0.0022 [scene -0.0007, +0.0052]",
+            "how": "report_2ref.py"
+          },
+          {
+            "name": "Mode r2 (B in round 2 only)",
+            "value": "All pairs +0.0056 [scene +0.0008, +0.0128]. Under-cover +0.0921 [+0.0141, +0.2155], missed px net -0.054. Clean +0.0119 [+0.0042, +0.0204]; clean without Dog tree +0.0134. Dog tree 0.670 -> 0.662 (no gain)",
+            "how": "Same scorer and report on r2/"
+          },
+          {
+            "name": "Where the under-cover gain comes from (mode both)",
+            "value": "Share of the summed under-cover gain (+15.02) by adopted seedcat kind: miss 0.36, wrong-object 0.35, under-cover(beyond c_ini) 0.11, spill-twin 0.11, under-cover 0.04, boundary/mixed 0.01. Welder helmet and box (4 groups, 11 pairs) alone give 0.62. Under-cover without those 4 groups: +0.0447 (r2 +0.0356). Of 49 object groups: 15 improve by more than 0.05, 33 change by at most 0.05, 1 gets worse by more than 0.05",
+            "how": "breakdown_2ref.py sections 1 and 3"
+          },
+          {
+            "name": "Largest under-cover objects (mode both)",
+            "value": "Dog camera_0004 tree: 0.670 -> 0.815, recall 0.58 -> 0.87, missed 2.64M -> 0.80M px. FlameSteak cam01 wall: 0.732 -> 0.797, missed 1,413,280 -> 1,412,083 (unchanged). Welder camera_0003 wall: 0.714 -> 0.837. CBABasketball v06 grandstand: 0.436 -> 0.557. CBABasketball v24 grandstand: 0.360 -> 0.357. CBABasketball v06 billboard: 0.692 -> 0.699. MartialArts v13 rig: 0.754 -> 0.784",
+            "how": "report_2ref.txt, per-object table"
+          },
+          {
+            "name": "Clean under-cover by dominant c_ini class of the missed pixels",
+            "value": "Outside (29 pairs): both +0.044, r2 +0.015, missed 2.39M -> 2.16M. Occluded (25): +0.010 / +0.015. No-depth (6): +0.121 / -0.008. Visible (7): +0.009 / +0.006",
+            "how": "breakdown_2ref.py section 4"
+          },
+          {
+            "name": "Geometric oracle: under-cover missed pixels reachable from B",
+            "value": "Pixel-weighted / pair-mean: visible from B 0.071 / 0.326; on B's GT 0.035 / 0.103; on B's GT or c_ini's GT 0.050 / 0.122. Per c_ini class (visible from B | on B's GT): visible 0.410|0.212, outside 0.048|0.029, occluded 0.325|0.128, no-depth 0|0. Without Dog tree: visible from B 0.110, on B's GT 0.059. Clean: on B's GT 0.028. Object absent from B's GT in 20/140 pairs",
+            "how": "dev_cover_B.py: every pixel of X reprojected into B with reproj_inputs + project_reference_masks on Cache/pi3_frames/<t> (OCC_TOL 0.01, conf > 0.1); its c_ini classes match dev_score.py on all 3300 rows (asserted)"
+          },
+          {
+            "name": "Geometric oracle: all DEV pairs, for context",
+            "value": "Missed px on B's GT 0.133 (visible from B 0.265). Target GT on B's GT: all pairs 0.411, under-cover 0.195",
+            "how": "dev_cover_B.py / report_2ref.py section A"
+          },
+          {
+            "name": "Gross recovery split by B's geometric reach",
+            "value": "Mode both, under-cover: 0.424 of the adopted missed pixels now covered; of those on B's GT 0.563, of those not on B's GT 0.419; only 0.046 of the recovered pixels lie on B's GT (0.199 without Dog tree, where gross recovery is 0.171). Mode r2, under-cover: gross 0.061",
+            "how": "dev_cover_B.py --arm both=... --arm r2=...: missed & arm mask, split by onBgt / visB / c_ini class"
+          },
+          {
+            "name": "Split by whether B sees the object",
+            "value": "Object absent from B (20 pairs): 0.508 -> 0.503. Present (120): 0.547 -> 0.673. Present with >= 25% of missed pixels on B's GT (28): 0.517 -> 0.750. Present with < 25% (92): 0.556 -> 0.649",
+            "how": "breakdown_2ref.py section 2"
+          },
+          {
+            "name": "Decode records",
+            "value": "170 targets per mode. B present for 0.835 of target objects. 32/170 targets had B or c_ini among X's 3 nearest cameras, so fewer than 3 predicted neighbours. Seconds summed over targets: both 487 s, r2 380 s (about 13 and 10 min of wall time incl. load). dev_score 163 s per arm, dev_cover_B 157 s; peak GPU use about 6 GB",
+            "how": "rec_<X>.json files, logs"
+          }
+        ],
+        "implications": [
+          "This changes the task. A two-reference protocol makes B an input, so B could no longer be scored and J&F³ would change. These numbers score each annotated non-reference camera only when the other one is the second reference. They are a dev diagnostic and upper bound, not a main-track candidate, and no keyframe J&F was computed.",
+          "Even a perfect second annotated view from the same instant is a weak fix for real under-coverage. Clean under-cover pairs gain +0.035 J&F (+0.026 without the Dog tree), and 57 of the 67 stay below 0.8.",
+          "The large +0.107 on the full under-cover population is mostly a different failure. 62% of it is the Welder helmet and box miss/wrong-object pairs, where B's GT fixes which object is meant. That is not extent.",
+          "The outside class, which is the keyframe's main failure, barely moves. The FlameSteak wall's missed pixels are unchanged and the CBABasketball v24 grandstand stays at 0.36. A neighbouring annotated camera in this rig rarely sees what c_ini cannot: on DEV only 2.9% of the outside missed pixels land on B's GT. This matches protocol-inventory's 0.078 reach for the same 22 objects.",
+          "What gain there is comes mostly from B's view in memory attention, not from labels carried over by reprojection. Only 4.6% of the recovered under-cover pixels lie on B's projected GT. The Dog-tree no-depth pixels (no Pi3 depth, 0 geometric reach) recover only when B is in round 1 (+0.121 vs −0.008 with B in round 2 only). So a reference that is closer in appearance to the target can reach no-depth regions without geometry.",
+          "Recommendation: do not pursue a second-reference protocol change for the under-cover block. Its ceiling is low and it changes what is scored. Separately, the Welder identity fix and the round-1 effect on the Dog tree suggest the reference's appearance memory, not geometric reach, is what carries information beyond c_ini. Any protocol-legal source of a second view's labels should therefore enter round 1.",
+          "Caveat: dev pairs are near-replicates (5 frames, 49 under-cover objects). The cluster CIs are wide (under-cover scene CI [+0.026, +0.246]), and the gains say something about the same scenes, not an independent test."
+        ],
+        "scripts": [
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/dev_decode_2ref.py (container: flock <gpu.lock> stage1/scripts/docker_run.sh scsam3 python geomem/runs/_e13_second-reference/dev_decode_2ref.py --mode {none,both,r2} [--first-only --validate]; writes <mode>/<scene>/<t:06d>/<X>/<obj>.png, _r1/<X>/, rec_<X>.json, DONE_<X>)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/dev_cover_B.py (container; geometric oracle X->B plus arm recovery split -> cover_B.json)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/report_2ref.py (host: stage1/.venv/bin/python -I report_2ref.py --base ../_e13_dev/dev_pairs.json --arm both=both/dev_pairs.json --arm r2=r2/dev_pairs.json --cover cover_B.json --json report_2ref.json -> report_2ref.txt)",
+          "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/breakdown_2ref.py (host -> breakdown_2ref.txt)",
+          "Scoring reused unchanged: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev-route/dev_score.py --masks geomem/runs/_e13_second-reference/{both,r2} --out .../{both,r2}/dev_pairs.json",
+          "Outputs: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/{both,r2,none}/ (masks; both/ and r2/ dev_pairs.json; none/_validate.json), cover_B.json, report_2ref.{txt,json}, breakdown_2ref.txt, log_{both,r2,none_validate,score_both,score_r2,cover}.txt",
+          "Copies of scripts, reports and _validate.json: /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/second-reference/"
+        ]
+      }
+    ],
+    "verdicts": [
+      {
+        "assessments": [
+          {
+            "candidate": "DEV route and baseline (dev-route; the shared base for every candidate)",
+            "protocol": "(i), legal. Adopted preset geoset_rep_x unchanged. Input is c_ini's GT at frame t restricted to the basic set, plus Cache/pi3_frames/<t>, with each scene's own-fold checkpoint (check_preflight and assert_no_leak). Frames are ref+4 to ref+20 in all 17 scenes; index.json checked, and t != ref_frame for every frame.",
+            "credible_gain": "Not a candidate; the baseline is exact. Re-running dev_report.py on the host reproduces dev_report.txt and dev_undercover.json byte for byte: 3300 pairs, J&F 0.90782, 140 under-cover pairs (UC140), 67 clean pairs. _validate.json: restricted decode equals full decode on 17/17 frames. I checked that the keyframe Pi3 cache Cache/pi3 equals Cache/pi3_frames/<ref> file for file (Dog 41, CBABasketball 30, Welder 46 npz, 0 differ), so the frame-t path is the keyframe code path. Leakage checks:\n- Every E13 script asserts t != ref_frame, and none reads Result/ or seedfail.json.\n- Nothing under stage1/Data or MVSeed was written after _e13_dev/index.json was created.\n- Tracked git status is unchanged; e4c_project.json was already modified before E13.",
+            "risks": "- **Dev frames are not independent of the test.** They are disjoint from the keyframe in time, but they are 5 near-replicate frames 4 to 20 frames away, with the same objects and cameras. A per-object dev gain will almost surely carry over to the keyframe, so a later keyframe run is a weak test of anything chosen on dev.\n- **Selection bias.** UC140 is selected on the baseline's own failure (J&F < 0.8), so any arm that re-decodes rather than adds deterministically gets a regression-to-the-mean boost.\n- **Keyframe-derived identities.** protocol-inventory's \"same-22\" DEV rows are picked using the keyframe failure identities. This is diagnostic only and nothing was tuned on it.",
+            "verdict": "SOUND. Reuse as the DEV route. Report pair-mean, without-Dog-tree and cluster-bootstrap figures alongside the pooled ones."
+          },
+          {
+            "candidate": "C: sam3-prompt-extend (SAM 3 interactive prompts from the c_ini-visible projection, add-only)",
+            "protocol": "(i), legal. Uses c_ini's GT at t, the target RGB and Pi3; propose.py reads only c_ini's label map. Registration (16:30) came before the first proposal (16:31:13).",
+            "credible_gain": "None. Primary: all pairs −0.00122 [−0.00263, +0.00018]; UC140 +0.00557 [−0.00110, +0.01744], carried by the CBABasketball v06 billboard. Its 5 pairs gain +0.166, +0.171, +0.133, +0.134 and +0.139 (mean +0.1486); the other 135 UC pairs gain +0.00027 [−0.00158, +0.00216]. Pairs with baseline J&F ≥ 0.8 lose a net −5.363 (3007 pairs). How I checked:\n- report.py and extra.py re-run from rows.json give byte-identical report.txt and extra.txt.\n- I re-composed the primary independently (whole-image cv2 labelling; C_o = S & invisible & no dev mask; keep components that touch D_o; drop contested pixels) on CBABasketball, AlexaMeadeFacePaint and Dog: 326 pairs, max |ΔJ&F| difference 1.1e-16, 0 added-pixel-count mismatches.\n- The add-only rule is implemented exactly as registered.",
+            "risks": "- Proposals cover only 0.0377 of the UC missed pixels, a ceiling no composition rule can lift.\n- 62.6% of added pixels land on other seeded objects; precision beyond the boundary tolerance is 0.12.\n- The only gain disappears at either sensitivity constant.\n- The best sensitivity point (IoU gate 0.85, +0.00032) is the edge of a range, not a selected value.",
+            "verdict": "REJECT. Do not register for the keyframe."
+          },
+          {
+            "candidate": "D: geometry-grow (multi-view geometric and colour continuity growth, add-only)",
+            "protocol": "(i), legal. Uses all rig RGB and Pi3 at t plus c_ini's mask at t; target GT is only read in score_view. Registration was at 17:10. grow.py was last edited at 17:19 and the main run followed; main/config.json constants equal the registered ones.",
+            "credible_gain": "None. mv: all pairs −0.00476 [−0.00780, −0.00223], UC140 −0.00235 [−0.00793, +0.00219]. Every variant and one-at-a-time constant change has an all-pairs upper bound below 0, except mv_noapp (+0.00040 [−0.00053, +0.00138]). How I checked:\n- report.py re-run gives a byte-identical report_main.txt, including the sensitivity runs.\n- I re-composed independently from the saved packed grown masks, over all 170 views, for mv and mv_noapp: 0 added-pixel-count mismatches in 6600 (pair, variant) rows, and exact dJ/dF for mv.\n- The unclaimed candidate total of 71,127,732 px matches unseeded.py.",
+            "risks": "- Leaks into complete-only objects and seeded objects that no dev mask claims.\n- The costliest objects are unreachable by construction: CBABasketball grandstand (no seed), FlameSteak wall (colour gate), Dog tree (no depth).\n- The mv_noapp near-zero result is an artefact, but not mainly of the contest rule (see refuted claims).",
+            "verdict": "REJECT."
+          },
+          {
+            "candidate": "E1 registered: text-concept (label-name SAM 3 detector, composition identical to C)",
+            "protocol": "PROTOCOL CHANGE: label names come from annotation metadata, so this is a separate track only. Registration (18:09:48) came before detect.py (18:10:16) and the first detection (18:10:36). Only c_ini's label map is read for prompting. The composition is C's connected_add verbatim, with contest among active objects.",
+            "credible_gain": "Null. Primary best_ov: all pairs +0.00029 [+0.00000, +0.00061], UC140 +0.00052 [−0.00028, +0.00151], recovering 0.0011 of missed pixels. The best registered variants are best_iou (all +0.00042) and union_all (UC140 +0.00676 but all pairs −0.00025). These are about 0.04 J&F points and not worth carrying. report.py re-run gives a byte-identical report.txt.",
+            "risks": "- Needs class names at test time, which MUVOD does not provide.\n- No detection at prob ≥ 0.3 for 'grandstand', 'billboard', 'rig', 'floor', 'fire' and 'cushion/carpet'.",
+            "verdict": "REJECT (null result; separate-track diagnostic only)."
+          },
+          {
+            "candidate": "E1 post-hoc: union_all, no connectivity, env-type objects only (text-concept posthoc.py)",
+            "protocol": "PROTOCOL CHANGE twice over: label names and the metadata field 'type'. NOT REGISTERED: the posthoc.py docstring says the env arm was added after the first post-hoc report was seen. It is a forking-paths result on DEV.",
+            "credible_gain": "Not established. posthoc_report.py re-run gives a byte-identical report.\n- **UC140:** +0.00889 (16 up, 0 down).\n- **All pairs:** +0.00078. Bootstrap P(mean ≤ 0) is 0.020 to 0.023 over seeds 0 to 2. Without the Dog scene it is +0.00029. Without the Dog camera_0004 tree and the FlameSteak cam01 wall it is +0.00041.\n- **Where the summed all-pairs gain comes from:**\n\n| Object group | Share of summed gain |\n|---|---|\n| Dog camera_0004 tree | 0.34 |\n| FlameSteak cam01 wall | 0.14 |\n| Dog camera_0003 tree | 0.13 |\n| PoznanStreet v0 grass | 0.13 |\n| Dog camera_0004 handrail | 0.11 |",
+            "risks": "- **Same objects as the keyframe failures.** Four of those five groups (Dog cam4 tree, Dog cam4 handrail, FlameSteak cam01 wall, PoznanStreet v0 grass) are among the 22 keyframe under-cover objects. A keyframe run of this arm would mostly re-measure dev-selected objects, not test a hypothesis.\n- **No legal counterpart shown.** The only protocol-(i) analogue measured, sam3-modes' cross-image exemplar from c_ini's box, scored IoU 0.0 on the Dog tree (Dog t=10 camera_0004, obj 3).",
+            "verdict": "HYPOTHESIS ONLY. Not a candidate and not for the keyframe. If ever pursued, pre-register it as a separate track on the 15 unused non-reference train frames, and state that a keyframe score is not independent."
+          },
+          {
+            "candidate": "E2: second-reference (the other annotated camera B's GT as a second memory view)",
+            "protocol": "PROTOCOL CHANGE: a scored camera becomes an input, so J&F³ itself changes. B's GT is read from frames/<t> only. The control (mode none) reproduces the adopted masks on 34/34 targets.",
+            "credible_gain": "Diagnostic upper bound only. Mode both: all pairs +0.0067 (scene CI [+0.0014, +0.0148]); UC140 +0.1073; clean 67 +0.0346 (+0.0257 without the Dog tree). report_2ref.py and breakdown_2ref.py re-run give byte-identical outputs.\n- 62% of the UC gain is the four Welder helmet/box miss and wrong-object groups (0.19 + 0.19 + 0.16 + 0.08 of the summed UC gain).\n- FlameSteak wall missed pixels are unchanged (1,413,280 → 1,412,083).\n- CBABasketball v24 grandstand goes 0.360 → 0.357.",
+            "risks": "- **Inflated by selection.** UC is selected on baseline failure, and any re-decode moves failing pairs: failing non-UC pairs also gain +0.029 (both) and +0.020 (r2).\n- **One-object mechanism claim.** The claim that appearance memory reaches no-depth pixels rests on one object (see refuted claims).\n- **Changed candidate sets.** 32/170 targets have fewer than 3 neighbours in mode both.",
+            "verdict": "DO NOT PURSUE. The ceiling for real under-coverage is low and it changes what is scored. Keep it only as a diagnostic."
+          }
+        ],
+        "refuted_claims": [
+          "sam3-modes: \"Of the 22 failing under-cover pairs, 5 are such regions (env objects)\". objects_labels.json types the 22 keyframe objects (from extent_vis_report.txt) as 9 env, 11 static and 2 dynamic. The env ones are Dog tree, Dog handrail_or_fence, CBABasketball v24 and v06 grandstand, Welder ground, PoznanStreet grass, FlameSteak wall, Barn ground and MartialArts rig. protocol-inventory's count (9 env, 13 scene-unique) is correct.",
+          "text-concept: \"The same connectivity rule probably limits candidate C and D's pipeline too\". C's and D's own funnels on UC140 contradict it. The 8-connectivity step removes only 0.0009 of missed pixels for C (0.0237 → 0.0228) and 0.0066 for D (0.0649 → 0.0583). C is limited by its proposals, which cover 0.0377 of missed pixels. D is limited by growth (0.129 in G) and by other objects' dev masks claiming the pixels (0.114 → 0.065).",
+          "geometry-grow: mv_noapp's raw region is \"so most of it is thrown out as contested\". My independent re-composition over all 170 views splits where the 4.45 G c_ini-invisible grown pixels go: 87.9% are removed because some dev mask already claims them, 11.0% by the 8-connectivity rule, and 1.0% by the contest rule. Contest does remove 87% of what survives connectivity (49.9 M → 6.69 M px), but most of the region is lost to the claimed-pixel rule. For mv the split is 91.9%, 6.0% and 0.6%.",
+          "text-concept post-hoc: \"both CIs barely clear 0\" offered as support. In UC140, CLEAN67 and UC-without-Dog-tree every delta is ≥ 0 (16 up, 0 down), so lower bounds of +0.00001 and +0.00003 follow from the sign alone and say nothing about significance. On all pairs the scene bootstrap gives P(mean ≤ 0) = 0.020 to 0.023 (seeds 0 to 2), and the gain drops to +0.00029 without the Dog scene.",
+          "protocol-inventory: label-name prompts reach 100% of the beyond-c_ini region in principle and are \"nearly unambiguous on exactly the objects that fail\" (97.9% scene-unique). The DEV measurement supersedes this:\n- The union of name detections covers only 0.507 of UC140 missed pixels (0.307 without the Dog tree).\n- 'grandstand', 'billboard', 'rig', 'floor', 'fire' and 'cushion/carpet' give no detection at prob ≥ 0.3.\n- A scene-unique name is not unique in the image: Dog 'tree' returns 15 instances, and FlameSteak 'chair' detects an unseeded chair.\n- Without the env restriction, static objects' added pixels have precision 0.014.",
+          "second-reference: \"a reference that is closer in appearance to the target can reach no-depth regions without geometry\" and \"any protocol-legal source of a second view's labels should therefore enter round 1\". This rests on one object: 5 of the 6 clean UC pairs whose missed pixels are mostly no-depth are the Dog camera_0004 tree (missed 2.64 M → 0.80 M px). It is not supported as a general rule.",
+          "text-concept: the implied protocol-(i) path, \"For a protocol-(i)-legal version (cross-image exemplar instead of the label), the lesson carries over\", has no supporting measurement for the gain. The only (i)-legal exemplar measurement (sam3-modes, cross-image exemplar from c_ini's box, Dog t=10 camera_0004) gives best-instance IoU 0.0 for the Dog tree (obj 3). That object carries the largest share of the post-hoc gain."
+        ],
+        "recommendation": "Close S1-E13 as negative on DEV. Keep geoset_rep_x unchanged and send no E13 candidate to the keyframe.\n\n**Verification.** I re-ran every host report (dev_report, C report and extra, D report with sensitivity runs, E1 report and post-hoc report, E2 report and breakdown, protocol-inventory summarize and the port check); all came out byte-identical. My independent re-compositions of C (326 pairs) and D (6600 pair-variant rows) match exactly.\n\n**Leakage.** I found none:\n- Every script asserts t != ref_frame, and the dev frames are ref+4 to ref+20.\n- Registrations precede the runs for C, D and E1.\n- No keyframe J&F of any candidate was computed.\n- Nothing was written to Data/ or MVSeed/, and the tracked git status is unchanged.\n\n**Candidates.**\n- The two protocol-(i) candidates (C, D) are rejected: on all pairs, C's CI includes zero (−0.00122 [−0.00263, +0.00018]) and D's lies entirely below it (−0.00476 [−0.00780, −0.00223]), and neither gives a reliable under-cover gain.\n- The registered text arm (E1) is null.\n- The env-only text arm with no connectivity (E1 post-hoc) and the second annotated reference (E2) are protocol changes. E1 post-hoc is also post hoc, and its gain sits on objects that are themselves keyframe failures. Record both as diagnostics only.\n\n**What to state when writing up.**\n- The dev set reproduces the failure, but dev and keyframe are not independent at object level (same objects, 4 to 20 frames apart).\n- On the 22 keyframe pairs, labels in the outside and no-depth classes cannot come from any measured (i)-legal source. Geometric and projection-derived sources are now measured and reach at most about 5% of the missed pixels.\n- Fix the env-count error in sam3-modes' implications: 9 of the 22 are env objects, not 5.\n\n**Next step.** The under-cover block is worth only 0.664 headline points. One (i)-legal route is still untested at scale: cross-image exemplar detection from c_ini's box, with a composition that allows non-connected instances and a GT-free precision guard (not the metadata type). It would need a fresh pre-registration on the 15 unused non-reference train frames, and the Dog-tree probe (IoU 0.0) suggests low odds. The default recommendation is to stop work on this block and move on."
+      },
+      {
+        "assessments": [
+          {
+            "candidate": "C: sam3-prompt-extend (SAM 3 point, box or mask prompt from the reprojected c_ini mask, add-only composition)",
+            "protocol": "Within the adopted protocol (i). It uses only the c_ini frame-t mask (the dev stand-in for frame 0), the same-instant Pi3 geometry and the target RGB.",
+            "credible_gain": "Negative. Dev all-pair dJ&F is -0.00122 [-0.00263, +0.00018]. Using the E11 rule (headline is about 66.7 x the stage-1 delta, with observed transfer ratio 0.5-2.0), that is about -0.08 basic, range -0.16 to -0.04. Under-cover block: +0.00557 on UC140, of which +0.00527 is one object (CBA v06 billboard). Without it the gain is +0.00027, about +0.001 of the 0.607. The best sensitivity point (IoU gate 0.85, +0.00032 all-pair, about +0.02 basic) does not touch the under-cover block.",
+            "risks": "Its ceiling is set by the proposals, not the composition: SAM's segment touches only 3.8% of the under-cover missed pixels. Added-pixel precision is 0.359. Additions beyond the boundary tolerance have precision 0.12. Pairs already at J&F >= 0.8 lose -5.36 summed. The only win, the billboard, disappears under either sensitivity constant.",
+            "verdict": "Reject. Do not register. It is legal but harmful on dev, and it cannot add information c_ini lacks."
+          },
+          {
+            "candidate": "D: geometry-grow (multi-view depth and colour continuity growth from the c_ini seed)",
+            "protocol": "Within protocol (i): c_ini mask plus unlabelled same-instant RGB of all rig cameras plus Pi3.",
+            "credible_gain": "Strongly negative. Primary all-pair is -0.00476 [-0.00780, -0.00223], about -0.32 basic (range -0.63 to -0.16). Every one of the 12 one-at-a-time sensitivity settings has an all-pair CI entirely below 0. Under-cover is -0.00235 and no setting separates from 0. The mv_noapp +0.0004 is an artefact of contested-pixel removal (raw precision 0.059).",
+            "risks": "There is a structural leak. 43.9% of the unclaimed candidate pixels belong to complete-only objects absent from the input, and 49.0% to seeded objects that the masks leave unclaimed. Geometry cannot reach the costliest objects: disjoint grandstand sections, the FlameSteak wall cut off by a colour boundary, and the Dog tree without depth.",
+            "verdict": "Reject. Do not register."
+          },
+          {
+            "candidate": "E1: text-concept, registered arms (label name as a SAM 3 concept prompt; best_ov, best_iou, union_maj, union_all)",
+            "protocol": "Protocol change (ii). It needs the object's class name from annotation metadata (objects_labels.json). docs/mvvos-algorithm-analysis.md:22 makes c_ini's frame-0 mask the only input. MUVOD distributes the names alongside the scoring masks, but they are not benchmark input.",
+            "credible_gain": "Null. Primary best_ov all-pair +0.00029, about +0.02 basic-equivalent (0.01-0.04), in a separate track only. Its under-cover share is about +0.0015 basic. It recovers 0.11% of UC missed pixels. The best registered arm, union_all, is -0.00025 all-pair (about -0.02) and +0.00676 on UC140 (about +0.02 basic-equivalent, or about +0.01 when rescaled to the keyframe UC block).",
+            "risks": "Selecting by overlap with the projection picks the instance c_ini already sees. Several costly concepts get no detection at all: grandstand, billboard, rig, floor, fire, cushion/carpet. Even if it worked, it cannot change the 92.626 headline.",
+            "verdict": "Reject the registered arms. They are null and also a protocol change."
+          },
+          {
+            "candidate": "E1-posthoc: text-concept union_all, no 8-connectivity, metadata type 'env' only (POST-HOC)",
+            "protocol": "Protocol change (ii). It uses two metadata fields, name and type. It was designed after seeing dev results, so it is a hypothesis, not a result.",
+            "credible_gain": "This is the only positive dev signal. All-pair is +0.00078 [+0.00001, +0.00215], about +0.05 basic-equivalent (range +0.026 to +0.10). That is the same size as E11's adopted +0.088, but it can only ever be reported as a separate '+class names' track. Under-cover share: +0.00889 x 140/3300 x 66.7, about +0.025 basic-equivalent. Rescaled to the keyframe block (dev UC deficit is about 2x the keyframe's 0.664), that is about +0.013, so +0.01 to +0.03 of the 0.607 (2-5%). In practice it is the Dog camera_0004 tree plus possibly a wall.",
+            "risks": "The gain is 2 of 49 under-cover objects (Dog tree +0.173 per pair, FlameSteak cam01 wall +0.072). The Dog scene alone gives 63% of the all-pair gain (+0.02496 x 65/3300). The CI lower bounds of +0.00001 are degenerate: 0 under-cover pairs go down, so a resample without those two objects gives about 0. Non-UC env additions are 21.7% wrong (precision 0.783). The rule depends on the metadata 'type' field as its precision guard. Without it, the all-pair delta is -0.00251 because names hit unseeded same-class objects. The dev frames are near-replicates of the keyframe scenes.",
+            "verdict": "The only candidate worth a registration, and only as a pre-registered DEV confirmation in a separate '+class names' track. Use the 15 unused non-ref frames per scene (non-ref minus [3::4]) with a pass rule fixed in advance: scene-cluster all-pair CI lower bound > 0, gain not carried by one object (at least 2 objects with Delta > +0.02), and non-UC Delta >= 0. Only after that, a keyframe separate-track arm reported next to 92.626, never replacing it."
+          },
+          {
+            "candidate": "Second reference (GT of a second annotated camera B as an extra input, in rounds 1 and 2)",
+            "protocol": "Protocol change, and a large one. It adds a human annotation of a camera that is itself scored, so J&F³ is redefined (B can no longer be scored). It is a diagnostic upper bound, not a track candidate.",
+            "credible_gain": "Not comparable to 92.626. Taken at face value, all-pair +0.0067 is about +0.45 basic-equivalent, but 62% of the UC gain is Welder helmet/box identity fixes (miss or wrong object), not extent. The extent part is clean67 +0.0346 (about +0.05 basic-equivalent), or UC without Welder +0.0447 (about +0.12). So even a perfect second annotation closes only about 10% of the extent deficit. 57 of 67 clean pairs stay below 0.8. The outside class barely moves (FlameSteak wall missed pixels unchanged, CBA v24 grandstand 0.360 to 0.357).",
+            "risks": "It requires extra test-time annotation and changes what is scored. B's geometric reach on the outside class is 0.029, matching protocol-inventory's 0.078 for the 22 keyframe objects. The 'appearance memory reaches no-depth' insight rests on essentially one object.",
+            "verdict": "Reject as a registration. Keep it only as an upper-bound diagnostic. A perfect extra label buys little extent, which strengthens the case for closing this block in the main track."
+          },
+          {
+            "candidate": "(Unmeasured) protocol-(i) analogue of E1-posthoc: cross-image SAM 3 exemplar from the c_ini box, union of detections, no connectivity, with a GT-free precision guard",
+            "protocol": "Within protocol (i): the c_ini box and image plus the target image. The 'env' guard would have to be replaced by something derived from the input alone, for example the c_ini mask's area or whether it touches the image border.",
+            "credible_gain": "Unknown and low prior. sam3-modes measured the cross-image exemplar at mean IoU 0.157 on Dog (hemisphere rig), against 0.793 on Carpark, and found that text is what rescued large regions (Dog sky 0.015 to 0.923). The best case is bounded by E1-posthoc, about +0.01 to +0.03 of the 0.607.",
+            "risks": "It fails on the rig and objects (Dog tree) that carry the only measured gain. A new GT-free guard is an untested design choice. The box token encodes the reference box position.",
+            "verdict": "Not a registration. At most an optional cheap dev probe (about 30 ms per grounding, existing dev route) if the user still wants a main-track attempt at this block."
+          }
+        ],
+        "refuted_claims": [
+          "text-concept: 'The same connectivity rule probably limits candidate C and D's pipeline too.' Refuted by their own funnels. For C on UC140, 8-connectivity removes only 0.0237 to 0.0228 of missed pixels; the limit is the proposal (in S 0.0377). For D it removes 0.065 to 0.058; the limit is leak and unclaimed pixels (_e13_sam3-prompt-extend/host/report.txt FUNNEL lines 205-220; geometry-grow funnel).",
+          "sam3-modes: 'Of the 22 failing under-cover pairs, 5 are such regions (env objects).' Wrong count: 9 of 22 are env (docs/stage1-seedfail.md §2: 5 in 'beyond c_ini' + 4 in 'under-cover'; protocol-inventory: 'all 9 env objects'). The 5 refers only to the 9-pair beyond-c_ini subset.",
+          "protocol-inventory: label-name prompts reach '1.0 of R in every class' and scene-unique names give 0.783-0.896 keyframe-equivalent reach. In practice the detector union of the name covers 0.507 of the dev UC missed pixels (0.307 without the Dog tree). Grandstand, billboard, rig, floor, fire and cushion/carpet get no detection at prob >= 0.3, and the registered selection recovers 0.0011. 'In principle' is an upper bound, not a reach estimate.",
+          "protocol-inventory: 'Name ambiguity is small on exactly the objects that fail.' This holds only for env objects (UC added precision 0.976). Being unique among the scene's labelled objects does not make a name unique in the image. No-connectivity text on all objects gives all-pair -0.00251, with added precision 0.014 for static and 0.149 for dynamic objects (FlameSteak 'chair' hits an unseeded chair, about -0.41 to -0.48 per pair).",
+          "text-concept post-hoc: 'both CIs barely clear 0' is presented as weak support, but the lower bound of +0.00001 is a bootstrap artefact. 0 of 140 UC pairs go down, so any resample without the Dog tree and FlameSteak wall gives about 0. The Dog scene alone supplies 63% of the all-pair gain (+0.02496 x 65/3300 of +0.00078). This is not evidence of reliability.",
+          "second-reference: 'a reference that is closer in appearance to the target can reach no-depth regions without geometry' rests on 6 no-depth clean pairs, essentially the single Dog camera_0004 tree object. It is an unsupported generalisation, not a measured mechanism.",
+          "dev-route: the dev k3 round-1 cover of 8.3% 'matches the keyframe ... 19% neighbour cover'. These are different metrics (k3 round-1 masks vs all neighbour seeds). The like-for-like keyframe figure is k3 final-seed cover 0.074, which dev-route itself quotes in section (4).",
+          "text-concept: 'it needs the class name at test time, which MUVOD does not provide.' Imprecise: MUVOD distributes the names (Data/MVSeg/<s>/Mask/objects_labels.json); they are just not part of the benchmark input (c_ini's frame-0 mask only, docs/mvvos-algorithm-analysis.md:22). The protocol-change conclusion stands."
+        ],
+        "recommendation": "Register nothing for the main track. Within the adopted MUVOD protocol (i), both measured candidates are legal but lose on DEV: C (SAM 3 prompted from the reprojection) is -0.00122 all-pair, about -0.08 basic; D (geometric growth) is -0.00476, about -0.32 basic, with every sensitivity CI below 0. Neither moves the under-cover block. Together with E11 (decode) and E12 (training), this closes the 0.607 under-cover block as unreachable for stage 1 with the sources protocol (i) allows. The c_ini-derived sources carry no object identity into the outside and no-depth classes. Record E13 as a dev-only negative set and move stage-1 effort to the larger blocks in seedfail §5: good-seed boundary error 1.757 and same-name confusion 0.45.\n\nThe only positive dev signal is the post-hoc text-concept arm (label name as a SAM 3 concept prompt, env-type objects only, no connectivity): all-pair +0.00078, about +0.05 basic-equivalent; under-cover about +0.01 to +0.03 of the 0.607. It is a protocol change that uses the name and type metadata fields. It is post-hoc, and essentially the Dog tree plus one FlameSteak wall, with degenerate CIs. It is worth exactly one registration: a pre-registered DEV confirmation on the 15 unused non-ref frames per scene, as a separate '+class names' track. Fix the pass rule in advance: scene-cluster all-pair CI lower bound > 0, at least 2 under-cover objects with Delta > +0.02, and non-UC Delta >= 0. Split the '_or_' names and prompt only seeded basic objects. GPU cost is roughly 35 min of restricted decode plus 10 min of detection, split into jobs under 20 min. Only if it passes should a keyframe separate-track arm be registered, reported beside 92.626 and never replacing it.\n\nDo not pursue the second-reference protocol. It redefines J&F³ and needs extra annotation, and even a perfect second label closes only about 10% of the extent deficit; most of its gain is Welder identity fixes. A protocol-(i) cross-image exemplar analogue of the text arm is at most an optional cheap dev probe with a low prior: exemplar IoU is 0.157 on Dog, where the only measured gain lives.\n\nSupporting files: /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/posthoc_report.txt, /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/host/report.txt, /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/report_main.txt, /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/report_2ref.txt, /home/sjpark/Documents/SCSegmentation/docs/stage1-E11.md (66.7x transfer rule, ratios 0.52 and 2.0)."
+      }
+    ],
+    "final": {
+      "protocol_compatible": [
+        {
+          "name": "X1 (optional dev-only probe, NOT a keyframe registration): SAM 3 detector self-exemplar from the seed's own box in the target view, union of detections, add-only without connectivity",
+          "mechanism": "The adopted seed D_o in target view X already marks part of object o. Its bounding box is given to the SAM 3 detector as a same-image exemplar (Sam3Processor.add_geometric_prompt, shipped API, text token 'visual'). The detector returns every region of X that looks like that box content. Detections can be disconnected from D_o and need no Pi3 depth, so in principle they reach the outside and no-depth classes. Geometric and projection sources cannot reach those classes, and they hold 0.75 of the keyframe missed region (quoted). It uses only the stage-1 output and the target RGB, so it stays inside protocol (i). It is the protocol-legal counterpart of the label-name prompt and avoids the cross-image box-position problem.",
+          "dev_evidence": "No measurement at scale. Indirect evidence, mostly unfavourable:\n(1) sam3-modes, oracle same-image exemplar with the target-GT box: Dog tree best-instance IoU 0.845, against 0.040 for an interactive box. This used an oracle box, not the seed box.\n(2) Cross-image exemplar from c_ini's box: Dog tree IoU 0.0 (probe_modes_Dog_t10_camera_0004.json, obj 3); Dog mean 0.157.\n(3) The same detector driven by label names covers 0.507 of the UC140 missed px. It helps only with the metadata 'type' guard (post-hoc +0.00078 all-pair). My host recomposition on DEV-A replaced that guard with GT-free guards computed from the c_ini input mask, everything else verbatim:\n- edge share >= 0.05: all-pair -0.00039 [-0.00169, +0.00123]; Carpark -0.0055; static added-px precision 0.21.\n- touches the border: -0.00464 [-0.00964, -0.00008]; static precision 0.016.\nSo no GT-free object-level guard tested so far keeps precision, and X1 would face the same problem.\n(4) S1-E2-0 (keyframe, before the dev/test rule; quoted): the same-image box exemplar failed on large background regions (Dog 3, Dog 4, AlexaMeadeExhibit 5). The E2 gate also hallucinated on 129/132 rows where the object was absent.",
+          "rule_and_constants": "All fixed a priori, before any run.\n- Active objects: |D_o| >= 20 px and c_ini input-mask edge share >= 0.05. On DEV-A c_ini masks this guard passes 39/46 env objects and 24/352 non-env objects; the guard's real precision is unproven.\n- Exemplar: box = bbox(D_o) in X. Detections with prob > 0.5 (package default, as in text-concept) are kept as a union.\n- Detection-level contamination filter: drop a detection when >= 10 % of its pixels lie on another object's seed D_q.\n- Composition: posthoc 'noconn' verbatim. A_o = union ∩ c_ini-invisible ∩ ~D_o ∩ ~(union over q != o of D_q). Pixels claimed by 2 or more active objects are dropped. N_o = D_o ∪ A_o.\n- No connectivity, IoU gate or growth cap.\n- Kill rule on DEV-A (fixed before running): if the all-pair delta is <= 0, or UC140 missed-pixel recovery is < 0.05, stop with no DEV-B run.",
+          "code_changes": [
+            "New git-ignored GPU script stage1/geomem/runs/_e13_x1/detect_exemplar.py: a copy of _e13_text-concept/detect.py with set_text_prompt replaced by add_geometric_prompt(bbox(D_o), True) per active object. One backbone pass per view; same dets.npz/meta.json layout.",
+            "Host compose: reuse _e13_text-concept/posthoc.view (noconn plus contest drop), adding the detection-level contamination filter and the edge-share guard (the guard code already exists in scratchpad/synth/edge_arm.py).",
+            "Scoring/report: reuse _e13_dev-route/dev_score.py and _e13_text-concept/posthoc_report.py unchanged.",
+            "Only if it later passed DEV-B: a tracked decode post-step in stage1/methods/geomem (new preset, e.g. geoset_rep_x_ex), host tests for the add-only invariants (D_o ⊆ N_o, no pixel owned by two objects, empty input -> identical output), e13_judge.py and a run_e13.sh chain."
+          ],
+          "cost": "DEV-A probe:\n- About 1 h of coding.\n- One GPU job of about 5-10 min: 170 views x (70 ms backbone + about 23 objects x 30 ms) + 9 s model load; peak about 7 GB.\n- Host compose about 1 min.\nIf it passed, DEV-B confirmation:\n- DEV-B baseline decode, 255 frames x 7.7 s = about 33 min in two jobs under 20 min.\n- About 15 min of detection and scoring.\nKeyframe: about 2 min of detection plus host composition.",
+          "expected_gain": "Unknown, with a low prior.\n- Upper bound: the text post-hoc env arm (DEV-A all-pair +0.00078, about +0.05 basic at the 66.7x rule).\n- Realistic keyframe ΔJ&F point about 0, 80 % range [-0.0015, +0.0008].\n- P(passes the DEV-A kill rule) about 0.2; P(passes DEV-B) about 0.05-0.1.\n- Under-cover share of the 0.607 block at best +0.01 to +0.03 headline points, and only if the Dog tree is recovered. The only legal exemplar measurement on that tree gave IoU 0.0.",
+          "risks": "- Precision guard: without metadata 'type', same-concept detections flood static and dynamic objects (other cars, chairs). Both GT-free guards measured on DEV-A lose all-pair J&F.\n- The detector's segmentation unit differs from GT on large background regions (E2-0).\n- The seed box shows only the c_ini-visible part, so the exemplar may return just the seed again.\n- Exemplars hallucinate when the object is absent.\n- DEV-A has already been used for C, D and E1. Anything learned there must be confirmed on DEV-B.\n- DEV and keyframe share objects 4-20 frames apart, so a keyframe gain is not independent evidence."
+        }
+      ],
+      "protocol_changes": [
+        {
+          "name": "T1: '+class names' separate track — label-name SAM 3 concept prompts, env-type objects only, union of detections without connectivity (text-concept post-hoc arm)",
+          "what_changes": "Test-time input gains two annotation-metadata fields per seeded basic object: its label name and its type ('env'), both from objects_labels.json. MUVOD's benchmark input is only c_ini's frame-0 mask. MUVOD distributes the names, but they are not part of the input.\n\nBoth fields are load-bearing. My DEV-A recomposition replaced 'type' with GT-free guards from the c_ini input mask, everything else verbatim:\n- edge share >= 0.05: all-pair -0.00039 [-0.00169, +0.00123]; not-UC -0.00080.\n- touches the border: -0.00464 [-0.00964, -0.00008].\nA names-only version is therefore not available.",
+          "dev_evidence": "Registered E1 arms (DEV-A, 3300 pairs): null.\n- best_ov all-pair +0.00029 [+0.00000, +0.00061]; UC140 +0.00052; recovers 0.0011 of missed px.\n- union_all: UC140 +0.00676, all-pair -0.00025.\n\nPost-hoc arm, env-only and no connectivity (not registered):\n- All-pair +0.00078 [+0.00001, +0.00215], 177 up / 65 down.\n- Not-UC +0.00042 [-0.00007, +0.00114].\n- UC140 +0.00889: 16 up / 0 down, so the CI lower bound comes from the sign pattern alone and is not significance.\n- Added-pixel precision 0.889.\n\nThe gain sits on two objects:\n- Dog camera_0004 tree: +0.173 per pair; recovers 0.725 of its missed px at 0.987 precision.\n- FlameSteak cam01 wall: +0.072 per pair.\n- The Dog scene alone gives 63 % of the all-pair gain; without the Dog scene the gain is +0.00029.\n- 4 of the 5 largest gain groups are keyframe under-cover objects (Dog cam4 tree, Dog cam4 handrail, FlameSteak cam01 wall, PoznanStreet v0 grass).\n\nLimits:\n- No detection at prob >= 0.3 for grandstand, billboard, rig, floor (Breakfast), fire or cushion/carpet.\n- Without the env restriction the arm loses: -0.00251 all-pair, static added-px precision 0.014.",
+          "how_it_could_be_reported": "As a separate row, e.g. 'geoset_rep_x + class names (annotation metadata: name and type)', printed beside 92.626 / 87.954 and never replacing the headline.\n\nConditions:\n- Only after a pre-registered DEV-B confirmation on the 15 unused non-ref train frames per scene.\n- Name the extra input in a footnote.\n- Split '_or_' names and prompt only seeded basic objects; never prompt the 61 complete-only objects.\n- State that the arm was designed post hoc on DEV-A and that its keyframe gain is not independent evidence, because the same objects carry it.\n- If it fails DEV-B, report it only as a dev diagnostic in the E13 doc."
+        },
+        {
+          "name": "T2: second annotated reference camera B (GT of another annotated camera as a second memory view)",
+          "what_changes": "A second human-annotated view becomes a test-time input. Every annotated camera is also a scoring camera, so B can no longer be scored and J&F³ itself changes. This needs extra annotation per scene.",
+          "dev_evidence": "Full decode on DEV-A. The control reproduced the adopted masks on 34/34 targets.\n\nMode both:\n- All-pair +0.0067 (scene CI [+0.0014, +0.0148]).\n- UC140 +0.1073, but 62 % of that is Welder helmet/box miss and wrong-object identity fixes, not extent.\n- Clean under-cover 67: +0.0346 (+0.0257 without the Dog tree); 57/67 still below 0.8.\n- FlameSteak cam01 wall missed px unchanged (1,413,280 -> 1,412,083).\n- CBABasketball v24 grandstand 0.360 -> 0.357.\n- B's GT covers only 0.029 of the outside-class missed px.\n\nMode r2 (B in round 2 only): all-pair +0.0056.\n\nThe claim that appearance memory reaches no-depth pixels rests on the single Dog tree object.",
+          "how_it_could_be_reported": "Not a track. Record it in the E13 doc as an oracle upper-bound diagnostic: even a perfect second annotation closes only about 10 % of the extent deficit and barely moves the outside class. Do not register."
+        },
+        {
+          "name": "T3: c_ini video at other times, and source-dataset calibration",
+          "what_changes": "Video leaves the single-instant stage-1 scope adopted on 2026-09-10. Calibration (models.json, poses_bounds.npy) is not in the MUVOD distribution or the repo.",
+          "dev_evidence": "protocol-inventory, DEV:\n- Outside-class reach 0 by construction: fixed rig, Pi3 relative rotation varies <= 0.67 deg.\n- Occluded: net gain above the noise floor 0.038 of occluded px overall, 0.000 for the same 22 objects.\n- No-depth: same-pixel valid depth at another frame for 0.109 (Dog tree 0.034).\n- Calibration supplies no labels and no depth.",
+          "how_it_could_be_reported": "One-line negative in the E13 doc; no track."
+        }
+      ],
+      "user_decisions": [
+        "1. Do you accept a separate '+class names' track that uses annotation metadata, the label name AND the type field, as test-time input? MUVOD's input is only c_ini's frame-0 mask. A GT-free replacement for 'type' lost on DEV-A (-0.00039 and -0.00464), so the track cannot be reduced to names only. If no, the under-cover block (0.607 'need new information') is closed for stage 1 within MUVOD.",
+        "2. If yes: may the last untouched dev frames (DEV-B, the 15 non-ref train frames per scene outside [3::4]) be spent on its pre-registered confirmation? That is about 1 h of GPU. Do you accept that a later keyframe result is not independent evidence, because the gain sits on the same objects that fail at the keyframe (Dog tree, FlameSteak wall)?",
+        "3. Do you want one last protocol-(i) attempt, the X1 seed-box self-exemplar probe on DEV-A? It costs about 1 h of code and about 10 min of GPU. The prior is low: the only legal exemplar measurement on the Dog tree gave IoU 0.0, and GT-free guards failed for the same detector. Or close the block now?",
+        "4. Where should stage-1 effort go next? Options: good-seed boundary error (1.757 headline points, the largest block), same-name confusion (0.45), the band-BCE balance retest (E9 §5 b), or the S2-R6 extensions.",
+        "5. Should the DEV route (dev_decode.py, dev_score.py and the index.json frame rule 'non-ref train frames') move from git-ignored scratch into tracked code as the standard DEV set for every future stage-1 registration? If so, how should frames be split between DEV-A (exploration) and DEV-B (confirmation)?"
+      ],
+      "recommendation": "Close S1-E13 as negative on DEV. Keep geoset_rep_x and the 92.626 / 87.954 headline. Send no protocol-(i) candidate to the keyframe. This answers option (a) from E12 §5 ('a new information source for under-cover; check fit with the MUVOD protocol first').\n\nWithin the adopted protocol:\n- **C (SAM 3 prompted from the reprojection)** loses -0.00122 all-pair [-0.00263, +0.00018]. Its under-cover gain is one billboard; without it the other 135 pairs gain +0.00027. Proposals touch only 3.8 % of the missed px.\n- **D (multi-view geometric growth)** loses -0.00476 [-0.00780, -0.00223]. Every one of its 12 sensitivity settings has an all-pair CI below 0. It leaks into complete-only objects and objects whose pixels no seed claims.\n- **Combined with E11 (decode) and E12 (training):** no measured c_ini-derived source carries object identity into the outside and no-depth classes.\n\nThe only positive DEV signal is the post-hoc env-only text arm: all-pair +0.00078, about +0.05 basic. It is a protocol change that needs two metadata fields; my DEV-A check showed 'type' cannot be replaced by a GT-free guard. It is post hoc, and two objects carry it, both of which are themselves keyframe failures. The second-reference diagnostic shows that even a perfect extra annotation closes only about 10 % of the extent deficit.\n\nDefault: record E13 as a dev-only negative set and move stage-1 effort to the good-seed boundary block (1.757). Update docs/ROADMAP.md, docs/HANDOFF.md and the Notion plan accordingly.\n\nIf the user accepts a '+class names' separate track, register exactly one DEV-B confirmation with the pass rule fixed in advance. Only if it passes, register a keyframe separate-track arm reported beside the headline. X1 is an optional low-prior legal probe on DEV-A with a kill rule, never sent directly to the keyframe.\n\nWhen writing up, drop the refuted claims:\n- The env count is 9 of 22, not 5.\n- Connectivity does not limit C or D; their proposals and growth do.\n- mv_noapp loses most of its region to the claimed-pixel rule (87.9 %), not to the contest rule.\n- The post-hoc CI lower bounds of +0.00001 are not support.\n- Label-name reach is 0.507 measured, not '100 %', and is not 'nearly unambiguous'.\n- The 'appearance memory reaches no-depth' rule rests on one object.\n- The dev k3 cover of 8.3 % should be compared with keyframe k3 0.074, not 0.19.\n\nSupporting files:\n- /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_text-concept/posthoc_report.txt\n- /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/synth/edge_report.txt (GT-free guard check), with edge_arm.py, guard_proxy.py and guard_proxy.out\n- /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_sam3-prompt-extend/host/report.txt\n- /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_geometry-grow/report_main.txt\n- /home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_second-reference/report_2ref.txt\n\nNo tracked file was modified; no keyframe was read or scored.",
+      "registration_outline": "S1-E13 pre-registration (conditional on user decision 1; structure follows stage1-E12-prereg.md). Commit it before any DEV-B decode.\n\n**§1 Evidence (DEV-A, 85 frames ref+4..+20, 3300 pairs; no keyframe)**\n- Baseline J&F 0.90782; UC140 0.5414.\n- C -0.00122, D -0.00476, E1 registered arms null.\n- E1 post-hoc env/noconn +0.00078 (UC140 +0.00889), carried by the Dog cam4 tree and the FlameSteak cam01 wall.\n- GT-free guards: edge05 -0.00039, touch -0.00464.\n- Second reference: clean67 +0.0346 (diagnostic).\n- Excluded, with reasons: C, D, E2/second reference, video, calibration, names-only. Keyframe J&F of any arm was never computed.\n\n**§2 Arms (all post-steps on the unchanged geoset_rep_x seeds; same fold checkpoints)**\n- C0: adopted seeds.\n- T1e (separate track '+class names'): label-name concept prompts.\n  - Prompting: split '_or_' names; '_' -> ' '; drop a leading 'other '. Seeded basic objects of metadata type 'env' only; complete-only objects never.\n  - Detection: SAM 3 detector set_text_prompt on target view X, prob > 0.5, union of all detections of the name.\n  - Composition: A_o = union ∩ c_ini-invisible ∩ ~D_o ∩ ~(union of D_q for q != o). Pixels claimed by 2 or more active objects are dropped. No connectivity, no IoU gate, no growth cap. N_o = D_o ∪ A_o.\n  - Visibility: Pi3 frame cache, OCC_TOL 0.01, conf > 0.1.\n- X1 (main track, only if it passed its DEV-A kill rule): seed-box self-exemplar, same composition, edge-share guard >= 0.05 plus a 10 % contamination filter.\n\n**§3 Measurement**\n- **Stage D (DEV-B):** the 15 non-ref train frames per scene not in [3::4] (ref+1,2,3,5,6,7,9,10,11,13,14,15,17,18,19) x 2 annotated non-ref cameras.\n  - Baseline: dev_decode.py with the frame list changed; about 33 min in 2 GPU jobs.\n  - Detection about 10 min; host compose; dev_score.py.\n  - Pass rule (all required):\n    - D1: scene-cluster bootstrap (10,000, seed 0) all-pair ΔJ&F CI lower bound > 0.\n    - D2: at least 2 distinct (scene, cam, obj) UC objects with mean Δ > +0.02.\n    - D3: not-UC point Δ >= 0.\n    - D4: no scene Δ < -0.005.\n    - D5: no single object carries > 60 % of the summed gain.\n  - Fail -> 'no effect', close, no variants.\n- **Stage K (keyframe 664 pairs, only for arms that pass D):** detections on keyframe views, composition onto the adopted keyframe seeds, MVSeed eval. Bootstrap pair -> camera -> scene, seed 0, 10,000 resamples.\n  - G1: ΔJ&F(arm - C0) > 0 and 95 % CI lower bound > 0.\n  - G2: no scene below C0 - 0.01.\n  - G3 (mechanism): pooled added-pixel precision >= 0.5, and UC22 Δ >= 0.\n- **Stage 2 (only if G1-G3 pass):** runMVOptThree with STAGE1 = the new preset; E8 adoption rule (basic Δ > 0 with CI lower bound > 0; no scene < -1.0; complete Δ >= 0). T1e is reported only as a separate row and never replaces the headline.\n\n**§4 Predictions (from DEV-A)**\n- T1e on DEV-B:\n  - All-pair point +0.0005, 80 % range [0.0000, +0.0015]; UC +0.005 to +0.012; P(D pass) about 0.4.\n- T1e on the keyframe:\n  - Δ point +0.0005, 80 % range [-0.0002, +0.0013]; P(G1) about 0.4; G2 likely (DEV-A worst scene -0.0006).\n  - Dog cam4 tree pair +0.10 to +0.20; FlameSteak cam01 wall +0.03 to +0.10.\n  - CBA grandstands, CBA billboard and MartialArts rig: 0.\n  - Headline basic about 66.7 x Δ x [0.5, 2.0] = +0.017 to +0.067 at the point estimate. Share of the 0.607 block: +0.01 to +0.03.\n  - Above +0.003: leak check. Above +0.006: treat as a bug.\n- X1: DEV-A all-pair about 0 [-0.0015, +0.0008]; P(kill-rule pass) about 0.2.\n\n**§5 Watch values**\n- Baseline rows equal dev_pairs-style recomputation (max |ΔJ,F| = 0); keyframe C0 equals the adopted kf JSON.\n- t != ref_frame asserted in every DEV script; no keyframe file opened before Stage K.\n- Detection determinism: one scene rerun byte-identical.\n- Prompt strings per view (DEV-A text: median 13, max 32); <= 2.5 s per view; peak GPU <= 7 GB.\n- Active (scene, t, obj) counts per guard.\n- Empty-GT added px (DEV-A T1e: 0).\n- Added-pixel precision by type (env 0.889 on DEV-A) and contested px.\n- Per-object share of the gain; per-scene minimum.\n- Hallucination and failure counts against C0 (13 / 14).\n\n**§6 Non-variables**\n- geoset_rep_x preset, checkpoints and decode args.\n- Pi3 caches, OCC_TOL 0.01, conf > 0.1.\n- TAU 0.5, the name rule, basic-set-only prompting, env-type guard.\n- Composition rules, D_o >= 20 px.\n- Frozen SAM 3 package; bootstrap seeds and resample counts.\n- The DEV-B frame list.\n- No constant changes after DEV-B is seen. Failure -> new registration only.\n\n**§7 Report**\n- DEV-B tables: all, UC, clean, not-UC, without Dog tree; pair-mean and pooled; recovery by visibility class; leak classes.\n- Keyframe G1-G3 and the stage-2 table if reached.\n- An explicit statement that DEV and keyframe share objects.\n\n**§8 History.**",
+      "key_numbers": [
+        "Headline 92.626 / 87.954 (geoset_rep_x). Under-cover keyframe block: 22 pairs, 0.664 points, of which 0.607 'need new information'. Good-seed boundary block 1.757; same-name confusion 0.45.",
+        "DEV-A baseline (85 frames x 2 cams, 3300 pairs): J&F 0.90782 [0.8929, 0.9213]. UC140 0.5414 (49 objects); clean67 0.6461. 95.2 % of UC missed px are invisible from c_ini (91.1 % without the Dog tree).",
+        "Keyframe missed-region class mix (quoted): outside 0.366, no-depth 0.384, occluded 0.160, visible 0.091. The outside and no-depth classes (0.75) are unreachable for every geometric or c_ini-derived source.",
+        "C sam3-prompt-extend: all-pair -0.00122 [-0.00263, +0.00018]. UC140 +0.00557, of which the billboard is 5 pairs; the other 135 pairs +0.00027 [-0.00158, +0.00216]. Proposals touch 3.8 % of UC missed px.",
+        "D geometry-grow: all-pair -0.00476 [-0.00780, -0.00223]; all 12 sensitivity settings have CI upper bound < 0. Added-px precision 0.270; 43.9 % of unclaimed candidates lie on complete-only objects.",
+        "E1 text registered: best_ov all-pair +0.00029 [+0.00000, +0.00061], UC140 +0.00052, recovery 0.0011. The name-union covers 0.507 of UC missed px (0.307 without the Dog tree).",
+        "E1 post-hoc env/noconn (protocol change, name + type): all-pair +0.00078 [+0.00001, +0.00215]; UC140 +0.00889 (16 up / 0 down); added precision 0.889. Dog tree +0.173 per pair, FlameSteak wall +0.072 per pair. The Dog scene is 63 % of the gain; without Dog +0.00029.",
+        "GT-free guards replacing 'type' (my DEV-A recomposition, post hoc): edge share >= 0.05: -0.00039 [-0.00169, +0.00123]; touches border: -0.00464 [-0.00964, -0.00008]. On DEV-A c_ini masks, edge05 passes env 39/46 and non-env 24/352.",
+        "Second reference (protocol change): all-pair +0.0067 [+0.0014, +0.0148]; clean67 +0.0346 (57/67 still < 0.8); 62 % of the UC gain is Welder identity fixes. B's GT covers 0.029 of outside missed px; FlameSteak wall missed px unchanged.",
+        "Cross-image exemplar from c_ini's box: Dog tree IoU 0.0, Dog mean 0.157 (Carpark 0.793). Oracle same-image exemplar on the Dog tree: 0.845.",
+        "Transfer rule: basic ≈ 66.7 x keyframe ΔJ&F, observed ratio 0.52-2.0 (E10, E11). E12 retraining noise C0' - C0 +0.0013 [+0.0001, +0.0030] is the same size as these effects."
+      ]
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Understand"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Measure"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 3,
+      "title": "Judge"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 4,
+      "title": "Synthesize"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "read:protocol-inventory",
+      "phaseIndex": 1,
+      "phaseTitle": "Understand",
+      "agentId": "a416375931c8c0662",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792046937132,
+      "queuedAt": 1792046937109,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "I sorted what could tell stage 1 how far an object extends …",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792048735436,
+      "tokens": 262112,
+      "toolCalls": 64,
+      "durationMs": 1798303,
+      "resultPreview": "{\"summary\":\"I sorted what could tell stage 1 how far an object extends beyond what c_ini shows, using the protocol rules in docs/muvod-protocol.md, docs/mvvos-algorithm-analysis.md §1 and docs/stage1-E8.md. Every new number is from the DEV set (20 non-keyframe frames × 2 non-c_ini annotated cameras × 17 scenes = 13,239 rows). No keyframe label map, cache or prediction was opened. Keyframe numbers …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "read:sam3-modes",
+      "phaseIndex": 1,
+      "phaseTitle": "Understand",
+      "agentId": "abc0ad49601c80967",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792046937132,
+      "queuedAt": 1792046937109,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "I probed the frozen SAM 3 package (SCSam3/sam3/sam3; the sc…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792049219460,
+      "tokens": 255620,
+      "toolCalls": 92,
+      "durationMs": 2281430,
+      "resultPreview": "{\"summary\":\"I probed the frozen SAM 3 package (SCSam3/sam3/sam3; the scsam3 image's /opt/sam3/sam3 is byte-identical by `diff -rq`, excluding __pycache__) and sorted its single-image, no-memory prompting modes. Everything ran in scsam3 with the cached facebook/sam3 checkpoint (SCSam3/hf_cache snapshot 3c879f39, sam3.pt), offline, with strict state-dict loading and no missing-key or warning lines i…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "read:dev-route",
+      "phaseIndex": 1,
+      "phaseTitle": "Understand",
+      "agentId": "a9723f4becc3d711a",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792046937132,
+      "queuedAt": 1792046937109,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "I built a DEV set and a scratch decode route for the adopte…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792049075259,
+      "tokens": 181932,
+      "toolCalls": 48,
+      "durationMs": 2137230,
+      "resultPreview": "{\"summary\":\"I built a DEV set and a scratch decode route for the adopted stage-1 preset geoset_rep_x (arm geoset_pred_ft, --gate reproj --xcl out, the held-out fold checkpoint). The keyframe was never decoded or scored, and no tracked file changed; git status is the same as at the start.\\n\\nDEV set (fixed before any decode):\\n- 17 scenes. For each scene, the train frames other than the ref frame, …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "measure:sam3-prompt-extend",
+      "phaseIndex": 2,
+      "phaseTitle": "Measure",
+      "agentId": "a0d7be72ec5161013",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792049220850,
+      "queuedAt": 1792049220845,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Candidate C does not work on the DEV set. Prompting SAM 3 (…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792051403334,
+      "tokens": 211765,
+      "toolCalls": 60,
+      "durationMs": 2182483,
+      "resultPreview": "{\"summary\":\"Candidate C does not work on the DEV set. Prompting SAM 3 (single image, no memory) with the part of the reference GT that reprojects visibly into each target view, then adding SAM's segment to the adopted dev mask under the add-only rules, lowers mean J&F over all 3300 dev pairs. The registered primary variant moves it from 0.90782 to 0.90660 (−0.00122, scene-cluster 95 % CI [−0.00263…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "measure:geometry-grow",
+      "phaseIndex": 2,
+      "phaseTitle": "Measure",
+      "agentId": "a3909dbad9540df1c",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792051406286,
+      "queuedAt": 1792051406280,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "I built candidate D (multi-view geometric-continuity growth…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792055221108,
+      "tokens": 272255,
+      "toolCalls": 63,
+      "durationMs": 3814821,
+      "resultPreview": "{\"summary\":\"I built candidate D (multi-view geometric-continuity growth) and measured it on the DEV set only: 85 non-keyframe frames, 3300 pairs, the 140-pair dev under-cover population and its 67-pair clean subset. No keyframe was read, scored or used for tuning; the scripts assert t != ref_frame. Everything ran on the host CPU with numpy/cv2; there was no GPU job and no tracked file changed (git…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "measure:text-concept",
+      "phaseIndex": 2,
+      "phaseTitle": "Measure",
+      "agentId": "a4bd8bb43eb30442c",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792055222648,
+      "queuedAt": 1792055222643,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Candidate E1 (text-concept) is a PROTOCOL CHANGE and diagno…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792056529233,
+      "tokens": 238133,
+      "toolCalls": 63,
+      "durationMs": 1306584,
+      "resultPreview": "{\"summary\":\"Candidate E1 (text-concept) is a PROTOCOL CHANGE and diagnostic only. At test time it needs each object's class name from the annotation metadata (stage1/Data/<scene>/objects_labels.json, the same file as Data/MVSeg/<scene>/Mask/objects_labels.json). MUVOD's input is only c_ini's frame-0 mask, so the class name is not part of it. Two post-hoc arms also use the metadata field 'type'. Ev…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "measure:second-reference",
+      "phaseIndex": 2,
+      "phaseTitle": "Measure",
+      "agentId": "a6b99342c49cb6303",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792056532089,
+      "queuedAt": 1792056532083,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "**This changes the task: stage 1 gets two annotated input v…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792058592798,
+      "tokens": 191023,
+      "toolCalls": 44,
+      "durationMs": 2060708,
+      "resultPreview": "{\"summary\":\"**This changes the task: stage 1 gets two annotated input views instead of one.** MUVOD gives stage 1 only c_ini's mask. Here each DEV target X (one of the 2 annotated non-reference cameras) also gets the GT of the other annotated non-reference camera B, from the same frame t, as a second reference. Under a real two-reference protocol B would be an input, not a scoring camera, so J&F³ …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "judge:0",
+      "phaseIndex": 3,
+      "phaseTitle": "Judge",
+      "agentId": "ac734df3944689ae2",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792058595375,
+      "queuedAt": 1792058595340,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Close S1-E13 as negative on DEV. Keep geoset_rep_x unchange…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792059248577,
+      "tokens": 230597,
+      "toolCalls": 57,
+      "durationMs": 653200,
+      "resultPreview": "{\"assessments\":[{\"candidate\":\"DEV route and baseline (dev-route; the shared base for every candidate)\",\"protocol\":\"(i), legal. Adopted preset geoset_rep_x unchanged. Input is c_ini's GT at frame t restricted to the basic set, plus Cache/pi3_frames/<t>, with each scene's own-fold checkpoint (check_preflight and assert_no_leak). Frames are ref+4 to ref+20 in all 17 scenes; index.json checked, and t …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "judge:1",
+      "phaseIndex": 3,
+      "phaseTitle": "Judge",
+      "agentId": "a2af0730e65af3fe8",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792058595375,
+      "queuedAt": 1792058595342,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Register nothing for the main track. Within the adopted MUV…",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792058817688,
+      "tokens": 123697,
+      "toolCalls": 9,
+      "durationMs": 221332,
+      "resultPreview": "{\"assessments\":[{\"candidate\":\"C: sam3-prompt-extend (SAM 3 point, box or mask prompt from the reprojected c_ini mask, add-only composition)\",\"protocol\":\"Within the adopted protocol (i). It uses only the c_ini frame-t mask (the dev stand-in for frame 0), the same-instant Pi3 geometry and the target RGB.\",\"credible_gain\":\"Negative. Dev all-pair dJ&F is -0.00122 [-0.00263, +0.00018]. Using the E11 ru…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "synthesis",
+      "phaseIndex": 4,
+      "phaseTitle": "Synthesize",
+      "agentId": "a1dfdcc19c78f2b31",
+      "model": "claude-opus-5-5",
+      "state": "done",
+      "startedAt": 1792059250904,
+      "queuedAt": 1792059250877,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Close S1-E13 as negative on DEV. Keep geoset_rep_x and the …",
+      "promptPreview": "Repository /home/sjpark/Documents/SCSegmentation (main, HEAD 6238b7d). Do NOT modify tracked files; scratch scripts/outputs under /tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/<your-name>/ . The container does NOT see the scratchpad: anything a container job must read or write goes under /home/sjpark/Documents/SCSegmentation/stage1/geomem/ru…",
+      "promptFramed": true,
+      "lastProgressAt": 1792059746519,
+      "tokens": 178321,
+      "toolCalls": 29,
+      "durationMs": 495614,
+      "resultPreview": "{\"protocol_compatible\":[{\"name\":\"X1 (optional dev-only probe, NOT a keyframe registration): SAM 3 detector self-exemplar from the seed's own box in the target view, union of detections, add-only without connectivity\",\"mechanism\":\"The adopted seed D_o in target view X already marks part of object o. Its bounding box is given to the SAM 3 detector as a same-image exemplar (Sam3Processor.add_geometri…"
+    }
+  ],
+  "totalTokens": 2145455,
+  "totalToolCalls": 529
+}

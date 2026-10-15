@@ -1,0 +1,295 @@
+POST-HOC DIAGNOSTIC (not registered; written after the registered E1 results were seen).  DEV ONLY.  PROTOCOL CHANGE (label names).  TAU 0.5, split names.  noconn = no 8-connectivity to D_o; contested pixels dropped as registered.
+
+[union_all|noconn]  empty-GT added px 3,574
+   all           n  3300  dJF -0.00251 [-0.00537, -0.00007]  up 284 down 219 (sum down -11.516)  added 6,597,475 prec 0.664 (on other obj 0.336)  recovered 0.1509 (out 0.2104 / occ 0.0315 / nod 0.4656)
+   uc140         n   140  dJF +0.00891 [+0.00001, +0.02336]  up 17 down 0 (sum down 0.000)  added 2,695,280 prec 0.977 (on other obj 0.023)  recovered 0.4747 (out 0.3536 / occ 0.0098 / nod 0.7537)
+   clean67       n    67  dJF +0.01862 [+0.00003, +0.04764]  up 17 down 0 (sum down 0.000)  added 2,695,280 prec 0.977 (on other obj 0.023)  recovered 0.4941 (out 0.3704 / occ 0.0113 / nod 0.7567)
+   uc_wo_dogtree n   135  dJF +0.00284 [+0.00001, +0.00868]  up 12 down 0 (sum down 0.000)  added 752,921 prec 0.951 (on other obj 0.049)  recovered 0.2469 (out 0.3177 / occ 0.0011 / nod 0.0032)
+   not_uc        n  3160  dJF -0.00301 [-0.00605, -0.00055]  up 267 down 219 (sum down -11.516)  added 3,902,195 prec 0.449 (on other obj 0.551)  recovered 0.0745 (out 0.1542 / occ 0.0332 / nod 0.2145)
+   by object type / name multiplicity (all pairs): n  dJF  added  prec | UC n  dJF  recovered
+      type=dynamic         864  -0.00421       48,008  0.149 |  22  +0.00000  0.0000
+      type=env             445  +0.00590    4,875,145  0.893 |  36  +0.03465  0.5197
+      type=static         1991  -0.00365    1,674,322  0.014 |  82  +0.00000  0.0000
+      name=scene-unique    993  -0.00734    6,592,304  0.665 |  56  +0.02228  0.4966
+      name=shared         2307  -0.00043        5,171  0.002 |  84  +0.00000  0.0000
+   per scene: n  dJF  added  prec | UC n dJF
+      AlexaMeadeExhibit     300  -0.00118      320,791  0.616 |   7 +0.0000
+      AlexaMeadeFacePaint    90  +0.00227      434,541  0.998 |   0 +nan
+      Barn                  300  -0.00171       42,721  0.538 |  23 +0.0008
+      Blocks                149  +0.00001          697  0.857 |  10 +0.0000
+      Breakfast             241  -0.00384        6,182  0.298 |  15 +0.0000
+      CBABasketball         171  -0.00198        1,135  0.329 |  18 +0.0000
+      Carpark               220  -0.00045        3,434  0.534 |   2 +0.0002
+      CoffeeMartini         385  -0.00006      531,665  0.787 |  12 +0.0000
+      Dog                    65  +0.01817    2,811,619  0.895 |   5 +0.1729
+      Fencing                80  +0.00001        1,515  0.949 |   0 +nan
+      FlameSteak            320  -0.01080    2,282,465  0.318 |   5 +0.0726
+      Frog                   50  +0.00000            0  nan |   0 +nan
+      MATF                  165  +0.00000          129  0.845 |  16 +0.0000
+      MartialArts           155  -0.00019       32,575  0.569 |   6 +0.0000
+      Painter               230  -0.00109        3,268  0.359 |   5 +0.0000
+      PoznanStreet          228  -0.00147       25,753  0.478 |   2 +0.0000
+      Welder                151  -0.02213       98,985  0.327 |  14 +0.0001
+
+[union_all|noconn|unique]  empty-GT added px 3,450
+   all           n  3300  dJF -0.00236 [-0.00536, +0.00020]  up 276 down 220 (sum down -10.982)  added 6,620,468 prec 0.663 (on other obj 0.337)  recovered 0.1511 (out 0.2105 / occ 0.0320 / nod 0.4657)
+   uc140         n   140  dJF +0.00891 [+0.00001, +0.02336]  up 17 down 0 (sum down 0.000)  added 2,695,374 prec 0.977 (on other obj 0.023)  recovered 0.4747 (out 0.3536 / occ 0.0098 / nod 0.7537)
+   clean67       n    67  dJF +0.01862 [+0.00004, +0.04764]  up 17 down 0 (sum down 0.000)  added 2,695,374 prec 0.977 (on other obj 0.023)  recovered 0.4941 (out 0.3704 / occ 0.0113 / nod 0.7567)
+   uc_wo_dogtree n   135  dJF +0.00284 [+0.00001, +0.00868]  up 12 down 0 (sum down 0.000)  added 753,015 prec 0.951 (on other obj 0.049)  recovered 0.2469 (out 0.3177 / occ 0.0011 / nod 0.0032)
+   not_uc        n  3160  dJF -0.00286 [-0.00606, -0.00029]  up 259 down 220 (sum down -10.982)  added 3,925,094 prec 0.447 (on other obj 0.553)  recovered 0.0747 (out 0.1544 / occ 0.0337 / nod 0.2147)
+   by object type / name multiplicity (all pairs): n  dJF  added  prec | UC n  dJF  recovered
+      type=dynamic         864  -0.00450       49,222  0.149 |  22  +0.00000  0.0000
+      type=env             445  +0.00575    4,890,796  0.890 |  36  +0.03466  0.5197
+      type=static         1991  -0.00324    1,680,450  0.017 |  82  +0.00000  0.0000
+      name=scene-unique    993  -0.00784    6,620,468  0.663 |  56  +0.02228  0.4966
+      name=shared         2307  +0.00000            0  nan |  84  +0.00000  0.0000
+   per scene: n  dJF  added  prec | UC n dJF
+      AlexaMeadeExhibit     300  -0.00140      332,020  0.598 |   7 +0.0000
+      AlexaMeadeFacePaint    90  +0.00227      434,541  0.998 |   0 +nan
+      Barn                  300  -0.00213       55,777  0.477 |  23 +0.0008
+      Blocks                149  +0.00001          697  0.857 |  10 +0.0000
+      Breakfast             241  -0.00277        5,944  0.310 |  15 +0.0000
+      CBABasketball         171  -0.00198        1,135  0.329 |  18 +0.0000
+      Carpark               220  -0.00045        3,434  0.534 |   2 +0.0002
+      CoffeeMartini         385  -0.00006      531,671  0.787 |  12 +0.0000
+      Dog                    65  +0.01814    2,813,365  0.894 |   5 +0.1729
+      Fencing                80  +0.00001        1,515  0.949 |   0 +nan
+      FlameSteak            320  -0.01080    2,282,642  0.318 |   5 +0.0726
+      Frog                   50  +0.00000            0  nan |   0 +nan
+      MATF                  165  +0.00000          129  0.845 |  16 +0.0000
+      MartialArts           155  -0.00019       32,575  0.569 |   6 +0.0000
+      Painter               230  -0.00150        3,919  0.315 |   5 +0.0000
+      PoznanStreet          228  +0.00167       21,173  0.591 |   2 +0.0000
+      Welder                151  -0.02343       99,931  0.326 |  14 +0.0001
+   under-cover by (scene, cam, obj): label  n  base  dJF  recovered  added prec
+      Dog                camera_0004    3 tree                   U 5  0.670  +0.1729  0.725 of 2,644,865  0.987 (1,942,359)
+      FlameSteak         cam01         32 wall                   U 5  0.732  +0.0726  0.502 of 1,413,280  0.951 (745,761)
+      Welder             camera_0003   13 wall                   U 1  0.714  +0.0010  0.008 of   275,218  0.880 (2,515)
+      CBABasketball      v06           20 grandstand             U 5  0.436  +0.0000  0.000 of   257,103  nan (0)
+      CBABasketball      v24           20 grandstand             U 5  0.360  +0.0000  0.000 of   164,727  nan (0)
+      Barn               v0            23 ground                 U 3  0.784  +0.0061  0.029 of   157,400  0.981 (4,680)
+      CBABasketball      v06           18 billboard_or_Bulletin_Board U 5  0.692  +0.0000  0.000 of   157,136  nan (0)
+      MartialArts        v13           11 rig                    U 5  0.754  +0.0000  0.000 of   118,672  nan (0)
+      Breakfast          v9             8 chair_or_seat          S 5  0.589  +0.0000  0.000 of    48,014  nan (0)
+      Welder             camera_0004   14 helmet                 S 3  0.000  +0.0000  0.000 of    42,026  nan (0)
+      CoffeeMartini      cam10         12 cushion_or_carpet      U 5  0.740  +0.0000  0.000 of    34,677  nan (0)
+      Welder             camera_0003    5 fire                   U 2  0.661  +0.0000  0.000 of    25,205  nan (0)
+      Welder             camera_0004    8 box                    S 3  0.164  +0.0000  0.000 of    24,589  nan (0)
+      MATF               S1_CAM_1      26 bottle_or_cup          S 5  0.159  +0.0000  0.000 of    22,921  nan (0)
+      Welder             camera_0003   14 helmet                 S 3  0.016  +0.0000  0.000 of    22,257  nan (0)
+      Breakfast          v9            26 floor                  U 5  0.548  +0.0000  0.000 of    19,556  nan (0)
+      Painter            v0             9 table_or_desk          U 5  0.657  +0.0000  0.000 of    14,156  0.000 (1)
+      Blocks             cam0          14 chair_or_seat          S 5  0.313  +0.0000  0.000 of    11,825  nan (0)
+      CoffeeMartini      cam02         29 bottle_or_cup          S 5  0.607  +0.0000  0.000 of    11,790  nan (0)
+      Breakfast          v5            26 floor                  U 1  0.771  +0.0004  0.004 of    10,902  0.932 (44)
+      Barn               v0            14 cart                   S 4  0.781  +0.0000  0.000 of     9,008  nan (0)
+      Welder             camera_0003    8 box                    S 2  0.352  +0.0000  0.000 of     8,942  nan (0)
+      CoffeeMartini      cam02         25 bottle_or_cup          S 2  0.701  +0.0000  0.000 of     6,329  nan (0)
+      Barn               v0             1 tool                   S 4  0.722  +0.0000  0.000 of     5,383  nan (0)
+      Barn               v10           11 wood                   S 5  0.702  +0.0000  0.000 of     4,732  nan (0)
+      AlexaMeadeExhibit  camera_0003   24 handicrafts            S 5  0.667  +0.0000  0.000 of     4,660  nan (0)
+      Barn               v10           14 cart                   S 2  0.789  +0.0000  0.000 of     4,438  nan (0)
+      Barn               v10            1 tool                   S 3  0.743  +0.0000  0.000 of     4,053  nan (0)
+      CBABasketball      v06           17 basket                 U 2  0.709  +0.0000  0.000 of     3,553  nan (0)
+      Carpark            v8            12 tree                   U 1  0.750  +0.0004  0.004 of     3,515  1.000 (14)
+      CBABasketball      v06            5 person                 S 1  0.773  +0.0000  0.000 of     1,746  nan (0)
+      PoznanStreet       v0             5 tree                   S 1  0.784  +0.0000  0.000 of     1,719  nan (0)
+      MATF               S1_CAM_1       6 person                 S 2  0.371  +0.0000  0.000 of     1,499  nan (0)
+      AlexaMeadeExhibit  camera_0004   24 handicrafts            S 2  0.785  +0.0000  0.000 of     1,441  nan (0)
+      MATF               S1_CAM_1      21 microphone             S 3  0.000  +0.0000  0.000 of     1,398  nan (0)
+      MartialArts        v13           15 door                   U 1  0.694  +0.0000  0.000 of     1,069  nan (0)
+      Blocks             cam0           3 toy                    S 3  0.000  +0.0000  0.000 of       957  nan (0)
+      MATF               S1_CAM_1       7 person                 S 2  0.346  +0.0000  0.000 of       890  nan (0)
+      MATF               S1_CAM_10     10 bottle_or_cup          S 4  0.546  +0.0000  0.000 of       803  nan (0)
+      Barn               v0            22 bag_or_package         S 1  0.689  +0.0000  0.000 of       789  nan (0)
+      Barn               v10           22 bag_or_package         S 1  0.735  +0.0000  0.000 of       582  nan (0)
+      Breakfast          v9            24 bottle_or_cup          S 1  0.462  +0.0000  0.000 of       483  nan (0)
+      PoznanStreet       v8             3 car                    S 1  0.787  +0.0000  0.000 of       431  nan (0)
+      Carpark            v0            22 car                    S 1  0.776  +0.0000  0.000 of       315  nan (0)
+      Blocks             cam0           4 toy                    S 1  0.713  +0.0000  0.000 of       290  nan (0)
+      Breakfast          v5            14 bottle_or_cup          S 1  0.000  +0.0000  0.000 of       207  nan (0)
+      Breakfast          v5            24 bottle_or_cup          S 1  0.000  +0.0000  0.000 of       113  nan (0)
+      Blocks             cam9           3 toy                    S 1  0.488  +0.0000  0.000 of        62  nan (0)
+      Breakfast          v9            28 bottle_or_cup          S 1  0.778  +0.0000  0.000 of        60  nan (0)
+   most harmed pairs (dJF < -0.02): scene t cam obj label  dJF  added  prec  on-other share
+      Welder               4 camera_0003    3 tool                   -0.6574     29,668  0.000  1.000
+      FlameSteak          12 cam01         39 chair_or_seat          -0.4845    390,014  0.004  0.996
+      Welder               4 camera_0004    4 metal_part             -0.4735      3,933  0.000  1.000
+      FlameSteak          16 cam01         39 chair_or_seat          -0.4189    246,716  0.002  0.998
+      FlameSteak           8 cam01         39 chair_or_seat          -0.4164    246,954  0.003  0.997
+      FlameSteak          20 cam01         39 chair_or_seat          -0.4146    246,979  0.002  0.998
+      FlameSteak           4 cam01         39 chair_or_seat          -0.4121    246,746  0.002  0.998
+      Welder              12 camera_0004    4 metal_part             -0.3810      1,237  0.018  0.982
+      FlameSteak           8 cam01          9 Microwave_oven         -0.3569     34,391  0.000  1.000
+      FlameSteak          16 cam01          9 Microwave_oven         -0.3540     33,820  0.000  1.000
+      FlameSteak           4 cam01          9 Microwave_oven         -0.3514     33,356  0.000  1.000
+      FlameSteak          12 cam01          9 Microwave_oven         -0.3509     33,630  0.000  1.000
+      Welder              20 camera_0004    4 metal_part             -0.2975        954  0.000  1.000
+      CBABasketball      106 v06            1 ball                   -0.2930        308  0.039  0.961
+      Welder               8 camera_0003    4 metal_part             -0.2507        221  0.000  1.000
+      Welder              16 camera_0004    4 metal_part             -0.2464        754  0.000  1.000
+      Welder              20 camera_0003    4 metal_part             -0.2415        186  0.000  1.000
+      Welder              16 camera_0003    4 metal_part             -0.2401        178  0.000  1.000
+      Welder              12 camera_0003    4 metal_part             -0.2381        180  0.000  1.000
+      Breakfast            4 v5            19 tub_or_bowl_or_pot     -0.2236        129  0.000  1.000
+      Welder               8 camera_0004    4 metal_part             -0.2207        897  0.000  1.000
+      Welder               4 camera_0003    4 metal_part             -0.1917        106  0.000  1.000
+      Breakfast            8 v5            19 tub_or_bowl_or_pot     -0.1786        127  0.016  0.984
+      CoffeeMartini        4 cam02         26 shelf                  -0.1240     34,138  0.016  0.984
+      CoffeeMartini       20 cam02         26 shelf                  -0.1223     33,384  0.017  0.983
+
+[union_all|conn|unique]  empty-GT added px 0
+   all           n  3300  dJF +0.00015 [-0.00008, +0.00044]  up 337 down 125 (sum down -0.771)  added 2,085,841 prec 0.728 (on other obj 0.272)  recovered 0.0523 (out 0.1251 / occ 0.0219 / nod 0.0584)
+   uc140         n   140  dJF +0.00102 [+0.00001, +0.00306]  up 15 down 1 (sum down -0.001)  added 252,464 prec 0.921 (on other obj 0.079)  recovered 0.0419 (out 0.0905 / occ 0.0099 / nod 0.0051)
+   clean67       n    67  dJF +0.00213 [+0.00002, +0.00642]  up 15 down 1 (sum down -0.001)  added 252,464 prec 0.921 (on other obj 0.079)  recovered 0.0436 (out 0.0948 / occ 0.0114 / nod 0.0051)
+   uc_wo_dogtree n   135  dJF +0.00105 [+0.00001, +0.00318]  up 11 down 0 (sum down 0.000)  added 228,200 prec 0.945 (on other obj 0.055)  recovered 0.0743 (out 0.0955 / occ 0.0011 / nod 0.0005)
+   not_uc        n  3160  dJF +0.00011 [-0.00016, +0.00044]  up 322 down 124 (sum down -0.771)  added 1,833,377 prec 0.702 (on other obj 0.298)  recovered 0.0547 (out 0.1387 / occ 0.0228 / nod 0.1049)
+   by object type / name multiplicity (all pairs): n  dJF  added  prec | UC n  dJF  recovered
+      type=dynamic         864  +0.00006        9,696  0.756 |  22  +0.00000  0.0000
+      type=env             445  +0.00162    1,886,337  0.788 |  36  +0.00397  0.0459
+      type=static         1991  -0.00013      189,808  0.135 |  82  +0.00000  0.0000
+      name=scene-unique    993  +0.00051    2,085,841  0.728 |  56  +0.00255  0.0439
+      name=shared         2307  +0.00000            0  nan |  84  +0.00000  0.0000
+   per scene: n  dJF  added  prec | UC n dJF
+      AlexaMeadeExhibit     300  -0.00041      227,053  0.512 |   7 +0.0000
+      AlexaMeadeFacePaint    90  +0.00222      429,580  0.998 |   0 +nan
+      Barn                  300  -0.00017       45,573  0.547 |  23 +0.0004
+      Blocks                149  +0.00001          689  0.862 |  10 +0.0000
+      Breakfast             241  +0.00007        1,880  0.979 |  15 +0.0000
+      CBABasketball         171  +0.00006          824  0.453 |  18 +0.0000
+      Carpark               220  +0.00001        3,007  0.588 |   2 +0.0002
+      CoffeeMartini         385  +0.00084      427,776  0.970 |  12 +0.0000
+      Dog                    65  +0.00215      453,779  0.538 |   5 +0.0002
+      Fencing                80  +0.00001        1,506  0.949 |   0 +nan
+      FlameSteak            320  -0.00028      383,433  0.581 |   5 +0.0262
+      Frog                   50  +0.00000            0  nan |   0 +nan
+      MATF                  165  +0.00000          129  0.845 |  16 +0.0000
+      MartialArts           155  -0.00014       31,882  0.565 |   6 +0.0000
+      Painter               230  +0.00001        2,128  0.567 |   5 +0.0000
+      PoznanStreet          228  +0.00051       16,290  0.588 |   2 +0.0000
+      Welder                151  -0.00020       60,312  0.537 |  14 +0.0001
+
+[oracle|noconn]  empty-GT added px 0
+   all           n  3300  dJF +0.00156 [-0.00105, +0.00460]  up 1239 down 407 (sum down -4.214)  added 2,691,930 prec 0.838 (on other obj 0.162)  recovered 0.0777 (out 0.0273 / occ 0.0224 / nod 0.3647)
+   uc140         n   140  dJF +0.03397 [-0.00965, +0.08815]  up 41 down 13 (sum down -1.597)  added 1,979,218 prec 0.980 (on other obj 0.020)  recovered 0.3496 (out 0.0602 / occ 0.0338 / nod 0.7499)
+   clean67       n    67  dJF +0.02180 [+0.00054, +0.05481]  up 24 down 1 (sum down -0.006)  added 1,925,613 prec 0.991 (on other obj 0.009)  recovered 0.3581 (out 0.0582 / occ 0.0024 / nod 0.7516)
+   uc_wo_dogtree n   135  dJF +0.02884 [-0.01497, +0.08450]  up 36 down 13 (sum down -1.597)  added 62,141 prec 0.628 (on other obj 0.372)  recovered 0.0135 (out 0.0080 / occ 0.0488 / nod 0.1450)
+   not_uc        n  3160  dJF +0.00012 [-0.00088, +0.00088]  up 1198 down 394 (sum down -2.617)  added 712,712 prec 0.445 (on other obj 0.555)  recovered 0.0135 (out 0.0145 / occ 0.0215 / nod 0.0289)
+   by object type / name multiplicity (all pairs): n  dJF  added  prec | UC n  dJF  recovered
+      type=dynamic         864  -0.00107       46,458  0.663 |  22  -0.05360  0.0038
+      type=env             445  +0.00161    2,447,095  0.854 |  36  +0.02451  0.3760
+      type=static         1991  +0.00268      198,377  0.684 |  82  +0.06162  0.0777
+      name=scene-unique    993  +0.00093    2,486,901  0.851 |  56  +0.01576  0.3593
+      name=shared         2307  +0.00183      205,029  0.685 |  84  +0.04612  0.1398
+   per scene: n  dJF  added  prec | UC n dJF
+      AlexaMeadeExhibit     300  +0.00015      146,194  0.335 |   7 +0.0000
+      AlexaMeadeFacePaint    90  +0.00044       22,262  0.857 |   0 +nan
+      Barn                  300  -0.00914       56,376  0.553 |  23 -0.0684
+      Blocks                149  +0.01915       11,848  0.928 |  10 +0.2849
+      Breakfast             241  -0.00089       21,944  0.675 |  15 +0.0012
+      CBABasketball         171  +0.00200        8,628  0.775 |  18 +0.0003
+      Carpark               220  +0.00033        4,251  0.731 |   2 +0.0002
+      CoffeeMartini         385  +0.00122       37,987  0.763 |  12 +0.0035
+      Dog                    65  +0.01051    2,211,226  0.900 |   5 +0.1727
+      Fencing                80  +0.00004        1,706  0.866 |   0 +nan
+      FlameSteak            320  +0.00193       25,781  0.757 |   5 +0.0000
+      Frog                   50  +0.00006        1,042  0.896 |   0 +nan
+      MATF                  165  +0.01366       49,467  0.613 |  16 +0.1263
+      MartialArts           155  +0.00004       11,781  0.583 |   6 +0.0000
+      Painter               230  +0.00006        6,570  0.688 |   5 +0.0000
+      PoznanStreet          228  +0.00051       12,790  0.628 |   2 +0.0004
+      Welder                151  +0.00381       62,077  0.503 |  14 +0.0377
+
+[union_all|noconn|env]  empty-GT added px 0
+   all           n  3300  dJF +0.00078 [+0.00001, +0.00215]  up 177 down 65 (sum down -0.556)  added 4,917,567 prec 0.889 (on other obj 0.111)  recovered 0.1504 (out 0.2104 / occ 0.0295 / nod 0.4658)
+   uc140         n   140  dJF +0.00889 [+0.00001, +0.02334]  up 16 down 0 (sum down 0.000)  added 2,698,339 prec 0.976 (on other obj 0.024)  recovered 0.4747 (out 0.3536 / occ 0.0098 / nod 0.7537)
+   clean67       n    67  dJF +0.01858 [+0.00003, +0.04760]  up 16 down 0 (sum down 0.000)  added 2,698,339 prec 0.976 (on other obj 0.024)  recovered 0.4941 (out 0.3704 / occ 0.0113 / nod 0.7567)
+   uc_wo_dogtree n   135  dJF +0.00282 [+0.00001, +0.00862]  up 11 down 0 (sum down 0.000)  added 755,980 prec 0.947 (on other obj 0.053)  recovered 0.2469 (out 0.3177 / occ 0.0011 / nod 0.0032)
+   not_uc        n  3160  dJF +0.00042 [-0.00007, +0.00114]  up 161 down 65 (sum down -0.556)  added 2,219,228 prec 0.783 (on other obj 0.217)  recovered 0.0739 (out 0.1542 / occ 0.0310 / nod 0.2149)
+   by object type / name multiplicity (all pairs): n  dJF  added  prec | UC n  dJF  recovered
+      type=dynamic         864  +0.00000            0  nan |  22  +0.00000  0.0000
+      type=env             445  +0.00576    4,917,567  0.889 |  36  +0.03459  0.5197
+      type=static         1991  +0.00000            0  nan |  82  +0.00000  0.0000
+      name=scene-unique    993  +0.00258    4,917,567  0.889 |  56  +0.02224  0.4966
+      name=shared         2307  +0.00000            0  nan |  84  +0.00000  0.0000
+   per scene: n  dJF  added  prec | UC n dJF
+      AlexaMeadeExhibit     300  -0.00060      331,684  0.599 |   7 +0.0000
+      AlexaMeadeFacePaint    90  +0.00205      430,367  0.998 |   0 +nan
+      Barn                  300  +0.00010       28,475  0.727 |  23 +0.0008
+      Blocks                149  +0.00000            0  nan |  10 +0.0000
+      Breakfast             241  +0.00001          813  0.954 |  15 +0.0000
+      CBABasketball         171  +0.00000            0  nan |  18 +0.0000
+      Carpark               220  -0.00044        3,348  0.542 |   2 +0.0002
+      CoffeeMartini         385  +0.00087      426,990  0.970 |  12 +0.0000
+      Dog                    65  +0.02496    2,833,064  0.893 |   5 +0.1729
+      Fencing                80  +0.00001        1,515  0.949 |   0 +nan
+      FlameSteak            320  +0.00113      748,811  0.947 |   5 +0.0721
+      Frog                   50  +0.00000            0  nan |   0 +nan
+      MATF                  165  +0.00000            0  nan |  16 +0.0000
+      MartialArts           155  -0.00013       32,438  0.571 |   6 +0.0000
+      Painter               230  +0.00000            0  nan |   5 +0.0000
+      PoznanStreet          228  +0.00162       20,921  0.588 |   2 +0.0000
+      Welder                151  -0.00031       59,141  0.524 |  14 +0.0001
+   under-cover by (scene, cam, obj): label  n  base  dJF  recovered  added prec
+      Dog                camera_0004    3 tree                   U 5  0.670  +0.1729  0.725 of 2,644,865  0.987 (1,942,359)
+      FlameSteak         cam01         32 wall                   U 5  0.732  +0.0721  0.502 of 1,413,280  0.947 (748,727)
+      Welder             camera_0003   13 wall                   U 1  0.714  +0.0010  0.008 of   275,218  0.880 (2,515)
+      CBABasketball      v06           20 grandstand             U 5  0.436  +0.0000  0.000 of   257,103  nan (0)
+      CBABasketball      v24           20 grandstand             U 5  0.360  +0.0000  0.000 of   164,727  nan (0)
+      Barn               v0            23 ground                 U 3  0.784  +0.0061  0.029 of   157,400  0.981 (4,680)
+      CBABasketball      v06           18 billboard_or_Bulletin_Board U 5  0.692  +0.0000  0.000 of   157,136  nan (0)
+      MartialArts        v13           11 rig                    U 5  0.754  +0.0000  0.000 of   118,672  nan (0)
+      Breakfast          v9             8 chair_or_seat          S 5  0.589  +0.0000  0.000 of    48,014  nan (0)
+      Welder             camera_0004   14 helmet                 S 3  0.000  +0.0000  0.000 of    42,026  nan (0)
+      CoffeeMartini      cam10         12 cushion_or_carpet      U 5  0.740  +0.0000  0.000 of    34,677  nan (0)
+      Welder             camera_0003    5 fire                   U 2  0.661  +0.0000  0.000 of    25,205  nan (0)
+      Welder             camera_0004    8 box                    S 3  0.164  +0.0000  0.000 of    24,589  nan (0)
+      MATF               S1_CAM_1      26 bottle_or_cup          S 5  0.159  +0.0000  0.000 of    22,921  nan (0)
+      Welder             camera_0003   14 helmet                 S 3  0.016  +0.0000  0.000 of    22,257  nan (0)
+      Breakfast          v9            26 floor                  U 5  0.548  +0.0000  0.000 of    19,556  nan (0)
+      Painter            v0             9 table_or_desk          U 5  0.657  +0.0000  0.000 of    14,156  nan (0)
+      Blocks             cam0          14 chair_or_seat          S 5  0.313  +0.0000  0.000 of    11,825  nan (0)
+      CoffeeMartini      cam02         29 bottle_or_cup          S 5  0.607  +0.0000  0.000 of    11,790  nan (0)
+      Breakfast          v5            26 floor                  U 1  0.771  +0.0004  0.004 of    10,902  0.932 (44)
+      Barn               v0            14 cart                   S 4  0.781  +0.0000  0.000 of     9,008  nan (0)
+      Welder             camera_0003    8 box                    S 2  0.352  +0.0000  0.000 of     8,942  nan (0)
+      CoffeeMartini      cam02         25 bottle_or_cup          S 2  0.701  +0.0000  0.000 of     6,329  nan (0)
+      Barn               v0             1 tool                   S 4  0.722  +0.0000  0.000 of     5,383  nan (0)
+      Barn               v10           11 wood                   S 5  0.702  +0.0000  0.000 of     4,732  nan (0)
+      AlexaMeadeExhibit  camera_0003   24 handicrafts            S 5  0.667  +0.0000  0.000 of     4,660  nan (0)
+      Barn               v10           14 cart                   S 2  0.789  +0.0000  0.000 of     4,438  nan (0)
+      Barn               v10            1 tool                   S 3  0.743  +0.0000  0.000 of     4,053  nan (0)
+      CBABasketball      v06           17 basket                 U 2  0.709  +0.0000  0.000 of     3,553  nan (0)
+      Carpark            v8            12 tree                   U 1  0.750  +0.0004  0.004 of     3,515  1.000 (14)
+      CBABasketball      v06            5 person                 S 1  0.773  +0.0000  0.000 of     1,746  nan (0)
+      PoznanStreet       v0             5 tree                   S 1  0.784  +0.0000  0.000 of     1,719  nan (0)
+      MATF               S1_CAM_1       6 person                 S 2  0.371  +0.0000  0.000 of     1,499  nan (0)
+      AlexaMeadeExhibit  camera_0004   24 handicrafts            S 2  0.785  +0.0000  0.000 of     1,441  nan (0)
+      MATF               S1_CAM_1      21 microphone             S 3  0.000  +0.0000  0.000 of     1,398  nan (0)
+      MartialArts        v13           15 door                   U 1  0.694  +0.0000  0.000 of     1,069  nan (0)
+      Blocks             cam0           3 toy                    S 3  0.000  +0.0000  0.000 of       957  nan (0)
+      MATF               S1_CAM_1       7 person                 S 2  0.346  +0.0000  0.000 of       890  nan (0)
+      MATF               S1_CAM_10     10 bottle_or_cup          S 4  0.546  +0.0000  0.000 of       803  nan (0)
+      Barn               v0            22 bag_or_package         S 1  0.689  +0.0000  0.000 of       789  nan (0)
+      Barn               v10           22 bag_or_package         S 1  0.735  +0.0000  0.000 of       582  nan (0)
+      Breakfast          v9            24 bottle_or_cup          S 1  0.462  +0.0000  0.000 of       483  nan (0)
+      PoznanStreet       v8             3 car                    S 1  0.787  +0.0000  0.000 of       431  nan (0)
+      Carpark            v0            22 car                    S 1  0.776  +0.0000  0.000 of       315  nan (0)
+      Blocks             cam0           4 toy                    S 1  0.713  +0.0000  0.000 of       290  nan (0)
+      Breakfast          v5            14 bottle_or_cup          S 1  0.000  +0.0000  0.000 of       207  nan (0)
+      Breakfast          v5            24 bottle_or_cup          S 1  0.000  +0.0000  0.000 of       113  nan (0)
+      Blocks             cam9           3 toy                    S 1  0.488  +0.0000  0.000 of        62  nan (0)
+      Breakfast          v9            28 bottle_or_cup          S 1  0.778  +0.0000  0.000 of        60  nan (0)
+   most harmed pairs (dJF < -0.02): scene t cam obj label  dJF  added  prec  on-other share
+      AlexaMeadeExhibit    8 camera_0004    9 ceiling                -0.0449     25,401  0.102  0.898
+      AlexaMeadeExhibit    4 camera_0004    9 ceiling                -0.0428     22,135  0.132  0.868
+      AlexaMeadeExhibit   20 camera_0004    9 ceiling                -0.0424     20,963  0.128  0.872
+      AlexaMeadeExhibit   12 camera_0004    9 ceiling                -0.0371     22,866  0.111  0.889
+      AlexaMeadeExhibit   16 camera_0004    9 ceiling                -0.0293     19,080  0.117  0.883
+      AlexaMeadeExhibit   12 camera_0003    6 wall                   -0.0259      6,661  0.596  0.404
+      Carpark             16 v0            13 grass                  -0.0257        516  0.399  0.601
+      AlexaMeadeExhibit   20 camera_0003    6 wall                   -0.0241      5,735  0.596  0.404
+      Carpark             16 v8            13 grass                  -0.0239        106  0.028  0.972
+      Welder               4 camera_0003   15 ceiling                -0.0234      6,905  0.082  0.918
+      AlexaMeadeExhibit   16 camera_0003    6 wall                   -0.0223      6,516  0.596  0.404
+      AlexaMeadeExhibit    8 camera_0003    6 wall                   -0.0204      5,324  0.632  0.368

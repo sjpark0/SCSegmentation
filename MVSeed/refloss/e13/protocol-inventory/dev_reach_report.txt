@@ -1,0 +1,162 @@
+DEV rows 13239 (scene, t != ref_frame, target = non-c_ini annotated cam, basic-set object present in target); scenes 17; frames per scene [20]
+== ALL DEV rows (20 non-ref frames x 2 targets x 17 scenes): rows 13239, target GT px 2,083,737,608; beyond c_ini R = 993,242,114 (0.477 of GT): vis 0.523 / outside 0.201 / occluded 0.201 / nodepth 0.075
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.147      0.329     0.000  |   0.201   (0.682) 
+   3rd annotated cam B: lands on B's GT o    0.130      0.290     0.000  |   0.177   (0.624) 
+   >=1 other rig cam visible (all)           0.888      0.931     0.000  |   0.767   (0.997) 
+   >=1 non-annotated rig cam visible         0.887      0.917     0.000  |   0.761   (0.997) 
+   c_ini GT forward-splat lands on o         0.004      0.442     0.148  |   0.212   (0.771) 
+     forward-splat precision (o said -> o)    0.523     0.759     0.779  |   0.758   (0.914)
+   label unique in scene (name prompt)       0.836      0.693     0.954  |   0.794   (0.626) 
+   same-label twin present in X at t         0.163      0.280     0.045  |   0.194   (0.324) 
+   same-label twin present in c_ini at t     0.157      0.282     0.046  |   0.193   (0.354) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.160, self 0.604, unlabelled 0.000, other static/env 0.236
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.151 of those (0.131 of all occluded; static/env are 0.869 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.298 of 59,845,870 px; self 0.162 of 212,068,460; other static/env occluder 0.028 of 92,522,102 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.038 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.109
+   GT px of objects absent from c_ini's label map at t: 0.000
+== DEV subset non-ref[3::4] (frames +4,+8,+12,+16,+20; the dev-route DEV set): rows 3308, target GT px 520,927,381; beyond c_ini R = 248,199,558 (0.476 of GT): vis 0.524 / outside 0.201 / occluded 0.201 / nodepth 0.075
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.147      0.329     0.000  |   0.201   (0.682) 
+   3rd annotated cam B: lands on B's GT o    0.130      0.290     0.000  |   0.177   (0.625) 
+   >=1 other rig cam visible (all)           0.887      0.930     0.000  |   0.765   (0.997) 
+   >=1 non-annotated rig cam visible         0.886      0.917     0.000  |   0.760   (0.997) 
+   c_ini GT forward-splat lands on o         0.005      0.442     0.143  |   0.211   (0.770) 
+     forward-splat precision (o said -> o)    0.518     0.758     0.775  |   0.757   (0.914)
+   label unique in scene (name prompt)       0.836      0.694     0.954  |   0.795   (0.626) 
+   same-label twin present in X at t         0.163      0.279     0.045  |   0.193   (0.324) 
+   same-label twin present in c_ini at t     0.158      0.281     0.046  |   0.192   (0.354) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.161, self 0.603, unlabelled 0.000, other static/env 0.236
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.150 of those (0.131 of all occluded; static/env are 0.870 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.298 of 14,981,138 px; self 0.162 of 52,928,128; other static/env occluder 0.028 of 23,084,238 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.039 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.114
+   GT px of objects absent from c_ini's label map at t: 0.000
+== DEV rows with R/GT >= 0.5 (mostly-invisible objects, the under-cover regime): rows 4341, target GT px 1,020,225,981; beyond c_ini R = 756,668,402 (0.742 of GT): vis 0.258 / outside 0.335 / occluded 0.263 / nodepth 0.144
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.128      0.347     0.000  |   0.181   (0.528) 
+   3rd annotated cam B: lands on B's GT o    0.115      0.314     0.000  |   0.163   (0.483) 
+   >=1 other rig cam visible (all)           0.877      0.935     0.000  |   0.727   (0.995) 
+   >=1 non-annotated rig cam visible         0.877      0.918     0.000  |   0.721   (0.995) 
+   c_ini GT forward-splat lands on o         0.003      0.499     0.144  |   0.206   (0.750) 
+     forward-splat precision (o said -> o)    0.519     0.876     0.877  |   0.872   (0.835)
+   label unique in scene (name prompt)       0.846      0.769     0.976  |   0.844   (0.827) 
+   same-label twin present in X at t         0.154      0.221     0.024  |   0.152   (0.164) 
+   same-label twin present in c_ini at t     0.151      0.210     0.024  |   0.147   (0.154) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.110, self 0.646, unlabelled 0.000, other static/env 0.244
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.096 of those (0.090 of all occluded; static/env are 0.939 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.141 of 27,383,097 px; self 0.120 of 160,095,562; other static/env occluder 0.019 of 64,282,460 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.012 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.101
+   GT px of objects absent from c_ini's label map at t: 0.000
+== DEV rows of env-type objects: rows 1780, target GT px 1,298,969,187; beyond c_ini R = 739,213,167 (0.569 of GT): vis 0.431 / outside 0.255 / occluded 0.200 / nodepth 0.114
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.168      0.370     0.000  |   0.206   (0.684) 
+   3rd annotated cam B: lands on B's GT o    0.153      0.344     0.000  |   0.190   (0.636) 
+   >=1 other rig cam visible (all)           0.908      0.922     0.000  |   0.731   (0.996) 
+   >=1 non-annotated rig cam visible         0.907      0.903     0.000  |   0.724   (0.996) 
+   c_ini GT forward-splat lands on o         0.004      0.450     0.147  |   0.189   (0.798) 
+     forward-splat precision (o said -> o)    0.553     0.788     0.865  |   0.796   (0.911)
+   label unique in scene (name prompt)       1.000      1.000     1.000  |   1.000   (1.000) 
+   same-label twin present in X at t         0.000      0.000     0.000  |   0.000   (0.000) 
+   same-label twin present in c_ini at t     0.000      0.000     0.000  |   0.000   (0.000) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.169, self 0.572, unlabelled 0.000, other static/env 0.259
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.150 of those (0.150 of all occluded; static/env are 1.000 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.342 of 43,979,362 px; self 0.151 of 148,906,278; other static/env occluder 0.021 of 67,314,982 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.054 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.099
+   GT px of objects absent from c_ini's label map at t: 0.000
+== DEV rows of the SAME 22 under-cover (scene, cam, obj) on non-keyframe frames: rows 440, target GT px 92,838,461; beyond c_ini R = 61,629,786 (0.664 of GT): vis 0.336 / outside 0.347 / occluded 0.171 / nodepth 0.146
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.048      0.354     0.000  |   0.116   (0.561) 
+   3rd annotated cam B: lands on B's GT o    0.018      0.265     0.000  |   0.078   (0.280) 
+   >=1 other rig cam visible (all)           0.833      0.957     0.000  |   0.682   (0.998) 
+   >=1 non-annotated rig cam visible         0.832      0.951     0.000  |   0.680   (0.997) 
+   c_ini GT forward-splat lands on o         0.002      0.374     0.005  |   0.099   (0.448) 
+     forward-splat precision (o said -> o)    0.514     0.408     0.254  |   0.407   (0.829)
+   label unique in scene (name prompt)       0.976      0.969     0.999  |   0.979   (0.958) 
+   same-label twin present in X at t         0.024      0.031     0.001  |   0.021   (0.042) 
+   same-label twin present in c_ini at t     0.024      0.031     0.001  |   0.021   (0.042) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.153, self 0.494, unlabelled 0.000, other static/env 0.353
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.215 of those (0.214 of all occluded; static/env are 0.994 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.037 of 2,356,672 px; self 0.397 of 7,841,987; other static/env occluder 0.036 of 5,606,049 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.000 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.042
+   GT px of objects absent from c_ini's label map at t: 0.000
+==   of which Dog camera_0004 tree (obj 3): rows 20, target GT px 25,258,540; beyond c_ini R = 20,971,166 (0.830 of GT): vis 0.170 / outside 0.056 / occluded 0.263 / nodepth 0.511
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.480      0.446     0.000  |   0.174   (0.777) 
+   3rd annotated cam B: lands on B's GT o    0.258      0.387     0.000  |   0.140   (0.638) 
+   >=1 other rig cam visible (all)           1.000      0.995     0.000  |   0.383   (0.985) 
+   >=1 non-annotated rig cam visible         0.999      0.987     0.000  |   0.380   (0.985) 
+   c_ini GT forward-splat lands on o         0.003      0.480     0.000  |   0.153   (0.562) 
+     forward-splat precision (o said -> o)    1.000     0.976     0.225  |   0.975   (1.000)
+   label unique in scene (name prompt)       1.000      1.000     1.000  |   1.000   (1.000) 
+   same-label twin present in X at t         0.000      0.000     0.000  |   0.000   (0.000) 
+   same-label twin present in c_ini at t     0.000      0.000     0.000  |   0.000   (0.000) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.179, self 0.486, unlabelled 0.000, other static/env 0.335
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.317 of those (0.317 of all occluded; static/env are 1.000 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.000 of 1,191,129 px; self 0.653 of 3,233,843; other static/env occluder 0.000 of 2,226,263 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.000 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.034
+   GT px of objects absent from c_ini's label map at t: 0.000
+==   the 21 others: rows 420, target GT px 67,579,921; beyond c_ini R = 40,658,620 (0.602 of GT): vis 0.398 / outside 0.455 / occluded 0.137 / nodepth 0.010
+   share of R reached, by class           outside   occluded   nodepth  |  R total  (vis class for reference)
+   3rd annotated cam B: visible              0.028      0.287     0.000  |   0.086   (0.526) 
+   3rd annotated cam B: lands on B's GT o    0.007      0.177     0.000  |   0.046   (0.224) 
+   >=1 other rig cam visible (all)           0.825      0.930     0.000  |   0.836   (0.999) 
+   >=1 non-annotated rig cam visible         0.825      0.925     0.000  |   0.834   (0.999) 
+   c_ini GT forward-splat lands on o         0.002      0.298     0.100  |   0.071   (0.430) 
+     forward-splat precision (o said -> o)    0.498     0.244     0.255  |   0.247   (0.801)
+   label unique in scene (name prompt)       0.975      0.946     0.988  |   0.969   (0.951) 
+   same-label twin present in X at t         0.025      0.054     0.012  |   0.031   (0.049) 
+   same-label twin present in c_ini at t     0.025      0.054     0.012  |   0.031   (0.049) 
+   occluded px by occluder (c_ini label at the reprojected spot): dynamic 0.133, self 0.500, unlabelled 0.000, other static/env 0.366
+   occluded px of static/env objects visible from c_ini at >= 1 other DEV frame: 0.141 of those (0.139 of all occluded; static/env are 0.990 of occluded)
+   ... split by occluder (static/env objects): dynamic occluder 0.074 of 1,165,543 px; self 0.217 of 4,608,144; other static/env occluder 0.060 of 3,379,786 (self / static-occluder rates = cross-run Pi3 noise floor: neither occluder can move); excess over the static-occluder floor on dynamic-occluder px = 0.002 of all occluded
+   nodepth px with valid Pi3 depth of the same X pixel at >= 1 other DEV frame: 0.207
+   GT px of objects absent from c_ini's label map at t: 0.000
+
+== DEV per-class reach rates (all DEV rows / same-22 DEV rows) applied to the QUOTED keyframe under-cover class mix
+   all22        (1,325,193 px) rates from allDEV   : B_vis 0.107  B_ongt 0.094  any_vis 0.474  nonann_vis 0.471  fwd_splat 0.129  unique-label 0.783  (fractions of ALL missed px; beyond-c_ini share 0.909)
+   all22        (1,325,193 px) rates from same22DEV: B_vis 0.074  B_ongt 0.049  any_vis 0.458  nonann_vis 0.457  fwd_splat 0.063  unique-label 0.896  (fractions of ALL missed px; beyond-c_ini share 0.909)
+   21_noDogTree (798,194 px) rates from allDEV   : B_vis 0.162  B_ongt 0.143  any_vis 0.736  nonann_vis 0.732  fwd_splat 0.108  unique-label 0.683  (fractions of ALL missed px; beyond-c_ini share 0.851)
+   21_noDogTree (798,194 px) rates from same22DEV: B_vis 0.108  B_ongt 0.071  any_vis 0.709  nonann_vis 0.708  fwd_splat 0.086  unique-label 0.830  (fractions of ALL missed px; beyond-c_ini share 0.851)
+
+== per scene (all DEV rows): R/GT, class shares of R, B_ongt / any_vis / unique-label share of R, rig rigidity (max rot / tdir deg over DEV runs)
+   AlexaMeadeExhibit    R/GT 0.634  out 0.42 occ 0.46 nod 0.11 | B_ongt 0.205 any_vis 0.839 uniq 0.888 | rigid rot 0.23 tdir 19.05
+   AlexaMeadeFacePaint  R/GT 0.657  out 0.46 occ 0.31 nod 0.24 | B_ongt 0.218 any_vis 0.747 uniq 0.813 | rigid rot 0.53 tdir 4.04
+   Barn                 R/GT 0.504  out 0.28 occ 0.71 nod 0.01 | B_ongt 0.441 any_vis 0.871 uniq 0.786 | rigid rot 0.13 tdir 0.90
+   Blocks               R/GT 0.498  out 0.44 occ 0.56 nod 0.00 | B_ongt 0.097 any_vis 0.739 uniq 0.757 | rigid rot 0.17 tdir 0.41
+   Breakfast            R/GT 0.231  out 0.43 occ 0.57 nod 0.00 | B_ongt 0.083 any_vis 0.940 uniq 0.840 | rigid rot 0.11 tdir 0.86
+   CBABasketball        R/GT 0.450  out 0.57 occ 0.43 nod 0.00 | B_ongt 0.344 any_vis 0.989 uniq 0.973 | rigid rot 0.14 tdir 0.80
+   Carpark              R/GT 0.130  out 0.52 occ 0.43 nod 0.05 | B_ongt 0.115 any_vis 0.716 uniq 0.652 | rigid rot 0.12 tdir 1.47
+   CoffeeMartini        R/GT 0.442  out 0.63 occ 0.37 nod 0.00 | B_ongt 0.098 any_vis 0.895 uniq 0.511 | rigid rot 0.06 tdir 0.27
+   Dog                  R/GT 0.691  out 0.10 occ 0.30 nod 0.60 | B_ongt 0.088 any_vis 0.391 uniq 0.977 | rigid rot 0.58 tdir 22.04
+   Fencing              R/GT 0.329  out 0.39 occ 0.61 nod 0.00 | B_ongt 0.300 any_vis 0.945 uniq 0.884 | rigid rot 0.50 tdir 0.52
+   FlameSteak           R/GT 0.388  out 0.67 occ 0.33 nod 0.00 | B_ongt 0.072 any_vis 0.793 uniq 0.518 | rigid rot 0.08 tdir 0.34
+   Frog                 R/GT 0.211  out 0.48 occ 0.51 nod 0.01 | B_ongt 0.020 any_vis 0.979 uniq 0.468 | rigid rot 0.19 tdir 6.27
+   MATF                 R/GT 0.684  out 0.41 occ 0.23 nod 0.36 | B_ongt 0.011 any_vis 0.561 uniq 0.874 | rigid rot 0.67 tdir 1.99
+   MartialArts          R/GT 0.395  out 0.48 occ 0.52 nod 0.00 | B_ongt 0.160 any_vis 0.852 uniq 0.892 | rigid rot 0.13 tdir 0.59
+   Painter              R/GT 0.172  out 0.62 occ 0.38 nod 0.00 | B_ongt 0.023 any_vis 0.938 uniq 0.344 | rigid rot 0.42 tdir 8.33
+   PoznanStreet         R/GT 0.159  out 0.25 occ 0.41 nod 0.34 | B_ongt 0.097 any_vis 0.513 uniq 0.787 | rigid rot 0.11 tdir 1.33
+   Welder               R/GT 0.705  out 0.40 occ 0.55 nod 0.05 | B_ongt 0.316 any_vis 0.884 uniq 0.834 | rigid rot 0.41 tdir 10.95
+
+== label multiplicity of the 22 under-cover objects (objects_labels.json of the scene; no GT read)
+   Dog            camera_0004    3 tree                 env      objects with this label in scene: 1
+   Dog            camera_0004    4 handrail_or_fence    env      objects with this label in scene: 1
+   CBABasketball  v24           20 grandstand           env      objects with this label in scene: 1
+   CBABasketball  v06           20 grandstand           env      objects with this label in scene: 1
+   Welder         camera_0003    6 ground               env      objects with this label in scene: 1
+   Breakfast      v9             8 chair_or_seat        static   objects with this label in scene: 7
+   PoznanStreet   v8            18 lamp                 static   objects with this label in scene: 1
+   PoznanStreet   v0            24 grass                env      objects with this label in scene: 1
+   MATF           S1_CAM_1      11 chair_or_seat        static   objects with this label in scene: 4
+   FlameSteak     cam01         32 wall                 env      objects with this label in scene: 1
+   Barn           v10           23 ground               env      objects with this label in scene: 1
+   CoffeeMartini  cam10         12 cushion_or_carpet    static   objects with this label in scene: 1
+   MartialArts    v13           11 rig                  env      objects with this label in scene: 1
+   CoffeeMartini  cam02         29 bottle_or_cup        static   objects with this label in scene: 29
+   MartialArts    v13           15 door                 static   objects with this label in scene: 1
+   CoffeeMartini  cam10         16 book                 static   objects with this label in scene: 4
+   Painter        v15           19 painting_or_poster   static   objects with this label in scene: 8
+   PoznanStreet   v8            13 traffic_sign         static   objects with this label in scene: 2
+   Breakfast      v9            29 bottle_or_cup        static   objects with this label in scene: 10
+   Fencing        v9             3 weapon               dynamic  objects with this label in scene: 2
+   FlameSteak     cam10          5 fire                 dynamic  objects with this label in scene: 1
+   MATF           S1_CAM_1      21 microphone           static   objects with this label in scene: 2

@@ -1,0 +1,308 @@
+views 170; scored pairs 3300 (dev_pairs.json for these scenes: 3300; equal sets: True); max |J,F - dev_pairs| = 0.00e+00; GT class-count mismatches vs dev_pairs: 0; dev-mask overlap px 166091
+
+Config = variant | min_proj | iou gate.  dJF = mean J&F change; CIs: all pairs scene-cluster, under-cover object-cluster bootstrap 95 % (10 000, seed 0)
+
+[pts|20|None]  ALL n=3300: dJF -0.00122 [-0.00263, +0.00018] (dJ -0.00156 dF -0.00088); changed 2535 up 1448 down 1087 (sum +4.954 / -8.977); added 2,160,330 px, precision pooled 0.359 (incl. 4,107 px on empty-GT objects 0.358), pair-mean 0.533; on other obj 0.641 (seeded at t 0.626), on unlabelled 0.000
+      by class (added px, precision): outside 1,059,336 0.284; occluded 879,316 0.461; nodepth 221,678 0.309
+   UC140: prompted 128/140; on other obj 0.224 (seeded 0.224)
+   UC140: base 0.5414 dJF +0.00557 [-0.00110, +0.01744]  up 51 down 32  added 161,152 prec 0.776 (pair-mean 0.522); missed px recovered 0.0226 (pair-mean 0.0391; w/o Dog tree 0.0425); dJF w/o Dog tree +0.00576, Dog tree 0.0002
+      recovered by class: outside 0.0492 of 2,378,298; occluded 0.0147 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.01225 [-0.00012, +0.03601] up 37 down 11  prec 0.797 recovered 0.0229
+   NOT-UC n=3160: dJF -0.00152 [-0.00284, -0.00027] up 1397 down 1055 added 1,999,178 prec 0.325
+
+[pts|200|None]  ALL n=3300: dJF -0.00115 [-0.00253, +0.00023] (dJ -0.00145 dF -0.00085); changed 2504 up 1428 down 1076 (sum +4.787 / -8.588); added 2,147,429 px, precision pooled 0.357 (incl. 4,080 px on empty-GT objects 0.356), pair-mean 0.534; on other obj 0.643 (seeded at t 0.628), on unlabelled 0.000
+      by class (added px, precision): outside 1,051,194 0.280; occluded 874,632 0.460; nodepth 221,603 0.309
+   UC140: prompted 128/140; on other obj 0.223 (seeded 0.223)
+   UC140: base 0.5414 dJF +0.00556 [-0.00111, +0.01744]  up 49 down 32  added 160,840 prec 0.777 (pair-mean 0.525); missed px recovered 0.0225 (pair-mean 0.0391; w/o Dog tree 0.0425); dJF w/o Dog tree +0.00576, Dog tree 0.0002
+      recovered by class: outside 0.0491 of 2,378,298; occluded 0.0146 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.01223 [-0.00014, +0.03599] up 35 down 11  prec 0.798 recovered 0.0229
+   NOT-UC n=3160: dJF -0.00145 [-0.00275, -0.00022] up 1379 down 1044 added 1,986,589 prec 0.323
+
+[pts|2000|None]  ALL n=3300: dJF -0.00061 [-0.00156, +0.00011] (dJ -0.00050 dF -0.00072); changed 2120 up 1271 down 849 (sum +3.041 / -5.057); added 1,955,581 px, precision pooled 0.327 (incl. 1,685 px on empty-GT objects 0.326), pair-mean 0.559; on other obj 0.673 (seeded at t 0.657), on unlabelled 0.000
+      by class (added px, precision): outside 898,465 0.196; occluded 837,127 0.471; nodepth 219,989 0.309
+   UC140: prompted 128/140; on other obj 0.397 (seeded 0.396)
+   UC140: base 0.5414 dJF +0.00028 [-0.00109, +0.00182]  up 23 down 14  added 16,393 prec 0.603 (pair-mean 0.620); missed px recovered 0.0018 (pair-mean 0.0082; w/o Dog tree 0.0028); dJF w/o Dog tree +0.00028, Dog tree 0.0002
+      recovered by class: outside 0.0011 of 2,378,298; occluded 0.0131 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00081 [-0.00005, +0.00215] up 16 down 8  prec 0.687 recovered 0.0014
+   NOT-UC n=3160: dJF -0.00065 [-0.00163, +0.00011] up 1248 down 835 added 1,939,188 prec 0.324
+
+[pts|20|0.7]  ALL n=3300: dJF +0.00004 [-0.00054, +0.00046] (dJ -0.00000 dF +0.00009); changed 1908 up 1185 down 723 (sum +3.194 / -3.053); added 1,296,727 px, precision pooled 0.350 (incl. 372 px on empty-GT objects 0.350), pair-mean 0.573; on other obj 0.650 (seeded at t 0.640), on unlabelled 0.000
+      by class (added px, precision): outside 607,049 0.153; occluded 538,652 0.576; nodepth 151,026 0.334
+   UC140: prompted 128/140; on other obj 0.226 (seeded 0.226)
+   UC140: base 0.5414 dJF +0.00097 [+0.00014, +0.00212]  up 20 down 7  added 2,730 prec 0.774 (pair-mean 0.636); missed px recovered 0.0004 (pair-mean 0.0042; w/o Dog tree 0.0007); dJF w/o Dog tree +0.00101, Dog tree 0.0
+      recovered by class: outside 0.0001 of 2,378,298; occluded 0.0036 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00098 [+0.00003, +0.00230] up 15 down 0  prec 0.960 recovered 0.0002
+   NOT-UC n=3160: dJF +0.00000 [-0.00058, +0.00043] up 1165 down 716 added 1,293,997 prec 0.349
+
+[pts|20|0.85]  ALL n=3300: dJF +0.00032 [+0.00004, +0.00059] (dJ +0.00031 dF +0.00033); changed 1314 up 856 down 458 (sum +1.946 / -0.883); added 365,002 px, precision pooled 0.595 (incl. 78 px on empty-GT objects 0.595), pair-mean 0.600; on other obj 0.405 (seeded at t 0.380), on unlabelled 0.000
+      by class (added px, precision): outside 79,302 0.537; occluded 265,263 0.605; nodepth 20,437 0.680
+   UC140: prompted 128/140; on other obj 0.090 (seeded 0.090)
+   UC140: base 0.5414 dJF +0.00058 [+0.00004, +0.00136]  up 12 down 0  added 1,239 prec 0.910 (pair-mean 0.785); missed px recovered 0.0002 (pair-mean 0.0016; w/o Dog tree 0.0004); dJF w/o Dog tree +0.00060, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0020 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00111 [+0.00003, +0.00257] up 11 down 0  prec 0.936 recovered 0.0002
+   NOT-UC n=3160: dJF +0.00031 [+0.00003, +0.00057] up 844 down 458 added 363,763 prec 0.594
+
+[pts_whole|20|None]  ALL n=3300: dJF -0.00523 [-0.00787, -0.00250] (dJ -0.00580 dF -0.00467); changed 2727 up 1355 down 1372 (sum +5.171 / -22.436); added 3,046,344 px, precision pooled 0.316 (incl. 5,903 px on empty-GT objects 0.316), pair-mean 0.477; on other obj 0.684 (seeded at t 0.649), on unlabelled 0.000
+      by class (added px, precision): outside 1,328,677 0.244; occluded 1,382,423 0.381; nodepth 335,244 0.337
+   UC140: prompted 128/140; on other obj 0.344 (seeded 0.234)
+   UC140: base 0.5414 dJF +0.00439 [-0.00272, +0.01485]  up 49 down 44  added 145,834 prec 0.656 (pair-mean 0.397); missed px recovered 0.0173 (pair-mean 0.0367; w/o Dog tree 0.0311); dJF w/o Dog tree +0.00454, Dog tree 0.00043
+      recovered by class: outside 0.0327 of 2,378,298; occluded 0.0330 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.01239 [-0.00015, +0.03233] up 34 down 18  prec 0.718 recovered 0.0169
+   NOT-UC n=3160: dJF -0.00566 [-0.00830, -0.00301] up 1306 down 1328 added 2,900,510 prec 0.299
+
+[pts_whole|200|None]  ALL n=3300: dJF -0.00521 [-0.00788, -0.00247] (dJ -0.00575 dF -0.00467); changed 2692 up 1336 down 1356 (sum +5.019 / -22.210); added 3,034,317 px, precision pooled 0.315 (incl. 5,832 px on empty-GT objects 0.314), pair-mean 0.478; on other obj 0.685 (seeded at t 0.650), on unlabelled 0.000
+      by class (added px, precision): outside 1,319,042 0.241; occluded 1,380,152 0.380; nodepth 335,123 0.337
+   UC140: prompted 128/140; on other obj 0.343 (seeded 0.233)
+   UC140: base 0.5414 dJF +0.00458 [-0.00246, +0.01500]  up 48 down 40  added 145,552 prec 0.657 (pair-mean 0.416); missed px recovered 0.0173 (pair-mean 0.0367; w/o Dog tree 0.0311); dJF w/o Dog tree +0.00473, Dog tree 0.00043
+      recovered by class: outside 0.0327 of 2,378,298; occluded 0.0330 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.01238 [-0.00016, +0.03233] up 33 down 18  prec 0.718 recovered 0.0169
+   NOT-UC n=3160: dJF -0.00564 [-0.00830, -0.00298] up 1288 down 1316 added 2,888,765 prec 0.298
+
+[pts_whole|2000|None]  ALL n=3300: dJF -0.00345 [-0.00527, -0.00154] (dJ -0.00327 dF -0.00362); changed 2306 up 1224 down 1082 (sum +3.997 / -15.368); added 2,880,756 px, precision pooled 0.304 (incl. 1,972 px on empty-GT objects 0.304), pair-mean 0.508; on other obj 0.696 (seeded at t 0.659), on unlabelled 0.000
+      by class (added px, precision): outside 1,211,849 0.197; occluded 1,336,049 0.392; nodepth 332,858 0.341
+   UC140: prompted 128/140; on other obj 0.650 (seeded 0.318)
+   UC140: base 0.5414 dJF +0.00082 [-0.00142, +0.00354]  up 24 down 19  added 48,215 prec 0.350 (pair-mean 0.473); missed px recovered 0.0030 (pair-mean 0.0106; w/o Dog tree 0.0040); dJF w/o Dog tree +0.00084, Dog tree 0.00043
+      recovered by class: outside 0.0003 of 2,378,298; occluded 0.0297 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00319 [-0.00022, +0.00817] up 18 down 12  prec 0.358 recovered 0.0024
+   NOT-UC n=3160: dJF -0.00363 [-0.00552, -0.00167] up 1200 down 1063 added 2,832,541 prec 0.303
+
+[pts_whole|20|0.7]  ALL n=3300: dJF -0.00035 [-0.00088, +0.00011] (dJ -0.00056 dF -0.00013); changed 1190 up 742 down 448 (sum +2.204 / -3.350); added 1,254,962 px, precision pooled 0.353 (incl. 453 px on empty-GT objects 0.353), pair-mean 0.577; on other obj 0.647 (seeded at t 0.634), on unlabelled 0.000
+      by class (added px, precision): outside 555,484 0.144; occluded 559,658 0.562; nodepth 139,820 0.346
+   UC140: prompted 128/140; on other obj 0.171 (seeded 0.171)
+   UC140: base 0.5414 dJF +0.00080 [-0.00006, +0.00210]  up 9 down 4  added 1,384 prec 0.829 (pair-mean 0.550); missed px recovered 0.0002 (pair-mean 0.0010; w/o Dog tree 0.0004); dJF w/o Dog tree +0.00083, Dog tree 0.0
+      recovered by class: outside 0.0001 of 2,378,298; occluded 0.0018 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00174 [+0.00000, +0.00422] up 9 down 0  prec 0.900 recovered 0.0002
+   NOT-UC n=3160: dJF -0.00040 [-0.00097, +0.00009] up 733 down 444 added 1,253,578 prec 0.352
+
+[pts_whole|20|0.85]  ALL n=3300: dJF +0.00006 [-0.00007, +0.00022] (dJ -0.00006 dF +0.00017); changed 778 up 521 down 257 (sum +1.004 / -0.818); added 322,892 px, precision pooled 0.559 (incl. 85 px on empty-GT objects 0.559), pair-mean 0.607; on other obj 0.441 (seeded at t 0.415), on unlabelled 0.000
+      by class (added px, precision): outside 68,053 0.505; occluded 235,990 0.576; nodepth 18,849 0.544
+   UC140: prompted 128/140; on other obj 0.165 (seeded 0.165)
+   UC140: base 0.5414 dJF +0.00044 [+0.00000, +0.00117]  up 5 down 0  added 510 prec 0.835 (pair-mean 0.679); missed px recovered 0.0001 (pair-mean 0.0005; w/o Dog tree 0.0001); dJF w/o Dog tree +0.00045, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0007 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00091 [+0.00000, +0.00231] up 5 down 0  prec 0.835 recovered 0.0001
+   NOT-UC n=3160: dJF +0.00004 [-0.00010, +0.00022] up 516 down 257 added 322,382 prec 0.558
+
+[pts_neg|20|None]  ALL n=3300: dJF -0.00060 [-0.00099, -0.00020] (dJ -0.00085 dF -0.00035); changed 1461 up 830 down 631 (sum +1.110 / -3.092); added 441,484 px, precision pooled 0.395 (incl. 4,257 px on empty-GT objects 0.391), pair-mean 0.532; on other obj 0.605 (seeded at t 0.580), on unlabelled 0.000
+      by class (added px, precision): outside 85,155 0.354; occluded 318,721 0.396; nodepth 37,608 0.480
+   UC140: prompted 128/140; on other obj 0.612 (seeded 0.377)
+   UC140: base 0.5414 dJF +0.00040 [-0.00007, +0.00099]  up 28 down 24  added 32,376 prec 0.388 (pair-mean 0.501); missed px recovered 0.0023 (pair-mean 0.0043; w/o Dog tree 0.0043); dJF w/o Dog tree +0.00042, Dog tree -3e-05
+      recovered by class: outside 0.0022 of 2,378,298; occluded 0.0138 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00008 [-0.00057, +0.00077] up 16 down 14  prec 0.372 recovered 0.0020
+   NOT-UC n=3160: dJF -0.00064 [-0.00106, -0.00023] up 802 down 607 added 409,108 prec 0.396
+
+[pts_neg|200|None]  ALL n=3300: dJF -0.00060 [-0.00099, -0.00020] (dJ -0.00086 dF -0.00035); changed 1443 up 818 down 625 (sum +1.096 / -3.084); added 439,921 px, precision pooled 0.394 (incl. 4,086 px on empty-GT objects 0.390), pair-mean 0.532; on other obj 0.606 (seeded at t 0.581), on unlabelled 0.000
+      by class (added px, precision): outside 83,708 0.348; occluded 318,618 0.396; nodepth 37,595 0.480
+   UC140: prompted 128/140; on other obj 0.612 (seeded 0.376)
+   UC140: base 0.5414 dJF +0.00033 [-0.00013, +0.00088]  up 26 down 23  added 32,283 prec 0.388 (pair-mean 0.500); missed px recovered 0.0023 (pair-mean 0.0039; w/o Dog tree 0.0042); dJF w/o Dog tree +0.00034, Dog tree -3e-05
+      recovered by class: outside 0.0021 of 2,378,298; occluded 0.0137 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00008 [-0.00058, +0.00076] up 15 down 13  prec 0.372 recovered 0.0020
+   NOT-UC n=3160: dJF -0.00064 [-0.00106, -0.00023] up 792 down 602 added 407,638 prec 0.395
+
+[pts_neg|2000|None]  ALL n=3300: dJF -0.00029 [-0.00062, +0.00000] (dJ -0.00044 dF -0.00014); changed 1237 up 735 down 502 (sum +0.786 / -1.742); added 423,781 px, precision pooled 0.396 (incl. 2,217 px on empty-GT objects 0.394), pair-mean 0.560; on other obj 0.604 (seeded at t 0.579), on unlabelled 0.000
+      by class (added px, precision): outside 80,804 0.344; occluded 307,523 0.399; nodepth 35,454 0.487
+   UC140: prompted 128/140; on other obj 0.608 (seeded 0.367)
+   UC140: base 0.5414 dJF +0.00023 [-0.00018, +0.00076]  up 14 down 13  added 30,246 prec 0.392 (pair-mean 0.625); missed px recovered 0.0021 (pair-mean 0.0027; w/o Dog tree 0.0040); dJF w/o Dog tree +0.00024, Dog tree -3e-05
+      recovered by class: outside 0.0019 of 2,378,298; occluded 0.0136 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00001 [-0.00063, +0.00070] up 8 down 9  prec 0.372 recovered 0.0019
+   NOT-UC n=3160: dJF -0.00031 [-0.00064, -0.00002] up 721 down 489 added 393,535 prec 0.396
+
+[pts_neg|20|0.7]  ALL n=3300: dJF +0.00000 [-0.00000, +0.00001] (dJ +0.00000 dF +0.00001); changed 69 up 47 down 22 (sum +0.023 / -0.008); added 8,533 px, precision pooled 0.519 (incl. 1,042 px on empty-GT objects 0.463), pair-mean 0.678; on other obj 0.481 (seeded at t 0.481), on unlabelled 0.000
+      by class (added px, precision): outside 716 0.830; occluded 7,009 0.453; nodepth 808 0.817
+   UC140: prompted 128/140; on other obj nan (seeded nan)
+   UC140: base 0.5414 dJF +0.00000 [+0.00000, +0.00000]  up 0 down 0  added 0 prec nan (pair-mean nan); missed px recovered 0.0000 (pair-mean 0.0000; w/o Dog tree 0.0000); dJF w/o Dog tree +0.00000, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0000 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00000 [+0.00000, +0.00000] up 0 down 0  prec nan recovered 0.0000
+   NOT-UC n=3160: dJF +0.00000 [-0.00000, +0.00002] up 47 down 22 added 8,533 prec 0.519
+
+[pts_neg|20|0.85]  ALL n=3300: dJF +0.00000 [+0.00000, +0.00000] (dJ +0.00000 dF +0.00000); changed 16 up 13 down 3 (sum +0.003 / -0.000); added 354 px, precision pooled 0.862 (incl. 0 px on empty-GT objects 0.862), pair-mean 0.816; on other obj 0.138 (seeded at t 0.138), on unlabelled 0.000
+      by class (added px, precision): outside 61 0.918; occluded 278 0.849; nodepth 15 0.867
+   UC140: prompted 128/140; on other obj nan (seeded nan)
+   UC140: base 0.5414 dJF +0.00000 [+0.00000, +0.00000]  up 0 down 0  added 0 prec nan (pair-mean nan); missed px recovered 0.0000 (pair-mean 0.0000; w/o Dog tree 0.0000); dJF w/o Dog tree +0.00000, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0000 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00000 [+0.00000, +0.00000] up 0 down 0  prec nan recovered 0.0000
+   NOT-UC n=3160: dJF +0.00000 [+0.00000, +0.00000] up 13 down 3 added 354 prec 0.862
+
+[box|20|None]  ALL n=3300: dJF -0.00115 [-0.00192, -0.00038] (dJ -0.00177 dF -0.00052); changed 2477 up 1354 down 1123 (sum +3.245 / -7.024); added 1,050,084 px, precision pooled 0.444 (incl. 2,126 px on empty-GT objects 0.443), pair-mean 0.508; on other obj 0.556 (seeded at t 0.546), on unlabelled 0.000
+      by class (added px, precision): outside 109,271 0.286; occluded 824,397 0.462; nodepth 116,416 0.465
+   UC140: prompted 128/140; on other obj 0.500 (seeded 0.499)
+   UC140: base 0.5414 dJF +0.00176 [-0.00106, +0.00498]  up 40 down 34  added 22,443 prec 0.500 (pair-mean 0.483); missed px recovered 0.0020 (pair-mean 0.0139; w/o Dog tree 0.0035); dJF w/o Dog tree +0.00183, Dog tree -8e-05
+      recovered by class: outside 0.0002 of 2,378,298; occluded 0.0202 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00316 [-0.00016, +0.00876] up 23 down 19  prec 0.507 recovered 0.0013
+   NOT-UC n=3160: dJF -0.00127 [-0.00205, -0.00049] up 1314 down 1089 added 1,027,641 prec 0.442
+
+[box|200|None]  ALL n=3300: dJF -0.00116 [-0.00193, -0.00039] (dJ -0.00176 dF -0.00056); changed 2452 up 1344 down 1108 (sum +3.151 / -6.975); added 1,043,751 px, precision pooled 0.441 (incl. 2,116 px on empty-GT objects 0.441), pair-mean 0.511; on other obj 0.559 (seeded at t 0.548), on unlabelled 0.000
+      by class (added px, precision): outside 104,363 0.259; occluded 823,036 0.461; nodepth 116,352 0.465
+   UC140: prompted 128/140; on other obj 0.501 (seeded 0.501)
+   UC140: base 0.5414 dJF +0.00176 [-0.00106, +0.00498]  up 39 down 33  added 22,285 prec 0.499 (pair-mean 0.487); missed px recovered 0.0020 (pair-mean 0.0139; w/o Dog tree 0.0035); dJF w/o Dog tree +0.00183, Dog tree -8e-05
+      recovered by class: outside 0.0001 of 2,378,298; occluded 0.0201 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00315 [-0.00017, +0.00876] up 22 down 19  prec 0.504 recovered 0.0013
+   NOT-UC n=3160: dJF -0.00129 [-0.00207, -0.00049] up 1305 down 1075 added 1,021,466 prec 0.440
+
+[box|2000|None]  ALL n=3300: dJF -0.00061 [-0.00114, -0.00006] (dJ -0.00091 dF -0.00031); changed 2101 up 1202 down 899 (sum +2.526 / -4.536); added 1,014,731 px, precision pooled 0.447 (incl. 1,077 px on empty-GT objects 0.447), pair-mean 0.531; on other obj 0.553 (seeded at t 0.542), on unlabelled 0.000
+      by class (added px, precision): outside 101,407 0.262; occluded 798,118 0.468; nodepth 115,206 0.467
+   UC140: prompted 128/140; on other obj 0.474 (seeded 0.474)
+   UC140: base 0.5414 dJF +0.00226 [+0.00003, +0.00532]  up 22 down 20  added 19,495 prec 0.526 (pair-mean 0.546); missed px recovered 0.0018 (pair-mean 0.0087; w/o Dog tree 0.0032); dJF w/o Dog tree +0.00234, Dog tree -8e-05
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0191 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00300 [-0.00030, +0.00859] up 14 down 16  prec 0.503 recovered 0.0012
+   NOT-UC n=3160: dJF -0.00074 [-0.00129, -0.00018] up 1180 down 879 added 995,236 prec 0.446
+
+[box|20|0.7]  ALL n=3300: dJF -0.00083 [-0.00141, -0.00028] (dJ -0.00121 dF -0.00045); changed 1939 up 1107 down 832 (sum +2.215 / -4.951); added 830,897 px, precision pooled 0.446 (incl. 1,026 px on empty-GT objects 0.446), pair-mean 0.536; on other obj 0.554 (seeded at t 0.541), on unlabelled 0.000
+      by class (added px, precision): outside 92,480 0.276; occluded 653,248 0.459; nodepth 85,169 0.532
+   UC140: prompted 128/140; on other obj 0.546 (seeded 0.546)
+   UC140: base 0.5414 dJF +0.00085 [-0.00018, +0.00247]  up 17 down 15  added 13,132 prec 0.454 (pair-mean 0.616); missed px recovered 0.0011 (pair-mean 0.0033; w/o Dog tree 0.0017); dJF w/o Dog tree +0.00089, Dog tree -8e-05
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0111 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00133 [-0.00060, +0.00458] up 14 down 14  prec 0.404 recovered 0.0007
+   NOT-UC n=3160: dJF -0.00090 [-0.00153, -0.00032] up 1090 down 817 added 817,765 prec 0.446
+
+[box|20|0.85]  ALL n=3300: dJF -0.00029 [-0.00065, +0.00004] (dJ -0.00046 dF -0.00013); changed 1294 up 758 down 536 (sum +1.089 / -2.059); added 424,298 px, precision pooled 0.446 (incl. 470 px on empty-GT objects 0.445), pair-mean 0.564; on other obj 0.554 (seeded at t 0.542), on unlabelled 0.000
+      by class (added px, precision): outside 63,241 0.228; occluded 337,123 0.479; nodepth 23,934 0.554
+   UC140: prompted 128/140; on other obj 0.984 (seeded 0.984)
+   UC140: base 0.5414 dJF -0.00001 [-0.00007, +0.00002]  up 4 down 6  added 1,829 prec 0.016 (pair-mean 0.500); missed px recovered 0.0000 (pair-mean 0.0001; w/o Dog tree 0.0000); dJF w/o Dog tree -0.00002, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0001 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF -0.00003 [-0.00014, +0.00004] up 4 down 6  prec 0.016 recovered 0.0000
+   NOT-UC n=3160: dJF -0.00031 [-0.00068, +0.00004] up 754 down 530 added 422,469 prec 0.448
+
+[mask_box|20|None]  ALL n=3300: dJF -0.00094 [-0.00189, -0.00017] (dJ -0.00163 dF -0.00025); changed 2363 up 1311 down 1052 (sum +2.445 / -5.545); added 403,159 px, precision pooled 0.428 (incl. 1,511 px on empty-GT objects 0.427), pair-mean 0.536; on other obj 0.572 (seeded at t 0.568), on unlabelled 0.000
+      by class (added px, precision): outside 31,793 0.529; occluded 330,501 0.423; nodepth 40,865 0.388
+   UC140: prompted 128/140; on other obj 0.640 (seeded 0.626)
+   UC140: base 0.5414 dJF +0.00077 [-0.00018, +0.00260]  up 32 down 37  added 13,924 prec 0.360 (pair-mean 0.428); missed px recovered 0.0009 (pair-mean 0.0109; w/o Dog tree 0.0017); dJF w/o Dog tree +0.00081, Dog tree -0.00029
+      recovered by class: outside 0.0001 of 2,378,298; occluded 0.0088 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00060 [-0.00026, +0.00221] up 21 down 20  prec 0.284 recovered 0.0005
+   NOT-UC n=3160: dJF -0.00102 [-0.00201, -0.00020] up 1279 down 1015 added 389,235 prec 0.431
+
+[mask_box|200|None]  ALL n=3300: dJF -0.00094 [-0.00188, -0.00017] (dJ -0.00160 dF -0.00028); changed 2340 up 1304 down 1036 (sum +2.353 / -5.464); added 396,413 px, precision pooled 0.422 (incl. 1,495 px on empty-GT objects 0.421), pair-mean 0.538; on other obj 0.578 (seeded at t 0.574), on unlabelled 0.000
+      by class (added px, precision): outside 27,059 0.468; occluded 328,515 0.422; nodepth 40,839 0.389
+   UC140: prompted 128/140; on other obj 0.643 (seeded 0.628)
+   UC140: base 0.5414 dJF +0.00080 [-0.00015, +0.00262]  up 31 down 36  added 13,793 prec 0.357 (pair-mean 0.430); missed px recovered 0.0009 (pair-mean 0.0108; w/o Dog tree 0.0016); dJF w/o Dog tree +0.00084, Dog tree -0.00029
+      recovered by class: outside 0.0001 of 2,378,298; occluded 0.0088 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00059 [-0.00026, +0.00220] up 20 down 20  prec 0.278 recovered 0.0005
+   NOT-UC n=3160: dJF -0.00102 [-0.00201, -0.00020] up 1273 down 1000 added 382,620 prec 0.424
+
+[mask_box|2000|None]  ALL n=3300: dJF -0.00035 [-0.00081, +0.00005] (dJ -0.00052 dF -0.00017); changed 1966 up 1161 down 805 (sum +1.595 / -2.735); added 363,139 px, precision pooled 0.435 (incl. 595 px on empty-GT objects 0.434), pair-mean 0.568; on other obj 0.565 (seeded at t 0.562), on unlabelled 0.000
+      by class (added px, precision): outside 26,615 0.465; occluded 298,798 0.437; nodepth 37,726 0.397
+   UC140: prompted 128/140; on other obj 0.655 (seeded 0.655)
+   UC140: base 0.5414 dJF +0.00065 [-0.00023, +0.00245]  up 18 down 15  added 10,873 prec 0.345 (pair-mean 0.536); missed px recovered 0.0007 (pair-mean 0.0062; w/o Dog tree 0.0012); dJF w/o Dog tree +0.00069, Dog tree -0.00029
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0069 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00046 [-0.00032, +0.00203] up 13 down 10  prec 0.268 recovered 0.0004
+   NOT-UC n=3160: dJF -0.00039 [-0.00087, +0.00004] up 1143 down 790 added 352,266 prec 0.438
+
+[mask_box|20|0.7]  ALL n=3300: dJF -0.00054 [-0.00118, -0.00005] (dJ -0.00087 dF -0.00022); changed 1704 up 994 down 710 (sum +1.062 / -2.857); added 241,632 px, precision pooled 0.434 (incl. 16 px on empty-GT objects 0.434), pair-mean 0.569; on other obj 0.566 (seeded at t 0.562), on unlabelled 0.000
+      by class (added px, precision): outside 9,128 0.460; occluded 215,563 0.426; nodepth 16,941 0.525
+   UC140: prompted 128/140; on other obj 0.659 (seeded 0.659)
+   UC140: base 0.5414 dJF +0.00006 [+0.00001, +0.00012]  up 14 down 4  added 3,168 prec 0.341 (pair-mean 0.577); missed px recovered 0.0002 (pair-mean 0.0012; w/o Dog tree 0.0004); dJF w/o Dog tree +0.00006, Dog tree -5e-05
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0019 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00006 [-0.00001, +0.00016] up 12 down 4  prec 0.333 recovered 0.0002
+   NOT-UC n=3160: dJF -0.00057 [-0.00125, -0.00005] up 980 down 706 added 238,464 prec 0.436
+
+[mask_box|20|0.85]  ALL n=3300: dJF -0.00012 [-0.00035, +0.00010] (dJ -0.00016 dF -0.00009); changed 1086 up 689 down 397 (sum +0.589 / -0.993); added 149,227 px, precision pooled 0.459 (incl. 0 px on empty-GT objects 0.459), pair-mean 0.614; on other obj 0.541 (seeded at t 0.538), on unlabelled 0.000
+      by class (added px, precision): outside 4,246 0.578; occluded 136,805 0.445; nodepth 8,176 0.621
+   UC140: prompted 128/140; on other obj 0.697 (seeded 0.697)
+   UC140: base 0.5414 dJF +0.00002 [+0.00000, +0.00005]  up 8 down 0  added 1,741 prec 0.303 (pair-mean 0.563); missed px recovered 0.0001 (pair-mean 0.0001; w/o Dog tree 0.0002); dJF w/o Dog tree +0.00002, Dog tree 0.0
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0010 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00003 [+0.00000, +0.00009] up 8 down 0  prec 0.303 recovered 0.0001
+   NOT-UC n=3160: dJF -0.00013 [-0.00037, +0.00010] up 681 down 397 added 147,486 prec 0.461
+
+FUNNEL (registered config min_proj 20, no gate): fraction of missed px that survive each step
+   pts        all      missed  29,044,825  in S 0.0925  & ref-invisible 0.0484  & unclaimed 0.0321  & 8-connected 0.0307  & uncontested 0.0267
+   pts        uc140    missed   5,545,786  in S 0.0377  & ref-invisible 0.0311  & unclaimed 0.0237  & 8-connected 0.0228  & uncontested 0.0226
+   pts        clean67  missed   5,327,644  in S 0.0364  & ref-invisible 0.0303  & unclaimed 0.0237  & 8-connected 0.0230  & uncontested 0.0229
+   pts_whole  all      missed  29,044,825  in S 0.1480  & ref-invisible 0.0778  & unclaimed 0.0478  & 8-connected 0.0449  & uncontested 0.0332
+   pts_whole  uc140    missed   5,545,786  in S 0.0486  & ref-invisible 0.0346  & unclaimed 0.0221  & 8-connected 0.0181  & uncontested 0.0173
+   pts_whole  clean67  missed   5,327,644  in S 0.0433  & ref-invisible 0.0310  & unclaimed 0.0204  & 8-connected 0.0171  & uncontested 0.0169
+   pts_neg    all      missed  29,044,825  in S 0.0233  & ref-invisible 0.0102  & unclaimed 0.0069  & 8-connected 0.0063  & uncontested 0.0060
+   pts_neg    uc140    missed   5,545,786  in S 0.0078  & ref-invisible 0.0055  & unclaimed 0.0033  & 8-connected 0.0023  & uncontested 0.0023
+   pts_neg    clean67  missed   5,327,644  in S 0.0072  & ref-invisible 0.0050  & unclaimed 0.0031  & 8-connected 0.0021  & uncontested 0.0020
+   box        all      missed  29,044,825  in S 0.0652  & ref-invisible 0.0305  & unclaimed 0.0208  & 8-connected 0.0196  & uncontested 0.0160
+   box        uc140    missed   5,545,786  in S 0.0173  & ref-invisible 0.0079  & unclaimed 0.0030  & 8-connected 0.0022  & uncontested 0.0020
+   box        clean67  missed   5,327,644  in S 0.0148  & ref-invisible 0.0059  & unclaimed 0.0017  & 8-connected 0.0014  & uncontested 0.0013
+   mask_box   all      missed  29,044,825  in S 0.0429  & ref-invisible 0.0107  & unclaimed 0.0069  & 8-connected 0.0064  & uncontested 0.0059
+   mask_box   uc140    missed   5,545,786  in S 0.0050  & ref-invisible 0.0027  & unclaimed 0.0014  & 8-connected 0.0009  & uncontested 0.0009
+   mask_box   clean67  missed   5,327,644  in S 0.0030  & ref-invisible 0.0014  & unclaimed 0.0006  & 8-connected 0.0005  & uncontested 0.0005
+
+LEAK of the raw SAM segment S_o vs target GT (scored pairs; non-empty segments). classes at precision threshold tau:
+   clean (dom = o, prec >= tau) / spill (dom = o, prec < tau) / larger (dom != o, S holds >= 50 % of GT_o) / different (dom != o, < 50 %), different split into dom = other object | dom = unlabelled
+   pts        all    n  3258  clean 0.714 [0.584-0.789]  spill 0.092 [0.017-0.222]  larger 0.057  different 0.137 (obj 0.137 / unlabelled 0.000); dom != o 0.194; pixel precision of S 0.729, of S & ref-invisible 0.724; median |S|/|GT| 0.97
+   pts        uc140  n   128  clean 0.305 [0.188-0.430]  spill 0.156 [0.031-0.273]  larger 0.062  different 0.477 (obj 0.477 / unlabelled 0.000); dom != o 0.539; pixel precision of S 0.479, of S & ref-invisible 0.655; median |S|/|GT| 1.28
+   pts        prompted scored pairs 3258; segments on objects absent from the target GT: 131 (10,422,870 px)
+   pts_whole  all    n  3258  clean 0.399 [0.315-0.504]  spill 0.129 [0.024-0.213]  larger 0.258  different 0.213 (obj 0.213 / unlabelled 0.000); dom != o 0.472; pixel precision of S 0.525, of S & ref-invisible 0.543; median |S|/|GT| 1.57
+   pts_whole  uc140  n   128  clean 0.141 [0.109-0.203]  spill 0.086 [0.023-0.117]  larger 0.164  different 0.609 (obj 0.609 / unlabelled 0.000); dom != o 0.773; pixel precision of S 0.234, of S & ref-invisible 0.377; median |S|/|GT| 10.15
+   pts_whole  prompted scored pairs 3258; segments on objects absent from the target GT: 131 (18,171,289 px)
+   pts_neg    all    n  2598  clean 0.590 [0.420-0.736]  spill 0.176 [0.030-0.346]  larger 0.045  different 0.189 (obj 0.189 / unlabelled 0.000); dom != o 0.234; pixel precision of S 0.729, of S & ref-invisible 0.765; median |S|/|GT| 0.61
+   pts_neg    uc140  n   108  clean 0.204 [0.148-0.333]  spill 0.213 [0.083-0.269]  larger 0.046  different 0.537 (obj 0.537 / unlabelled 0.000); dom != o 0.583; pixel precision of S 0.670, of S & ref-invisible 0.857; median |S|/|GT| 0.32
+   pts_neg    prompted scored pairs 3258; segments on objects absent from the target GT: 70 (4,166,598 px)
+   box        all    n  3258  clean 0.697 [0.564-0.800]  spill 0.118 [0.014-0.250]  larger 0.027  different 0.158 (obj 0.158 / unlabelled 0.000); dom != o 0.185; pixel precision of S 0.812, of S & ref-invisible 0.773; median |S|/|GT| 0.95
+   box        uc140  n   128  clean 0.250 [0.211-0.352]  spill 0.133 [0.031-0.172]  larger 0.062  different 0.555 (obj 0.555 / unlabelled 0.000); dom != o 0.617; pixel precision of S 0.351, of S & ref-invisible 0.708; median |S|/|GT| 0.63
+   box        prompted scored pairs 3258; segments on objects absent from the target GT: 129 (1,525,102 px)
+   mask_box   all    n  3250  clean 0.775 [0.644-0.869]  spill 0.111 [0.018-0.243]  larger 0.019  different 0.095 (obj 0.095 / unlabelled 0.000); dom != o 0.114; pixel precision of S 0.957, of S & ref-invisible 0.914; median |S|/|GT| 0.92
+   mask_box   uc140  n   128  clean 0.391 [0.305-0.570]  spill 0.219 [0.039-0.305]  larger 0.039  different 0.352 (obj 0.352 / unlabelled 0.000); dom != o 0.391; pixel precision of S 0.888, of S & ref-invisible 0.824; median |S|/|GT| 0.30
+   mask_box   prompted scored pairs 3258; segments on objects absent from the target GT: 131 (814,447 px)
+
+PRIMARY [pts|20|None] per scene: n  base J&F  dJF  added px  precision  (UC pairs: dJF)
+   AlexaMeadeExhibit     300  0.9097  -0.00538     294,529  0.237   (7: -0.0001)
+   AlexaMeadeFacePaint    90  0.9277  -0.01197     838,280  0.137   (0: +nan)
+   Barn                  300  0.9038  -0.00339      86,890  0.337   (23: -0.0031)
+   Blocks                149  0.8946  -0.00017      11,582  0.554   (10: -0.0001)
+   Breakfast             241  0.8785  -0.00357      32,794  0.387   (15: -0.0003)
+   CBABasketball         171  0.8681  +0.00542     203,311  0.806   (18: +0.0394)
+   Carpark               220  0.9417  +0.00050       9,264  0.741   (2: +0.0036)
+   CoffeeMartini         385  0.9382  -0.00151     127,260  0.515   (12: +0.0086)
+   Dog                    65  0.8580  -0.00107     152,734  0.547   (5: +0.0002)
+   Fencing                80  0.9506  -0.00156      31,838  0.575   (0: +nan)
+   FlameSteak            320  0.9074  +0.00105      69,119  0.583   (5: -0.0006)
+   Frog                   50  0.9841  +0.00023       8,215  0.562   (0: +nan)
+   MATF                  165  0.8431  -0.00050      79,467  0.458   (16: +0.0014)
+   MartialArts           155  0.9314  -0.00091      30,942  0.498   (6: +0.0002)
+   Painter               230  0.9305  -0.00005      48,378  0.592   (5: +0.0002)
+   PoznanStreet          228  0.9174  +0.00064      20,665  0.628   (2: +0.0002)
+   Welder                151  0.8501  +0.00032     115,062  0.567   (14: +0.0009)
+
+PRIMARY [pts|20|None] dev under-cover by (scene, cam, obj): n  base  dJF  prompted  recovered of missed  added prec
+   Dog                camera_0004    3 tree                       5  0.670  +0.0002  5/5  0.001 of 2,644,865  0.719 (2,330)
+   FlameSteak         cam01         32 wall                       5  0.732  -0.0006  5/5  0.002 of 1,413,280  0.690 (4,367)
+   Welder             camera_0003   13 wall                       1  0.714  +0.0011  1/1  0.001 of   275,218  0.915 (389)
+   CBABasketball      v06           20 grandstand                 5  0.436  +0.0000  0/5  0.000 of   257,103  nan (0)
+   CBABasketball      v24           20 grandstand                 5  0.360  +0.0003  5/5  0.002 of   164,727  1.000 (324)
+   Barn               v0            23 ground                     3  0.784  -0.0002  3/3  0.003 of   157,400  0.294 (1,676)
+   CBABasketball      v06           18 billboard_or_Bulletin_Board 5  0.692  +0.1486  5/5  0.727 of   157,136  0.811 (140,869)
+   MartialArts        v13           11 rig                        5  0.754  +0.0002  5/5  0.001 of   118,672  0.467 (319)
+   Breakfast          v9             8 chair_or_seat              5  0.589  +0.0080  5/5  0.010 of    48,014  0.986 (492)
+   Welder             camera_0004   14 helmet                     3  0.000  +0.0000  3/3  0.000 of    42,026  nan (0)
+   CoffeeMartini      cam10         12 cushion_or_carpet          5  0.740  -0.0022  5/5  0.008 of    34,677  0.307 (916)
+   Welder             camera_0003    5 fire                       2  0.661  +0.0042  2/2  0.022 of    25,205  0.959 (587)
+   Welder             camera_0004    8 box                        3  0.164  -0.0011  3/3  0.000 of    24,589  0.000 (112)
+   MATF               S1_CAM_1      26 bottle_or_cup              5  0.159  -0.0001  5/5  0.000 of    22,921  0.000 (1)
+   Welder             camera_0003   14 helmet                     3  0.016  +0.0000  3/3  0.000 of    22,257  nan (0)
+   Breakfast          v9            26 floor                      5  0.548  -0.0084  5/5  0.001 of    19,556  0.046 (475)
+   Painter            v0             9 table_or_desk              5  0.657  +0.0002  5/5  0.001 of    14,156  1.000 (17)
+   Blocks             cam0          14 chair_or_seat              5  0.313  -0.0002  5/5  0.000 of    11,825  0.000 (20)
+   CoffeeMartini      cam02         29 bottle_or_cup              5  0.607  +0.0088  5/5  0.009 of    11,790  0.556 (189)
+   Breakfast          v5            26 floor                      1  0.771  -0.0020  1/1  0.000 of    10,902  0.000 (56)
+   Barn               v0            14 cart                       4  0.781  +0.0035  4/4  0.101 of     9,008  0.449 (2,022)
+   Welder             camera_0003    8 box                        2  0.352  +0.0035  2/2  0.000 of     8,942  0.000 (30)
+   CoffeeMartini      cam02         25 bottle_or_cup              2  0.701  +0.0352  2/2  0.191 of     6,329  0.779 (1,551)
+   Barn               v0             1 tool                       4  0.722  -0.0035  4/4  0.002 of     5,383  0.032 (343)
+   Barn               v10           11 wood                       5  0.702  +0.0000  4/5  0.000 of     4,732  nan (0)
+   AlexaMeadeExhibit  camera_0003   24 handicrafts                5  0.667  -0.0002  5/5  0.000 of     4,660  0.000 (10)
+   Barn               v10           14 cart                       2  0.789  +0.0027  2/2  0.105 of     4,438  0.393 (1,180)
+   Barn               v10            1 tool                       3  0.743  -0.0190  3/3  0.013 of     4,053  0.050 (1,013)
+   CBABasketball      v06           17 basket                     2  0.709  -0.0212  2/2  0.018 of     3,553  0.067 (957)
+   Carpark            v8            12 tree                       1  0.750  +0.0032  1/1  0.134 of     3,515  0.994 (473)
+   CBABasketball      v06            5 person                     1  0.773  +0.0072  1/1  0.075 of     1,746  0.923 (142)
+   PoznanStreet       v0             5 tree                       1  0.784  +0.0006  1/1  0.003 of     1,719  1.000 (6)
+   MATF               S1_CAM_1       6 person                     2  0.371  +0.0000  2/2  0.000 of     1,499  nan (0)
+   AlexaMeadeExhibit  camera_0004   24 handicrafts                2  0.785  +0.0000  2/2  0.000 of     1,441  nan (0)
+   MATF               S1_CAM_1      21 microphone                 3  0.000  +0.0000  3/3  0.000 of     1,398  nan (0)
+   MartialArts        v13           15 door                       1  0.694  +0.0002  1/1  0.015 of     1,069  0.410 (39)
+   Blocks             cam0           3 toy                        3  0.000  +0.0000  1/3  0.000 of       957  nan (0)
+   MATF               S1_CAM_1       7 person                     2  0.346  +0.0039  2/2  0.010 of       890  0.692 (13)
+   MATF               S1_CAM_10     10 bottle_or_cup              4  0.546  +0.0037  4/4  0.066 of       803  0.495 (107)
+   Barn               v0            22 bag_or_package             1  0.689  +0.0000  1/1  0.000 of       789  nan (0)
+   Barn               v10           22 bag_or_package             1  0.735  -0.0182  1/1  0.003 of       582  0.018 (110)
+   Breakfast          v9            24 bottle_or_cup              1  0.462  +0.0000  0/1  0.000 of       483  nan (0)
+   PoznanStreet       v8             3 car                        1  0.787  -0.0002  1/1  0.000 of       431  0.000 (2)
+   Carpark            v0            22 car                        1  0.776  +0.0040  1/1  0.048 of       315  1.000 (15)
+   Blocks             cam0           4 toy                        1  0.713  +0.0000  1/1  0.000 of       290  nan (0)
+   Breakfast          v5            14 bottle_or_cup              1  0.000  +0.0000  0/1  0.000 of       207  nan (0)
+   Breakfast          v5            24 bottle_or_cup              1  0.000  +0.0000  0/1  0.000 of       113  nan (0)
+   Blocks             cam9           3 toy                        1  0.488  +0.0000  0/1  0.000 of        62  nan (0)
+   Breakfast          v9            28 bottle_or_cup              1  0.778  +0.0000  1/1  0.000 of        60  nan (0)

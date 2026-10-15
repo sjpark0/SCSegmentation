@@ -1,0 +1,148 @@
+meta: {'masks': '/host/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev', 'index': '/host/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e13_dev/index.json', 'occ_tol': 0.01, 'k': 3, 'device': 'cuda', 'n_rows': 3300, 'n_empty_gt': 652, 'seconds': 420.2066786289215, 'r1': True}
+
+(1) DEV set: 3300 pairs (GT non-empty) over 85 frames x 2 cams, 17 scenes; 652 (t, cam, obj) with empty GT excluded (60 of them with a non-empty prediction)
+   mean J 0.8672  F 0.9485  J&F 0.9078  [scene-cluster bootstrap 95 % 0.8929, 0.9213]
+   scene-mean J&F 0.9079
+   round-1 J&F of the same pairs 0.9030 (round 2 - round 1 = +0.0049)
+   per scene: pairs  J&F  (failing < 0.8)
+     AlexaMeadeExhibit     300  0.9097  (18)
+     AlexaMeadeFacePaint    90  0.9277  (0)
+     Barn                  300  0.9038  (37)
+     Blocks                149  0.8946  (14)
+     Breakfast             241  0.8785  (29)
+     CBABasketball         171  0.8681  (25)
+     Carpark               220  0.9417  (10)
+     CoffeeMartini         385  0.9382  (19)
+     Dog                    65  0.8580  (12)
+     Fencing                80  0.9506  (1)
+     FlameSteak            320  0.9074  (27)
+     Frog                   50  0.9841  (0)
+     MATF                  165  0.8431  (26)
+     MartialArts           155  0.9314  (11)
+     Painter               230  0.9305  (12)
+     PoznanStreet          228  0.9174  (19)
+     Welder                151  0.8501  (33)
+   by frame offset t - ref: +4: 0.9081, +8: 0.9131, +12: 0.9059, +16: 0.9056, +20: 0.9064
+
+(2) failing (J&F < 0.8): 293 pairs = 0.089; deficit share 0.374; by seedcat kind:
+     boundary/mixed                 74  mean J&F 0.728
+     under-cover                    72  mean J&F 0.696
+     under-cover(beyond c_ini)      47  mean J&F 0.638
+     spill-onto-other(twin)         39  mean J&F 0.695
+     miss                           22  mean J&F 0.000
+     wrong-object                   21  mean J&F 0.298
+     spill-onto-other               18  mean J&F 0.670
+
+(3) DEV UNDER-COVER (J&F < 0.8, GT >= 50 % c_ini-invisible, recall < 0.85)
+== dev under-cover: 140 pairs (49 distinct scene/cam/obj, 14 scenes)
+   mean J&F 0.5414  mean recall 0.530  mean precision 0.765  share of the dev J&F deficit sum(1-JF): 0.211  missed px 5,545,786 of GT px 18,851,195
+   fraction of MISSED pixels                        pixel-weighted   pair-mean
+   (a)  visible from c_ini                            0.048          0.173
+   (b1) outside c_ini image / behind                  0.429          0.300
+   (b2) occluded for c_ini                            0.096          0.454
+   (b3) no valid Pi3 depth                            0.427          0.073
+        (a) and on c_ini GT of same obj               0.022          0.042
+   (b) not visible total: pixel-weighted 0.952
+   covered by the k=3 candidates' ROUND-1 masks (reprojected)     0.083          0.209
+   largest single pair: Dog camera_0004 obj 3 (tree) t=16 = 0.10 of the missed px
+   per scene: AlexaMeadeExhibit 7, Barn 23, Blocks 10, Breakfast 15, CBABasketball 18, Carpark 2, CoffeeMartini 12, Dog 5, FlameSteak 5, MATF 16, MartialArts 6, Painter 5, PoznanStreet 2, Welder 14
+   seedcat kinds: {'spill-onto-other(twin)': 21, 'under-cover(beyond c_ini)': 39, 'boundary/mixed': 19, 'under-cover': 28, 'miss': 14, 'spill-onto-other': 4, 'wrong-object': 15}
+   by (scene, cam, obj) across the 5 frames: n_frames  mean J&F  mean GT-invisible  missed px  split vis/out/occ/nodepth  k3-r1 cover
+     Dog                camera_0004    3 tree                   5  0.670  0.83  2,644,865  0.00 / 0.05 / 0.06 / 0.89  0.01
+     FlameSteak         cam01         32 wall                   5  0.732  0.65  1,413,280  0.05 / 0.91 / 0.04 / 0.00  0.06
+     Welder             camera_0003   13 wall                   1  0.714  0.91    275,218  0.09 / 0.68 / 0.19 / 0.03  0.17
+     CBABasketball      v06           20 grandstand             5  0.436  1.00    257,103  0.00 / 1.00 / 0.00 / 0.00  0.09
+     CBABasketball      v24           20 grandstand             5  0.360  0.76    164,727  0.31 / 0.56 / 0.13 / 0.00  0.06
+     Barn               v0            23 ground                 3  0.784  0.74    157,400  0.31 / 0.29 / 0.40 / 0.00  0.24
+     CBABasketball      v06           18 billboard_or_Bulletin_Board 5  0.692  0.98    157,136  0.00 / 1.00 / 0.00 / 0.00  0.93
+     MartialArts        v13           11 rig                    5  0.754  0.99    118,672  0.01 / 0.99 / 0.00 / 0.00  0.11
+     Breakfast          v9             8 chair_or_seat          5  0.589  0.77     48,014  0.16 / 0.02 / 0.82 / 0.00  0.09
+     Welder             camera_0004   14 helmet                 3  0.000  1.00     42,026  0.00 / 0.91 / 0.00 / 0.09  0.03
+     CoffeeMartini      cam10         12 cushion_or_carpet      5  0.740  0.84     34,677  0.18 / 0.00 / 0.82 / 0.00  0.12
+     Welder             camera_0003    5 fire                   2  0.661  0.67     25,205  0.23 / 0.00 / 0.76 / 0.00  0.54
+     Welder             camera_0004    8 box                    3  0.164  1.00     24,589  0.00 / 0.98 / 0.00 / 0.02  0.18
+     MATF               S1_CAM_1      26 bottle_or_cup          5  0.159  0.88     22,921  0.12 / 0.00 / 0.75 / 0.13  0.01
+     Welder             camera_0003   14 helmet                 3  0.016  1.00     22,257  0.00 / 0.96 / 0.00 / 0.04  0.00
+     Breakfast          v9            26 floor                  5  0.548  0.60     19,556  0.35 / 0.46 / 0.19 / 0.00  0.80
+     Painter            v0             9 table_or_desk          5  0.657  0.60     14,156  0.61 / 0.00 / 0.39 / 0.00  0.03
+     Blocks             cam0          14 chair_or_seat          5  0.313  0.70     11,825  0.11 / 0.89 / 0.00 / 0.00  0.08
+     CoffeeMartini      cam02         29 bottle_or_cup          5  0.607  1.00     11,790  0.00 / 0.00 / 1.00 / 0.00  0.00
+     Breakfast          v5            26 floor                  1  0.771  0.75     10,902  0.46 / 0.06 / 0.48 / 0.00  0.45
+     Barn               v0            14 cart                   4  0.781  0.77      9,008  0.30 / 0.00 / 0.70 / 0.00  0.44
+     Welder             camera_0003    8 box                    2  0.352  1.00      8,942  0.00 / 1.00 / 0.00 / 0.00  0.86
+     CoffeeMartini      cam02         25 bottle_or_cup          2  0.701  0.71      6,329  0.27 / 0.00 / 0.73 / 0.00  0.27
+     Barn               v0             1 tool                   4  0.722  0.64      5,383  0.45 / 0.00 / 0.55 / 0.00  0.23
+     Barn               v10           11 wood                   5  0.702  0.90      4,732  0.25 / 0.00 / 0.75 / 0.00  0.01
+     AlexaMeadeExhibit  camera_0003   24 handicrafts            5  0.667  1.00      4,660  0.00 / 0.00 / 1.00 / 0.00  0.00
+     Barn               v10           14 cart                   2  0.789  0.77      4,438  0.11 / 0.00 / 0.89 / 0.00  0.39
+     Barn               v10            1 tool                   3  0.743  0.70      4,053  0.23 / 0.00 / 0.77 / 0.00  0.15
+     CBABasketball      v06           17 basket                 2  0.709  0.52      3,553  0.34 / 0.00 / 0.66 / 0.00  0.72
+     Carpark            v8            12 tree                   1  0.750  0.57      3,515  0.20 / 0.00 / 0.29 / 0.51  0.18
+     CBABasketball      v06            5 person                 1  0.773  0.58      1,746  0.40 / 0.18 / 0.41 / 0.00  0.30
+     PoznanStreet       v0             5 tree                   1  0.784  0.75      1,719  0.41 / 0.00 / 0.59 / 0.00  0.06
+     MATF               S1_CAM_1       6 person                 2  0.371  0.99      1,499  0.02 / 0.00 / 0.76 / 0.22  0.00
+     AlexaMeadeExhibit  camera_0004   24 handicrafts            2  0.785  0.77      1,441  0.06 / 0.00 / 0.94 / 0.00  0.00
+     MATF               S1_CAM_1      21 microphone             3  0.000  0.93      1,398  0.07 / 0.00 / 0.34 / 0.60  0.00
+     MartialArts        v13           15 door                   1  0.694  0.59      1,069  0.34 / 0.41 / 0.25 / 0.00  0.14
+     Blocks             cam0           3 toy                    3  0.000  0.82        957  0.17 / 0.00 / 0.83 / 0.00  0.17
+     MATF               S1_CAM_1       7 person                 2  0.346  0.86        890  0.17 / 0.00 / 0.14 / 0.69  0.13
+     MATF               S1_CAM_10     10 bottle_or_cup          4  0.546  0.64        803  0.08 / 0.00 / 0.81 / 0.11  0.63
+     Barn               v0            22 bag_or_package         1  0.689  0.55        789  0.85 / 0.00 / 0.15 / 0.00  0.22
+     Barn               v10           22 bag_or_package         1  0.735  0.64        582  0.60 / 0.00 / 0.40 / 0.00  0.31
+     Breakfast          v9            24 bottle_or_cup          1  0.462  0.85        483  0.10 / 0.00 / 0.90 / 0.00  0.15
+     PoznanStreet       v8             3 car                    1  0.787  0.59        431  0.27 / 0.00 / 0.71 / 0.02  0.25
+     Carpark            v0            22 car                    1  0.776  0.63        315  0.69 / 0.00 / 0.31 / 0.00  0.53
+     Blocks             cam0           4 toy                    1  0.713  0.90        290  0.01 / 0.00 / 0.99 / 0.00  0.54
+     Breakfast          v5            14 bottle_or_cup          1  0.000  1.00        207  0.00 / 0.00 / 1.00 / 0.00  0.39
+     Breakfast          v5            24 bottle_or_cup          1  0.000  0.70        113  0.30 / 0.00 / 0.70 / 0.00  0.20
+     Blocks             cam9           3 toy                    1  0.488  0.77         62  0.74 / 0.00 / 0.26 / 0.00  0.11
+     Breakfast          v9            28 bottle_or_cup          1  0.778  0.99         60  0.02 / 0.00 / 0.98 / 0.00  0.00
+== dev under-cover without its largest group ('Dog', 'camera_0004', 3): 135 pairs (48 distinct scene/cam/obj, 13 scenes)
+   mean J&F 0.5366  mean recall 0.528  mean precision 0.756  share of the dev J&F deficit sum(1-JF): 0.206  missed px 2,900,921 of GT px 12,536,560
+   fraction of MISSED pixels                        pixel-weighted   pair-mean
+   (a)  visible from c_ini                            0.089          0.180
+   (b1) outside c_ini image / behind                  0.777          0.310
+   (b2) occluded for c_ini                            0.127          0.468
+   (b3) no valid Pi3 depth                            0.007          0.043
+        (a) and on c_ini GT of same obj               0.042          0.043
+   (b) not visible total: pixel-weighted 0.911
+   covered by the k=3 candidates' ROUND-1 masks (reprojected)     0.152          0.217
+   largest single pair: FlameSteak cam01 obj 32 (wall) t=4 = 0.10 of the missed px
+== dev under-cover AND precision >= 0.85 (clean under-cover: the seed is right where it is): 67 pairs (24 distinct scene/cam/obj, 14 scenes)
+   mean J&F 0.6461  mean recall 0.654  mean precision 0.958  share of the dev J&F deficit sum(1-JF): 0.078  missed px 5,327,644 of GT px 18,380,785
+   fraction of MISSED pixels                        pixel-weighted   pair-mean
+   (a)  visible from c_ini                            0.045          0.170
+   (b1) outside c_ini image / behind                  0.426          0.387
+   (b2) occluded for c_ini                            0.086          0.365
+   (b3) no valid Pi3 depth                            0.443          0.078
+        (a) and on c_ini GT of same obj               0.021          0.037
+   (b) not visible total: pixel-weighted 0.955
+   covered by the k=3 candidates' ROUND-1 masks (reprojected)     0.076          0.170
+   largest single pair: Dog camera_0004 obj 3 (tree) t=16 = 0.10 of the missed px
+== dev under-cover AND (precision < 0.85 or empty seed): also on the wrong pixels: 73 pairs (29 distinct scene/cam/obj, 9 scenes)
+   mean J&F 0.4453  mean recall 0.416  mean precision 0.546  share of the dev J&F deficit sum(1-JF): 0.133  missed px 218,142 of GT px 470,410
+   fraction of MISSED pixels                        pixel-weighted   pair-mean
+   (a)  visible from c_ini                            0.124          0.177
+   (b1) outside c_ini image / behind                  0.496          0.221
+   (b2) occluded for c_ini                            0.336          0.534
+   (b3) no valid Pi3 depth                            0.044          0.068
+        (a) and on c_ini GT of same obj               0.045          0.046
+   (b) not visible total: pixel-weighted 0.876
+   covered by the k=3 candidates' ROUND-1 masks (reprojected)     0.245          0.245
+   largest single pair: Welder camera_0004 obj 14 (helmet) t=8 = 0.07 of the missed px
+   the same two subsets by seedcat kind: {'under-cover(beyond c_ini)': 39, 'under-cover': 28} | {'spill-onto-other(twin)': 21, 'boundary/mixed': 19, 'miss': 14, 'spill-onto-other': 4, 'wrong-object': 15}
+   dev under-cover by frame offset t - ref: {4: 28, 8: 28, 12: 28, 16: 30, 20: 26}
+
+(4) comparison: seedcat-kind under-cover failing (recall < 0.85, precision >= 0.85, J&F < 0.8; the keyframe's 22-pair rule)
+== seedcat under-cover failing: 119 pairs (40 distinct scene/cam/obj, 15 scenes)
+   mean J&F 0.6732  mean recall 0.640  mean precision 0.948  share of the dev J&F deficit sum(1-JF): 0.128  missed px 6,894,115 of GT px 24,491,938
+   fraction of MISSED pixels                        pixel-weighted   pair-mean
+   (a)  visible from c_ini                            0.114          0.329
+   (b1) outside c_ini image / behind                  0.357          0.257
+   (b2) occluded for c_ini                            0.168          0.353
+   (b3) no valid Pi3 depth                            0.361          0.061
+        (a) and on c_ini GT of same obj               0.034          0.070
+   (b) not visible total: pixel-weighted 0.886
+   covered by the k=3 candidates' ROUND-1 masks (reprojected)     0.085          0.199
+   largest single pair: Dog camera_0004 obj 3 (tree) t=16 = 0.08 of the missed px
+   overlap with (3): 67 pairs

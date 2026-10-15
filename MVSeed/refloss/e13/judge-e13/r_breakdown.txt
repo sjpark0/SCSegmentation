@@ -1,0 +1,39 @@
+UC 140 pairs; sum dJ&F both +15.02 r2 +12.90 (mean +0.1073 / +0.0921)
+
+(1) UC by the adopted pair's seedcat kind: n  J&F base / both / r2   share of the UC sum dJ&F (both, r2)
+   under-cover(beyond c_ini)     39  0.624 / 0.668 / 0.639   0.11, 0.05
+   under-cover                   28  0.677 / 0.699 / 0.684   0.04, 0.01
+   spill-onto-other(twin)        21  0.651 / 0.729 / 0.732   0.11, 0.13
+   boundary/mixed                19  0.662 / 0.673 / 0.656   0.01, -0.01
+   wrong-object                  15  0.254 / 0.602 / 0.601   0.35, 0.40
+   miss                          14  0.000 / 0.389 / 0.372   0.36, 0.40
+   spill-onto-other               4  0.612 / 0.658 / 0.634   0.01, 0.01
+
+(2) UC by whether B's GT holds the object at all (B_gt_px > 0) and by the oracle reach of the missed pixels
+   object absent from B                 n= 20  J&F base 0.508  both 0.503  r2 0.501  recall base 0.416 both 0.419
+   object present in B                  n=120  J&F base 0.547  both 0.673  r2 0.656  recall base 0.549 both 0.693
+     present, missed on B GT >= 0.25    n= 28  J&F base 0.517  both 0.750  r2 0.718  recall base 0.516 both 0.789
+     present, missed on B GT < 0.25     n= 92  J&F base 0.556  both 0.649  r2 0.637  recall base 0.559 both 0.663
+
+(3) UC object groups (scene, cam, obj): share of the UC sum dJ&F (both), largest first; and the count of groups by outcome
+   Welder           camera_0004   14 helmet                   3 pairs  sum dJ&F +2.86 = 0.19 of UC  kinds ['miss']
+   Welder           camera_0003   14 helmet                   3 pairs  sum dJ&F +2.84 = 0.19 of UC  kinds ['miss', 'wrong-object']
+   Welder           camera_0004    8 box                      3 pairs  sum dJ&F +2.37 = 0.16 of UC  kinds ['wrong-object']
+   Welder           camera_0003    8 box                      2 pairs  sum dJ&F +1.19 = 0.08 of UC  kinds ['spill-onto-other(twin)', 'wrong-object']
+   AlexaMeadeExhibit camera_0003   24 handicrafts              5 pairs  sum dJ&F +0.87 = 0.06 of UC  kinds ['spill-onto-other(twin)']
+   MATF             S1_CAM_1       6 person                   2 pairs  sum dJ&F +0.86 = 0.06 of UC  kinds ['miss', 'under-cover']
+   Breakfast        v5            24 bottle_or_cup            1 pairs  sum dJ&F +0.78 = 0.05 of UC  kinds ['miss']
+   Dog              camera_0004    3 tree                     5 pairs  sum dJ&F +0.73 = 0.05 of UC  kinds ['under-cover(beyond c_ini)']
+   both: 49 groups; mean dJ&F > +0.05: 15, |d| <= 0.05: 33, < -0.05: 1
+   r2: 49 groups; mean dJ&F > +0.05: 12, |d| <= 0.05: 36, < -0.05: 1
+   UC without the 4 largest-gain groups (Welder camera_0004 helmet, Welder camera_0003 helmet, Welder camera_0004 box, Welder camera_0003 box): n=129  dJ&F both +0.0447  r2 +0.0356
+
+(4) CLEAN UC by c_ini class of the missed pixels: which dominant class recovers
+   dominant outside   n= 29  dJ&F both +0.0440  r2 +0.0147  missed px 2,394,085 -> both 2,156,773  oracle onBgt 0.033
+   dominant occluded  n= 25  dJ&F both +0.0102  r2 +0.0148  missed px 270,126 -> both 230,223  oracle onBgt 0.170
+   dominant nodepth   n=  6  dJ&F both +0.1207  r2 -0.0076  missed px 2,648,380 -> both 799,920  oracle onBgt 0.009
+   dominant vis       n=  7  dJ&F both +0.0088  r2 +0.0063  missed px 15,053 -> both 14,647  oracle onBgt 0.013
+
+(5) CLEAN UC without the Dog camera_0004 tree
+   both: n=62  J&F 0.6441 -> 0.6698  d +0.0257  recall 0.659 -> 0.688  missed px 2,682,779 -> 2,404,911 (net 0.104)  groups 23
+   r2: n=62  J&F 0.6441 -> 0.6576  d +0.0134  recall 0.659 -> 0.678  missed px 2,682,779 -> 2,503,249 (net 0.067)  groups 23

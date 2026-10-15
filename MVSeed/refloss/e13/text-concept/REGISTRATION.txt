@@ -1,0 +1,47 @@
+S1-E13 candidate E1 (text-concept) -- design and constants fixed BEFORE any detection or score was computed (2026-10-15).
+PROTOCOL CHANGE, DIAGNOSTIC / SEPARATE TRACK ONLY: the method reads each object's CLASS NAME from the annotation metadata
+(stage1/Data/<scene>/objects_labels.json == Data/MVSeg/<scene>/Mask/objects_labels.json).  MUVOD's input is c_ini's
+frame-0 mask only; label names are NOT part of it.  Nothing here can enter the main track as is.
+DEV ONLY: the 85 dev frames of geomem/runs/_e13_dev/index.json (non-ref train frames [3::4], ref+4..ref+20), targets = the
+2 annotated non-reference cameras.  The keyframe (meta ref_frame) is never read, prompted or scored (asserted).
+
+Inputs per dev view (scene, t, cam): the target image at t; c_ini's GT at t restricted to the basic set (the dev protocol's
+input mask); the frame's Pi3 cache; the adopted geoset_rep_x dev masks D (geomem/runs/_e13_dev); the label name of each
+seeded object (PROTOCOL CHANGE).  P_o (projection of c_ini GT_o) and vis (visible from c_ini) are REUSED from candidate C's
+proposal stage (geomem/runs/_e13_sam3-prompt-extend/props/<scene>/<t>/<cam>/{proj/<o>.png, cls.png}; cls 0 = vis), which
+computed them with methods.geomem.run.project_reference_masks(reproj_inputs(Cache/pi3_frames/<t>)) (OCC_TOL 0.01, conf > 0.1).
+Seeded objects = basic set present in c_ini GT at t (complete-only objects are never prompted).
+
+Prompt strings (GT-free rule): label lowercased; SPLIT form (primary) = the label split on "_or_" into alternatives, each
+with "_" -> " " and a leading "other " removed (other_plant -> "plant"; handrail_or_fence -> "handrail", "fence");
+JOINED form (sensitivity) = whole label, "_" -> " ", leading "other " removed ("handrail or fence").
+SAM 3 detector, single image, no memory: Sam3Processor(model.detector).set_image(target) once per view, then
+set_text_prompt(string) per distinct string (Sam3Image.forward_grounding; prob = sigmoid(logit) * sigmoid(presence)).
+Detections are stored at prob > 0.3 (the lowest sensitivity value), masks = bilinear upsample to full res, sigmoid > 0.5.
+An object's detection pool = all detections (prob > TAU) of all its prompt strings (alternatives pooled).
+
+Selection of the extent proposal S_o (variants; all run, all reported; V1 is the declared PRIMARY):
+  V1 best_ov   (PRIMARY) |P_o| >= MIN_PROJ_PX; S_o = the detection k maximising |S_k & P_o| (ties: higher prob);
+               none when the maximum is 0
+  V2 best_iou  |P_o| >= MIN_PROJ_PX; S_o = argmax IoU(S_k, P_o) (> 0)
+  V3 union_maj |P_o| >= MIN_PROJ_PX; S_o = union of detections with |S_k & P_o| > 0 and |S_k & P_o| > 0.5 |S_k & vis|
+               (the majority of the detection's c_ini-visible pixels project from o)
+  V4 union_all every seeded object (no projection needed); S_o = union of all detections of o's name (text only)
+  DIAGNOSTIC ONLY (uses the target GT, not a candidate): oracle = the detection with maximum IoU against GT_o (> 0);
+               bounds what any single-detection selection rule could deliver from this detector
+Composition (add-only, IDENTICAL to candidate C, per view, all seeded objects at once):
+  C_o = S_o AND NOT vis AND NOT D_o AND NOT (union of D_q, q != o)
+  A_o = pixels of C_o inside the 8-connected components of (C_o OR D_o) that contain a pixel of D_o
+  pixels in A_o of >= 2 active objects (contested) are dropped from all of them;   N_o = D_o OR A_o
+Constants fixed a priori: TAU = 0.5 (SAM 3's own default confidence threshold); MIN_PROJ_PX = 20 (as C); split form;
+  0.5 majority in V3; mask threshold 0.5 (Sam3Processor); 8-connectivity; contested pixels dropped; no growth cap.
+Measured (dev only), as candidate C: delta J&F (mvseg2d.metrics.jf_pair) of all 3300 dev pairs (scene-cluster bootstrap
+  95 %, 10 000, seed 0), of the 140 dev under-cover pairs (_e13_dev/dev_undercover.json) and its 67-pair clean subset
+  (precision >= 0.85) (object-cluster bootstrap); added-pixel precision (pooled / pair-mean), GT label of added pixels
+  (o / other object / unlabelled), by visibility class; recovery of missed pixels by class; funnel (missed px covered by
+  any detection of the name -> by S_o -> & ref-invisible -> & unclaimed -> & connected -> & uncontested); leak of the raw
+  S_o vs the target GT (clean / spill / larger / different, as C); detector reach (best-instance IoU vs GT_o, objects with
+  no detection); breakdown by object type (objects_labels.json type) and by name multiplicity (scene-unique among the basic
+  set vs shared), per scene and per under-cover object.
+Sensitivity of each variant, one constant at a time, reported ONLY as ranges (no value is selected):
+  TAU {0.3, 0.7}; MIN_PROJ_PX {200, 2000} (V1-V3); JOINED name form; leak precision threshold {0.5, 0.75, 0.9}.

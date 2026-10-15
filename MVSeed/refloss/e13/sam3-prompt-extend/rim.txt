@@ -1,0 +1,9 @@
+pts added px at distance <= 3 px         from D_o:    693,815 (0.321 of added), precision 0.597
+pts added px at distance (3, bound_pix]  from D_o:    656,879 (0.304 of added), precision 0.400
+pts added px at distance > bound_pix     from D_o:    809,636 (0.375 of added), precision 0.121
+box added px at distance <= 3 px         from D_o:    579,442 (0.552 of added), precision 0.530
+box added px at distance (3, bound_pix]  from D_o:    410,617 (0.391 of added), precision 0.373
+box added px at distance > bound_pix     from D_o:     60,025 (0.057 of added), precision 0.094
+mask_box added px at distance <= 3 px         from D_o:    260,303 (0.646 of added), precision 0.513
+mask_box added px at distance (3, bound_pix]  from D_o:    133,639 (0.331 of added), precision 0.289
+mask_box added px at distance > bound_pix     from D_o:      9,217 (0.023 of added), precision 0.070

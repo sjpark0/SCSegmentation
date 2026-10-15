@@ -1,0 +1,338 @@
+S1-E13 candidate E1 (text-concept).  PROTOCOL CHANGE: needs each object's class name at test time (objects_labels.json), which is NOT in MUVOD's input.  DEV numbers only; keyframe never touched.
+views 170; scored pairs 3300 (dev_pairs.json for these scenes: 3300; equal sets: True); max |J,F - dev_pairs| = 0.00e+00; GT class-count mismatches vs dev_pairs: 0; detections stored (prob > 0.3) 12,440
+
+DETECTOR REACH per scored pair (pool = detections of the object's prompt strings with prob > TAU):
+   set      sel           has-det  best-inst IoU (mean)  >=0.5  union IoU  missed px covered by the union: all | ref-invisible | outside / occluded / nodepth
+   all      0.5|split    0.716    0.474                 0.517  0.197      0.2090 | 0.1891 | 0.2526 / 0.1062 / 0.5024
+   uc140    0.5|split    0.550    0.184                 0.171  0.088      0.5070 | 0.5042 | 0.3911 / 0.1360 / 0.7567
+   clean67  0.5|split    0.493    0.198                 0.149  0.175      0.5150 | 0.5130 | 0.3923 / 0.1128 / 0.7585
+   all      0.3|split    0.770    0.558                 0.614  0.217      0.2617 | 0.2328 | 0.3227 / 0.1533 / 0.5662
+   uc140    0.3|split    0.643    0.241                 0.243  0.090      0.5162 | 0.5126 | 0.4057 / 0.1569 / 0.7570
+   clean67  0.3|split    0.567    0.264                 0.254  0.179      0.5237 | 0.5210 | 0.4074 / 0.1304 / 0.7587
+   all      0.7|split    0.627    0.390                 0.425  0.167      0.1153 | 0.1042 | 0.1068 / 0.0340 / 0.3673
+   uc140    0.7|split    0.464    0.150                 0.143  0.073      0.4183 | 0.4158 | 0.1901 / 0.1231 / 0.7544
+   clean67  0.7|split    0.418    0.182                 0.149  0.144      0.4291 | 0.4272 | 0.1947 / 0.1058 / 0.7563
+   all      0.5|joined   0.672    0.463                 0.503  0.186      0.1916 | 0.1763 | 0.2304 / 0.0911 / 0.4886
+   uc140    0.5|joined   0.521    0.166                 0.157  0.086      0.5032 | 0.5007 | 0.3911 / 0.1045 / 0.7556
+   clean67  0.5|joined   0.507    0.199                 0.149  0.175      0.5150 | 0.5129 | 0.3923 / 0.1122 / 0.7585
+   uc140 w/o Dog tree, 0.5|split: union covers 0.3067 of missed px; Dog tree pairs: 0.7268
+   by object type / name multiplicity (all scored pairs, 0.5|split): n  has-det  best-inst IoU  union covers missed
+      type=dynamic       all      864  0.863  0.690  0.0864
+      type=dynamic       uc140     22  0.682  0.087  0.0654
+      type=env           all      445  0.555  0.308  0.2514
+      type=env           uc140     36  0.444  0.169  0.5307
+      type=static        all     1991  0.688  0.418  0.0917
+      type=static        uc140     82  0.561  0.217  0.2763
+      name=scene-unique  all      993  0.526  0.318  0.2340
+      name=scene-unique  uc140     56  0.304  0.109  0.5071
+      name=shared        all     2307  0.798  0.542  0.1039
+      name=shared        uc140     84  0.714  0.235  0.5052
+
+Config = variant | TAU | name form | MIN_PROJ_PX.  dJF = mean J&F change; CIs: all pairs scene-cluster, under-cover object-cluster bootstrap 95 % (10 000, seed 0).  'oracle' uses the target GT (diagnostic bound, not a candidate).
+
+[best_ov|0.5|split|20]  ALL n=3300: dJF +0.00029 [+0.00000, +0.00061] (dJ +0.00057 dF +0.00002); changed 1624 up 1207 down 417 (sum +2.185 / -1.215); added 627,192 px, precision pooled 0.435 (incl. 65 px on empty-GT objects 0.435), pair-mean 0.679; on other obj 0.565 (seeded at t 0.560), on unlabelled 0.000
+      by class (added px, precision): outside 101,499 0.568; occluded 380,473 0.396; nodepth 145,220 0.446
+   UC140: selected 56/140; base 0.5414 dJF +0.00052 [-0.00028, +0.00151]  up 24 down 14  added 12,029 prec 0.499 (pair-mean 0.586); on other obj 0.501; missed px recovered 0.0011 (pair-mean 0.0045; w/o Dog tree 0.0016); dJF w/o Dog tree +0.00054, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0055 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00057 [+0.00002, +0.00139] up 18 down 5  prec 0.599 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00028 [-0.00001, +0.00061] up 1183 down 403 added 615,163 prec 0.434
+
+[best_ov|0.3|split|20]  ALL n=3300: dJF +0.00006 [-0.00067, +0.00069] (dJ +0.00037 dF -0.00025); changed 1858 up 1349 down 509 (sum +2.856 / -2.660); added 1,121,998 px, precision pooled 0.594 (incl. 107 px on empty-GT objects 0.594), pair-mean 0.663; on other obj 0.406 (seeded at t 0.399), on unlabelled 0.000
+      by class (added px, precision): outside 493,709 0.785; occluded 446,298 0.407; nodepth 181,991 0.535
+   UC140: selected 56/140; base 0.5414 dJF +0.00098 [-0.00007, +0.00243]  up 28 down 16  added 13,723 prec 0.518 (pair-mean 0.603); on other obj 0.482; missed px recovered 0.0013 (pair-mean 0.0092; w/o Dog tree 0.0020); dJF w/o Dog tree +0.00101, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0075 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00097 [+0.00023, +0.00205] up 20 down 6  prec 0.605 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00002 [-0.00073, +0.00066] up 1321 down 493 added 1,108,275 prec 0.595
+
+[best_ov|0.7|split|20]  ALL n=3300: dJF +0.00046 [+0.00014, +0.00084] (dJ +0.00070 dF +0.00023); changed 1294 up 984 down 310 (sum +2.132 / -0.609); added 434,814 px, precision pooled 0.428 (incl. 17 px on empty-GT objects 0.428), pair-mean 0.697; on other obj 0.572 (seeded at t 0.563), on unlabelled 0.000
+      by class (added px, precision): outside 75,655 0.561; occluded 236,043 0.412; nodepth 123,116 0.377
+   UC140: selected 56/140; base 0.5414 dJF +0.00310 [+0.00004, +0.00912]  up 19 down 8  added 13,187 prec 0.468 (pair-mean 0.678); on other obj 0.532; missed px recovered 0.0011 (pair-mean 0.0085; w/o Dog tree 0.0017); dJF w/o Dog tree +0.00322, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0105 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00040 [+0.00001, +0.00116] up 14 down 5  prec 0.377 recovered 0.0004
+   NOT-UC n=3160: dJF +0.00034 [+0.00010, +0.00061] up 965 down 302 added 421,627 prec 0.426
+
+[best_ov|0.5|joined|20]  ALL n=3300: dJF +0.00038 [+0.00009, +0.00070] (dJ +0.00069 dF +0.00007); changed 1570 up 1174 down 396 (sum +2.206 / -0.962); added 554,648 px, precision pooled 0.490 (incl. 24 px on empty-GT objects 0.490), pair-mean 0.684; on other obj 0.510 (seeded at t 0.509), on unlabelled 0.000
+      by class (added px, precision): outside 92,714 0.606; occluded 332,228 0.442; nodepth 129,706 0.527
+   UC140: selected 56/140; base 0.5414 dJF +0.00079 [+0.00006, +0.00185]  up 23 down 12  added 9,917 prec 0.616 (pair-mean 0.636); on other obj 0.384; missed px recovered 0.0011 (pair-mean 0.0048; w/o Dog tree 0.0017); dJF w/o Dog tree +0.00082, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0057 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00061 [+0.00002, +0.00151] up 17 down 6  prec 0.600 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00036 [+0.00007, +0.00068] up 1151 down 384 added 544,731 prec 0.487
+
+[best_ov|0.5|split|200]  ALL n=3300: dJF +0.00023 [-0.00004, +0.00051] (dJ +0.00050 dF -0.00005); changed 1613 up 1197 down 416 (sum +1.958 / -1.212); added 616,548 px, precision pooled 0.427 (incl. 49 px on empty-GT objects 0.427), pair-mean 0.679; on other obj 0.573 (seeded at t 0.568), on unlabelled 0.000
+      by class (added px, precision): outside 93,813 0.540; occluded 377,517 0.392; nodepth 145,218 0.446
+   UC140: selected 56/140; base 0.5414 dJF +0.00024 [-0.00041, +0.00107]  up 22 down 14  added 11,857 prec 0.493 (pair-mean 0.592); on other obj 0.507; missed px recovered 0.0011 (pair-mean 0.0034; w/o Dog tree 0.0016); dJF w/o Dog tree +0.00026, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0052 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00057 [+0.00002, +0.00139] up 18 down 5  prec 0.599 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00023 [-0.00004, +0.00052] up 1175 down 402 added 604,691 prec 0.426
+
+[best_ov|0.5|split|2000]  ALL n=3300: dJF +0.00021 [-0.00002, +0.00043] (dJ +0.00043 dF -0.00002); changed 1449 up 1084 down 365 (sum +1.619 / -0.941); added 596,650 px, precision pooled 0.423 (incl. 0 px on empty-GT objects 0.423), pair-mean 0.687; on other obj 0.577 (seeded at t 0.575), on unlabelled 0.000
+      by class (added px, precision): outside 91,680 0.531; occluded 365,071 0.389; nodepth 139,899 0.442
+   UC140: selected 56/140; base 0.5414 dJF +0.00047 [+0.00004, +0.00122]  up 18 down 6  added 9,624 prec 0.618 (pair-mean 0.797); on other obj 0.382; missed px recovered 0.0011 (pair-mean 0.0033; w/o Dog tree 0.0016); dJF w/o Dog tree +0.00049, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0054 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00057 [+0.00001, +0.00138] up 16 down 6  prec 0.605 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00019 [-0.00003, +0.00042] up 1066 down 359 added 587,026 prec 0.420
+
+[best_iou|0.5|split|20]  ALL n=3300: dJF +0.00042 [+0.00018, +0.00068] (dJ +0.00066 dF +0.00017); changed 1626 up 1225 down 401 (sum +2.214 / -0.844); added 542,438 px, precision pooled 0.504 (incl. 67 px on empty-GT objects 0.504), pair-mean 0.685; on other obj 0.496 (seeded at t 0.494), on unlabelled 0.000
+      by class (added px, precision): outside 106,236 0.578; occluded 286,306 0.502; nodepth 149,896 0.457
+   UC140: selected 56/140; base 0.5414 dJF +0.00070 [+0.00005, +0.00161]  up 24 down 14  added 11,712 prec 0.681 (pair-mean 0.602); on other obj 0.319; missed px recovered 0.0014 (pair-mean 0.0046; w/o Dog tree 0.0023); dJF w/o Dog tree +0.00073, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0022 of 2,378,298; occluded 0.0053 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00056 [+0.00003, +0.00137] up 18 down 5  prec 0.685 recovered 0.0013
+   NOT-UC n=3160: dJF +0.00040 [+0.00016, +0.00067] up 1201 down 387 added 530,726 prec 0.501
+
+[best_iou|0.3|split|20]  ALL n=3300: dJF +0.00034 [-0.00015, +0.00074] (dJ +0.00063 dF +0.00006); changed 1851 up 1383 down 468 (sum +2.653 / -1.516); added 591,942 px, precision pooled 0.510 (incl. 205 px on empty-GT objects 0.510), pair-mean 0.678; on other obj 0.490 (seeded at t 0.482), on unlabelled 0.000
+      by class (added px, precision): outside 117,695 0.521; occluded 315,935 0.525; nodepth 158,312 0.473
+   UC140: selected 56/140; base 0.5414 dJF +0.00068 [+0.00006, +0.00157]  up 25 down 17  added 10,904 prec 0.596 (pair-mean 0.599); on other obj 0.404; missed px recovered 0.0012 (pair-mean 0.0076; w/o Dog tree 0.0018); dJF w/o Dog tree +0.00071, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0013 of 2,378,298; occluded 0.0063 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00056 [+0.00006, +0.00139] up 17 down 7  prec 0.608 recovered 0.0010
+   NOT-UC n=3160: dJF +0.00033 [-0.00017, +0.00074] up 1358 down 451 added 581,038 prec 0.509
+
+[best_iou|0.7|split|20]  ALL n=3300: dJF +0.00047 [+0.00014, +0.00084] (dJ +0.00070 dF +0.00023); changed 1298 up 995 down 303 (sum +2.135 / -0.595); added 433,727 px, precision pooled 0.428 (incl. 19 px on empty-GT objects 0.428), pair-mean 0.698; on other obj 0.572 (seeded at t 0.562), on unlabelled 0.000
+      by class (added px, precision): outside 75,235 0.562; occluded 235,376 0.413; nodepth 123,116 0.377
+   UC140: selected 56/140; base 0.5414 dJF +0.00309 [+0.00004, +0.00912]  up 19 down 8  added 13,188 prec 0.468 (pair-mean 0.678); on other obj 0.532; missed px recovered 0.0011 (pair-mean 0.0085; w/o Dog tree 0.0017); dJF w/o Dog tree +0.00321, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0105 of 532,327; nodepth 0.0002 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00039 [+0.00001, +0.00114] up 14 down 5  prec 0.377 recovered 0.0004
+   NOT-UC n=3160: dJF +0.00035 [+0.00011, +0.00062] up 976 down 295 added 420,539 prec 0.427
+
+[best_iou|0.5|joined|20]  ALL n=3300: dJF +0.00049 [+0.00024, +0.00077] (dJ +0.00077 dF +0.00021); changed 1576 up 1184 down 392 (sum +2.251 / -0.644); added 475,356 px, precision pooled 0.575 (incl. 24 px on empty-GT objects 0.575), pair-mean 0.686; on other obj 0.425 (seeded at t 0.423), on unlabelled 0.000
+      by class (added px, precision): outside 97,887 0.614; occluded 243,089 0.581; nodepth 134,380 0.536
+   UC140: selected 56/140; base 0.5414 dJF +0.00079 [+0.00007, +0.00186]  up 23 down 12  added 11,724 prec 0.691 (pair-mean 0.654); on other obj 0.309; missed px recovered 0.0015 (pair-mean 0.0048; w/o Dog tree 0.0024); dJF w/o Dog tree +0.00082, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0022 of 2,378,298; occluded 0.0055 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00062 [+0.00003, +0.00152] up 17 down 6  prec 0.686 recovered 0.0014
+   NOT-UC n=3160: dJF +0.00047 [+0.00023, +0.00075] up 1161 down 380 added 463,632 prec 0.572
+
+[best_iou|0.5|split|200]  ALL n=3300: dJF +0.00035 [+0.00015, +0.00058] (dJ +0.00059 dF +0.00011); changed 1615 up 1215 down 400 (sum +1.987 / -0.840); added 531,794 px, precision pooled 0.496 (incl. 51 px on empty-GT objects 0.496), pair-mean 0.684; on other obj 0.504 (seeded at t 0.502), on unlabelled 0.000
+      by class (added px, precision): outside 98,550 0.552; occluded 283,350 0.497; nodepth 149,894 0.457
+   UC140: selected 56/140; base 0.5414 dJF +0.00043 [+0.00000, +0.00118]  up 22 down 14  added 11,540 prec 0.678 (pair-mean 0.609); on other obj 0.322; missed px recovered 0.0014 (pair-mean 0.0034; w/o Dog tree 0.0023); dJF w/o Dog tree +0.00045, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0022 of 2,378,298; occluded 0.0050 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00056 [+0.00003, +0.00137] up 18 down 5  prec 0.685 recovered 0.0013
+   NOT-UC n=3160: dJF +0.00034 [+0.00015, +0.00058] up 1193 down 386 added 520,254 prec 0.492
+
+[best_iou|0.5|split|2000]  ALL n=3300: dJF +0.00031 [+0.00014, +0.00050] (dJ +0.00052 dF +0.00011); changed 1452 up 1101 down 351 (sum +1.645 / -0.607); added 514,116 px, precision pooled 0.492 (incl. 0 px on empty-GT objects 0.492), pair-mean 0.692; on other obj 0.508 (seeded at t 0.506), on unlabelled 0.000
+      by class (added px, precision): outside 96,417 0.544; occluded 273,121 0.495; nodepth 144,578 0.453
+   UC140: selected 56/140; base 0.5414 dJF +0.00047 [+0.00004, +0.00122]  up 18 down 6  added 11,421 prec 0.694 (pair-mean 0.823); on other obj 0.306; missed px recovered 0.0014 (pair-mean 0.0033; w/o Dog tree 0.0023); dJF w/o Dog tree +0.00049, Dog tree -0.00006 (recovered 0.0005)
+      recovered by class: outside 0.0022 of 2,378,298; occluded 0.0052 of 532,327; nodepth 0.0000 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00057 [+0.00002, +0.00139] up 16 down 6  prec 0.689 recovered 0.0014
+   NOT-UC n=3160: dJF +0.00031 [+0.00014, +0.00049] up 1083 down 345 added 502,695 prec 0.488
+
+[union_maj|0.5|split|20]  ALL n=3300: dJF +0.00025 [+0.00006, +0.00046] (dJ +0.00050 dF -0.00000); changed 1577 up 1170 down 407 (sum +1.994 / -1.175); added 657,654 px, precision pooled 0.587 (incl. 27 px on empty-GT objects 0.587), pair-mean 0.678; on other obj 0.413 (seeded at t 0.397), on unlabelled 0.000
+      by class (added px, precision): outside 149,917 0.714; occluded 384,296 0.528; nodepth 123,441 0.619
+   UC140: selected 26/140; base 0.5414 dJF +0.00063 [+0.00009, +0.00141]  up 25 down 1  added 52,029 prec 0.795 (pair-mean 0.776); on other obj 0.205; missed px recovered 0.0075 (pair-mean 0.0039; w/o Dog tree 0.0130); dJF w/o Dog tree +0.00064, Dog tree +0.00014 (recovered 0.0014)
+      recovered by class: outside 0.0151 of 2,378,298; occluded 0.0094 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00096 [+0.00019, +0.00198] up 22 down 1  prec 0.796 recovered 0.0077
+   NOT-UC n=3160: dJF +0.00023 [+0.00004, +0.00047] up 1145 down 406 added 605,625 prec 0.570
+
+[union_maj|0.3|split|20]  ALL n=3300: dJF +0.00010 [-0.00052, +0.00069] (dJ +0.00022 dF -0.00002); changed 1810 up 1316 down 494 (sum +2.999 / -2.682); added 2,158,725 px, precision pooled 0.670 (incl. 1,159 px on empty-GT objects 0.670), pair-mean 0.659; on other obj 0.330 (seeded at t 0.186), on unlabelled 0.000
+      by class (added px, precision): outside 1,361,179 0.675; occluded 550,008 0.615; nodepth 247,538 0.766
+   UC140: selected 26/140; base 0.5414 dJF +0.00142 [+0.00021, +0.00307]  up 29 down 3  added 154,541 prec 0.906 (pair-mean 0.775); on other obj 0.094; missed px recovered 0.0252 (pair-mean 0.0089; w/o Dog tree 0.0466); dJF w/o Dog tree +0.00146, Dog tree +0.00033 (recovered 0.0019)
+      recovered by class: outside 0.0539 of 2,378,298; occluded 0.0216 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00217 [+0.00023, +0.00532] up 23 down 1  prec 0.908 recovered 0.0261
+   NOT-UC n=3160: dJF +0.00004 [-0.00065, +0.00069] up 1287 down 491 added 2,004,184 prec 0.652
+
+[union_maj|0.7|split|20]  ALL n=3300: dJF +0.00025 [+0.00011, +0.00043] (dJ +0.00045 dF +0.00005); changed 1256 up 952 down 304 (sum +1.450 / -0.626); added 291,482 px, precision pooled 0.598 (incl. 0 px on empty-GT objects 0.598), pair-mean 0.697; on other obj 0.402 (seeded at t 0.400), on unlabelled 0.000
+      by class (added px, precision): outside 41,176 0.815; occluded 173,726 0.570; nodepth 76,580 0.544
+   UC140: selected 26/140; base 0.5414 dJF +0.00038 [+0.00001, +0.00111]  up 21 down 1  added 7,571 prec 0.540 (pair-mean 0.799); on other obj 0.460; missed px recovered 0.0007 (pair-mean 0.0026; w/o Dog tree 0.0005); dJF w/o Dog tree +0.00039, Dog tree +0.00008 (recovered 0.0010)
+      recovered by class: outside 0.0000 of 2,378,298; occluded 0.0073 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00045 [+0.00002, +0.00123] up 18 down 1  prec 0.520 recovered 0.0007
+   NOT-UC n=3160: dJF +0.00024 [+0.00009, +0.00044] up 931 down 303 added 283,911 prec 0.599
+
+[union_maj|0.5|joined|20]  ALL n=3300: dJF +0.00027 [+0.00009, +0.00045] (dJ +0.00053 dF +0.00000); changed 1523 up 1126 down 397 (sum +1.919 / -1.033); added 643,931 px, precision pooled 0.587 (incl. 969 px on empty-GT objects 0.586), pair-mean 0.675; on other obj 0.413 (seeded at t 0.398), on unlabelled 0.000
+      by class (added px, precision): outside 145,288 0.713; occluded 376,058 0.528; nodepth 122,585 0.617
+   UC140: selected 26/140; base 0.5414 dJF +0.00071 [+0.00009, +0.00164]  up 26 down 0  added 52,141 prec 0.795 (pair-mean 0.776); on other obj 0.205; missed px recovered 0.0075 (pair-mean 0.0042; w/o Dog tree 0.0130); dJF w/o Dog tree +0.00073, Dog tree +0.00014 (recovered 0.0014)
+      recovered by class: outside 0.0151 of 2,378,298; occluded 0.0096 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00102 [+0.00019, +0.00211] up 23 down 0  prec 0.796 recovered 0.0077
+   NOT-UC n=3160: dJF +0.00025 [+0.00007, +0.00044] up 1100 down 397 added 591,790 prec 0.568
+
+[union_maj|0.5|split|200]  ALL n=3300: dJF +0.00024 [+0.00004, +0.00046] (dJ +0.00048 dF -0.00000); changed 1576 up 1169 down 407 (sum +1.959 / -1.175); added 657,471 px, precision pooled 0.587 (incl. 27 px on empty-GT objects 0.587), pair-mean 0.677; on other obj 0.413 (seeded at t 0.397), on unlabelled 0.000
+      by class (added px, precision): outside 149,917 0.714; occluded 384,113 0.528; nodepth 123,441 0.619
+   UC140: selected 26/140; base 0.5414 dJF +0.00063 [+0.00009, +0.00141]  up 25 down 1  added 52,029 prec 0.795 (pair-mean 0.776); on other obj 0.205; missed px recovered 0.0075 (pair-mean 0.0039; w/o Dog tree 0.0130); dJF w/o Dog tree +0.00064, Dog tree +0.00014 (recovered 0.0014)
+      recovered by class: outside 0.0151 of 2,378,298; occluded 0.0094 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00096 [+0.00019, +0.00198] up 22 down 1  prec 0.796 recovered 0.0077
+   NOT-UC n=3160: dJF +0.00022 [+0.00002, +0.00047] up 1144 down 406 added 605,442 prec 0.570
+
+[union_maj|0.5|split|2000]  ALL n=3300: dJF +0.00026 [+0.00005, +0.00048] (dJ +0.00048 dF +0.00005); changed 1458 up 1085 down 373 (sum +1.774 / -0.902); added 644,283 px, precision pooled 0.588 (incl. 0 px on empty-GT objects 0.588), pair-mean 0.681; on other obj 0.412 (seeded at t 0.397), on unlabelled 0.000
+      by class (added px, precision): outside 148,841 0.712; occluded 377,014 0.528; nodepth 118,428 0.622
+   UC140: selected 26/140; base 0.5414 dJF +0.00062 [+0.00008, +0.00141]  up 22 down 1  added 52,006 prec 0.795 (pair-mean 0.799); on other obj 0.205; missed px recovered 0.0075 (pair-mean 0.0038; w/o Dog tree 0.0130); dJF w/o Dog tree +0.00064, Dog tree +0.00014 (recovered 0.0014)
+      recovered by class: outside 0.0151 of 2,378,298; occluded 0.0094 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00096 [+0.00018, +0.00198] up 21 down 1  prec 0.796 recovered 0.0077
+   NOT-UC n=3160: dJF +0.00025 [+0.00004, +0.00048] up 1063 down 372 added 592,277 prec 0.570
+
+[union_all|0.5|split|20]  ALL n=3300: dJF -0.00025 [-0.00113, +0.00073] (dJ -0.00029 dF -0.00022); changed 1718 up 1289 down 429 (sum +3.690 / -4.526); added 2,343,007 px, precision pooled 0.696 (incl. 64 px on empty-GT objects 0.696), pair-mean 0.684; on other obj 0.304 (seeded at t 0.192), on unlabelled 0.000
+      by class (added px, precision): outside 1,362,185 0.789; occluded 551,376 0.456; nodepth 429,446 0.707
+   UC140: selected 77/140; base 0.5414 dJF +0.00676 [+0.00148, +0.01311]  up 34 down 13  added 270,247 prec 0.891 (pair-mean 0.611); on other obj 0.109; missed px recovered 0.0434 (pair-mean 0.0238; w/o Dog tree 0.0772); dJF w/o Dog tree +0.00701, Dog tree +0.00015 (recovered 0.0064)
+      recovered by class: outside 0.0919 of 2,378,298; occluded 0.0179 of 532,327; nodepth 0.0054 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00225 [+0.00006, +0.00646] up 21 down 2  prec 0.921 recovered 0.0437
+   NOT-UC n=3160: dJF -0.00056 [-0.00147, +0.00040] up 1255 down 416 added 2,072,760 prec 0.670
+
+[union_all|0.3|split|20]  ALL n=3300: dJF -0.00092 [-0.00267, +0.00076] (dJ -0.00124 dF -0.00060); changed 1974 up 1412 down 562 (sum +4.846 / -7.879); added 4,660,366 px, precision pooled 0.626 (incl. 278 px on empty-GT objects 0.626), pair-mean 0.649; on other obj 0.374 (seeded at t 0.166), on unlabelled 0.000
+      by class (added px, precision): outside 3,097,247 0.642; occluded 802,681 0.512; nodepth 760,438 0.679
+   UC140: selected 77/140; base 0.5414 dJF +0.00610 [+0.00055, +0.01277]  up 40 down 18  added 697,082 prec 0.934 (pair-mean 0.601); on other obj 0.066; missed px recovered 0.1174 (pair-mean 0.0402; w/o Dog tree 0.2182); dJF w/o Dog tree +0.00631, Dog tree +0.00032 (recovered 0.0068)
+      recovered by class: outside 0.2626 of 2,378,298; occluded 0.0262 of 532,327; nodepth 0.0052 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00489 [-0.00147, +0.01565] up 28 down 4  prec 0.945 recovered 0.1211
+   NOT-UC n=3160: dJF -0.00123 [-0.00319, +0.00058] up 1372 down 544 added 3,963,284 prec 0.572
+
+[union_all|0.7|split|20]  ALL n=3300: dJF +0.00012 [-0.00110, +0.00191] (dJ +0.00010 dF +0.00014); changed 1371 up 1033 down 338 (sum +3.919 / -3.525); added 980,107 px, precision pooled 0.601 (incl. 17 px on empty-GT objects 0.601), pair-mean 0.697; on other obj 0.399 (seeded at t 0.283), on unlabelled 0.000
+      by class (added px, precision): outside 482,246 0.805; occluded 326,054 0.368; nodepth 171,807 0.471
+   UC140: selected 77/140; base 0.5414 dJF +0.01393 [-0.00093, +0.04382]  up 23 down 11  added 174,150 prec 0.810 (pair-mean 0.612); on other obj 0.190; missed px recovered 0.0254 (pair-mean 0.0356; w/o Dog tree 0.0446); dJF w/o Dog tree +0.01447, Dog tree -0.00074 (recovered 0.0044)
+      recovered by class: outside 0.0465 of 2,378,298; occluded 0.0348 of 532,327; nodepth 0.0051 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00122 [-0.00010, +0.00374] up 13 down 6  prec 0.920 recovered 0.0229
+   NOT-UC n=3160: dJF -0.00049 [-0.00128, +0.00029] up 1010 down 327 added 805,957 prec 0.556
+
+[union_all|0.5|joined|20]  ALL n=3300: dJF -0.00033 [-0.00114, +0.00049] (dJ -0.00026 dF -0.00039); changed 1661 up 1244 down 417 (sum +3.203 / -4.286); added 2,072,272 px, precision pooled 0.755 (incl. 30 px on empty-GT objects 0.755), pair-mean 0.682; on other obj 0.245 (seeded at t 0.178), on unlabelled 0.000
+      by class (added px, precision): outside 1,194,262 0.865; occluded 501,569 0.502; nodepth 376,441 0.745
+   UC140: selected 77/140; base 0.5414 dJF +0.00436 [+0.00110, +0.00865]  up 32 down 10  added 260,851 prec 0.908 (pair-mean 0.674); on other obj 0.092; missed px recovered 0.0427 (pair-mean 0.0176; w/o Dog tree 0.0759); dJF w/o Dog tree +0.00452, Dog tree +0.00015 (recovered 0.0063)
+      recovered by class: outside 0.0919 of 2,378,298; occluded 0.0115 of 532,327; nodepth 0.0052 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00225 [+0.00005, +0.00647] up 20 down 3  prec 0.921 recovered 0.0437
+   NOT-UC n=3160: dJF -0.00054 [-0.00143, +0.00038] up 1212 down 407 added 1,811,421 prec 0.734
+
+[oracle|0.5|split|20]  ALL n=3300: dJF +0.00128 [+0.00034, +0.00289] (dJ +0.00147 dF +0.00108); changed 1694 up 1280 down 414 (sum +5.227 / -1.019); added 714,655 px, precision pooled 0.472 (incl. 0 px on empty-GT objects 0.472), pair-mean 0.690; on other obj 0.528 (seeded at t 0.505), on unlabelled 0.000
+      by class (added px, precision): outside 118,451 0.623; occluded 422,751 0.423; nodepth 173,453 0.488
+   UC140: selected 63/140; base 0.5414 dJF +0.01896 [+0.00138, +0.05140]  up 35 down 7  added 44,286 prec 0.611 (pair-mean 0.706); on other obj 0.389; missed px recovered 0.0049 (pair-mean 0.0426; w/o Dog tree 0.0093); dJF w/o Dog tree +0.01966, Dog tree +0.00000 (recovered 0.0000)
+      recovered by class: outside 0.0026 of 2,378,298; occluded 0.0334 of 532,327; nodepth 0.0013 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00058 [+0.00002, +0.00140] up 17 down 1  prec 0.914 recovered 0.0008
+   NOT-UC n=3160: dJF +0.00049 [+0.00020, +0.00080] up 1245 down 407 added 670,369 prec 0.463
+
+[oracle|0.3|split|20]  ALL n=3300: dJF +0.00140 [+0.00038, +0.00312] (dJ +0.00162 dF +0.00118); changed 1948 up 1439 down 509 (sum +5.956 / -1.334); added 1,432,688 px, precision pooled 0.670 (incl. 0 px on empty-GT objects 0.670), pair-mean 0.672; on other obj 0.330 (seeded at t 0.315), on unlabelled 0.000
+      by class (added px, precision): outside 686,582 0.846; occluded 484,831 0.434; nodepth 261,275 0.645
+   UC140: selected 63/140; base 0.5414 dJF +0.01901 [+0.00162, +0.05176]  up 43 down 9  added 46,116 prec 0.605 (pair-mean 0.683); on other obj 0.395; missed px recovered 0.0050 (pair-mean 0.0454; w/o Dog tree 0.0096); dJF w/o Dog tree +0.01972, Dog tree +0.00000 (recovered 0.0000)
+      recovered by class: outside 0.0026 of 2,378,298; occluded 0.0349 of 532,327; nodepth 0.0013 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00169 [+0.00049, +0.00362] up 24 down 3  prec 0.879 recovered 0.0008
+   NOT-UC n=3160: dJF +0.00062 [+0.00025, +0.00104] up 1396 down 500 added 1,386,572 prec 0.672
+
+[oracle|0.7|split|20]  ALL n=3300: dJF +0.00111 [+0.00025, +0.00268] (dJ +0.00133 dF +0.00089); changed 1354 up 1033 down 321 (sum +4.265 / -0.602); added 519,427 px, precision pooled 0.476 (incl. 0 px on empty-GT objects 0.476), pair-mean 0.705; on other obj 0.524 (seeded at t 0.494), on unlabelled 0.000
+      by class (added px, precision): outside 91,062 0.629; occluded 276,288 0.444; nodepth 152,077 0.440
+   UC140: selected 63/140; base 0.5414 dJF +0.01514 [+0.00011, +0.04683]  up 23 down 4  added 36,775 prec 0.559 (pair-mean 0.736); on other obj 0.441; missed px recovered 0.0037 (pair-mean 0.0346; w/o Dog tree 0.0071); dJF w/o Dog tree +0.01570, Dog tree +0.00000 (recovered 0.0000)
+      recovered by class: outside 0.0004 of 2,378,298; occluded 0.0316 of 532,327; nodepth 0.0012 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00042 [+0.00001, +0.00118] up 13 down 1  prec 0.889 recovered 0.0002
+   NOT-UC n=3160: dJF +0.00049 [+0.00022, +0.00076] up 1010 down 317 added 482,652 prec 0.469
+
+[oracle|0.5|joined|20]  ALL n=3300: dJF +0.00069 [+0.00036, +0.00107] (dJ +0.00102 dF +0.00037); changed 1638 up 1240 down 398 (sum +3.158 / -0.865); added 610,635 px, precision pooled 0.517 (incl. 0 px on empty-GT objects 0.517), pair-mean 0.690; on other obj 0.483 (seeded at t 0.482), on unlabelled 0.000
+      by class (added px, precision): outside 106,601 0.651; occluded 348,946 0.460; nodepth 155,088 0.551
+   UC140: selected 63/140; base 0.5414 dJF +0.00454 [+0.00054, +0.00979]  up 31 down 6  added 10,644 prec 0.843 (pair-mean 0.728); on other obj 0.157; missed px recovered 0.0016 (pair-mean 0.0145; w/o Dog tree 0.0031); dJF w/o Dog tree +0.00471, Dog tree +0.00000 (recovered 0.0000)
+      recovered by class: outside 0.0026 of 2,378,298; occluded 0.0046 of 532,327; nodepth 0.0001 of 2,370,444
+   CLEAN67: base 0.6461 dJF +0.00067 [+0.00002, +0.00160] up 18 down 0  prec 0.913 recovered 0.0008
+   NOT-UC n=3160: dJF +0.00052 [+0.00026, +0.00082] up 1209 down 392 added 599,991 prec 0.511
+
+SENSITIVITY RANGES (one constant at a time around the registered config; no value selected): dJF ALL | UC140 | CLEAN67
+   best_ov    [+0.00006, +0.00046] | [+0.00024, +0.00310] | [+0.00040, +0.00097]
+   best_iou   [+0.00031, +0.00049] | [+0.00043, +0.00309] | [+0.00039, +0.00062]
+   union_maj  [+0.00010, +0.00027] | [+0.00038, +0.00142] | [+0.00045, +0.00217]
+   union_all  [-0.00092, +0.00012] | [+0.00436, +0.01393] | [+0.00122, +0.00489]
+   oracle     [+0.00069, +0.00140] | [+0.00454, +0.01901] | [+0.00042, +0.00169]
+
+FUNNEL (TAU 0.5, split, MIN_PROJ_PX 20): fraction of missed px that survive each step (first column: the union of ALL detections of the name, i.e. the detector's reach)
+   best_ov    all      missed  29,044,825  name-union 0.2090  in S 0.0269  & ref-invisible 0.0145  & unclaimed 0.0105  & 8-connected 0.0099  & uncontested 0.0094
+   best_ov    uc140    missed   5,545,786  name-union 0.5070  in S 0.0123  & ref-invisible 0.0100  & unclaimed 0.0034  & 8-connected 0.0011  & uncontested 0.0011
+   best_ov    clean67  missed   5,327,644  name-union 0.5150  in S 0.0103  & ref-invisible 0.0084  & unclaimed 0.0017  & 8-connected 0.0010  & uncontested 0.0010
+   best_iou   all      missed  29,044,825  name-union 0.2090  in S 0.0285  & ref-invisible 0.0162  & unclaimed 0.0105  & 8-connected 0.0099  & uncontested 0.0094
+   best_iou   uc140    missed   5,545,786  name-union 0.5070  in S 0.0215  & ref-invisible 0.0192  & unclaimed 0.0037  & 8-connected 0.0015  & uncontested 0.0014
+   best_iou   clean67  missed   5,327,644  name-union 0.5150  in S 0.0199  & ref-invisible 0.0180  & unclaimed 0.0021  & 8-connected 0.0014  & uncontested 0.0013
+   union_maj  all      missed  29,044,825  name-union 0.2090  in S 0.0300  & ref-invisible 0.0192  & unclaimed 0.0140  & 8-connected 0.0134  & uncontested 0.0133
+   union_maj  uc140    missed   5,545,786  name-union 0.5070  in S 0.0254  & ref-invisible 0.0234  & unclaimed 0.0081  & 8-connected 0.0075  & uncontested 0.0075
+   union_maj  clean67  missed   5,327,644  name-union 0.5150  in S 0.0260  & ref-invisible 0.0240  & unclaimed 0.0081  & 8-connected 0.0077  & uncontested 0.0077
+   union_all  all      missed  29,044,825  name-union 0.2090  in S 0.2090  & ref-invisible 0.1891  & unclaimed 0.1589  & 8-connected 0.0581  & uncontested 0.0561
+   union_all  uc140    missed   5,545,786  name-union 0.5070  in S 0.5070  & ref-invisible 0.5042  & unclaimed 0.4813  & 8-connected 0.0464  & uncontested 0.0434
+   union_all  clean67  missed   5,327,644  name-union 0.5150  in S 0.5150  & ref-invisible 0.5130  & unclaimed 0.4948  & 8-connected 0.0438  & uncontested 0.0437
+   oracle     all      missed  29,044,825  name-union 0.2090  in S 0.0965  & ref-invisible 0.0845  & unclaimed 0.0788  & 8-connected 0.0121  & uncontested 0.0116
+   oracle     uc140    missed   5,545,786  name-union 0.5070  in S 0.3656  & ref-invisible 0.3635  & unclaimed 0.3497  & 8-connected 0.0049  & uncontested 0.0049
+   oracle     clean67  missed   5,327,644  name-union 0.5150  in S 0.3681  & ref-invisible 0.3669  & unclaimed 0.3581  & 8-connected 0.0008  & uncontested 0.0008
+
+LEAK of the raw selected S_o vs target GT (scored pairs; TAU 0.5 split). classes at precision threshold tau:
+   clean (dom = o, prec >= tau) / spill (dom = o, prec < tau) / larger (dom != o, S holds >= 50 % of GT_o) / different (dom != o, < 50 %), different split into dom = other object | dom = unlabelled
+   best_ov    all    n  2049  clean 0.884 [0.811-0.914]  spill 0.030 [0.001-0.104]  larger 0.014  different 0.071 (obj 0.071 / unlabelled 0.000); dom != o 0.085; pixel precision of S 0.881, of S & ref-invisible 0.906; median |S|/|GT| 0.95
+   best_ov    uc140  n    56  clean 0.536 [0.429-0.554]  spill 0.018 [0.000-0.125]  larger 0.018  different 0.429 (obj 0.429 / unlabelled 0.000); dom != o 0.446; pixel precision of S 0.806, of S & ref-invisible 0.868; median |S|/|GT| 1.00
+   best_ov    segments on seeded objects absent from the target GT: 45 (1,584,213 px)
+   best_iou   all    n  2049  clean 0.898 [0.823-0.925]  spill 0.028 [0.001-0.103]  larger 0.011  different 0.063 (obj 0.063 / unlabelled 0.000); dom != o 0.074; pixel precision of S 0.916, of S & ref-invisible 0.915; median |S|/|GT| 0.95
+   best_iou   uc140  n    56  clean 0.536 [0.429-0.554]  spill 0.018 [0.000-0.125]  larger 0.018  different 0.429 (obj 0.429 / unlabelled 0.000); dom != o 0.446; pixel precision of S 0.802, of S & ref-invisible 0.862; median |S|/|GT| 1.00
+   best_iou   segments on seeded objects absent from the target GT: 45 (1,584,168 px)
+   union_maj  all    n  1805  clean 0.973 [0.897-0.997]  spill 0.024 [0.000-0.100]  larger 0.000  different 0.003 (obj 0.003 / unlabelled 0.000); dom != o 0.003; pixel precision of S 0.984, of S & ref-invisible 0.984; median |S|/|GT| 0.94
+   union_maj  uc140  n    26  clean 1.000 [0.846-1.000]  spill 0.000 [0.000-0.154]  larger 0.000  different 0.000 (obj 0.000 / unlabelled 0.000); dom != o 0.000; pixel precision of S 0.993, of S & ref-invisible 0.991; median |S|/|GT| 0.59
+   union_maj  segments on seeded objects absent from the target GT: 1 (9,602 px)
+   union_all  all    n  2363  clean 0.215 [0.176-0.282]  spill 0.118 [0.051-0.157]  larger 0.490  different 0.177 (obj 0.177 / unlabelled 0.000); dom != o 0.667; pixel precision of S 0.391, of S & ref-invisible 0.474; median |S|/|GT| 4.80
+   union_all  uc140  n    77  clean 0.208 [0.208-0.208]  spill 0.000 [0.000-0.000]  larger 0.338  different 0.455 (obj 0.455 / unlabelled 0.000); dom != o 0.792; pixel precision of S 0.513, of S & ref-invisible 0.647; median |S|/|GT| 22.04
+   union_all  segments on seeded objects absent from the target GT: 351 (42,177,383 px)
+   oracle     all    n  2072  clean 0.915 [0.837-0.943]  spill 0.029 [0.001-0.108]  larger 0.011  different 0.045 (obj 0.045 / unlabelled 0.000); dom != o 0.056; pixel precision of S 0.930, of S & ref-invisible 0.931; median |S|/|GT| 0.95
+   oracle     uc140  n    63  clean 0.556 [0.460-0.635]  spill 0.095 [0.016-0.190]  larger 0.016  different 0.333 (obj 0.333 / unlabelled 0.000); dom != o 0.349; pixel precision of S 0.830, of S & ref-invisible 0.892; median |S|/|GT| 1.05
+   oracle     segments on seeded objects absent from the target GT: 0 (0 px)
+
+SELECTION QUALITY (TAU 0.5 split): among scored pairs whose pool is non-empty, how often the rule picks the GT-best detection, and the GT IoU of the pick
+   best_ov   all    pool non-empty 2363, selected 2049, pick = GT-best 0.918; mean GT IoU of pick 0.733 vs GT-best 0.752 (same selected pairs)
+   best_ov   uc140  pool non-empty 77, selected 56, pick = GT-best 0.750; mean GT IoU of pick 0.322 vs GT-best 0.359 (same selected pairs)
+   best_iou  all    pool non-empty 2363, selected 2049, pick = GT-best 0.894; mean GT IoU of pick 0.735 vs GT-best 0.752 (same selected pairs)
+   best_iou  uc140  pool non-empty 77, selected 56, pick = GT-best 0.714; mean GT IoU of pick 0.320 vs GT-best 0.359 (same selected pairs)
+
+PRIMARY [best_ov|0.5|split|20] by object type / name multiplicity: n  dJF  added  prec | UC140 n  dJF  recovered
+   type=dynamic         864  +0.00065      41,637  0.753 |  22  +0.00005  0.0026
+   type=env             445  -0.00019     449,560  0.344 |  36  +0.00027  0.0009
+   type=static         1991  +0.00025     135,995  0.641 |  82  +0.00075  0.0030
+   name=scene-unique    993  -0.00010     487,194  0.356 |  56  +0.00018  0.0009
+   name=shared         2307  +0.00046     139,998  0.711 |  84  +0.00074  0.0058
+
+PRIMARY [best_ov|0.5|split|20] per scene: n  base J&F  dJF  added px  precision  (UC pairs: dJF)
+   AlexaMeadeExhibit     300  0.9097  -0.00040     124,821  0.228   (7: +0.0000)
+   AlexaMeadeFacePaint    90  0.9277  +0.00050      22,081  0.862   (0: +nan)
+   Barn                  300  0.9038  +0.00020      36,771  0.547   (23: +0.0019)
+   Blocks                149  0.8946  +0.00002       1,310  0.803   (10: +0.0000)
+   Breakfast             241  0.8785  -0.00039      21,902  0.678   (15: +0.0006)
+   CBABasketball         171  0.8681  +0.00186       8,188  0.776   (18: +0.0003)
+   Carpark               220  0.9417  +0.00033       4,265  0.732   (2: +0.0002)
+   CoffeeMartini         385  0.9382  +0.00114      36,244  0.775   (12: +0.0035)
+   Dog                    65  0.8580  -0.00110     248,929  0.334   (5: -0.0001)
+   Fencing                80  0.9506  +0.00004       1,704  0.866   (0: +nan)
+   FlameSteak            320  0.9074  +0.00013      17,748  0.581   (5: +0.0000)
+   Frog                   50  0.9841  +0.00006       1,042  0.896   (0: +nan)
+   MATF                  165  0.8431  +0.00067      13,454  0.605   (16: -0.0017)
+   MartialArts           155  0.9314  +0.00007      11,865  0.577   (6: +0.0000)
+   Painter               230  0.9305  +0.00007       7,581  0.674   (5: +0.0000)
+   PoznanStreet          228  0.9174  +0.00048      12,859  0.624   (2: +0.0004)
+   Welder                151  0.8501  +0.00017      56,428  0.497   (14: +0.0000)
+
+PRIMARY [best_ov|0.5|split|20] dev under-cover by (scene, cam, obj): label type uniq n  base  dJF  selected  name-union covers missed  recovered of missed  added prec  | union_all dJF  oracle dJF
+   Dog                camera_0004    3 tree                       env     U 5  0.670  -0.0001  5/5  0.727  0.000 of 2,644,865  0.285 (4,322)  | +0.0002  +0.0000
+   FlameSteak         cam01         32 wall                       env     U 5  0.732  +0.0000  5/5  0.502  0.000 of 1,413,280  1.000 (68)  | +0.0262  +0.0000
+   Welder             camera_0003   13 wall                       env     U 1  0.714  +0.0000  1/1  0.188  0.000 of   275,218  0.368 (307)  | +0.0007  +0.0000
+   CBABasketball      v06           20 grandstand                 env     U 5  0.436  +0.0000  0/5  0.000  0.000 of   257,103  nan (0)  | +0.0000  +0.0000
+   CBABasketball      v24           20 grandstand                 env     U 5  0.360  +0.0000  0/5  0.000  0.000 of   164,727  nan (0)  | +0.0000  +0.0000
+   Barn               v0            23 ground                     env     U 3  0.784  +0.0031  3/3  0.030  0.020 of   157,400  0.973 (3,206)  | +0.0031  +0.0031
+   CBABasketball      v06           18 billboard_or_Bulletin_Board static  U 5  0.692  +0.0000  0/5  0.000  0.000 of   157,136  nan (0)  | +0.0000  +0.0000
+   MartialArts        v13           11 rig                        env     U 5  0.754  +0.0000  0/5  0.000  0.000 of   118,672  nan (0)  | +0.0000  +0.0000
+   Breakfast          v9             8 chair_or_seat              static  S 5  0.589  +0.0016  5/5  0.883  0.004 of    48,014  1.000 (184)  | +0.0016  +0.0017
+   Welder             camera_0004   14 helmet                     static  S 3  0.000  +0.0000  3/3  0.000  0.000 of    42,026  nan (0)  | +0.0000  +0.0000
+   CoffeeMartini      cam10         12 cushion_or_carpet          static  U 5  0.740  +0.0000  0/5  0.000  0.000 of    34,677  nan (0)  | +0.0000  +0.0000
+   Welder             camera_0003    5 fire                       dynamic U 2  0.661  +0.0000  0/2  0.000  0.000 of    25,205  nan (0)  | +0.0000  +0.0000
+   Welder             camera_0004    8 box                        static  S 3  0.164  +0.0000  0/3  0.957  0.000 of    24,589  nan (0)  | +0.0526  +0.0516
+   MATF               S1_CAM_1      26 bottle_or_cup              static  S 5  0.159  -0.0055  3/5  0.936  0.000 of    22,921  0.000 (2,239)  | +0.0671  +0.4064
+   Welder             camera_0003   14 helmet                     static  S 3  0.016  +0.0000  1/3  0.000  0.000 of    22,257  nan (0)  | +0.0000  +0.0000
+   Breakfast          v9            26 floor                      env     U 5  0.548  +0.0000  0/5  0.000  0.000 of    19,556  nan (0)  | +0.0000  +0.0000
+   Painter            v0             9 table_or_desk              static  U 5  0.657  +0.0000  1/5  0.014  0.000 of    14,156  nan (0)  | +0.0000  +0.0000
+   Blocks             cam0          14 chair_or_seat              static  S 5  0.313  +0.0001  5/5  0.921  0.000 of    11,825  0.333 (6)  | +0.0001  +0.0001
+   CoffeeMartini      cam02         29 bottle_or_cup              static  S 5  0.607  +0.0000  5/5  0.839  0.000 of    11,790  nan (0)  | +0.0000  +0.0000
+   Breakfast          v5            26 floor                      env     U 1  0.771  +0.0004  1/1  0.004  0.004 of    10,902  0.932 (44)  | +0.0004  +0.0004
+   Barn               v0            14 cart                       static  S 4  0.781  +0.0000  0/4  0.000  0.000 of     9,008  nan (0)  | +0.0000  +0.0000
+   Welder             camera_0003    8 box                        static  S 2  0.352  +0.0000  0/2  0.992  0.000 of     8,942  nan (0)  | +0.0741  +0.1284
+   CoffeeMartini      cam02         25 bottle_or_cup              static  S 2  0.701  +0.0212  2/2  0.218  0.153 of     6,329  0.765 (1,262)  | +0.0022  +0.0212
+   Barn               v0             1 tool                       dynamic S 4  0.722  -0.0009  4/4  0.152  0.001 of     5,383  0.104 (77)  | -0.0009  -0.0009
+   Barn               v10           11 wood                       static  S 5  0.702  +0.0076  3/5  0.514  0.032 of     4,732  0.890 (172)  | +0.0297  +0.0297
+   AlexaMeadeExhibit  camera_0003   24 handicrafts                static  S 5  0.667  +0.0000  0/5  0.000  0.000 of     4,660  nan (0)  | +0.0000  +0.0000
+   Barn               v10           14 cart                       static  S 2  0.789  +0.0000  0/2  0.000  0.000 of     4,438  nan (0)  | +0.0000  +0.0000
+   Barn               v10            1 tool                       dynamic S 3  0.743  -0.0003  3/3  0.188  0.000 of     4,053  0.071 (14)  | -0.0003  -0.0003
+   CBABasketball      v06           17 basket                     static  U 2  0.709  +0.0000  0/2  0.000  0.000 of     3,553  nan (0)  | +0.0000  +0.0000
+   Carpark            v8            12 tree                       env     U 1  0.750  +0.0004  1/1  0.004  0.004 of     3,515  1.000 (14)  | +0.0004  +0.0004
+   CBABasketball      v06            5 person                     dynamic S 1  0.773  +0.0047  1/1  0.313  0.052 of     1,746  0.957 (94)  | +0.0047  +0.0047
+   PoznanStreet       v0             5 tree                       dynamic S 1  0.784  +0.0005  1/1  0.005  0.003 of     1,719  1.000 (5)  | +0.0005  +0.0005
+   MATF               S1_CAM_1       6 person                     dynamic S 2  0.371  +0.0000  1/2  0.392  0.000 of     1,499  nan (0)  | +0.0000  +0.0000
+   AlexaMeadeExhibit  camera_0004   24 handicrafts                static  S 2  0.785  +0.0000  0/2  0.000  0.000 of     1,441  nan (0)  | +0.0000  +0.0000
+   MATF               S1_CAM_1      21 microphone                 static  S 3  0.000  +0.0000  0/3  0.000  0.000 of     1,398  nan (0)  | +0.0000  +0.0000
+   MartialArts        v13           15 door                       static  U 1  0.694  +0.0000  0/1  0.000  0.000 of     1,069  nan (0)  | +0.0000  +0.0000
+   Blocks             cam0           3 toy                        dynamic S 3  0.000  +0.0000  0/3  0.000  0.000 of       957  nan (0)  | +0.0000  +0.0000
+   MATF               S1_CAM_1       7 person                     dynamic S 2  0.346  +0.0000  0/2  0.000  0.000 of       890  nan (0)  | +0.0000  +0.0000
+   MATF               S1_CAM_10     10 bottle_or_cup              static  S 4  0.546  +0.0000  0/4  0.000  0.000 of       803  nan (0)  | +0.0000  +0.0000
+   Barn               v0            22 bag_or_package             static  S 1  0.689  +0.0000  0/1  0.000  0.000 of       789  nan (0)  | +0.0000  +0.0000
+   Barn               v10           22 bag_or_package             static  S 1  0.735  +0.0000  0/1  0.000  0.000 of       582  nan (0)  | +0.0000  +0.0000
+   Breakfast          v9            24 bottle_or_cup              static  S 1  0.462  +0.0000  0/1  0.000  0.000 of       483  nan (0)  | +0.0000  +0.0000
+   PoznanStreet       v8             3 car                        dynamic S 1  0.787  +0.0003  1/1  0.107  0.016 of       431  0.467 (15)  | +0.0003  +0.0003
+   Carpark            v0            22 car                        static  S 1  0.776  +0.0000  1/1  0.029  0.000 of       315  nan (0)  | +0.0000  +0.0000
+   Blocks             cam0           4 toy                        dynamic S 1  0.713  +0.0000  0/1  0.000  0.000 of       290  nan (0)  | +0.0000  +0.0000
+   Breakfast          v5            14 bottle_or_cup              static  S 1  0.000  +0.0000  0/1  0.000  0.000 of       207  nan (0)  | +0.0000  +0.0000
+   Breakfast          v5            24 bottle_or_cup              static  S 1  0.000  +0.0000  0/1  0.000  0.000 of       113  nan (0)  | +0.0000  +0.0000
+   Blocks             cam9           3 toy                        dynamic S 1  0.488  +0.0000  0/1  0.000  0.000 of        62  nan (0)  | +0.0000  +0.0000
+   Breakfast          v9            28 bottle_or_cup              dynamic S 1  0.778  +0.0000  0/1  0.000  0.000 of        60  nan (0)  | +0.0000  +0.0000
