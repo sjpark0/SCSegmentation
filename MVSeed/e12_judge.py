@@ -63,7 +63,8 @@ def _same_code(a, b):
     import subprocess
     if not a or not b:
         return False
-    r = subprocess.run(["git", "-C", REPO, "diff", "--quiet", a, b, "--", "stage1/geomem", "stage1/methods"], capture_output=True)
+    r = subprocess.run(["git", "-C", REPO, "diff", "--quiet", a, b, "--", "stage1/geomem", "stage1/methods", "stage1/mvseg2d",
+                        "SCSam3/sam3", "SCSam3/demoSCSam3MVOpt"], capture_output=True)
     return r.returncode == 0
 
 
@@ -89,10 +90,12 @@ def zt(arm, k, chain_head=None):
     chk["time"] = time_ratio <= 1.30
     if arm == "geoset_cut0_ft":
         chk["step1_loss"] = float(log[0]["loss"]) == float(alog[0]["loss"])
-    other = os.path.join(RUNS, "geoset_cutall_ft" if arm == "geoset_cut0_ft" else "geoset_cut0_ft", f"fold{k}", "log.csv")
-    if os.path.isfile(other):
-        olog = _rows(other)
+    od = os.path.join(RUNS, "geoset_cutall_ft" if arm == "geoset_cut0_ft" else "geoset_cut0_ft", f"fold{k}")
+    if os.path.isfile(os.path.join(od, "config.json")):             # only a COMPLETE fold of the other arm (review 2026-10-15)
+        olog = _rows(os.path.join(od, "log.csv"))
         chk["stream_identity"] = len(olog) == len(log) and all(a[c] == b[c] for a, b in zip(log, olog) for c in ("objs", "mem_coin", "mem_cam"))
+        # the cut reaches the model: same step-1 batch and streams, M+ reads a dropped reference -> different step-1 loss
+        chk["cut_reaches_model"] = log[0]["loss"] != olog[0]["loss"]
     # reported watch values (P8 ranges; not abort criteria)
     n_mem2 = sum(int(r["n_mem"]) == 2 for r in log) / len(log)
     gf = [float(r["gated_frac"]) for r in log if r["gated_frac"] not in ("", None)]
@@ -103,9 +106,10 @@ def zt(arm, k, chain_head=None):
     if prob == 1.0:
         nc = [int(r["n_cut"]) for r in log]
         no = [len(r["objs"].split()) for r in log]
-        fr = [float(r["cut_frac"]) for r in log if r["cut_frac"]]
+        wsum = sum(float(r["cut_frac"]) * int(r["n_cut"]) for r in log if r["cut_frac"])
         watch.update(steps_with_cut=sum(x >= 1 for x in nc) / len(nc), n_cut_per_obj=_mean(a / b for a, b in zip(nc, no) if b),
-                     cut_frac_mean=_mean(fr))
+                     cut_frac_mean=wsum / sum(nc) if sum(nc) else None)        # over cut objects (object-weighted)
+        chk["cut_fires"] = watch["steps_with_cut"] >= 0.98
     ok = all(chk.values())
     return dict(arm=arm, fold=k, ok=ok, checks=chk, watch=watch)
 
@@ -146,7 +150,7 @@ def vis_block(vrows, groups, ref_cam_unused=None, n_boot=10_000, seed=0):
                 a[si[r["scene"]]] += field_fn(r)
             return a
         g = {}
-        for c in CLS + ("inv",):
+        for c in CLS + ("inv",) + (("on_refgt",) if rs and "gt_on_refgt" in rs[0] else ()):
             gt = sums(lambda r: sum(r[f"gt_{x}"] for x in INV) if c == "inv" else r[f"gt_{c}"])
             hit = {f: sums(lambda r, f=f: sum(r["folders"][folders[f]][f"hit_{x}"] for x in INV) if c == "inv" else r["folders"][folders[f]][f"hit_{c}"])
                    for f in folders}
@@ -158,9 +162,11 @@ def vis_block(vrows, groups, ref_cam_unused=None, n_boot=10_000, seed=0):
                 if not S or not gt.sum():
                     boots[name] = None; continue
                 G = gt[idx].sum(1)
-                d = hit[a][idx].sum(1) / G - hit[b][idx].sum(1) / G
-                boots[name] = dict(delta=rec[a] - rec[b], ci=[float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))])
-            pm = {f: _mean(r["folders"][folders[f]][f"hit_{c}"] / r[f"gt_{c}"] for r in rs if c != "inv" and r[f"gt_{c}"] >= 100)
+                with np.errstate(invalid="ignore", divide="ignore"):
+                    d = hit[a][idx].sum(1) / G - hit[b][idx].sum(1) / G
+                boots[name] = dict(delta=rec[a] - rec[b], ci=[float(np.nanpercentile(d, 2.5)), float(np.nanpercentile(d, 97.5))],
+                                   degenerate=int((G == 0).sum()))
+            pm = {f: _mean(r["folders"][folders[f]][f"hit_{c}"] / r[f"gt_{c}"] for r in rs if r[f"gt_{c}"] >= 100)
                   for f in folders} if c != "inv" else None
             g[c] = dict(gt=int(gt.sum()), recall=rec, diff=boots, pair_mean=pm)
         fp = {f: dict(fp=int(sum(r["folders"][folders[f]]["fp_px"] for r in rs)),
@@ -266,8 +272,10 @@ def stage1():
         fpv = vb["all"]["fp"]
         fp_growth = fpv["Mp"]["fp_vis"] / fpv["C0p"]["fp_vis"] - 1 if fpv["C0p"]["fp_vis"] else None
         V4 = visd is not None and abs(visd["delta"]) <= 0.003 and fp_growth is not None and fp_growth <= 0.10
-        reading = "completes" if (V1 and V2 and V3 and V4) else ("extends but cannot localise" if (V1 or V2) and not V3 else
-                                                                   ("no mechanism effect" if not V1 else "partial"))
+        # registered order (section 3.4): V1 fails -> no mechanism effect; else V3 < 0.5 -> extends but cannot localise;
+        # V1-V4 all -> completes; otherwise partial
+        reading = "no mechanism effect" if not V1 else ("extends but cannot localise" if not V3 else
+                                                        ("completes" if (V2 and V4) else "partial"))
         verdict = dict(V1=V1, V2=V2, V3=V3, V4=V4, reading=reading, V1_r1_outside_good=v1d, V1_noise=v1n,
                        V2_outside_all=v2["Mp-C0p"], V2_noise=v2["C0p-C0"], V3_add_inv_precision=prec, V4_vis_recall=visd, V4_vis_fp_growth=fp_growth)
     # training records
@@ -303,30 +311,68 @@ def stage1():
     P["P1"] = dict(Mp_C0=dmp, C0p_C0=C["C0p-C0"]["paired"]["JF"]["delta"], ok=-0.004 <= dmp <= 0.005)
     if verdict:
         o = vb["all"]["classes"]
+        dlt = lambda c: o[c]["diff"]["Mp-C0p"]["delta"]
+        r1g = verdict["V1_r1_outside_good"]["delta"]
         P["P2"] = dict(r1_outside_good=verdict["V1_r1_outside_good"], outside_all=o["outside"]["diff"]["Mp-C0p"], occluded=o["occluded"]["diff"]["Mp-C0p"],
                        nodepth=o["nodepth"]["diff"]["Mp-C0p"], vis=o["vis"]["diff"]["Mp-C0p"],
                        pred_gt=vb["all"]["fp"]["Mp"]["pred_gt"],
-                       ok=bool(verdict["V1"]) and abs(o["vis"]["diff"]["Mp-C0p"]["delta"]) <= 0.003)
+                       sub=dict(V1=bool(verdict["V1"]), r1_outside_good=0.005 <= r1g <= 0.03, outside_all=0.003 <= dlt("outside") <= 0.02,
+                                occluded=0.0 <= dlt("occluded") <= 0.01, nodepth=abs(dlt("nodepth")) <= 0.03, vis=abs(dlt("vis")) <= 0.003,
+                                pred_gt=0.97 <= vb["all"]["fp"]["Mp"]["pred_gt"] <= 1.00))
+        P["P2"]["ok"] = all(P["P2"]["sub"].values())
         fpg = vb["good"]["fp"]
         P["P3"] = dict(add_inv_precision=verdict["V3_add_inv_precision"],
                        good_inv_fp_growth=fpg["Mp"]["fp_inv"] / fpg["C0p"]["fp_inv"] - 1 if fpg["C0p"]["fp_inv"] else None,
                        ok=verdict["V3_add_inv_precision"] is not None and 0.35 <= verdict["V3_add_inv_precision"] <= 0.60)
+        g3 = P["P3"]["good_inv_fp_growth"]
+        P["P3"]["sub"] = dict(precision=P["P3"]["ok"], fp_growth=g3 is not None and 0.10 <= g3 <= 0.50)
+        P["P3"]["ok"] = all(P["P3"]["sub"].values())
     u = C["Mp-C0p"]["splits"]["under22"]
-    P["P4"] = dict(under22=u["dJF"], ok=-0.02 <= u["dJF"] <= 0.06)
+    named = [("CBABasketball", "v06", 20), ("CBABasketball", "v24", 20), ("MartialArts", "v13", None), ("Welder", "camera_0003", 6),
+             ("FlameSteak", "cam01", None), ("Painter", "v15", 19)]
+    pu = C["Mp-C0p"]["pairs"]
+    def _named(sc, cam, o):
+        return [v for k, v in pu.items() if k.split("|")[0] == sc and k.split("|")[1] == cam and (o is None or int(k.split("|")[2]) == o)]
+    named_d = [x for sc, cam, o in named for x in _named(sc, cam, o)[:1]]
+    dog = pu.get("Dog|camera_0004|3")
+    inel = [pu[f"{k[0]}|{k[1]}|{k[2]}"] for k in under if not elig[k]]
+    P["P4"] = dict(under22=u["dJF"], named_up=sum(x > 0.02 for x in named_d), named_n=len(named_d), dog_tree=dog,
+                   ineligible_max_abs=max((abs(x) for x in inel), default=None),
+                   sub=dict(range=-0.02 <= u["dJF"] <= 0.06, named=sum(x > 0.02 for x in named_d) >= 3,
+                            dog=dog is not None and abs(dog) <= 0.02, ineligible=all(abs(x) <= 0.02 for x in inel)))
+    P["P4"]["ok"] = all(P["P4"]["sub"].values())
     gd = C["Mp-C0p"]["splits"]["good"]
-    P["P5"] = dict(good=gd["dJF"], halluc=res["Mp"]["hallucinations"], fails=res["Mp"]["fails"],
-                   ok=-0.004 <= gd["dJF"] <= 0.004 and res["Mp"]["hallucinations"] <= 16 and res["Mp"]["fails"] <= 17)
+    s14, tw = C["Mp-C0p"]["splits"]["spill14"]["dJF"], C["Mp-C0p"]["splits"]["twin"]["dJF"]
+    P["P5"] = dict(good=gd["dJF"], halluc=res["Mp"]["hallucinations"], fails=res["Mp"]["fails"], spill14=s14, twin=tw,
+                   ok=-0.004 <= gd["dJF"] <= 0.004 and res["Mp"]["hallucinations"] <= 16 and res["Mp"]["fails"] <= 17
+                   and abs(s14) <= 0.02 and abs(tw) <= 0.02)
     sp = C["Mp-C0p"]
     dj, df = sp["paired"]["J"]["delta"], sp["paired"]["F"]["delta"]
     inv20 = sp["splits"].get("inv_ge.2"); tot = sum(x["sum_dJF"] for n, x in sp["splits"].items() if n == "all")
-    P["P6"] = dict(dJ=dj, dF=df, ineligible=sp["splits"]["ineligible"]["dJF"],
-                   inv20_share=(inv20["sum_dJF"] / tot) if inv20 and tot else None,
-                   ok=dj > df and abs(sp["splits"]["ineligible"]["dJF"]) <= 0.002)
-    P["P7"] = dict(conf_share=dict(C0=dec["C0"]["conf_share"], Mp=dec["Mp"]["conf_share"]),
-                   ok=dec["Mp"]["conf_share"] is not None and dec["C0"]["conf_share"] is not None and abs(dec["Mp"]["conf_share"] - dec["C0"]["conf_share"]) <= 0.05)
-    P["P8"] = dict(ok=all(t["ok"] for a in train for t in train[a]) and len(train["Mp"]) == 5 and len(train["C0p"]) == 5)
+    inv_hi = sum(sp["splits"][b]["sum_dJF"] for b in ("inv_.5-.8", "inv_.8-1") if b in sp["splits"])
+    P["P6"] = dict(dJ=dj, dF=df, ineligible=sp["splits"]["ineligible"]["dJF"], eligible=sp["splits"]["eligible"]["dJF"],
+                   inv20_share=(inv20["sum_dJF"] / tot) if inv20 and tot else None, inv_ge_half_sum=inv_hi,
+                   ok=dj > df and abs(sp["splits"]["ineligible"]["dJF"]) <= 0.002
+                   and (inv20 is None or not tot or tot <= 0 or inv20["sum_dJF"] / tot >= 0.70))
+    ro = (dec["Mp"]["views_with_ref_only_frac"], dec["C0"]["views_with_ref_only_frac"])
+    P["P7"] = dict(conf_share=dict(C0=dec["C0"]["conf_share"], Mp=dec["Mp"]["conf_share"]), ref_only=dict(C0=ro[1], Mp=ro[0]),
+                   r1_outside_good=verdict["V1_r1_outside_good"] if verdict else None,
+                   ok=dec["Mp"]["conf_share"] is not None and dec["C0"]["conf_share"] is not None and abs(dec["Mp"]["conf_share"] - dec["C0"]["conf_share"]) <= 0.05
+                   and None not in ro and abs(ro[0] - ro[1]) <= 0.05 and bool(verdict and verdict["V1_r1_outside_good"]["delta"] > 0))
+    inv_ok = all(t["ok"] for a in train for t in train[a]) and len(train["Mp"]) == 5 and len(train["C0p"]) == 5
+    rng8 = []
+    for tc, tm in zip(train["C0p"], train["Mp"]):
+        wc, wm = tc["watch"], tm["watch"]
+        rng8.append(dict(fold=tc["fold"], c0p_last100=abs(wc["last100_loss"] - wc["adopted_last100_loss"]) <= 0.03,
+                         c0p_nmem2=0.48 <= wc["n_mem2_share"] <= 0.52, mp_last100=wm["last100_loss"] <= wm["adopted_last100_loss"] + 0.10
+                         and wm["last100_loss"] > wc["last100_loss"], mp_nmem2=0.40 <= wm["n_mem2_share"] <= 0.50,
+                         mp_gated=wm["gated_frac_mean"] is not None and 0.20 <= wm["gated_frac_mean"] <= 0.35))
+    P["P8"] = dict(invariants=inv_ok, per_fold=rng8, ok=inv_ok and bool(rng8) and all(all(v for k, v in r.items() if k != "fold") for r in rng8))
     out = _load_json(OUT) if os.path.isfile(OUT) else {}
-    out.update({"prereg": "docs/stage1-E12-prereg.md", "stage1": dict(arms=res, contrasts=C, gate=gate, passing_tags=passing, visibility=vb,
+    notes = ["C0' - C0 mixes (a) GPU nondeterminism, (b) a different object-subset / memory-coin / memory-camera stream from the "
+             "first memory step on (the adopted checkpoints were trained at SCSegmentation2D 2662a84, which drew the memory camera "
+             "from the shared rng; memory_rng came with a7d2926), and (c) port differences (review 2026-10-15). M+ - C0' share one stream."]
+    out.update({"prereg": "docs/stage1-E12-prereg.md", "stage1": dict(notes=notes, arms=res, contrasts=C, gate=gate, passing_tags=passing, visibility=vb,
                                                                        verdict=verdict, training=train, decode=dec, Z7=z7, predictions=P)})
     os.makedirs(OUT_DIR, exist_ok=True)
     json.dump(out, open(OUT, "w"), indent=1)

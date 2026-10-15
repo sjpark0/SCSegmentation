@@ -16,7 +16,7 @@ Runs inside scsam3 (torch, GPU if available):
         --out /host<repo>/MVSeed/runs/e12/vis.json  FOLDER [FOLDER ...]  [--pair NEW:OLD ...]
 Output: {"meta", "rows": [{scene, cam, obj, gt_<cls>, "folders": {F: {pred_px, hit_<cls>, fp_<cls>}},
 "pairs": {"NEW:OLD": {add_<cls>, add_tp_<cls>, rem_<cls>, rem_tp_<cls>}}}]} with <cls> in px (all) / vis / outside /
-occluded / nodepth.
+occluded / nodepth / on_refgt (visible and on the same object's projected reference GT).
 """
 import argparse
 import json
@@ -45,13 +45,20 @@ def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
 
-def classes(cache, cam, ref, hw, ref_lab_np):
+def classes(cache, cam, ref, hw, ref_lab_np, objs, chunk=16):
+    """Visibility classes [h,w] of view `cam` w.r.t. the reference, plus pm [B,h,w]: the same object's reference GT
+    projected into `cam` (the 'on reference GT' class of train_vis.py; review 2026-10-15)."""
     pts, valid_full, depth_ref, K_ref = reproj_inputs(cache, cam, ref, hw, DEV)
     _, inside = reproject_coords(pts, K_ref, hw, depth_ref=None)
     inside = inside & valid_full
-    ref_any = torch.from_numpy(ref_lab_np).to(DEV) != 0
-    _, vis = project_reference_masks(ref_any[None], pts, valid_full, depth_ref, K_ref)
-    out = {"vis": vis, "outside": valid_full & ~inside, "occluded": inside & ~vis, "nodepth": ~valid_full}
+    ref_lab = torch.from_numpy(ref_lab_np).to(DEV)
+    _, vis = project_reference_masks((ref_lab != 0)[None], pts, valid_full, depth_ref, K_ref)
+    pm = torch.zeros((len(objs),) + tuple(hw), dtype=torch.bool, device=DEV)
+    for i in range(0, len(objs), chunk):
+        sub = objs[i:i + chunk]
+        pm[i:i + len(sub)], _ = project_reference_masks(ref_lab[None] == torch.tensor(sub, device=DEV)[:, None, None],
+                                                        pts, valid_full, depth_ref, K_ref)
+    out = {"vis": vis, "outside": valid_full & ~inside, "occluded": inside & ~vis, "nodepth": ~valid_full, "pm": pm}
     del pts, valid_full, depth_ref, K_ref, inside
     return out
 
@@ -59,7 +66,7 @@ def classes(cache, cam, ref, hw, ref_lab_np):
 def counts(m, C):
     """m [B,h,w] bool -> {px, vis, outside, occluded, nodepth} int arrays [B]."""
     f = lambda x: x.flatten(1).sum(1).cpu().numpy().astype(np.int64)
-    return {"px": f(m), **{c: f(m & C[c][None]) for c in CLASSES}}
+    return {"px": f(m), **{c: f(m & C[c][None]) for c in CLASSES}, "on_refgt": f(m & C["pm"] & C["vis"][None])}
 
 
 def read_mask(scene, folder, cam, obj, hw):
@@ -100,7 +107,7 @@ def main():
         oi = {o: i for i, o in enumerate(objs)}
         for cam in sorted({r["cam"] for r in srows}):
             gt_lab = load_labelmap(os.path.join(DATA, scene, "masks", f"{cam}.png"))
-            C = classes(cache, cam, ref, hw, ref_lab)
+            C = classes(cache, cam, ref, hw, ref_lab, objs)
             gt = torch.from_numpy(gt_lab).to(DEV)[None] == torch.tensor(objs, device=DEV)[:, None, None]
             g = counts(gt, C)
             preds = {f: torch.from_numpy(np.stack([read_mask(scene, f, cam, o, hw) for o in objs])).to(DEV) for f in a.folders}

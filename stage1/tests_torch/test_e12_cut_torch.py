@@ -165,17 +165,20 @@ def test_train_step_with_drop_reaches_both_reads(monkeypatch):
     from geomem import train as T
     w, opt, b, rng = _pred_batch("geoset_cutall_ft")
     b["ref_drop"] = _drop_for(b)
-    seen = []
+    seen, later = [], []
     orig = w.decode_view
 
     def spy(backbone_out, B, memory, *a, **kw):
         seen.append(memory.views[0].drop)
+        later.append([v.drop for v in memory.views[1:]])
         return orig(backbone_out, B, memory, *a, **kw)
     monkeypatch.setattr(w, "decode_view", spy)
     monkeypatch.setattr(T, "PRED_MEM_TAU", 0.0)                 # every present object kept -> the second memory is used
     opt.zero_grad(set_to_none=True)
     terms = T.train_one_step(w, b, "geoset_cutall_ft", rng)
     assert len(seen) == 2 and all(d is not None and torch.equal(d, b["ref_drop"]) for d in seen)
+    if terms["n_mem"] == 2:                                     # the predicted second memory carries no drop
+        assert len(later[1]) == 1 and later[1][0] is None
     assert math.isfinite(terms["loss"]) and terms["n_mem"] in (1, 2)
     assert w.geo_bias.w.grad is not None and w.geo_bias.w.grad.abs().sum() > 0
     assert any(p.grad is not None and p.grad.abs().sum() > 0 for p in w.tracker.transformer.encoder.parameters() if p.requires_grad)

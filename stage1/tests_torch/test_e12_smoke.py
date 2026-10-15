@@ -38,6 +38,7 @@ def test_train_smokes_stream_identity(tmp_path):
         assert [r[col] for r in rows["geoset_pred_ft"]] == [r[col] for r in rows["geoset_cut0_ft"]] == \
                [r[col] for r in rows["geoset_cutall_ft"]], col
     assert rows["geoset_pred_ft"][0]["loss"] == rows["geoset_cut0_ft"][0]["loss"]
+    assert rows["geoset_cutall_ft"][0]["loss"] != rows["geoset_pred_ft"][0]["loss"], "the cut never reached the model"
     assert "cut_prob" not in cfg["geoset_pred_ft"] and all(r["cut"] == "" for r in rows["geoset_pred_ft"])
     assert cfg["geoset_cut0_ft"]["cut_prob"] == 0.0 and all(r["cut"] == "0" and r["n_cut"] == "0" for r in rows["geoset_cut0_ft"])
     assert cfg["geoset_cutall_ft"]["cut_prob"] == 1.0 and all(r["cut"] == "1" for r in rows["geoset_cutall_ft"])

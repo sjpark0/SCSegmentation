@@ -64,6 +64,15 @@ if has train; then
     done
   done
 fi
+if has zt && ! has train; then     # zt over the folds already trained (review 2026-10-15: never skipped silently)
+  for arm in ${ARMS}; do
+    for k in 0 1 2 3 4; do
+      "${PY}" "${ROOT}/MVSeed/e12_judge.py" --zt "${arm}" "${k}" --head "${HEAD}" > "${LOG}/e12_zt_${arm}_fold${k}.log" 2>&1
+      st=$?; echo "$(ts) zt ${arm} fold${k} exit ${st}  $(cut -c1-400 "${LOG}/e12_zt_${arm}_fold${k}.log")"
+      [[ ${st} -eq 0 ]] || { echo "$(ts) ABORT: zt failed (training invariants, prereg section 7)"; exit 1; }
+    done
+  done
+fi
 if has decode; then
   for arm in ${ARMS}; do
     echo "$(ts) decode ${arm} (reproj gate, --xcl out) -> ${arm}_rep_x_e12 / ${arm}_r1_x_e12"
@@ -87,7 +96,7 @@ if has eval; then
     [[ ${name} == geoset_pred_ft_rep_x_e11 ]] && continue
     ( cd "${OUTDIR}" && docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${OUTDIR}" scsam3 \
         python "/host${ROOT}/MVSeed/refloss/seedfail.py" "s1:${name}" "sf_${name}.json" ) > "${LOG}/e12_sf_${name}.log" 2>&1
-    echo "$(ts) seedfail ${name} exit $?"
+    st=$?; echo "$(ts) seedfail ${name} exit ${st}"
   done
 fi
 if has vis; then
