@@ -667,5 +667,234 @@
     "ok": true
    }
   }
+ },
+ "stage1": {
+  "C0": {
+   "name": "geoset_pred_ft_rep_x_e11",
+   "J": 0.8777836850653031,
+   "F": 0.9517460673009038,
+   "JF": 0.9147648761831035,
+   "fails": 14,
+   "hallucinations": 13
+  },
+  "arm": {
+   "name": "geoset_pred_ft_rep_xs_e14",
+   "tag": "geoset_rep_xs",
+   "J": 0.8811181051176767,
+   "F": 0.9536753682514643,
+   "JF": 0.9173967366845704,
+   "fails": 14,
+   "hallucinations": 13
+  },
+  "paired": {
+   "J": {
+    "delta": 0.003334420052373525,
+    "ci": [
+     0.0021343848854698455,
+     0.004667546859097929
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.003016158114488965,
+     "AlexaMeadeFacePaint": 0.004646070988624018,
+     "Barn": 0.003034887550504406,
+     "Blocks": 0.0008978025495673947,
+     "Breakfast": 0.002514910885999311,
+     "CBABasketball": 0.007513045748955394,
+     "Carpark": 0.0039896851185337034,
+     "CoffeeMartini": 0.001807190541726733,
+     "Dog": -0.0012584967819957438,
+     "Fencing": 0.0030271743426757425,
+     "FlameSteak": 0.002526967002723035,
+     "Frog": 0.0008907093329147964,
+     "MATF": 0.007509961866742909,
+     "MartialArts": 0.0018594386557093667,
+     "Painter": 0.0021978761957667237,
+     "PoznanStreet": 0.0026280466286425774,
+     "Welder": 0.009883712148770596
+    }
+   },
+   "F": {
+    "delta": 0.0019293009505604178,
+    "ci": [
+     -0.00035563315849657595,
+     0.004675349814265527
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.0024120095801102304,
+     "AlexaMeadeFacePaint": -0.002093982943276451,
+     "Barn": 0.0024829063651418126,
+     "Blocks": 0.0017103701344042266,
+     "Breakfast": 0.004226483120348901,
+     "CBABasketball": 0.002874607002645746,
+     "Carpark": 0.003392272635069471,
+     "CoffeeMartini": -0.0018936102075979289,
+     "Dog": -0.008716356458052466,
+     "Fencing": 0.00047305962421673176,
+     "FlameSteak": 0.00234372621673129,
+     "Frog": 0.0012993389706943415,
+     "MATF": 0.0017937027929106897,
+     "MartialArts": -0.0016187539585656996,
+     "Painter": 0.003148774862349879,
+     "PoznanStreet": 0.0017961613758368244,
+     "Welder": 0.019167407046559504
+    }
+   },
+   "JF": {
+    "delta": 0.0026318605014669615,
+    "ci": [
+     0.000999764982236601,
+     0.004546453944632337
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.002714083847299542,
+     "AlexaMeadeFacePaint": 0.0012760440226733394,
+     "Barn": 0.002758896957823387,
+     "Blocks": 0.0013040863419858661,
+     "Breakfast": 0.003370697003174161,
+     "CBABasketball": 0.005193826375800681,
+     "Carpark": 0.003690978876801476,
+     "CoffeeMartini": -4.32098329357089e-05,
+     "Dog": -0.00498742662002416,
+     "Fencing": 0.0017501169834462926,
+     "FlameSteak": 0.002435346609727107,
+     "Frog": 0.0010950241518046244,
+     "MATF": 0.004651832329826688,
+     "MartialArts": 0.00012034234857183357,
+     "Painter": 0.0026733255290585234,
+     "PoznanStreet": 0.002212104002239701,
+     "Welder": 0.014525559597664994
+    }
+   }
+  },
+  "good_hier": {
+   "delta": 0.0015683305928427228,
+   "ci": [
+    0.0001782549523811301,
+    0.002649003470174072
+   ]
+  },
+  "gate": {
+   "G1": true,
+   "G2": true,
+   "worst_scene": "Dog",
+   "worst_delta": -0.00498742662002416,
+   "pass": true
+  },
+  "audit_required": false,
+  "audited": false,
+  "splits": {
+   "good": {
+    "n": 609,
+    "dJF": 0.001924970194236883,
+    "up": 42,
+    "down": 16
+   },
+   "fail": {
+    "n": 55,
+    "dJF": 0.011695904209413608,
+    "up": 14,
+    "down": 0
+   },
+   "good_<2k": {
+    "n": 41,
+    "dJF": 2.4824052789522602e-05,
+    "up": 0,
+    "down": 0
+   },
+   "good_2k-10k": {
+    "n": 123,
+    "dJF": 0.0003434185831324854,
+    "up": 2,
+    "down": 1
+   },
+   "good_10k-100k": {
+    "n": 303,
+    "dJF": 0.0013381492221209465,
+    "up": 6,
+    "down": 3
+   },
+   "good_>=100k": {
+    "n": 142,
+    "dJF": 0.005095699733084146,
+    "up": 34,
+    "down": 12
+   }
+  },
+  "failure_kinds": {
+   "C0": {
+    "under-cover": 13,
+    "boundary/mixed": 14,
+    "spill-onto-other(twin)": 8,
+    "under-cover(beyond c_ini)": 10,
+    "miss": 3,
+    "spill-onto-other": 5,
+    "wrong-object": 2
+   },
+   "arm": {
+    "under-cover": 13,
+    "spill-onto-other(twin)": 9,
+    "boundary/mixed": 12,
+    "under-cover(beyond c_ini)": 8,
+    "miss": 3,
+    "spill-onto-other": 5,
+    "wrong-object": 2
+   },
+   "dJF_by_C0_kind": {
+    "spill-onto-other(twin)": -0.001070168721699287,
+    "spill-onto-other": 0.0023674244067754756,
+    "wrong-object": -0.0007325027242211513,
+    "under-cover": 0.008295840983951983,
+    "under-cover(beyond c_ini)": 0.014420036290436127,
+    "miss": 0.0,
+    "boundary/mixed": 0.02781554778644076
+   }
+  },
+  "Z1": {
+   "scenes": 17,
+   "config_ok": 17,
+   "kept_mismatch": 0,
+   "emptied": 0,
+   "keyset_lost": 0,
+   "counter_ok": 17,
+   "removed_same": 0,
+   "removed_on": 0,
+   "removed_off": 0,
+   "flips_on": 2,
+   "flips_off": 0,
+   "added_px": 42874194,
+   "object_views": 7845,
+   "bad": [],
+   "ok": true
+  },
+  "Z2": {
+   "scenes_ok": 17,
+   "conf_same": 17,
+   "png_diff": 0,
+   "key_mismatch": 0,
+   "missing": [],
+   "ok": true
+  },
+  "predictions": {
+   "P3": {
+    "delta": 0.0026318605014669615,
+    "in_80": true,
+    "dJ_gt_dF": true,
+    "fails": 14,
+    "fails_ok": true,
+    "halluc": 13,
+    "halluc_ok": true,
+    "round1_identical": true,
+    "good_bins_positive": true,
+    "good_bins_max_at_100k": true,
+    "dev_b_delta": 0.0031821193626527995
+   },
+   "P6": {
+    "band_oracle_closed": 0.03911048859956915,
+    "ok": true
+   }
+  },
+  "passing_tags": [
+   "geoset_rep_xs"
+  ]
  }
 }
