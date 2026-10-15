@@ -30,9 +30,9 @@ echo "logs -> ${LOGDIR}"
 # docs/pipeline-inprocess.md; same seeds as SEEDS=MVSeed_<tag>, same folder suffix Sd<tag>);
 # REFSNAP=1 applies the S2-R6 reference snap in process (--ref-snap, suffix Rs, needs XREF=muvod);
 # SAVESTAGES=1 also writes the intermediate results to <dataset>/<out>_stages/ (--save-stages).
-# The headline in one process (S1-E11 adopted the stage-1 preset geoset_rep_x; geoset_rep is the S1-E8 preset):
-#   XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep_x F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 \
-#       ./runMVOptThree.sh Fencing                       # -> SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs
+# The headline in one process (S1-E14 adopted the stage-1 preset geoset_rep_xs; geoset_rep_x = S1-E11, geoset_rep = S1-E8):
+#   XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep_xs F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 \
+#       ./runMVOptThree.sh Fencing                       # -> SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs
 # passed into the container so runMVSeg.py can record it in MANIFEST.json
 IMAGE_ID="$(docker images --no-trunc -q scsam3:latest 2>/dev/null | head -n1)"
 for ds in "$@"; do

@@ -896,5 +896,120 @@
   "passing_tags": [
    "geoset_rep_xs"
   ]
+ },
+ "stage2": {
+  "run": {
+   "method": "SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs",
+   "tag": "geoset_rep_xs",
+   "base": "SegMaskSam3XW1CGPS4MSdgeoset_rep_xFsCs10kG2Rs",
+   "basic": 92.76595004041006,
+   "base_basic": 92.62550159409436,
+   "paired": {
+    "n": 17,
+    "mean": 0.1404484463157102,
+    "ci": [
+     0.05572179584429695,
+     0.24991196721604034
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.05538876321250541,
+     "Dog"
+    ],
+    "best": [
+     0.8194093790950348,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.133,
+     "AlexaMeadeFacePaint": 0.306,
+     "Barn": 0.037,
+     "Blocks": -0.04,
+     "Breakfast": 0.016,
+     "CBABasketball": 0.317,
+     "Carpark": 0.129,
+     "CoffeeMartini": -0.013,
+     "Dog": -0.055,
+     "Fencing": -0.04,
+     "FlameSteak": 0.082,
+     "Frog": 0.105,
+     "MATF": 0.339,
+     "MartialArts": 0.035,
+     "Painter": 0.086,
+     "PoznanStreet": 0.131,
+     "Welder": 0.819
+    }
+   },
+   "complete": 88.08648057490758,
+   "base_complete": 87.95385226112079,
+   "paired_complete": {
+    "n": 17,
+    "mean": 0.13262831378679105,
+    "ci": [
+     0.052052028216485434,
+     0.2393687785747933
+    ],
+    "wins": 13,
+    "losses": 4,
+    "worst": [
+     -0.04312877049234487,
+     "Dog"
+    ],
+    "best": [
+     0.8194093790950348,
+     "Welder"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 0.133,
+     "AlexaMeadeFacePaint": 0.268,
+     "Barn": 0.037,
+     "Blocks": -0.032,
+     "Breakfast": 0.018,
+     "CBABasketball": 0.302,
+     "Carpark": 0.129,
+     "CoffeeMartini": -0.015,
+     "Dog": -0.043,
+     "Fencing": -0.04,
+     "FlameSteak": 0.06,
+     "Frog": 0.105,
+     "MATF": 0.265,
+     "MartialArts": 0.035,
+     "Painter": 0.081,
+     "PoznanStreet": 0.131,
+     "Welder": 0.819
+    }
+   },
+   "rule": {
+    "mean_gt_0": true,
+    "ci_lower_gt_0": true,
+    "defence": true,
+    "worst": -0.05538876321250541,
+    "complete_ge_0": true,
+    "all_17_scenes": true,
+    "pass": true
+   },
+   "Z3_mask_digest": {
+    "ok": 17,
+    "bad": [],
+    "absent": []
+   },
+   "Z3b_frame0_pixels": {
+    "same": 661,
+    "different": 0,
+    "missing": 0
+   },
+   "ref_frame0_is_gt": true
+  },
+  "adopted": "geoset_rep_xs",
+  "predictions": {
+   "P4": {
+    "ratio": 0.8000704659814141,
+    "basic_delta": 0.1404484463157102,
+    "ok": true
+   },
+   "Z3": true,
+   "Z3b": true
+  }
  }
 }

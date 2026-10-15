@@ -1,0 +1,6 @@
+SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs
+   basic 92.766 vs 92.626  Δ +0.140  CI [+0.056, +0.250]  13↑/4↓  worst Dog -0.06
+   complete 88.086 vs 87.954  Δ +0.133  rule {'mean_gt_0': True, 'ci_lower_gt_0': True, 'defence': True, 'worst': -0.05538876321250541, 'complete_ge_0': True, 'all_17_scenes': True, 'pass': True}
+   Z3 {'ok': 17, 'bad': [], 'absent': []}  Z3b {'same': 661, 'different': 0, 'missing': 0}  ref frame 0 = GT True
+
+stage-2: ADOPTED geoset_rep_xs   predictions {'P4': {'ratio': 0.8000704659814141, 'basic_delta': 0.1404484463157102, 'ok': True}, 'Z3': True, 'Z3b': True}
