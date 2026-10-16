@@ -1,0 +1,9 @@
+Static-camera definition, fixed 2026-10-16 before any computation (video frames + frame-0 prompt mask only; no GT_t, no tracker output):
+  grey I_t at native resolution; M = union of frame-0 GT object masks (the prompt);
+  B = pixels outside dilate(M, 31 px elliptical disk)  (same disk as the S2-R6 rule)
+  for t in {10, 20} (first window frames 0..20):
+     b_t = median_{B} |I_t - I_0|        (int16 grey)
+     d_t = |phaseCorrelate(I_0, I_t)| shift magnitude in px (Hann window, float32)
+  static camera  <=>  max_t b_t <= 4  and  max_t d_t <= 1.0
+Per-object delta-gate pass (upper bound of the rule's snap rate, prompt-only):
+  g_{o,t} = mean_{dilate(M_o,31)} |I_t - I_0| <= 4   for t in {10, 20}

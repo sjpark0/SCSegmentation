@@ -1,0 +1,278 @@
+{
+ "AlexaMeadeExhibit": {
+  "cam": "camera_0001",
+  "objects_frames": 660,
+  "delta_pass": 600,
+  "snapped": 600,
+  "tau_fail": 0,
+  "delta_4_to_5": 13,
+  "tau_fail_examples": []
+ },
+ "AlexaMeadeFacePaint": {
+  "cam": "camera_0007",
+  "objects_frames": 240,
+  "delta_pass": 174,
+  "snapped": 174,
+  "tau_fail": 0,
+  "delta_4_to_5": 17,
+  "tau_fail_examples": []
+ },
+ "Barn": {
+  "cam": "v7",
+  "objects_frames": 600,
+  "delta_pass": 360,
+  "snapped": 360,
+  "tau_fail": 0,
+  "delta_4_to_5": 59,
+  "tau_fail_examples": []
+ },
+ "Blocks": {
+  "cam": "cam4",
+  "objects_frames": 320,
+  "delta_pass": 174,
+  "snapped": 174,
+  "tau_fail": 0,
+  "delta_4_to_5": 33,
+  "tau_fail_examples": []
+ },
+ "Breakfast": {
+  "cam": "v7",
+  "objects_frames": 540,
+  "delta_pass": 70,
+  "snapped": 70,
+  "tau_fail": 0,
+  "delta_4_to_5": 62,
+  "tau_fail_examples": []
+ },
+ "Carpark": {
+  "cam": "v4",
+  "objects_frames": 440,
+  "delta_pass": 128,
+  "snapped": 128,
+  "tau_fail": 0,
+  "delta_4_to_5": 28,
+  "tau_fail_examples": []
+ },
+ "CoffeeMartini": {
+  "cam": "cam16",
+  "objects_frames": 1000,
+  "delta_pass": 906,
+  "snapped": 894,
+  "tau_fail": 12,
+  "delta_4_to_5": 11,
+  "tau_fail_examples": [
+   [
+    3,
+    "27.png",
+    0.777
+   ],
+   [
+    4,
+    "27.png",
+    0.79
+   ],
+   [
+    5,
+    "27.png",
+    0.793
+   ],
+   [
+    7,
+    "27.png",
+    0.793
+   ],
+   [
+    10,
+    "27.png",
+    0.769
+   ],
+   [
+    12,
+    "27.png",
+    0.763
+   ],
+   [
+    13,
+    "27.png",
+    0.793
+   ],
+   [
+    14,
+    "27.png",
+    0.764
+   ]
+  ]
+ },
+ "Dog": {
+  "cam": "camera_0002",
+  "objects_frames": 140,
+  "delta_pass": 99,
+  "snapped": 99,
+  "tau_fail": 0,
+  "delta_4_to_5": 16,
+  "tau_fail_examples": []
+ },
+ "Fencing": {
+  "cam": "v4",
+  "objects_frames": 160,
+  "delta_pass": 33,
+  "snapped": 33,
+  "tau_fail": 0,
+  "delta_4_to_5": 12,
+  "tau_fail_examples": []
+ },
+ "FlameSteak": {
+  "cam": "cam16",
+  "objects_frames": 1000,
+  "delta_pass": 907,
+  "snapped": 885,
+  "tau_fail": 22,
+  "delta_4_to_5": 12,
+  "tau_fail_examples": [
+   [
+    1,
+    "38.png",
+    0.772
+   ],
+   [
+    2,
+    "38.png",
+    0.775
+   ],
+   [
+    3,
+    "38.png",
+    0.763
+   ],
+   [
+    4,
+    "38.png",
+    0.772
+   ],
+   [
+    5,
+    "38.png",
+    0.72
+   ],
+   [
+    6,
+    "38.png",
+    0.758
+   ],
+   [
+    7,
+    "38.png",
+    0.746
+   ],
+   [
+    8,
+    "38.png",
+    0.77
+   ]
+  ]
+ },
+ "Frog": {
+  "cam": "v7",
+  "objects_frames": 100,
+  "delta_pass": 0,
+  "snapped": 0,
+  "tau_fail": 0,
+  "delta_4_to_5": 0,
+  "tau_fail_examples": []
+ },
+ "MATF": {
+  "cam": "S1_CAM_4",
+  "objects_frames": 660,
+  "delta_pass": 439,
+  "snapped": 429,
+  "tau_fail": 10,
+  "delta_4_to_5": 34,
+  "tau_fail_examples": [
+   [
+    31,
+    "29.png",
+    0.753
+   ],
+   [
+    32,
+    "29.png",
+    0.74
+   ],
+   [
+    33,
+    "29.png",
+    0.758
+   ],
+   [
+    34,
+    "29.png",
+    0.752
+   ],
+   [
+    35,
+    "29.png",
+    0.74
+   ],
+   [
+    45,
+    "29.png",
+    0.725
+   ],
+   [
+    46,
+    "29.png",
+    0.726
+   ],
+   [
+    47,
+    "29.png",
+    0.728
+   ]
+  ]
+ },
+ "Painter": {
+  "cam": "v6",
+  "objects_frames": 466,
+  "delta_pass": 188,
+  "snapped": 188,
+  "tau_fail": 0,
+  "delta_4_to_5": 42,
+  "tau_fail_examples": []
+ },
+ "PoznanStreet": {
+  "cam": "v4",
+  "objects_frames": 480,
+  "delta_pass": 83,
+  "snapped": 83,
+  "tau_fail": 0,
+  "delta_4_to_5": 39,
+  "tau_fail_examples": []
+ },
+ "Welder": {
+  "cam": "camera_0001",
+  "objects_frames": 320,
+  "delta_pass": 155,
+  "snapped": 155,
+  "tau_fail": 0,
+  "delta_4_to_5": 5,
+  "tau_fail_examples": []
+ },
+ "MartialArts": {
+  "cam": "v9",
+  "objects_frames": 380,
+  "delta_pass": 205,
+  "snapped": 205,
+  "tau_fail": 0,
+  "delta_4_to_5": 13,
+  "tau_fail_examples": []
+ },
+ "CBABasketball": {
+  "cam": "v20",
+  "objects_frames": 440,
+  "delta_pass": 103,
+  "snapped": 103,
+  "tau_fail": 0,
+  "delta_4_to_5": 16,
+  "tau_fail_examples": []
+ }
+}

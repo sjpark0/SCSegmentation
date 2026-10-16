@@ -1,0 +1,12 @@
+{
+ "mode": "observe",
+ "dataset": "Blocks",
+ "frames": [],
+ "first_entry": null,
+ "timing": {
+  "total_s": 0.1
+ },
+ "ref_view": null,
+ "ref_session_j": null,
+ "neighbour_sessions": null
+}

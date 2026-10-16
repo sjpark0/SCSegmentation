@@ -1,0 +1,257 @@
+{
+"AlexaMeadeExhibit/camera_0001": [
+400,
+660,
+"ref"
+],
+"AlexaMeadeExhibit/camera_0003": [
+420,
+620,
+"non"
+],
+"AlexaMeadeExhibit/camera_0004": [
+360,
+580,
+"non"
+],
+"AlexaMeadeFacePaint/camera_0007": [
+100,
+240,
+"ref"
+],
+"AlexaMeadeFacePaint/camera_0008": [
+60,
+220,
+"non"
+],
+"AlexaMeadeFacePaint/camera_0009": [
+60,
+200,
+"non"
+],
+"Barn/v0": [
+397,
+600,
+"non"
+],
+"Barn/v7": [
+419,
+600,
+"ref"
+],
+"Barn/v10": [
+376,
+600,
+"non"
+],
+"Blocks/cam0": [
+120,
+400,
+"non"
+],
+"Blocks/cam4": [
+100,
+320,
+"ref"
+],
+"Blocks/cam9": [
+80,
+300,
+"non"
+],
+"Breakfast/v5": [
+175,
+560,
+"non"
+],
+"Breakfast/v7": [
+181,
+540,
+"ref"
+],
+"Breakfast/v9": [
+163,
+500,
+"non"
+],
+"CBABasketball/v06": [
+60,
+360,
+"non"
+],
+"CBABasketball/v20": [
+100,
+440,
+"ref"
+],
+"CBABasketball/v24": [
+60,
+360,
+"non"
+],
+"Carpark/v0": [
+80,
+440,
+"non"
+],
+"Carpark/v4": [
+90,
+440,
+"ref"
+],
+"Carpark/v8": [
+97,
+440,
+"non"
+],
+"CoffeeMartini/cam02": [
+1060,
+1160,
+"non"
+],
+"CoffeeMartini/cam10": [
+600,
+700,
+"non"
+],
+"CoffeeMartini/cam16": [
+860,
+1000,
+"ref"
+],
+"Dog/camera_0002": [
+0,
+140,
+"ref"
+],
+"Dog/camera_0003": [
+60,
+180,
+"non"
+],
+"Dog/camera_0004": [
+60,
+140,
+"non"
+],
+"Fencing/v0": [
+20,
+160,
+"non"
+],
+"Fencing/v4": [
+20,
+160,
+"ref"
+],
+"Fencing/v9": [
+20,
+160,
+"non"
+],
+"FlameSteak/cam01": [
+358,
+620,
+"non"
+],
+"FlameSteak/cam10": [
+880,
+1060,
+"non"
+],
+"FlameSteak/cam16": [
+780,
+1000,
+"ref"
+],
+"Frog/v4": [
+0,
+100,
+"non"
+],
+"Frog/v7": [
+0,
+100,
+"ref"
+],
+"Frog/v10": [
+0,
+100,
+"non"
+],
+"MATF/S1_CAM_1": [
+420,
+620,
+"non"
+],
+"MATF/S1_CAM_4": [
+302,
+660,
+"ref"
+],
+"MATF/S1_CAM_10": [
+160,
+220,
+"non"
+],
+"MartialArts/v5": [
+85,
+320,
+"non"
+],
+"MartialArts/v9": [
+189,
+380,
+"ref"
+],
+"MartialArts/v13": [
+40,
+300,
+"non"
+],
+"Painter/v0": [
+201,
+500,
+"non"
+],
+"Painter/v6": [
+216,
+480,
+"ref"
+],
+"Painter/v15": [
+214,
+500,
+"non"
+],
+"PoznanStreet/v0": [
+90,
+460,
+"non"
+],
+"PoznanStreet/v4": [
+54,
+480,
+"ref"
+],
+"PoznanStreet/v8": [
+79,
+460,
+"non"
+],
+"Welder/camera_0001": [
+60,
+320,
+"ref"
+],
+"Welder/camera_0003": [
+60,
+320,
+"non"
+],
+"Welder/camera_0004": [
+80,
+300,
+"non"
+]
+}
