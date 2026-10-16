@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Full-length CROOM T06 runs (docs/plenoptic-F.md): every frame 0..9937 of all 32 cameras at 3840x2160, results on the NAS.
-#   STAGES (default all, in order): sub_F sub_B sub_merge sub_sync sub_render lat_F lat_B lat_merge lat_sync lat_render
-#                                   sub_clean lat_clean src_clean
+#   STAGES (default all, in order): sub_F sub_B sub_merge sub_score sub_sync sub_render lat_F lat_B lat_merge lat_score
+#                                   lat_sync lat_render sub_clean lat_clean src_clean
 #     <cfg>_F      forward run, source frames 900..9937 (scene T06_flag_ganggang_F, start_frame 900, num_frame 9038)
 #     <cfg>_B      backward run, source frames 900..0 time-reversed (scene T06_flag_ganggang_B, start 0, num 901)
 #     <cfg>_merge  hard-link B's frames into F's tree under source frame numbers 0..899 (plenoptic/build_full.py merge_back)
+#     <cfg>_score  frame-900 J/F with the frozen scorer (eval/eval_jf.py, container) + plenoptic/score_full.py readings
+#                  -> plenoptic/full/{jf,score}_<cfg>.json (descriptive; a failure is logged and the chain goes on)
 #     <cfg>_sync   copy the merged method folder to the NAS (16 parallel rsync) and verify its content digest there
 #     <cfg>_render start plenoptic/render_full.py in the background (CPU): overlay MP4s, ring mosaic, contact sheet and
 #                  area timeline straight to <NAS>/viz/<method>/; it writes done/<cfg>_render_finished
@@ -17,7 +19,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 P="${P:-${ROOT}/Data/PlenopticFull}"
 NAS="${NAS:-${ROOT}/PlenopticServer1/CROOM/SegResult/T06_flag_ganggang_F}"
 CONF="${ROOT}/plenoptic/Plenoptic_full.json"
-STAGES="${STAGES:-sub_F sub_B sub_merge sub_sync sub_render lat_F lat_B lat_merge lat_sync lat_render sub_clean lat_clean src_clean}"
+STAGES="${STAGES:-sub_F sub_B sub_merge sub_score sub_sync sub_render lat_F lat_B lat_merge lat_score lat_sync lat_render sub_clean lat_clean src_clean}"
 LOGS="${P}/logs"; mkdir -p "${LOGS}" "${P}/done"
 SUB=(--algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod
      --frame0-seed --crop-small 10000 --crop-gate v2)
@@ -76,12 +78,26 @@ for stage in ${STAGES}; do
         > "${LOGS}/${stage}.log" 2>&1 || { echo "$(ts) ABORT: merge failed"; exit 1; }
       cp "${P}/T06_flag_ganggang_B/${METHOD[$cfg]}/MANIFEST.json" "${P}/T06_flag_ganggang_F/${METHOD[$cfg]}/MANIFEST_backward.json"
       echo "$(ts) ${stage}: $(tail -n 1 "${LOGS}/${stage}.log")" ;;
+    score)
+      mkdir -p "${ROOT}/plenoptic/full"
+      if docker run --rm --user "$(id -u):$(id -g)" -v /:/host -w "/host${ROOT}" scsam3 \
+           python eval/eval_jf.py --root "/host${P}" --config "/host${CONF}" --methods "${METHOD[$cfg]}" --jobs 16 \
+           --out "/host${ROOT}/plenoptic/full/jf_${cfg}.json" T06_flag_ganggang_F > "${LOGS}/${stage}.log" 2>&1 &&
+         PYTHONDONTWRITEBYTECODE=1 python3 "${ROOT}/plenoptic/score_full.py" --jf "${ROOT}/plenoptic/full/jf_${cfg}.json" \
+           --method "${METHOD[$cfg]}" --fwd "${P}/T06_flag_ganggang_F/${METHOD[$cfg]}" \
+           --bwd "${P}/T06_flag_ganggang_B/${METHOD[$cfg]}" --out "${ROOT}/plenoptic/full/score_${cfg}.json" \
+           >> "${LOGS}/${stage}.log" 2>&1; then
+        echo "$(ts) ${stage}: $(tail -n 1 "${LOGS}/${stage}.log")"
+      else
+        echo "$(ts) WARN: ${stage} failed (log ${LOGS}/${stage}.log); results untouched, chain goes on"; continue
+      fi ;;
     sync)
       src="${P}/T06_flag_ganggang_F/${METHOD[$cfg]}"; dst="${NAS}/${METHOD[$cfg]}"
       mkdir -p "${dst}"
       for f in SOURCE.json; do cp "${P}/T06_flag_ganggang_F/${f}" "${NAS}/${f}"; done
       cp -r "${P}/T06_flag_ganggang_F/Mask" "${NAS}/" 2>/dev/null
       cp "${P}/T06_flag_ganggang_B/SOURCE.json" "${NAS}/SOURCE_backward.json"
+      mkdir -p "${NAS}/score"; cp "${ROOT}"/plenoptic/full/*_"${cfg}".json "${NAS}/score/" 2>/dev/null
       (cd "${src}" && ls -d cam_* | xargs -P 16 -I{} rsync -rt {} "${dst}/") > "${LOGS}/${stage}.log" 2>&1
       rsync -t "${src}"/MANIFEST*.json "${dst}/" >> "${LOGS}/${stage}.log" 2>&1
       EVAL_DIR="${ROOT}/eval" PYTHONDONTWRITEBYTECODE=1 python3 - "${src}" "${dst}" >> "${LOGS}/${stage}.log" 2>&1 <<'EOF'

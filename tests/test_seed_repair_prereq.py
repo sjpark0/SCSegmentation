@@ -54,7 +54,8 @@ def test_stateless_refinement_is_never_enabled():
     pat = re.compile(r"use_stateless_refinement\s*=\s*True")
     hits = []
     for root, dirs, files in os.walk(REPO):
-        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "hf_cache", "Data")]
+        dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "hf_cache", "Data")
+                   and not os.path.ismount(os.path.join(root, d))]          # NAS mounts (PlenopticServer*)
         for f in files:
             if f.endswith((".py", ".yaml", ".yml", ".json")):
                 p = os.path.join(root, f)
