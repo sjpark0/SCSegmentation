@@ -30,6 +30,8 @@ echo "logs -> ${LOGDIR}"
 # docs/pipeline-inprocess.md; same seeds as SEEDS=MVSeed_<tag>, same folder suffix Sd<tag>);
 # REFSNAP=1 applies the S2-R6 reference snap in process (--ref-snap, suffix Rs, needs XREF=muvod);
 # SAVESTAGES=1 also writes the intermediate results to <dataset>/<out>_stages/ (--save-stages).
+# REFSNAPMEM=1 (with REFSNAP=1) also writes each online S2-R6 decision into the c_ini tracker memory
+# (--ref-snap-mem, docs/stage2-R7-prereg.md; suffix Rm just before Rs).
 # The headline in one process (S1-E14 adopted the stage-1 preset geoset_rep_xs; geoset_rep_x = S1-E11, geoset_rep = S1-E8):
 #   XVIEW=1 XMODE=C XGATE=1 XPTR=1 XSHIFT=4 XREF=muvod STAGE1=geoset_rep_xs F0SEED=1 CROP=10000 CROPGATE=v2 REFSNAP=1 \
 #       ./runMVOptThree.sh Fencing                       # -> SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs
@@ -49,7 +51,7 @@ for ds in "$@"; do
 			${CROP:+--crop-small "${CROP}"} ${CROPGATE:+--crop-gate "${CROPGATE}"} \
 			${CROPSCALE:+--crop-scale "${CROPSCALE}"} ${CROPMINSIDE:+--crop-min-side "${CROPMINSIDE}"} \
 			${FTENC:+--ft-encoder "${FTENC}"} ${STAGE1:+--stage1 "${STAGE1}"} \
-			${REFSNAP:+--ref-snap} ${SAVESTAGES:+--save-stages} --overwrite \
+			${REFSNAP:+--ref-snap} ${REFSNAPMEM:+--ref-snap-mem} ${SAVESTAGES:+--save-stages} --overwrite \
 		> "${LOGDIR}/${ds}.log" 2>&1
 	st=$?
 	if [[ ${st} -eq 0 ]]; then printf 'ok    %5ds\n' $(( SECONDS - start ))

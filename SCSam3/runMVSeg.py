@@ -126,6 +126,9 @@ STAGE1_ALGOS = ("MVOpt",)
 # the run's own output after the crop pass.  Folder suffix Rs, last.  Needs --ref-cam muvod (the rule
 # is defined on c_ini, whose frame 0 is the prompt).  SCSam3/ref_snap.py.
 REF_SNAP_SUFFIX = "Rs"
+# S2-R7 (docs/stage2-R7-prereg.md): --ref-snap-mem also writes each online S2-R6 decision into the c_ini
+# tracker memory (the frame-0 prompt re-encoded on frame t, in place).  Suffix Rm, just before Rs.
+REF_SNAP_MEM_SUFFIX = "Rm"
 # --save-stages: also write the intermediate results to <dataset>/<out>_stages/ (stage1/ = stage 1 in
 # its CLI layout, seeds/ = the MVSeed_ folder of the seeds, stage2/ = the output before --ref-snap).
 STAGES_SUFFIX = "_stages"
@@ -362,6 +365,12 @@ def parse_args():
                          "object's frame-t PNG by its frame-0 PNG when IoU >= 0.8 and the image change "
                          "around it <= 4 (SCSam3/ref_snap.py). A post-process designed on the test GT: "
                          "report with LOSO +0.387. Folder suffix Rs (last). Needs --ref-cam muvod.")
+    ap.add_argument("--ref-snap-mem", action="store_true",
+                    help="S2-R7 (docs/stage2-R7-prereg.md): on each c_ini frame t the S2-R6 rule snaps "
+                         "(decided online on the PNG just written; c_ini crop targets excluded), also "
+                         "re-encode the frame-0 prompt into that frame's tracker memory, in place, before "
+                         "the next camera is advanced. Needs --ref-snap and --ref-cam muvod; MVOpt, one GPU, "
+                         "not two-pass. Folder suffix Rm, just before Rs.")
     ap.add_argument("--save-stages", action="store_true",
                     help="also write the intermediate results to <dataset>/<out>_stages/: stage1/ "
                          "(--stage1 outputs in the stage-1 CLI layout), seeds/ (an MVSeed_ folder of the "
@@ -718,15 +727,26 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
         crop = dict(max_px=int(crop_px), gate=c_gate, scale=c_scale, min_side=c_min_side,
                     suffix=c_suffix)
     ref_snap = bool(getattr(args, "ref_snap", False))
+    ref_snap_mem = bool(getattr(args, "ref_snap_mem", False))
+    if ref_snap_mem:
+        if not ref_snap:
+            sys.exit("--ref-snap-mem feeds the --ref-snap decisions into the memory: pass --ref-snap")
+        if getattr(args, "algo", None) != "MVOpt":
+            sys.exit("--ref-snap-mem is MVOpt only")
+        if two_pass:
+            sys.exit(f"--ref-snap-mem and --xview-mode {mode_eff} do not combine (two-pass loop)")
     if ref_snap:
         if getattr(args, "ref_cam", None) != "muvod":
             sys.exit("--ref-snap is defined on MUVOD's c_ini (its frame 0 is the prompt): "
                      "pass --ref-cam muvod")
         if not args.out:
-            out_name += REF_SNAP_SUFFIX
+            out_name += (REF_SNAP_MEM_SUFFIX if ref_snap_mem else "") + REF_SNAP_SUFFIX
         elif REF_SNAP_SUFFIX not in out_name:
             sys.exit(f"refusing to write a --ref-snap run into {out_name}: the name must "
                      f"carry {REF_SNAP_SUFFIX}")
+        elif ref_snap_mem and REF_SNAP_MEM_SUFFIX + REF_SNAP_SUFFIX not in out_name:
+            sys.exit(f"refusing to write a --ref-snap-mem run into {out_name}: the name must "
+                     f"carry {REF_SNAP_MEM_SUFFIX + REF_SNAP_SUFFIX}")
     if xview_on and out_name in (*DEFAULT_OUT.values(), ONESTAGE_CLOSURE_OUT):
         sys.exit(f"refusing to write an XW run into {out_name}: that folder is the published "
                  "legacy lineage (pass --out SegMaskSam3XW...)")
@@ -735,7 +755,7 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                  f"with {XVIEW_OUT_PREFIX} are the XW lineage (pass --xview-window, or "
                  "another --out)")
     return dict(out_name=out_name, repair_seeds=repair, seeds_from=seeds_from, stage1=stage1,
-                ref_snap=ref_snap, save_stages=bool(getattr(args, "save_stages", False)),
+                ref_snap=ref_snap, ref_snap_mem=ref_snap_mem, save_stages=bool(getattr(args, "save_stages", False)),
                 track_mode=track_mode, track_idx=track_idx,
                 scored_idx=scored_idx, xview_on=xview_on, xview_window=window,
                 xview_kwargs=xview_kwargs, lineage=lineage,
@@ -743,6 +763,62 @@ def resolve_run(args, cam_names, written_cams, num_frame=None, ref_suffix=None):
                 two_pass=two_pass, frame0_seed=frame0_seed, crop=crop, ft_encoder=ft_encoder,
                 closure_reach=(len(track_idx) if track_mode == "closure" else None),
                 xview_gate=gate, xview_ptr=ptr, xview_tpos_shift=shift)
+
+
+def ref_snap_mem_targets(gt0, c_ini_cam, obj_ids, crop, ct):
+    """S2-R7 T (docs/stage2-R7-prereg.md section 4): the c_ini crop targets exactly as CropSmall selects them --
+    crop_track.select_targets_from with the c_ini prompt = the frame-start GT == obj, the run's max_px / scale /
+    min_side -- over the prompted objects; [] when the crop pass is off."""
+    if not crop:
+        return []
+    targets, _, _ = ct.select_targets_from([c_ini_cam], [int(o) for o in obj_ids],
+                                           lambda cam, obj: (gt0, obj, obj, ct.PROMPT_GT), crop["max_px"],
+                                           scale=crop["scale"], min_side=crop["min_side"])
+    return sorted(int(x["obj"]) for x in targets)
+
+
+def inject_ref_memory(predictor, session_id, t, objs_masks0, torch):
+    """S2-R7 (docs/stage2-R7-prereg.md section 4): for each (obj, frame-0 prompt mask) the c_ini session snapped
+    at frame t, re-encode the prompt on frame t's cached image features (the frame-0 prompt's route: video res ->
+    288 bilinear antialias -> x20-10 -> 1008 bilinear, is_mask_from_pts=True) with the stored entry's object
+    score, and copy it in place into that object's non_cond_frame_outputs[t]['maskmem_features'] (the per-object
+    slices share its storage).  obj_ptr, pos enc, scores, pred_masks and every cond entry stay as they are.
+    -> one record per object: obj, cache_hit, obj_score, rel_change (or error)."""
+    import numpy as np
+    import torch.nn.functional as F
+    model = predictor.model
+    tracker = model.tracker
+    state = predictor._ALL_INFERENCE_STATES[session_id]["state"]
+    recs = []
+    with torch.inference_mode():
+        for obj, m0 in objs_masks0:
+            rec = {"obj": int(obj)}
+            tss = model._get_tracker_inference_states_by_obj_ids(state, [int(obj)])
+            e = tss[0]["output_dict"]["non_cond_frame_outputs"].get(t) if tss else None
+            if e is None:
+                rec["error"] = "no tracker state" if not tss else "no non-cond entry"
+                recs.append(rec)
+                continue
+            ts = tss[0]
+            rec["cache_hit"] = t in ts["cached_features"]
+            image, _, feats, _, sizes = tracker._get_image_feature(ts, t, 1)
+            dev = feats[-1].device
+            m0t = torch.from_numpy(np.asarray(m0, dtype=np.float32))[None, None].to(dev)
+            m288 = F.interpolate(m0t, size=(tracker.low_res_mask_size, tracker.low_res_mask_size),
+                                 mode="bilinear", align_corners=False, antialias=True) * 20.0 - 10.0
+            hr = F.interpolate(m288, size=(tracker.image_size, tracker.image_size), mode="bilinear",
+                               align_corners=False)
+            score = e["object_score_logits"].to(dev)
+            mf, _ = tracker._encode_new_memory(image=image, current_vision_feats=feats, feat_sizes=sizes,
+                                               pred_masks_high_res=hr, object_score_logits=score,
+                                               is_mask_from_pts=True)
+            stored = e["maskmem_features"]
+            mf = mf.to(stored.dtype).to(stored.device)
+            rec["obj_score"] = float(score.float().mean())
+            rec["rel_change"] = float((mf.float() - stored.float()).norm() / stored.float().norm())
+            stored.copy_(mf)
+            recs.append(rec)
+    return recs
 
 
 def build_runner(algo):
@@ -989,6 +1065,10 @@ def build_runner(algo):
                 return out
             finally:
                 self.spatial.handle_request(request=dict(type="close_session", session_id=sid))
+
+        def InjectRefMemory(self, j, t, objs_masks0):
+            """S2-R7: inject_ref_memory on c_ini session j (docs/stage2-R7-prereg.md section 4)."""
+            return inject_ref_memory(self.predictor, self.session_ids[j], t, objs_masks0, torch)
 
         def TrackForward(self, start_frame, num_frame):
             """Seed each view with its propagated mask, then track forward only.
@@ -1547,6 +1627,9 @@ def main():
               f"{probe_loaded[:12]} {probe_dtypes}; trained on {len(train_scenes)} other scenes)",
               flush=True)
 
+    if run["ref_snap_mem"] and torch.cuda.is_available() and torch.cuda.device_count() > 1:
+        sys.exit("--ref-snap-mem: more than one GPU is visible; the predictor's worker processes would "
+                 "hold other copies of the c_ini memory (run with one GPU)")
     sc.TrackForward(c["start_frame"], c["num_frame"])
 
     frame0_stats = None
@@ -1556,6 +1639,19 @@ def main():
     else:
         # --frame0-seed: {view: {obj: "seed" | "tracker"}} for the manifest; None when off
         frame0_sources = {} if run["frame0_seed"] else None
+        # --ref-snap-mem (S2-R7): the online S2-R6 decision on c_ini, c_ini crop targets T excluded
+        mem_snap, mem_T, mem_recs, mem_secs = None, [], [], 0.0
+        if run["ref_snap_mem"]:
+            if c_ini_cam is None or c_ini_cam not in written_cams or cam_names[ref_index] != c_ini_cam:
+                sys.exit("--ref-snap-mem: the reference camera must be MUVOD's c_ini and a written camera")
+            if run["crop"]:
+                gt_path = os.path.join(ds_dir, "Mask", c_ini_cam, f"{c['start_frame']:06d}.png")
+                gt0 = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
+                if gt0 is None:
+                    raise FileNotFoundError(gt_path)
+                mem_T = ref_snap_mem_targets(gt0, c_ini_cam, sc.obj_ids, run["crop"], crop_track_module())
+            mem_snap = ref_snap_module().OnlineSnap(out_dir, os.path.join(video_root, c_ini_cam), c_ini_cam,
+                                                    c["start_frame"], mem_T, np, cv2)
         for _ in range(c["num_frame"]):
             for j, view in enumerate(sc.track_views):
                 response = next(sc.tracking_result[j])
@@ -1575,10 +1671,21 @@ def main():
                     frame0_sources[view] = {o: src for o, (_, src) in zip(obj_ids, picked)}
                 folder = os.path.join(out_dir, cam_names[view], f"{frame_idx:d}")
                 os.makedirs(folder, exist_ok=True)
+                written_np = {}
                 for obj_id, mask in zip(obj_ids, masks):
                     mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
                     cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
                                 mask.squeeze().astype(np.uint8) * 255)
+                    if mem_snap is not None:
+                        written_np[int(obj_id)] = mask.squeeze().astype(bool)
+                if mem_snap is not None and view == ref_index and frame_idx > c["start_frame"]:
+                    t_mem = time.time()
+                    snapped = mem_snap.decide_frame(frame_idx, written_np)
+                    if snapped:
+                        for rec in sc.InjectRefMemory(j, frame_idx, [(o, mem_snap.frame0(o)) for o in snapped]):
+                            rec["t"] = int(frame_idx)
+                            mem_recs.append(rec)
+                    mem_secs += time.time() - t_mem
             print(f"  frame {response['frame_index']} written", flush=True)
         if frame0_sources is not None:
             frame0_stats = seeds_from_module().frame0_provenance(frame0_sources)
@@ -1616,6 +1723,10 @@ def main():
         crop_stats = sc.CropSmall(ds_dir, out_dir, cam_names, written_cams, c_ini_cam,
                                   c["start_frame"], c["num_frame"], cs["max_px"], cs["gate"],
                                   cs["scale"], cs["min_side"], cv2, np)
+        if run["ref_snap_mem"]:
+            t_crop = sorted(int(x["obj"]) for x in crop_stats["targets"] if x["cam"] == c_ini_cam)
+            if t_crop != mem_T:
+                sys.exit(f"--ref-snap-mem: the excluded set {mem_T} is not the crop pass's c_ini targets {t_crop}")
         print(f"crop small     {crop_stats['n_kept']} kept, {crop_stats['n_reverted']} reverted "
               f"of {crop_stats['n_targets']} targets; {crop_stats['n_png_written']} PNG "
               f"overwritten ({crop_stats['seconds']} s)"
@@ -1633,6 +1744,31 @@ def main():
     elif stages_dir:
         import shutil
         shutil.copytree(out_dir, os.path.join(stages_dir, "stage2"), copy_function=os.link)
+    # --ref-snap-mem (S2-R7): what went into the c_ini memory (null when off)
+    mem_stats = None
+    if run["ref_snap_mem"]:
+        rsm = ref_snap_module()
+        ok = [r for r in mem_recs if "error" not in r]
+        rel = sorted(r["rel_change"] for r in ok)
+        injected = sorted(f"{c_ini_cam}/{r['t']}/{r['obj']}.png" for r in ok)
+        snap_minus_T = sorted(x for x in snap_stats["snapped_files"]
+                              if int(x.split("/")[-1].split(".")[0]) not in set(mem_T))
+        mem_stats = {"prereg": "docs/stage2-R7-prereg.md",
+                     "rule": {"tau": rsm.TAU, "delta": rsm.DELTA, "dilate": rsm.DILATE},
+                     "encoding": "frame-0 PNG -> 288 bilinear antialias -> x20-10 -> 1008 bilinear, "
+                                 "is_mask_from_pts=True, stored object score; maskmem_features copied in place",
+                     "excluded_crop_targets": mem_T, "injected": injected, "n_injected": len(injected),
+                     "injected_equals_snap_minus_targets": injected == snap_minus_T,
+                     "errors": [r for r in mem_recs if "error" in r],
+                     "cache_misses": sum(1 for r in ok if not r["cache_hit"]),
+                     "obj_score_min": min((r["obj_score"] for r in ok), default=None),
+                     "rel_change": ({"median": rel[len(rel) // 2], "p90": rel[int(0.9 * (len(rel) - 1))],
+                                     "max": rel[-1]} if rel else None),
+                     "seconds": round(mem_secs, 3)}
+        print(f"ref snap mem   {len(injected)} (object, frame) memories of {c_ini_cam} set to the frame-0 "
+              f"prompt ({len(mem_T)} crop targets excluded; equals the PNG snaps minus targets: "
+              f"{mem_stats['injected_equals_snap_minus_targets']}; cache misses {mem_stats['cache_misses']}; "
+              f"errors {len(mem_stats['errors'])}; {mem_stats['seconds']} s)", flush=True)
 
     # P12 counters (filled only while a knob is on): one summary line, and the manifest.
     xstats = xview_stats_summary(getattr(tracker, "xview_stats", None), eff_gate)
@@ -1686,7 +1822,8 @@ def main():
                    "frame0_seed": run["frame0_seed"], "frame0_seed_stats": frame0_stats,
                    "crop_small": crop_stats,
                    "ft_encoder": ft_stats,
-                   "stage1": run["stage1"], "ref_snap": snap_stats, "save_stages": stages_dir,
+                   "stage1": run["stage1"], "ref_snap": snap_stats, "ref_snap_mem": mem_stats,
+                   "save_stages": stages_dir,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)
     except Exception as exc:  # bookkeeping only: never let it fail the run
