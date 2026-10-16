@@ -1,0 +1,225 @@
+{
+ "prereg": "docs/stage2-R7-prereg.md",
+ "method": "SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2RmRs",
+ "base": "SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs",
+ "basic": 92.76212309252362,
+ "base_basic": 92.76595004041006,
+ "paired": {
+  "n": 17,
+  "mean": -0.0038269478864404005,
+  "ci": [
+   -0.009149618020093358,
+   0.0010625451868289768
+  ],
+  "wins": 7,
+  "losses": 9,
+  "worst": [
+   -0.025818963587994403,
+   "Barn"
+  ],
+  "best": [
+   0.010580119956088652,
+   "PoznanStreet"
+  ],
+  "per_scene": {
+   "AlexaMeadeExhibit": 0.005,
+   "AlexaMeadeFacePaint": -0.005,
+   "Barn": -0.026,
+   "Blocks": -0.012,
+   "Breakfast": -0.0,
+   "CBABasketball": 0.004,
+   "Carpark": -0.002,
+   "CoffeeMartini": -0.011,
+   "Dog": 0.005,
+   "Fencing": 0.005,
+   "FlameSteak": 0.008,
+   "Frog": 0.0,
+   "MATF": -0.017,
+   "MartialArts": 0.003,
+   "Painter": -0.008,
+   "PoznanStreet": 0.011,
+   "Welder": -0.025
+  }
+ },
+ "complete": 88.08301554714929,
+ "base_complete": 88.08648057490758,
+ "paired_complete": {
+  "n": 17,
+  "mean": -0.0034650277582963275,
+  "ci": [
+   -0.008572202224412455,
+   0.0011677531416722786
+  ],
+  "wins": 7,
+  "losses": 9,
+  "worst": [
+   -0.025818963587994403,
+   "Barn"
+  ],
+  "best": [
+   0.010580119956088652,
+   "PoznanStreet"
+  ],
+  "per_scene": {
+   "AlexaMeadeExhibit": 0.005,
+   "AlexaMeadeFacePaint": -0.004,
+   "Barn": -0.026,
+   "Blocks": -0.012,
+   "Breakfast": -0.0,
+   "CBABasketball": 0.004,
+   "Carpark": -0.002,
+   "CoffeeMartini": -0.01,
+   "Dog": 0.004,
+   "Fencing": 0.005,
+   "FlameSteak": 0.008,
+   "Frog": 0.0,
+   "MATF": -0.012,
+   "MartialArts": 0.003,
+   "Painter": -0.007,
+   "PoznanStreet": 0.011,
+   "Welder": -0.025
+  }
+ },
+ "rule": {
+  "all_17_scenes": true,
+  "watch_values": true,
+  "mean_gt_0": false,
+  "ci_lower_gt_0": false,
+  "defence": true,
+  "worst": -0.025818963587994403,
+  "complete_ge_0": false,
+  "pass": false
+ },
+ "verdict": "not adopted: feeding the S2-R6 decisions into memory gives no measurable gain",
+ "descriptives": {
+  "cini_mean_delta": -0.0075787516288406374,
+  "other_mean_delta": -0.0019510460152411175,
+  "cini_basic_contribution": -0.002526250542946879,
+  "other_basic_contribution": -0.0013006973434940784,
+  "by_abs_session_distance": {
+   "0": {
+    "n": 17,
+    "basic_contribution": -0.002526250542946879
+   },
+   "1": {
+    "n": 2,
+    "basic_contribution": 0.0001674755945259119
+   },
+   "2": {
+    "n": 6,
+    "basic_contribution": -0.000318938314962327
+   },
+   "3": {
+    "n": 6,
+    "basic_contribution": -0.0013940233508769355
+   },
+   "4": {
+    "n": 9,
+    "basic_contribution": 4.050672208677497e-05
+   },
+   "5": {
+    "n": 3,
+    "basic_contribution": 0.0002342966904576854
+   },
+   "6": {
+    "n": 3,
+    "basic_contribution": 0.00014940316807285085
+   },
+   "7": {
+    "n": 1,
+    "basic_contribution": 0.00014417737912959396
+   },
+   "9": {
+    "n": 1,
+    "basic_contribution": -0.00015808828624298097
+   },
+   "12": {
+    "n": 1,
+    "basic_contribution": -0.0002515809671447811
+   },
+   "14": {
+    "n": 1,
+    "basic_contribution": 6.162555119882494e-05
+   },
+   "15": {
+    "n": 1,
+    "basic_contribution": 2.44484702613042e-05
+   }
+  },
+  "per_camera": {
+   "AlexaMeadeExhibit/camera_0001 (c_ini)": 0.0021,
+   "AlexaMeadeExhibit/camera_0003": -0.0026,
+   "AlexaMeadeExhibit/camera_0004": 0.0164,
+   "AlexaMeadeFacePaint/camera_0007 (c_ini)": -0.0098,
+   "AlexaMeadeFacePaint/camera_0008": -0.0031,
+   "AlexaMeadeFacePaint/camera_0009": -0.0006,
+   "Barn/v0": 0.0074,
+   "Barn/v10": -0.0111,
+   "Barn/v7 (c_ini)": -0.0737,
+   "Blocks/cam0": -0.0093,
+   "Blocks/cam4 (c_ini)": -0.0371,
+   "Blocks/cam9": 0.0092,
+   "Breakfast/v5": -0.0056,
+   "Breakfast/v7 (c_ini)": 0.0125,
+   "Breakfast/v9": -0.0079,
+   "CBABasketball/v06": 0.0031,
+   "CBABasketball/v20 (c_ini)": 0.0127,
+   "CBABasketball/v24": -0.0038,
+   "Carpark/v0": -0.0001,
+   "Carpark/v4 (c_ini)": 0.0032,
+   "Carpark/v8": -0.0105,
+   "CoffeeMartini/cam02": -0.0128,
+   "CoffeeMartini/cam10": 0.0004,
+   "CoffeeMartini/cam16 (c_ini)": -0.021,
+   "Dog/camera_0002 (c_ini)": 0.0052,
+   "Dog/camera_0003": 0.0117,
+   "Dog/camera_0004": -0.0014,
+   "Fencing/v0": 0.0031,
+   "Fencing/v4 (c_ini)": 0.0107,
+   "Fencing/v9": 0.0024,
+   "FlameSteak/cam01": 0.0012,
+   "FlameSteak/cam10": 0.0065,
+   "FlameSteak/cam16 (c_ini)": 0.0174,
+   "Frog/v10": 0.0,
+   "Frog/v4": 0.0,
+   "Frog/v7 (c_ini)": 0.0,
+   "MATF/S1_CAM_1": -0.0519,
+   "MATF/S1_CAM_10": -0.0016,
+   "MATF/S1_CAM_4 (c_ini)": 0.0016,
+   "MartialArts/v13": 0.0184,
+   "MartialArts/v5": -0.0044,
+   "MartialArts/v9 (c_ini)": -0.0053,
+   "Painter/v0": 0.0027,
+   "Painter/v15": -0.0081,
+   "Painter/v6 (c_ini)": -0.0177,
+   "PoznanStreet/v0": -0.0006,
+   "PoznanStreet/v4 (c_ini)": 0.023,
+   "PoznanStreet/v8": 0.0093,
+   "Welder/camera_0001 (c_ini)": -0.0525,
+   "Welder/camera_0003": 0.0018,
+   "Welder/camera_0004": -0.0244
+  }
+ },
+ "predictions": {
+  "P5": {
+   "basic": -0.0038269478864404005,
+   "in_80": true,
+   "complete_minus_basic": 0.000361920128144073,
+   "cdiff_ok": true,
+   "worst": -0.025818963587994403,
+   "worst_ok": true,
+   "cini": -0.002526250542946879,
+   "cini_ok": true,
+   "other": -0.0013006973434940784,
+   "other_ok": true
+  },
+  "P1": {
+   "injected": 3182,
+   "ok": true
+  },
+  "P2": {
+   "snaps": 4579,
+   "ok": true
+  }
+ }
+}
