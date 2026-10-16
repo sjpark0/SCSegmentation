@@ -170,7 +170,18 @@ def judge():
                     c, t, o = x.split("/")
                     man_snaps.setdefault((sc, c, int(o[:-4])), set()).add(int(t))
         ka = {(r["scene"], r["cam"], r["obj"]): r for r in Ra}
+        # benchmark weight of one object-frame in basic (scene_scores: frames -> object -> camera -> scene, x100, mean
+        # over scenes): 100 / (n_scenes * n_cams(scene) * n_objs(scene, cam) * n_valid_frames(obj))  [post-hoc fix 10-16]
+        nval = {k: sum(1 for t in range(len(r["J"])) if E7.jf(r, t) is not None) for k, r in kb.items()}
+        nobj, ncam = {}, {}
+        for (sc_, cam_, o_), n in nval.items():
+            if n:
+                nobj[(sc_, cam_)] = nobj.get((sc_, cam_), 0) + 1
+        for (sc_, cam_) in nobj:
+            ncam[sc_] = ncam.get(sc_, 0) + 1
+        nsc = len(ncam)
         per_snap, ident_d, nonident_d = [], [], []
+        w_ident = w_non = 0.0
         gt_cache = {}
         for key, ts in man_snaps.items():
             if key not in ka or key not in kb:
@@ -191,18 +202,27 @@ def judge():
                                                   cv2.IMREAD_GRAYSCALE)
                 same = bool(((gt_cache[gk0] == o) == (gt_cache[gkt] == o)).all())
                 (ident_d if same else nonident_d).append(dlt)
+                w = dlt / (nsc * ncam[sc] * nobj[(sc, cam)] * nval[key])
+                if same:
+                    w_ident += w
+                else:
+                    w_non += w
             if len(gt_cache) > 400:
                 gt_cache.clear()
         tot = sum(per_snap)
+        w_tot = w_ident + w_non
+        if abs(w_tot - st["mean"]) > 1e-6:
+            raise SystemExit(f"{m}: weighted per-snap contributions {w_tot:.6f} != basic delta {st['mean']:.6f}")
         res[m] = dict(arm=arm, n_scenes=(len(sb), len(sa), len(cb), len(ca)), basic=statistics.mean(sa.values()),
                       base_basic=statistics.mean(sb.values()), paired=st, complete=statistics.mean(ca.values()),
                       base_complete=statistics.mean(cb.values()), paired_complete=stc, worst_unrounded=worst, Z4=z4,
                       verdict=verdict, per_view_delta=1.5 * st["mean"], per_view_ci=[1.5 * x for x in st["ci"]],
                       size_reading=("smaller than on the design camera" if 1.5 * st["ci"][1] < DESIGN_PER_VIEW else "at design size"),
                       per_snap=dict(n=len(per_snap), mean=statistics.mean(per_snap) if per_snap else None),
-                      gt_identical=dict(n=len(ident_d), sum=sum(ident_d), share=(sum(ident_d) / tot) if tot else None,
+                      gt_identical=dict(n=len(ident_d), basic_delta_part=w_ident, share=(w_ident / w_tot) if w_tot else None,
+                                        unweighted_share_of_summed_per_snap=(sum(ident_d) / tot) if tot else None,
                                         mean=statistics.mean(ident_d) if ident_d else None),
-                      gt_nonidentical=dict(n=len(nonident_d), sum=sum(nonident_d),
+                      gt_nonidentical=dict(n=len(nonident_d), basic_delta_part=w_non,
                                            mean=statistics.mean(nonident_d) if nonident_d else None))
     p = res[PRIMARY]
     st = p["paired"]

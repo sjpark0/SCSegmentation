@@ -263,13 +263,14 @@
    },
    "gt_identical": {
     "n": 4969,
-    "sum": 13236.288838286777,
-    "share": 0.8380021369498788,
+    "basic_delta_part": 0.46740174788048805,
+    "share": 0.7727220694051744,
+    "unweighted_share_of_summed_per_snap": 0.8380021369498788,
     "mean": 2.66377316125715
    },
    "gt_nonidentical": {
     "n": 1831,
-    "sum": 2558.764962487055,
+    "basic_delta_part": 0.1374751753841527,
     "mean": 1.3974685759077308
    }
   },
@@ -378,13 +379,14 @@
    },
    "gt_identical": {
     "n": 4684,
-    "sum": 16076.783694961432,
-    "share": 0.8520702562477744,
+    "basic_delta_part": 0.5570496989694688,
+    "share": 0.7932726093136154,
+    "unweighted_share_of_summed_per_snap": 0.8520702562477744,
     "mean": 3.4322766214691356
    },
    "gt_nonidentical": {
     "n": 1805,
-    "sum": 2791.1248807446136,
+    "basic_delta_part": 0.14516753685751874,
     "mean": 1.5463295738197305
    }
   },
@@ -410,8 +412,8 @@
     "ok": true
    },
    "P5": {
-    "identical_share": 0.8380021369498788,
-    "ok": false
+    "identical_share": 0.7727220694051744,
+    "ok": true
    }
   }
  }
