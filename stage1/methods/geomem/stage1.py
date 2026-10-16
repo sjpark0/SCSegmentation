@@ -76,7 +76,8 @@ def check_preflight(tag, scene_name, data=DEFAULT_DATA, runs=DEFAULT_RUNS):
         raise ValueError(f"no stage-1 inputs for {scene_name}: {os.path.join(data, scene_name, 'meta.json')} is missing")
     from geomem.folds import load_folds
     try:
-        ckpt = R.checkpoint_for(scene_name, p["arm"], runs, load_folds())
+        folds = R.with_external_fold(load_folds(), scene_name, common.load_meta(data, scene_name).get("external_fold"))
+        ckpt = R.checkpoint_for(scene_name, p["arm"], runs, folds)
     except (FileNotFoundError, KeyError) as exc:
         raise ValueError(str(exc))
     with open(os.path.join(os.path.dirname(ckpt), "config.json")) as f:

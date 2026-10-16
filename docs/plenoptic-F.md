@@ -1,0 +1,45 @@
+# S3-F — CROOM T06 전체 길이 실행: 투고본 구성과 최신 구성을 32대·4K·0~9 937프레임 전부에
+
+> 2026-10-16 사용자 지시: "우리쪽 풀데이터에 적용 … 논문제출본부터 돌려주고 가장 최신버전도 돌려줘", "논문조건으로 하지말고 전체를 다 돌려주고 결과는 로컬말고 나스에 저장해줘", "900번이 아니라 0번부터".
+> 논문 시연(S3-P, [plenoptic-P.md](plenoptic-P.md))은 같은 촬영의 5초·10초 구간만, 3프레임 간격, 1080p·540p로 썼습니다. 이번 실행은 시연을 넓힌 것이지 벤치마크가 아닙니다 — 정답은 900번 프레임에만 있습니다.
+> 계획 워크플로 wf_dc24ecbd(조사 3 + 계획 1, 4K 시험 실행 포함), 근거 스크래치 `croom/`(s2map·s1map4k·datamap).
+
+## 1. 범위 (실행 전 고정)
+
+| 항목 | 값 |
+|---|---|
+| 촬영 | ETRI CROOM 플레놉틱 링, `PlenopticServer1/CROOM/JPG/T06_flag_ganggang/{0..31}/<f>.jpg`, 32대, 3840×2160, 59.94 fps, 카메라당 9 938프레임(0..9937) |
+| 카메라 순서 | 링 순서 cam_00..cam_31 = JPG 폴더 [0..7, 16..31, 8..15], 기준 카메라 cam_06 (논문과 같음) |
+| 프롬프트 | 900번 프레임 정답(Data/Set9 labelme, 사람 p1..p6)을 4K 원해상도로 래스터화 — 유일한 정답 |
+| 앞쪽 실행 F | 원본 900..9937 (9 038프레임), 장면 `T06_flag_ganggang_F` (파일 번호 = 원본 프레임 번호, start_frame 900) |
+| 뒤쪽 실행 B | 원본 900..0 (901프레임), 시간을 뒤집은 장면 `T06_flag_ganggang_B` (파일 i = 원본 900 − i, start_frame 0); 같은 추적기를 앞으로 돌림. 끝나면 F 폴더에 원본 번호로 합침 |
+| 구성 1 (투고본) | `SegMaskSam3XW1CGPS4MFsCs10kG2` = `--xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod --frame0-seed --crop-small 10000 --crop-gate v2` |
+| 구성 2 (최신) | `SegMaskSam3XW1CGPS4MSdgeoset_rep_xsFsCs10kG2Rs` = 위 + `--stage1 geoset_rep_xs --ref-snap`. 1단계 체크포인트는 **fold 2**(학습 장면이 가장 많은 fold 중 가장 낮은 번호)로 실행 전에 고정 — T06은 MUVOD fold에 없으므로 `stage1/Data/<key>/meta.json`의 `external_fold`로 지정 |
+| 순서 | 투고본 F → B → 합침 → NAS, 그다음 최신 F → B → 합침 → NAS (GPU 하나씩) |
+| 결과 | NAS `PlenopticServer1/CROOM/SegResult/T06_flag_ganggang_F/<구성>/cam_KK/<원본 프레임>/<사람>.png` (+ MANIFEST.json, MANIFEST_backward.json, SOURCE.json, SOURCE_backward.json, Mask/). 로컬 사본은 NAS 다이제스트 검증 뒤 지움. 논문의 T06 폴더들은 건드리지 않음 |
+
+## 2. 코드 변경 (모두 선택 플래그, 끄면 기존 경로 그대로)
+
+- `SCSam3/long_run.py` + `runMVSeg.py` `--mem-prune`: 추적기가 프레임마다 쌓는 기억(32대에서 프레임당 약 0.3 GiB)을, 기억 선택(`frame_filter`: 유효 점수 > 0.01인 최근 15개 + t−1)이 다시 고를 수 없는 것만 지움. 감시: 남긴 항목이 사라지거나 점수가 바뀌면 실행을 멈춤. 크롭 세션에도 적용.
+- `--crop-stream`: 크롭 패스가 프레임을 한 장씩 읽고 마스크를 압축해 두었다가 채택 대상만 씀(기존은 카메라 전체 프레임을 메모리에).
+- `--io-cache2`: 4K JPEG를 두 번 디코딩하지 않게 2칸 캐시. `--async-png 8`: PNG 쓰기를 8 스레드로(읽기 전에 모두 비움).
+- 1단계 외부 장면: `meta.json`의 `external_fold`·`basic_objects`(MUVOD 17장면은 기존 fold·객체 집합 그대로; 다른 fold 지정은 거부).
+- 실행: `plenoptic/build_full.py`(원본 로컬 복사·장면·1단계 입력·뒤쪽 합치기), `plenoptic/run_full.sh`(단계별 완료 표시로 재개), `plenoptic/Plenoptic_full.json`.
+
+## 3. 관문 (본 실행 전, 정답 없음)
+
+- G1 플래그 끔: MUVOD Blocks·Fencing 투고본, Blocks 최신 — 기존 폴더와 바이트 동일.
+- G2 플래그 켬: Blocks·Fencing·CoffeeMartini·MATF × 두 구성 — 기존 폴더와 바이트 동일, 크롭 기록 동일.
+- G3 T06 4K 150프레임: 투고본 플래그 끔 대 켬 — 바이트 동일, 크롭 기록·면적 기록 동일, 메모리 평탄.
+- G6 T06 4K 40프레임 최신 구성 시험(1단계 fold 2 적재, 실행 완료).
+- 단위 테스트 `tests/test_long_run.py`(기억 정리 전후 선택 동일 속성 시험 등), 기존 호스트·컨테이너 테스트.
+
+## 4. 보고할 것
+
+900번 프레임 J(31대 비기준 카메라 × 6명, 두 구성), 사람별 면적·존재 시간선(정답 없는 서술), 두 구성의 일치·갈림, 실행 시간·메모리, 크롭 판정, S2-R6 교체 수. **T06에서 아무것도 고르거나 조정하지 않음.** 최신 구성은 MUVOD에서 고른 구성이고, 이 360° 링에서는 1단계 시드가 투고본보다 나쁠 수 있음(조사 단계의 900번 시험: 비기준 평균 J 0.74~0.77 대 0.94 — 링 반대편에서 하락)을 그대로 적습니다.
+
+## 5. 이력
+
+| 일자 | 내용 |
+|---|---|
+| 2026-10-16 | 범위·구성·관문 고정, 코드 변경, 원본 로컬 복사 시작. 단위 테스트(호스트 276·1단계 175·컨테이너 70) 통과, G1(플래그 끔 3개)·G2(플래그 켬 8개: Blocks·Fencing·CoffeeMartini·MATF × 두 구성) 모두 기존 폴더와 바이트 동일·크롭 기록·면적 기록·S2-R6 교체 수 동일 |

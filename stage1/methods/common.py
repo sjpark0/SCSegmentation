@@ -43,6 +43,7 @@ class Scene:
     ref_labels: np.ndarray
     objects: list
     frame: int = None        # None = the benchmark's reference frame; t = Data/<scene>/frames/<t>/
+    external_fold: int = None  # a scene outside the benchmark (not in folds.json): the held-out fold it is decoded with
 
 
 def frame_dir(data, scene, frame=None):
@@ -58,7 +59,8 @@ def load_scene(data, scene, frame=None):
     return Scene(name=scene, cams=list(meta["cams"]), ref_cam=meta["ref_cam"],
                  mask_cams=list(meta["mask_cams"]), hw=tuple(ref_labels.shape),
                  image_paths={c: os.path.join(d, "images", f"{c}.jpg") for c in meta["cams"]},
-                 ref_labels=ref_labels, objects=labelmap_objects(ref_labels), frame=frame)
+                 ref_labels=ref_labels, objects=labelmap_objects(ref_labels), frame=frame,
+                 external_fold=meta.get("external_fold"))
 
 
 def all_scenes(data):

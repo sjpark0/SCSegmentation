@@ -41,10 +41,21 @@ def stage1_module():
     return S
 
 
-def basic_objects(dataset):
+def basic_objects(dataset, meta=None):
+    """MUVOD: the census's basic set and c_ini.  A scene outside MUVOD (no census entry): its stage-1 meta.json's
+    basic_objects and ref_cam; ValueError without them."""
     with open(CENSUS_PATH) as fh:
         census = json.load(fh)
-    return sorted(set(int(v) for v in census[dataset]["seed_ids_c_ini"])), census[dataset]["c_ini"]
+    if dataset in census:
+        return sorted(set(int(v) for v in census[dataset]["seed_ids_c_ini"])), census[dataset]["c_ini"]
+    if not meta or "basic_objects" not in meta:
+        raise ValueError(f"{dataset} has no entry in {CENSUS_PATH} and its stage-1 meta.json no basic_objects")
+    return sorted(set(int(v) for v in meta["basic_objects"])), meta["ref_cam"]
+
+
+def stage1_meta(dataset):
+    with open(os.path.join(stage1_module().DEFAULT_DATA, dataset, "meta.json")) as fh:
+        return json.load(fh)
 
 
 def preflight(tag, dataset, start_frame, c_ini_cam):
@@ -54,9 +65,8 @@ def preflight(tag, dataset, start_frame, c_ini_cam):
     folder_suffix(tag)
     S = stage1_module()
     info = S.check_preflight(tag, dataset)
-    with open(os.path.join(S.DEFAULT_DATA, dataset, "meta.json")) as fh:
-        meta = json.load(fh)
-    basic, census_c_ini = basic_objects(dataset)
+    meta = stage1_meta(dataset)
+    basic, census_c_ini = basic_objects(dataset, meta)
     if meta["ref_frame"] != start_frame or meta["ref_cam"] != census_c_ini or census_c_ini != c_ini_cam:
         raise ValueError(f"stage-1 keyframe/reference {meta['ref_frame']}/{meta['ref_cam']} != stage-2 "
                          f"start_frame/c_ini {start_frame}/{c_ini_cam} (census {census_c_ini})")
@@ -132,7 +142,7 @@ def run_stage1(tag, dataset, video_cams, shape, c_ini_cam, start_frame, np, save
     finally:
         s1.close()
     seconds = round(time.time() - t0, 1)
-    basic, _ = basic_objects(dataset)
+    basic, _ = basic_objects(dataset, stage1_meta(dataset))
     seeds, counts = to_seeds(res["final"], video_cams, basic, shape, c_ini_cam, np)
     cfg = res["config"]
     record = dict(mode="stage1-inprocess", tag=tag, arm=cfg.get("arm"), gate=cfg.get("gate"), fold=cfg.get("fold"),

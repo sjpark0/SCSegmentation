@@ -371,6 +371,15 @@ def parse_args():
                          "re-encode the frame-0 prompt into that frame's tracker memory, in place, before "
                          "the next camera is advanced. Needs --ref-snap and --ref-cam muvod; MVOpt, one GPU, "
                          "not two-pass. Folder suffix Rm, just before Rs.")
+    ap.add_argument("--mem-prune", action="store_true",
+                    help="long runs (SCSam3/long_run.py): after each tracked frame drop the tracker memory entries that "
+                         "memory selection can no longer reach (output-neutral, guarded); also inside crop sessions")
+    ap.add_argument("--io-cache2", action="store_true",
+                    help="long runs: a 2-entry cache in the lazy frame loaders (each 4K JPEG decoded once, not twice)")
+    ap.add_argument("--async-png", type=int, default=0, metavar="N",
+                    help="long runs: write PNGs on N threads (drained before anything reads them back)")
+    ap.add_argument("--crop-stream", action="store_true",
+                    help="long runs: the --crop-small pass reads, tracks and writes one frame at a time (same output)")
     ap.add_argument("--save-stages", action="store_true",
                     help="also write the intermediate results to <dataset>/<out>_stages/: stage1/ "
                          "(--stage1 outputs in the stage-1 CLI layout), seeds/ (an MVSeed_ folder of the "
@@ -1070,6 +1079,66 @@ def build_runner(algo):
             """S2-R7: inject_ref_memory on c_ini session j (docs/stage2-R7-prereg.md section 4)."""
             return inject_ref_memory(self.predictor, self.session_ids[j], t, objs_masks0, torch)
 
+        def _crop_one_stream(self, t, full, ds_dir, out_dir, cam, obj, cx0, cy0, side, H, W, start_frame,
+                             num_frame, gate, ct, cv2, np, stream):
+            """One crop target of CropSmall with --crop-stream: LazyCrops frames, per-frame gate inputs, packed
+            masks, the same verdict, records and PNG bytes as the list-based loop."""
+            lr = stream["module"]
+            t0 = time.time()
+            prompt_crop = full[cy0:cy0 + side, cx0:cx0 + side]
+            crops = lr.LazyCrops(cv2, np, os.path.join(ds_dir, "Video", cam), start_frame, num_frame,
+                                 cx0, cy0, side, (H, W))
+            per = {}
+
+            def on_frame(k, m):
+                per[k] = (int(m.sum()), bool(ct.touches_window_edge(m, cx0, cy0, H, W)) if k else False,
+                          np.packbits(m) if k else None,
+                          ct.mask_iou(ct.paste_back(m, cx0, cy0, H, W), full) if k == 1 else None)
+            pruner = stream.get("pruner")
+            yielded = ct.track_crop_stream(
+                self.predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop, obj, num_frame, on_frame,
+                multi_session=bool(getattr(self, "uses_spatial_predictor", False)),
+                after_frame=(lambda sid, k: pruner.prune_session(self.predictor, sid, k)) if pruner else None)
+            zero = (0, False, None, None)
+            areas = [per.get(k, zero)[0] for k in range(num_frame)]
+            empty = sum(int(per.get(k, zero)[0] == 0) for k in range(1, num_frame))
+            touching = sum(int(per.get(k, zero)[1]) for k in range(1, num_frame))
+            if num_frame > 1:
+                iou_f1 = per[1][3] if 1 in per else ct.mask_iou(np.zeros((H, W), dtype=bool), full)
+            else:
+                iou_f1 = 1.0
+            kept, why = ct.gate_verdict(gate, iou_f1, t["zoom"], touching)
+            no_png = sum(1 for k in range(1, num_frame)
+                         if not os.path.isfile(os.path.join(out_dir, cam, f"{start_frame + k:d}", f"{obj:d}.png")))
+            n_written = 0
+            if kept:
+                writer = stream.get("writer")
+                for k in range(1, num_frame):
+                    pk = per.get(k, zero)[2]
+                    m = (np.unpackbits(pk, count=side * side).reshape(side, side).astype(bool) if pk is not None
+                         else np.zeros((side, side), dtype=bool))
+                    folder = os.path.join(out_dir, cam, f"{start_frame + k:d}")
+                    os.makedirs(folder, exist_ok=True)
+                    arr = ct.paste_back(m, cx0, cy0, H, W).astype(np.uint8) * 255
+                    if writer is not None:
+                        writer.write(os.path.join(folder, f"{obj:d}.png"), arr)
+                    else:
+                        cv2.imwrite(os.path.join(folder, f"{obj:d}.png"), arr)
+                    n_written += 1
+                if writer is not None:
+                    writer.drain()
+            t.update({"iou_f1_seed": round(iou_f1, 6), "frames_empty": empty,
+                      "frames_touching_border": touching, "frames_yielded": yielded,
+                      "frames_no_mainline_png": no_png, "areas": areas,
+                      "kept": bool(kept), "why": why,
+                      "seconds": round(time.time() - t0, 2)})
+            print(f"  {cam:<12} obj {obj:>3}  {t['prompt']:<4} {t['seed_px']:>6} px  side "
+                  f"{side:>4}  zoom {t['zoom']:.2f}  iou f1 {iou_f1:.3f}  empty "
+                  f"{empty}/{num_frame - 1}  border {touching}/{num_frame - 1}  "
+                  f"{'kept' if kept else 'reverted (' + str(why) + ')'}  "
+                  f"{t['seconds']:.1f} s  [stream]", flush=True)
+            return n_written
+
         def TrackForward(self, start_frame, num_frame):
             """Seed each view with its propagated mask, then track forward only.
 
@@ -1123,7 +1192,7 @@ def build_runner(algo):
             return response["outputs"]
 
         def CropSmall(self, ds_dir, out_dir, cam_names, written_cams, c_ini_cam, start_frame,
-                      num_frame, max_px, gate, scale, min_side, cv2, np):
+                      num_frame, max_px, gate, scale, min_side, cv2, np, stream=None):
             """S2-R2 (docs/stage2-R2-prereg.md section 1): crop-track the small objects of
             the scored cameras and overwrite their frames start+1 .. start+num_frame-1.
 
@@ -1193,6 +1262,12 @@ def build_runner(algo):
                 t0 = time.time()
                 cam, obj = t["cam"], t["obj"]
                 cx0, cy0, side = t["crop"][0], t["crop"][1], t["side"]
+                if stream is not None:
+                    # --crop-stream (long runs): the same session, gate inputs and writes, one frame at a time
+                    full = (gt == obj) if (gt is not None and cam == c_ini_cam) else seeds[(cam, obj)]
+                    n_written += self._crop_one_stream(t, full, ds_dir, out_dir, cam, obj, cx0, cy0, side, H, W,
+                                                       start_frame, num_frame, gate, ct, cv2, np, stream)
+                    continue
                 if frames_cam != cam:
                     frames = ct.read_frames(cv2, os.path.join(ds_dir, "Video", cam),
                                             start_frame, num_frame)
@@ -1630,7 +1705,27 @@ def main():
     if run["ref_snap_mem"] and torch.cuda.is_available() and torch.cuda.device_count() > 1:
         sys.exit("--ref-snap-mem: more than one GPU is visible; the predictor's worker processes would "
                  "hold other copies of the c_ini memory (run with one GPU)")
+    # long-run helpers (SCSam3/long_run.py; all opt-in, output-neutral)
+    lr_mod, pruner, writer = None, None, None
+    if args.mem_prune or args.io_cache2 or args.async_png or args.crop_stream:
+        if run["two_pass"] or args.algo != "MVOpt":
+            sys.exit("--mem-prune/--io-cache2/--async-png/--crop-stream are verified for the MVOpt one-pass loop only")
+        lr_mod = _load_by_path("long_run", os.path.join(HERE, "long_run.py"))
+        for v in sc.track_views:
+            n_have = len(sc.images[v])
+            if c["start_frame"] + c["num_frame"] > n_have:
+                sys.exit(f"{cam_names[v]}: start_frame {c['start_frame']} + num_frame {c['num_frame']} > "
+                         f"{n_have} frames in the folder")
+        if args.io_cache2:
+            import io_utils
+            lr_mod.install_io_cache2(io_utils)
+        if args.async_png:
+            writer = lr_mod.AsyncWriter(cv2, args.async_png)
     sc.TrackForward(c["start_frame"], c["num_frame"])
+    if args.mem_prune:
+        st0 = sc.predictor._ALL_INFERENCE_STATES[sc.session_ids[0]]["state"]
+        pruner = lr_mod.MemPrune(sc.predictor.model.tracker, st0["num_frames"])
+        print(f"long run       mem-prune on (K={pruner.K}, mf_threshold={pruner.thr})", flush=True)
 
     frame0_stats = None
     if run["two_pass"]:
@@ -1655,6 +1750,8 @@ def main():
         for _ in range(c["num_frame"]):
             for j, view in enumerate(sc.track_views):
                 response = next(sc.tracking_result[j])
+                if pruner is not None:
+                    pruner.prune_session(sc.predictor, sc.session_ids[j], response["frame_index"])
                 out = response["outputs"]
                 obj_ids = out["out_obj_ids"].tolist()
                 masks = [out["out_binary_masks"][i] > 0.0 for i in range(len(obj_ids))]
@@ -1674,8 +1771,11 @@ def main():
                 written_np = {}
                 for obj_id, mask in zip(obj_ids, masks):
                     mask = mask.cpu().numpy() if hasattr(mask, "cpu") else np.asarray(mask)
-                    cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
-                                mask.squeeze().astype(np.uint8) * 255)
+                    if writer is not None:
+                        writer.write(os.path.join(folder, f"{obj_id:d}.png"), mask.squeeze().astype(np.uint8) * 255)
+                    else:
+                        cv2.imwrite(os.path.join(folder, f"{obj_id:d}.png"),
+                                    mask.squeeze().astype(np.uint8) * 255)
                     if mem_snap is not None:
                         written_np[int(obj_id)] = mask.squeeze().astype(bool)
                 if mem_snap is not None and view == ref_index and frame_idx > c["start_frame"]:
@@ -1686,6 +1786,8 @@ def main():
                             rec["t"] = int(frame_idx)
                             mem_recs.append(rec)
                     mem_secs += time.time() - t_mem
+            if writer is not None and response["frame_index"] == c["start_frame"]:
+                writer.drain()                      # the frame-start PNGs are read back (--ref-snap-mem, crop pass)
             print(f"  frame {response['frame_index']} written", flush=True)
         if frame0_sources is not None:
             frame0_stats = seeds_from_module().frame0_provenance(frame0_sources)
@@ -1697,6 +1799,8 @@ def main():
 
     # --crop-small (S2-R2): after every mainline PNG is on disk, before the counters and
     # the manifest.  None when off, so the manifest carries one value either way.
+    if writer is not None:
+        writer.drain()                              # every mainline PNG on disk before the crop pass reads them
     crop_stats = None
     if run["crop"]:
         cs = run["crop"]
@@ -1722,7 +1826,9 @@ def main():
                      if c.get("c_ini") is not None else None)
         crop_stats = sc.CropSmall(ds_dir, out_dir, cam_names, written_cams, c_ini_cam,
                                   c["start_frame"], c["num_frame"], cs["max_px"], cs["gate"],
-                                  cs["scale"], cs["min_side"], cv2, np)
+                                  cs["scale"], cs["min_side"], cv2, np,
+                                  stream=(dict(module=lr_mod, pruner=pruner, writer=writer)
+                                          if args.crop_stream else None))
         if run["ref_snap_mem"]:
             t_crop = sorted(int(x["obj"]) for x in crop_stats["targets"] if x["cam"] == c_ini_cam)
             if t_crop != mem_T:
@@ -1733,6 +1839,8 @@ def main():
               + (": " + ", ".join(f"{cam}/{obj} ({why})" for cam, obj, why in crop_stats["reverted"])
                  if crop_stats["reverted"] else ""), flush=True)
 
+    if writer is not None:
+        writer.close()                              # all PNGs on disk before --ref-snap and the manifest
     # --ref-snap (S2-R6): the last change to the masks, after the crop pass
     snap_stats = None
     if run["ref_snap"]:
@@ -1823,6 +1931,10 @@ def main():
                    "crop_small": crop_stats,
                    "ft_encoder": ft_stats,
                    "stage1": run["stage1"], "ref_snap": snap_stats, "ref_snap_mem": mem_stats,
+                   "long_run": (None if lr_mod is None else
+                                {"mem_prune": pruner.record() if pruner else None, "io_cache2": bool(args.io_cache2),
+                                 "async_png": int(args.async_png), "crop_stream": bool(args.crop_stream),
+                                 "png_writes_async": writer.n if writer else 0}),
                    "save_stages": stages_dir,
                    "view_areas": areas.as_record()})
         print(f"manifest -> {manifest}", flush=True)

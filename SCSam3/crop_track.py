@@ -506,6 +506,43 @@ def track_crop(predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop
         predictor.handle_request(request=dict(type="close_session", session_id=sid))
 
 
+def track_crop_stream(predictor, torch, np, AsyncVideoFrameCPUToGPU, crops, prompt_crop, obj, num_frame,
+                      on_frame, multi_session=False, after_frame=None):
+    """track_crop for very long runs (runMVSeg.py --crop-stream): the same session, prompt and propagation, but each
+    yielded mask goes to on_frame(k, mask) instead of a dict of every frame, and after_frame(sid, k) runs after each
+    frame (the --mem-prune hook).  crops can be any indexable sequence (long_run.LazyCrops).  -> frames yielded."""
+    s = int(prompt_crop.shape[0])
+    images = AsyncVideoFrameCPUToGPU(crops, offload_video_to_cpu=True)
+    sid = predictor.handle_request(request=dict(type="start_session", images=images,
+                                                orig_height=s, orig_width=s))["session_id"]
+    try:
+        predictor.handle_request(request=dict(type="reset_session", session_id=sid))
+        predictor.handle_request(request=dict(
+            type="add_prompt", session_id=sid, frame_index=0,
+            mask=torch.tensor(np.asarray(prompt_crop).astype("float32"), dtype=torch.float32),
+            obj_id=obj))
+        request = dict(type="propagate_in_video", propagation_direction="forward",
+                       start_frame_index=0, max_frame_num_to_track=num_frame)
+        if multi_session:
+            request.update(session_ids=[sid], spatial_idx=0)
+        else:
+            request["session_id"] = sid
+        n = 0
+        for r in predictor.handle_stream_request(request=request):
+            o = r["outputs"]
+            mask = None
+            for i, oid in enumerate(o["out_obj_ids"].tolist()):
+                if int(oid) == obj:
+                    mask = to_bool_mask(o["out_binary_masks"][i], np)
+            on_frame(int(r["frame_index"]), mask if mask is not None else np.zeros((s, s), dtype=bool))
+            n += 1
+            if after_frame is not None:
+                after_frame(sid, int(r["frame_index"]))
+        return n
+    finally:
+        predictor.handle_request(request=dict(type="close_session", session_id=sid))
+
+
 def read_frames(cv2, video_dir, start_frame, num_frame):
     frames = []
     for k in range(num_frame):

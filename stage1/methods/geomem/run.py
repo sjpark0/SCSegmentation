@@ -36,6 +36,18 @@ MIN_VALID = 64     # §8: fewer validly reprojected mask pixels than this -> fal
 OBJ_GATES = ("obj", "absent", "reproj")   # per-object gates (view-level candidates, per-object masking)
 
 
+def with_external_fold(folds, scene, external_fold):
+    """folds.json plus a scene OUTSIDE the benchmark at `external_fold` (its stage-1 meta.json; every fold is held out
+    for it, the leak guard still runs).  A benchmark scene keeps its own fold: another one is refused."""
+    if external_fold is None:
+        return folds
+    if scene in folds:
+        if int(external_fold) != folds[scene]:
+            raise KeyError(f"{scene} is a benchmark scene of fold{folds[scene]}: external_fold {external_fold} refused")
+        return folds
+    return dict(folds, **{scene: int(external_fold)})
+
+
 def checkpoint_for(scene, arm, runs_dir, folds):
     k = folds[scene]
     p = os.path.join(runs_dir, arm, f"fold{k}", "ckpt.pt")
@@ -336,7 +348,7 @@ def decode_scene(scene, args, sink=None):
     geo = wrapper.geo_embed
     ck = None
     if not args.untrained:
-        folds = load_folds()
+        folds = with_external_fold(load_folds(), scene.name, getattr(scene, "external_fold", None))
         ckpt_path = checkpoint_for(scene.name, arm, args.runs, folds)
         with open(os.path.join(os.path.dirname(ckpt_path), "config.json")) as f:
             ck_cfg = json.load(f)
