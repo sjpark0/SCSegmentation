@@ -1,0 +1,418 @@
+{
+ "prereg": "docs/stage2-R6H-prereg.md",
+ "check": {
+  "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2": {
+   "method": "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2",
+   "scenes": {
+    "AlexaMeadeExhibit": {
+     "snapped": 1050,
+     "frame0_pngs": 60
+    },
+    "AlexaMeadeFacePaint": {
+     "snapped": 229,
+     "frame0_pngs": 18
+    },
+    "Barn": {
+     "snapped": 689,
+     "frame0_pngs": 60
+    },
+    "Blocks": {
+     "snapped": 229,
+     "frame0_pngs": 29
+    },
+    "Breakfast": {
+     "snapped": 145,
+     "frame0_pngs": 49
+    },
+    "CBABasketball": {
+     "snapped": 145,
+     "frame0_pngs": 35
+    },
+    "Carpark": {
+     "snapped": 272,
+     "frame0_pngs": 44
+    },
+    "CoffeeMartini": {
+     "snapped": 1352,
+     "frame0_pngs": 77
+    },
+    "Dog": {
+     "snapped": 181,
+     "frame0_pngs": 13
+    },
+    "Fencing": {
+     "snapped": 54,
+     "frame0_pngs": 16
+    },
+    "FlameSteak": {
+     "snapped": 1105,
+     "frame0_pngs": 64
+    },
+    "Frog": {
+     "snapped": 0,
+     "frame0_pngs": 10
+    },
+    "MATF": {
+     "snapped": 392,
+     "frame0_pngs": 31
+    },
+    "MartialArts": {
+     "snapped": 165,
+     "frame0_pngs": 31
+    },
+    "Painter": {
+     "snapped": 346,
+     "frame0_pngs": 48
+    },
+    "PoznanStreet": {
+     "snapped": 171,
+     "frame0_pngs": 46
+    },
+    "Welder": {
+     "snapped": 275,
+     "frame0_pngs": 31
+    }
+   },
+   "bad": [],
+   "total_snapped": 6800,
+   "frame0_pngs": 662,
+   "ok": true
+  },
+  "SegMaskSam3XW0MSdgtFs": {
+   "method": "SegMaskSam3XW0MSdgtFs",
+   "scenes": {
+    "AlexaMeadeExhibit": {
+     "snapped": 894,
+     "frame0_pngs": 60
+    },
+    "AlexaMeadeFacePaint": {
+     "snapped": 229,
+     "frame0_pngs": 18
+    },
+    "Barn": {
+     "snapped": 687,
+     "frame0_pngs": 60
+    },
+    "Blocks": {
+     "snapped": 229,
+     "frame0_pngs": 29
+    },
+    "Breakfast": {
+     "snapped": 144,
+     "frame0_pngs": 49
+    },
+    "CBABasketball": {
+     "snapped": 145,
+     "frame0_pngs": 35
+    },
+    "Carpark": {
+     "snapped": 272,
+     "frame0_pngs": 44
+    },
+    "CoffeeMartini": {
+     "snapped": 1304,
+     "frame0_pngs": 77
+    },
+    "Dog": {
+     "snapped": 181,
+     "frame0_pngs": 13
+    },
+    "Fencing": {
+     "snapped": 54,
+     "frame0_pngs": 16
+    },
+    "FlameSteak": {
+     "snapped": 1041,
+     "frame0_pngs": 64
+    },
+    "Frog": {
+     "snapped": 0,
+     "frame0_pngs": 10
+    },
+    "MATF": {
+     "snapped": 357,
+     "frame0_pngs": 31
+    },
+    "MartialArts": {
+     "snapped": 165,
+     "frame0_pngs": 31
+    },
+    "Painter": {
+     "snapped": 341,
+     "frame0_pngs": 48
+    },
+    "PoznanStreet": {
+     "snapped": 171,
+     "frame0_pngs": 46
+    },
+    "Welder": {
+     "snapped": 275,
+     "frame0_pngs": 31
+    }
+   },
+   "bad": [],
+   "total_snapped": 6489,
+   "frame0_pngs": 662,
+   "ok": true
+  },
+  "ok": true
+ },
+ "judge": {
+  "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2": {
+   "arm": "SegMaskSam3XW1CGPS4MSdgtFsCs10kG2Rh",
+   "n_scenes": [
+    17,
+    17,
+    17,
+    17
+   ],
+   "basic": 95.87780426694998,
+   "base_basic": 95.27292734368534,
+   "paired": {
+    "n": 17,
+    "mean": 0.604876923264639,
+    "ci": [
+     0.33748836563619944,
+     0.8803338141966263
+    ],
+    "wins": 14,
+    "losses": 2,
+    "worst": [
+     -0.1650795890123078,
+     "Fencing"
+    ],
+    "best": [
+     1.5632448558245784,
+     "FlameSteak"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.546,
+     "AlexaMeadeFacePaint": 0.678,
+     "Barn": 0.833,
+     "Blocks": 0.282,
+     "Breakfast": 0.167,
+     "CBABasketball": 0.17,
+     "Carpark": 0.324,
+     "CoffeeMartini": 1.333,
+     "Dog": 1.484,
+     "Fencing": -0.165,
+     "FlameSteak": 1.563,
+     "Frog": 0.0,
+     "MATF": 0.889,
+     "MartialArts": 0.32,
+     "Painter": 0.785,
+     "PoznanStreet": 0.177,
+     "Welder": -0.105
+    }
+   },
+   "complete": 90.81717960540054,
+   "base_complete": 90.28828100875027,
+   "paired_complete": {
+    "n": 17,
+    "mean": 0.5288985966502634,
+    "ci": [
+     0.2970214233030378,
+     0.7684467559275393
+    ],
+    "wins": 14,
+    "losses": 2,
+    "worst": [
+     -0.1650795890123078,
+     "Fencing"
+    ],
+    "best": [
+     1.5457331359109645,
+     "AlexaMeadeExhibit"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.546,
+     "AlexaMeadeFacePaint": 0.591,
+     "Barn": 0.833,
+     "Blocks": 0.222,
+     "Breakfast": 0.151,
+     "CBABasketball": 0.167,
+     "Carpark": 0.324,
+     "CoffeeMartini": 1.144,
+     "Dog": 1.23,
+     "Fencing": -0.165,
+     "FlameSteak": 1.16,
+     "Frog": 0.0,
+     "MATF": 0.667,
+     "MartialArts": 0.32,
+     "Painter": 0.731,
+     "PoznanStreet": 0.177,
+     "Welder": -0.105
+    }
+   },
+   "worst_unrounded": -0.1650795890123078,
+   "Z4": {
+    "cini_rows_differ": 0,
+    "frog_delta": 0.0,
+    "ok": true
+   },
+   "verdict": "REPLICATES",
+   "per_view_delta": 0.9073153848969586,
+   "per_view_ci": [
+    0.5062325484542991,
+    1.3205007212949393
+   ],
+   "size_reading": "at design size",
+   "per_snap": {
+    "n": 6800,
+    "mean": 2.3228020295255636
+   },
+   "gt_identical": {
+    "n": 4969,
+    "sum": 13236.288838286777,
+    "share": 0.8380021369498788,
+    "mean": 2.66377316125715
+   },
+   "gt_nonidentical": {
+    "n": 1831,
+    "sum": 2558.764962487055,
+    "mean": 1.3974685759077308
+   }
+  },
+  "SegMaskSam3XW0MSdgtFs": {
+   "arm": "SegMaskSam3XW0MSdgtFsRh",
+   "n_scenes": [
+    17,
+    17,
+    17,
+    17
+   ],
+   "basic": 94.63476043215492,
+   "base_basic": 93.93254319632794,
+   "paired": {
+    "n": 17,
+    "mean": 0.7022172358269851,
+    "ci": [
+     0.39344434225515185,
+     1.0205572598968782
+    ],
+    "wins": 14,
+    "losses": 2,
+    "worst": [
+     -0.16550484791153508,
+     "Fencing"
+    ],
+    "best": [
+     1.8788969733134309,
+     "AlexaMeadeExhibit"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.879,
+     "AlexaMeadeFacePaint": 0.673,
+     "Barn": 1.242,
+     "Blocks": 0.359,
+     "Breakfast": 0.207,
+     "CBABasketball": 0.245,
+     "Carpark": 0.339,
+     "CoffeeMartini": 1.502,
+     "Dog": 1.471,
+     "Fencing": -0.166,
+     "FlameSteak": 1.864,
+     "Frog": 0.0,
+     "MATF": 1.113,
+     "MartialArts": 0.351,
+     "Painter": 0.763,
+     "PoznanStreet": 0.182,
+     "Welder": -0.088
+    }
+   },
+   "complete": 89.63658190023185,
+   "base_complete": 89.01994539258774,
+   "paired_complete": {
+    "n": 17,
+    "mean": 0.6166365076441042,
+    "ci": [
+     0.34712159278356247,
+     0.8990763662082119
+    ],
+    "wins": 14,
+    "losses": 2,
+    "worst": [
+     -0.16550484791153508,
+     "Fencing"
+    ],
+    "best": [
+     1.8788969733134309,
+     "AlexaMeadeExhibit"
+    ],
+    "per_scene": {
+     "AlexaMeadeExhibit": 1.879,
+     "AlexaMeadeFacePaint": 0.585,
+     "Barn": 1.242,
+     "Blocks": 0.292,
+     "Breakfast": 0.188,
+     "CBABasketball": 0.242,
+     "Carpark": 0.339,
+     "CoffeeMartini": 1.289,
+     "Dog": 1.219,
+     "Fencing": -0.166,
+     "FlameSteak": 1.389,
+     "Frog": 0.0,
+     "MATF": 0.829,
+     "MartialArts": 0.351,
+     "Painter": 0.709,
+     "PoznanStreet": 0.182,
+     "Welder": -0.088
+    }
+   },
+   "worst_unrounded": -0.16550484791153508,
+   "Z4": {
+    "cini_rows_differ": 0,
+    "frog_delta": 0.0,
+    "ok": true
+   },
+   "verdict": null,
+   "per_view_delta": 1.0533258537404777,
+   "per_view_ci": [
+    0.5901665133827277,
+    1.5308358898453172
+   ],
+   "size_reading": "at design size",
+   "per_snap": {
+    "n": 6489,
+    "mean": 2.907675847697033
+   },
+   "gt_identical": {
+    "n": 4684,
+    "sum": 16076.783694961432,
+    "share": 0.8520702562477744,
+    "mean": 3.4322766214691356
+   },
+   "gt_nonidentical": {
+    "n": 1805,
+    "sum": 2791.1248807446136,
+    "mean": 1.5463295738197305
+   }
+  },
+  "predictions": {
+   "P1": {
+    "basic": 0.604876923264639,
+    "in_80": true,
+    "per_view": 0.9073153848969586
+   },
+   "P2": {
+    "replicates": true,
+    "up_of_16": 14,
+    "up_ok": true,
+    "worst": -0.1650795890123078,
+    "worst_ok": true
+   },
+   "P3": {
+    "ratio": 0.8743904359843888,
+    "ok": true
+   },
+   "P4": {
+    "per_snap": 2.3228020295255636,
+    "ok": true
+   },
+   "P5": {
+    "identical_share": 0.8380021369498788,
+    "ok": false
+   }
+  }
+ }
+}
