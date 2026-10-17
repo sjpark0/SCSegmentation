@@ -80,3 +80,21 @@ def test_main_writes_the_readings(tmp_path, capsys):
     assert s["frame900"]["Q1_mean_J"] == 0.8 and s["census_forward"]["n_frames"] == 2
     assert s["census_forward"]["mean_zero_fraction"] == 0.0 and s["run_forward"]["git_rev"] == "x"
     assert "Q1 mean J 0.8000" in capsys.readouterr().out
+
+
+def test_merge_back_runs_under_the_plain_host_python(tmp_path):
+    """run_full.sh calls merge_back with the host's python3, which has no numpy (2026-10-18 chain stop)."""
+    import shutil
+    import subprocess
+    py = shutil.which("python3", path="/usr/bin:/bin")
+    if py is None:
+        import pytest
+        pytest.skip("no /usr/bin/python3")
+    b, f = tmp_path / "B", tmp_path / "F"
+    (b / "cam_00" / "1").mkdir(parents=True)
+    (b / "cam_00" / "1" / "3.png").write_bytes(b"x")
+    (f / "cam_00").mkdir(parents=True)
+    r = subprocess.run([py, "-I", os.path.join(REPO, "plenoptic", "build_full.py"), "merge_back", str(b), str(f)],
+                       capture_output=True, text=True, env={"PYTHONDONTWRITEBYTECODE": "1"})
+    assert r.returncode == 0, r.stderr
+    assert (f / "cam_00" / "899" / "3.png").read_bytes() == b"x"

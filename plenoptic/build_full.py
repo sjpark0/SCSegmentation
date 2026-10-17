@@ -15,6 +15,7 @@ B is the same forward tracker on time-reversed frames; merge_back renames its ou
     stage1   stage1/Data/<key>/ inputs for --stage1 (meta.json with external_fold / basic_objects, images, masks)
     merge_back <B method folder> <F method folder> : link B's frames 0..899 into F's tree under source frame numbers
 Host python (numpy, PIL):  PYTHONDONTWRITEBYTECODE=1 stage1/.venv/bin/python plenoptic/build_full.py stage|scenes|stage1
+(merge_back needs only the standard library: run_full.sh calls it with the plain python3)
 """
 import argparse
 import hashlib
@@ -24,9 +25,6 @@ import os
 import shutil
 import sys
 from concurrent.futures import ThreadPoolExecutor
-
-import numpy as np
-from PIL import Image
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_JPG = os.path.join(REPO, "PlenopticServer1", "CROOM", "JPG", "T06_flag_ganggang")
@@ -76,7 +74,8 @@ def stage(root, threads):
 
 
 def _gt(bd):
-    out = {}
+    import numpy as np                                          # here, not at the top: merge_back runs
+    out = {}                                                    # under the host's plain python3 (no numpy)
     for k, jpg in enumerate(bd.PERMS):
         nn = f"{bd.PNUM[jpg]:02d}"
         planes = bd.rasterize(os.path.join(bd.SRC_LAB, f"{nn}.json"))
@@ -88,6 +87,7 @@ def _gt(bd):
 
 
 def scenes(root):
+    from PIL import Image
     bd = _bd()
     gts = _gt(bd)
     for key, frames, start, num in ((SCENE_F, list(range(0, LAST + 1)), FRAME_GT, LAST + 1 - FRAME_GT),
