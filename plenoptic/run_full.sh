@@ -112,6 +112,10 @@ EOF
       echo "$(ts) ${stage}: verify exit ${st}  $(tail -n 1 "${LOGS}/${stage}.log")"
       [[ ${st} -eq 0 ]] || { echo "$(ts) ABORT: NAS copy differs; local copy kept"; exit 1; } ;;
     render)
+      # the host has no ffmpeg: render_full.py falls back to the static build shipped in the scsam3 image
+      [[ -x "${P}/tools/ffmpeg" ]] || { mkdir -p "${P}/tools"; docker run --rm --user "$(id -u):$(id -g)" -v /:/host scsam3 \
+        cp /opt/venv/lib/python3.12/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2 "/host${P}/tools/ffmpeg" \
+        > /dev/null 2>&1; }
       setsid nohup bash -c "nice -n 10 '${ROOT}/stage1/.venv/bin/python' '${ROOT}/plenoptic/render_full.py' \
           '${P}/T06_flag_ganggang_F' '${METHOD[$cfg]}' '${NAS}/viz/${METHOD[$cfg]}' --workers ${RENDER_WORKERS:-12} \
           && touch '${P}/done/${cfg}_render_finished'" > "${LOGS}/${stage}.log" 2>&1 < /dev/null &

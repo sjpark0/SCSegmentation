@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Viewing products of a full-length CROOM run (docs/plenoptic-F.md): per-camera overlay MP4s, an 8x4 ring mosaic MP4,
 a camera x time contact sheet and an area timeline (area / frame-900 seed area per camera and person).  Host python
-(stage1/.venv: cv2, numpy) + the host ffmpeg.
+(stage1/.venv: cv2, numpy) + ffmpeg: $FFMPEG, else one on PATH, else <data root>/tools/ffmpeg (the static build shipped in
+the scsam3 image, copied out by run_full.sh -- the host has no ffmpeg).
 
     render_full.py <scene_dir> <method> <out_dir> [--first 0] [--last 9937] [--workers 24]
 
@@ -12,6 +13,7 @@ MANIFEST_backward.json (backward index i = source frame 900 - i).
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import time
 from multiprocessing import Pool
@@ -25,8 +27,16 @@ FPS, W4, H4 = 59.94, 960, 540
 A = None
 
 
+def ffmpeg_exe():
+    for c in (os.environ.get("FFMPEG"), shutil.which("ffmpeg"),
+              os.path.join(os.path.dirname(os.path.abspath(A.scene)), "tools", "ffmpeg")):
+        if c and os.access(c, os.X_OK):
+            return c
+    raise SystemExit("no ffmpeg: set FFMPEG, put one on PATH, or copy the scsam3 image's static build to <data root>/tools/ffmpeg")
+
+
 def ffmpeg(path, w, h, crf=20):
-    return subprocess.Popen(["ffmpeg", "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
+    return subprocess.Popen([ffmpeg_exe(), "-loglevel", "error", "-y", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{w}x{h}",
                              "-r", str(FPS), "-i", "-", "-c:v", "libx264", "-preset", "veryfast", "-crf", str(crf),
                              "-pix_fmt", "yuv420p", path], stdin=subprocess.PIPE)
 
@@ -129,6 +139,7 @@ if __name__ == "__main__":
     ap.add_argument("--sheet-every", type=int, default=600)
     ap.add_argument("--what", default="cams,mosaic,sheet,timeline")
     A = ap.parse_args()
+    print("ffmpeg:", ffmpeg_exe(), flush=True)
     os.makedirs(os.path.join(A.out, "cams"), exist_ok=True)
     what = A.what.split(",")
     cams = sorted(c for c in os.listdir(os.path.join(A.scene, A.method)) if c.startswith("cam_"))
