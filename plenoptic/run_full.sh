@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Full-length CROOM T06 runs (docs/plenoptic-F.md): every frame 0..9937 of all 32 cameras at 3840x2160, results on the NAS.
-#   STAGES (default all, in order): sub_F sub_B sub_merge sub_score sub_sync sub_render lat_F lat_B lat_merge lat_score
-#                                   lat_sync lat_render sub_clean lat_clean src_clean
+#   STAGES (default all, in order): sub_F sub_B sub_merge sub_score sub_sync lat_F lat_B lat_merge lat_score lat_sync
+#                                   sub_render lat_render sub_clean lat_clean src_clean
+#     (the renders come after both GPU configs: on the local HDD their random 4K reads slowed a concurrent GPU run 2.5x)
 #     <cfg>_F      forward run, source frames 900..9937 (scene T06_flag_ganggang_F, start_frame 900, num_frame 9038)
 #     <cfg>_B      backward run, source frames 900..0 time-reversed (scene T06_flag_ganggang_B, start 0, num 901)
 #     <cfg>_merge  hard-link B's frames into F's tree under source frame numbers 0..899 (plenoptic/build_full.py merge_back)
@@ -19,7 +20,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 P="${P:-${ROOT}/Data/PlenopticFull}"
 NAS="${NAS:-${ROOT}/PlenopticServer1/CROOM/SegResult/T06_flag_ganggang_F}"
 CONF="${ROOT}/plenoptic/Plenoptic_full.json"
-STAGES="${STAGES:-sub_F sub_B sub_merge sub_score sub_sync sub_render lat_F lat_B lat_merge lat_score lat_sync lat_render sub_clean lat_clean src_clean}"
+STAGES="${STAGES:-sub_F sub_B sub_merge sub_score sub_sync lat_F lat_B lat_merge lat_score lat_sync sub_render lat_render sub_clean lat_clean src_clean}"
 LOGS="${P}/logs"; mkdir -p "${LOGS}" "${P}/done"
 SUB=(--algo MVOpt --xview-window 1 --xview-mode C --xview-gate --xview-ptr --xview-tpos-shift 4 --ref-cam muvod
      --frame0-seed --crop-small 10000 --crop-gate v2)
