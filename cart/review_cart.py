@@ -42,13 +42,20 @@ def paint(img, cam_dir, t, labels, alpha=0.5, outline=True):
 
 
 def legend(labels, width):
-    bar = np.full((44, width, 3), 30, np.uint8)
-    x = 10
+    """colour key, wrapped onto as many 44 px rows as the width needs"""
+    items, rows, x = [], 0, 10
     for o in sorted(labels, key=int):
         txt = f"{o} {labels[o]['label']}"
-        cv2.rectangle(bar, (x, 10), (x + 24, 34), COLS[int(o)][::-1], -1)
-        cv2.putText(bar, txt, (x + 30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        x += 40 + 14 * len(txt)
+        w = 40 + 14 * len(txt)
+        if x + w > width and x > 10:
+            rows, x = rows + 1, 10
+        items.append((o, txt, x, rows))
+        x += w
+    bar = np.full((44 * (rows + 1), width, 3), 30, np.uint8)
+    for o, txt, x, r in items:
+        y = 44 * r
+        cv2.rectangle(bar, (x, y + 10), (x + 24, y + 34), COLS[int(o)][::-1], -1)
+        cv2.putText(bar, txt, (x + 30, y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     return bar
 
 

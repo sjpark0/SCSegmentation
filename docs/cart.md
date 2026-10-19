@@ -37,7 +37,13 @@ SAM 3 이미지 모델(동결)의 문장 프롬프트 인스턴스를 위치로 
 
 ## 4. 실행
 
-`LOCK=… cart/run_cart.sh` — 투고본 구성 `SegMaskSam3XW1CGPS4MFsCs10kG2` + 긴 실행 플래그(`--mem-prune --io-cache2 --async-png 8 --crop-stream`, MUVOD·T06 관문에서 끄고 켠 결과 바이트 동일), 결과 `Data/Cart/cart_f120/SegMaskSam3XW1CGPS4MFsCs10kG2/cam00NN/<i>/<id>.png` (i = 원본 프레임 − 120).
+`LOCK=… cart/run_cart.sh` 뒤 `cart/post_cart.sh`(실행 끝을 기다렸다가 내보내기·렌더링). 결과(사용자 요청: 원해상도, 전체 영상 오버레이):
+- 객체별 바이너리 마스크 `Data/Cart/cart_f120/SegMaskSam3XW1CGPS4MFsCs10kG2/cam00NN/<i>/<id>.png` (0/255, i = 원본 − 120)
+- 라벨 그레이 `Data/Cart/cart_f120/export/labels/cam00NN/<원본 프레임>.png` (0 배경, 1–17; 겹치면 프롬프트 칠한 순서의 뒤가 이김), 전경 `…/export/fg/…` (0/255)
+- 라벨 볼륨 `Data/Cart/labels/seg_labels_cart_f120_2699/labels.npy` uint8 (2 580, 24, 1080, 1920), 0 배경·1–17·경계 2화소 띠 255 무시 — SCSegGaussians `seg_labels_cart_f100_2699`와 같은 규칙(그쪽은 960×540, 6개 객체), `frames.npy`, `objects.json`
+- 오버레이 영상 `Data/Cart/cart_f120/viz/cams/cam00NN.mp4` (1920×1080, 30 fps, 범례), `viz/mosaic.mp4` (24대 6×4, 링 순서)
+
+실행: 투고본 구성 `SegMaskSam3XW1CGPS4MFsCs10kG2` + 긴 실행 플래그(`--mem-prune --io-cache2 --async-png 8 --crop-stream`, MUVOD·T06 관문에서 끄고 켠 결과 바이트 동일), 결과 `Data/Cart/cart_f120/SegMaskSam3XW1CGPS4MFsCs10kG2/cam00NN/<i>/<id>.png` (i = 원본 프레임 − 120).
 
 ## 5. 이력
 
