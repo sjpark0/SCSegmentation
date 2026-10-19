@@ -4,7 +4,9 @@
     render_cart.py <scene dir> <export dir> <out dir> [--start 120] [--workers 12]
 
   <out>/cams/camNNNN.mp4   1920x1080, every source frame, objects tinted in fixed colours with outlines + legend
-  <out>/mosaic.mp4         all 24 cameras in ring order as a 6x4 grid of 640x360 tiles + legend (3840x1484)
+  <out>/mosaic.mp4         all 24 cameras in ring order as a 6x4 grid of 640x360 tiles + legend
+  <out>/frames/camNNNN/<src frame:06d>.jpg   the same overlay per frame as a JPEG (quality 90, 1920x1080, no legend);
+                           --no-frames to skip
 Frames: <scene>/Video/camNNNN/<i:06d>.jpg (i = source frame - start).  ffmpeg: $FFMPEG, PATH, or the static build in
 Data/PlenopticFull/tools/ffmpeg or Data/Cart/tools/ffmpeg.  Host python (stage1/.venv: cv2, numpy).
 """
@@ -59,8 +61,12 @@ def frame(cam, i, alpha=0.45):
 def one_cam(cam):
     leg = R.legend(A.labels, 1920)
     p = writer(os.path.join(A.out, "cams", f"{cam}.mp4"), 1920, 1080 + leg.shape[0])
+    fd = os.path.join(A.out, "frames", cam)
+    os.makedirs(fd, exist_ok=True)
     for i in range(A.n):
         f = frame(cam, i)
+        if A.frames:
+            cv2.imwrite(os.path.join(fd, f"{A.start + i:06d}.jpg"), f, [cv2.IMWRITE_JPEG_QUALITY, 90])
         cv2.putText(f, f"{cam}  source frame {A.start + i}", (12, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 3)
         p.stdin.write(np.vstack([f, leg]).tobytes())
     p.stdin.close()
@@ -96,6 +102,7 @@ def main():
     ap.add_argument("--start", type=int, default=120)
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--what", default="cams,mosaic")
+    ap.add_argument("--no-frames", dest="frames", action="store_false", help="skip the per-frame overlay JPEGs")
     A = ap.parse_args()
     A.labels = json.load(open(os.path.join(A.scene, "Mask", "objects_labels.json")))
     A.n = len(os.listdir(os.path.join(A.export, "labels", "cam0005")))
