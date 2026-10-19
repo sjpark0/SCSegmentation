@@ -18,7 +18,7 @@ import os
 
 import numpy as np
 from PIL import Image, ImageDraw
-from scipy.ndimage import binary_dilation, binary_fill_holes
+from scipy.ndimage import binary_closing, binary_dilation, binary_fill_holes
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(REPO, "PlenopticServer2", "GSProject", "GSData", "library_261014", "cart", "png")
@@ -175,6 +175,9 @@ def build(a):
                 m2, _ = s3.inst(img, box=ad["box"], points=ad.get("points"))
                 mk = mk | m2
                 how += f" + box {ad['box']}"
+        if o.get("close"):                                 # bridge thin gaps so enclosed items count as holes
+            mk = mk | binary_closing(mk, iterations=o["close"])
+            how += f" + closed {o['close']}"
         if o.get("fill_holes"):
             mk = binary_fill_holes(mk)
             how += " + holes filled"
