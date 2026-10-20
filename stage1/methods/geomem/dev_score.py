@@ -7,9 +7,14 @@ basic set present in c_ini's GT at t with non-empty GT in cam.  Masks <masks>/<s
 empty), the layout methods.geomem.dev_decode writes; any candidate in that layout can be scored.
 
 Per pair: J, F, JF (mvseg2d.metrics.jf_pair), recall, precision, frac_other, vis_ratio, twin, label, the seedcat kind, a
-`view` key "<t>/<cam>" (the DEV view for mvseg2d.paired with view_key="view"), and the pixel classes of
+`view` key "<t>/<cam>" (the DEV view for mvseg2d.paired with view_key="view"), `covers` = the GT object the predicted
+mask overlaps most at 1/4 resolution (geomem.id3d.covers = the ring score.py rule; 0 = empty / no object) and
+`other_obj_mask` = covers not in {0, obj} (S1-E15 B4), and the pixel classes of
 MVSeed/refloss/e11/extent_vis.py with the frame's Pi3 (vis / outside / occluded / nodepth / on_refgt) for the GT (gt_*) and
 the missed set (missed_*); with --r1, also the round-1 J&F and the k=3 round-1 neighbour coverage of the missed pixels.
+Reference rotation (docs/stage1-dev-protocol.md §4, DEV-A' / DEV-B'): an index.json with `rot` names the rotated input
+camera as ref_cam (the Pi3 cache keeps the original c_ini, orig_ref_cam); rows then carry `ref` and the view key
+"<t>/<ref>/<cam>" (pair key (scene, t, ref, cam, obj)).
 Runs inside scsam3:
     scripts/docker_run.sh scsam3 python -m methods.geomem.dev_score --masks Data/_dev/geoset_rep_x_A --out <json> [--r1]
 """
@@ -26,6 +31,7 @@ import numpy as np  # noqa: E402
 import torch  # noqa: E402
 
 from geomem.cache import pi3_frame_cache  # noqa: E402
+from geomem.id3d import covers as covers_q  # noqa: E402
 from geomem.warp_torch import OCC_TOL, reproject_coords  # noqa: E402
 from methods.geomem.run import camera_centres, project_reference_masks, reproj_inputs, select_candidates  # noqa: E402
 from mvseg2d.io import load_labelmap, load_labels, read_pred_mask  # noqa: E402
@@ -74,6 +80,8 @@ def main():
     for scene in scenes:
         S = idx["scenes"][scene]
         ref, basic = S["ref_cam"], [int(o) for o in S["basic"]]
+        rot = int(idx.get("rot", 0))
+        cache_ref = S.get("orig_ref_cam", ref) if rot else ref           # the frame cache's own c_ini
         labels = load_labels(DATA, scene)
         lab_of = {o: (labels.get(o) or {}).get("label") for o in basic}
         twin = {o: lab_of[o] is not None and any(lab_of[q] == lab_of[o] for q in basic if q != o) for o in basic}
@@ -88,7 +96,7 @@ def main():
             bp = bound_pix(*hw)
             se = disk(bp)
             cache = pi3_frame_cache(DATA, scene, t)
-            assert json.load(open(os.path.join(cache, "MANIFEST.json")))["ref_cam"] == ref
+            assert json.load(open(os.path.join(cache, "MANIFEST.json")))["ref_cam"] == cache_ref
             ref_masks = torch.from_numpy(np.stack([ref_lab == o for o in objs])).to(DEV)
             ref_px = {o: int((ref_lab == o).sum()) for o in objs}
             centres = camera_centres(cache, sorted(f[:-4] for f in os.listdir(cache) if f.endswith(".npz")))
@@ -132,7 +140,7 @@ def main():
                     g, s = gt_np[b], seed_np[b]
                     gp, spx = int(n_gt[b]), int(n_seed[b])
                     if gp == 0:
-                        empty_gt.append(dict(scene=scene, t=t, cam=cam, obj=o, seed_px=spx))
+                        empty_gt.append(dict(scene=scene, t=t, cam=cam, obj=o, seed_px=spx, **({"ref": ref} if rot else {})))
                         continue
                     J, F = jf_pair(g, s, bp, se)
                     inter = int((g & s).sum())
@@ -141,7 +149,11 @@ def main():
                     r = dict(scene=scene, t=t, cam=cam, obj=o, label=lab_of[o], J=float(J), F=float(F), JF=float((J + F) / 2),
                              gt_px=gp, seed_px=spx, recall=inter / gp, precision=inter / spx if spx else None,
                              frac_other=(other[oo] / spx) if oo else 0.0, other_obj=oo, vis_ratio=gp / max(1, ref_px[o]),
-                             twin=twin[o], missed_px=int(n_miss[b]), k3=cand, view=f"{t}/{cam}")
+                             twin=twin[o], missed_px=int(n_miss[b]), k3=cand, view=f"{t}/{ref}/{cam}" if rot else f"{t}/{cam}")
+                    if rot:
+                        r["ref"] = ref
+                    r["covers"] = covers_q(s, gt_lab)
+                    r["other_obj_mask"] = r["covers"] not in (0, o)
                     for k2 in ("vis", "outside", "occluded", "nodepth", "on_refgt"):
                         r[f"gt_{k2}"] = int(c_gt[k2][b])
                         r[f"missed_{k2}"] = int(c_ms[k2][b])
@@ -157,6 +169,8 @@ def main():
         print(f"{scene:20s} {sum(r['scene'] == scene for r in rows)} pairs  {time.time() - ts:.1f}s", file=sys.stderr, flush=True)
     meta = dict(masks=os.path.abspath(a.masks), index=os.path.abspath(a.index), occ_tol=OCC_TOL, k=K, device=DEV,
                 n_rows=len(rows), n_empty_gt=len(empty_gt), seconds=time.time() - t0, r1=bool(a.r1))
+    if idx.get("rot"):
+        meta["rot"] = int(idx["rot"])
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     with open(a.out, "w") as f:
         json.dump(dict(meta=meta, rows=rows, empty_gt=empty_gt), f)

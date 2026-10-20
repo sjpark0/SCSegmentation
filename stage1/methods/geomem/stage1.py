@@ -116,7 +116,8 @@ class Stage1:
         base = dict(data=self.data, out=FINAL, r1_out=ROUND1, untrained=False, runs=self.runs,
                     tau=R.TAU_CONF, k=R.K_NEIGHBOURS, round2="pred")
         args = SimpleNamespace(**{**base, **self.preset})      # the preset's keys (arm, gate, zoom, ...) win
-        R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None), getattr(args, "xcl", "none"))
+        R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None), getattr(args, "xcl", "none"),
+                         relay=getattr(args, "relay", None))
         sink = MemorySink()
         config = R.decode_scene(scene, args, sink=sink)
         ref = reference_masks(scene)
@@ -127,6 +128,7 @@ class Stage1:
             out[key] = per
         return dict(final=out[FINAL], round1=out[ROUND1], round1_conf=sink.files.get((FINAL, "round1_conf.json")),
                     zoom_conf=sink.files.get((FINAL, "zoom_conf.json")), xcl_conf=sink.files.get((FINAL, "xcl_conf.json")),
+                    relay=sink.files.get((FINAL, "relay.json")), id3d_conf=sink.files.get((FINAL, "id3d_conf.json")),
                     config=config, scene=scene, tag=self.tag)
 
     @staticmethod
@@ -144,9 +146,10 @@ class Stage1:
         if result.get("zoom_conf") is not None:
             with open(os.path.join(folder, "zoom_conf.json"), "w") as f:
                 json.dump(result["zoom_conf"], f, indent=1)
-        if result.get("xcl_conf") is not None:
-            with open(os.path.join(folder, "xcl_conf.json"), "w") as f:
-                json.dump(result["xcl_conf"], f, indent=1)
+        for key, name in (("xcl_conf", "xcl_conf.json"), ("relay", "relay.json"), ("id3d_conf", "id3d_conf.json")):
+            if result.get(key) is not None:                     # relay / id3d_conf: S1-E15 presets only
+                with open(os.path.join(folder, name), "w") as f:
+                    json.dump(result[key], f, indent=1)
         with open(os.path.join(folder, "config.json"), "w") as f:
             json.dump(dict(result["config"], tag=result["tag"], scene=result["scene"].name), f, indent=1)
 

@@ -20,9 +20,17 @@ from geomem.cache import train_frames
 from mvseg2d.io import load_meta
 
 SPLITS = ("A", "B")
+ROTS = (0, 1, 2)                     # docs/stage1-dev-protocol.md §4: reference rotation (0 = the original c_ini)
 OFFSET_A, STRIDE_A = 3, 4            # DEV-A = non-ref train frames [3::4]
 OBJSETS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                        "docs", "raw", "muvod_object_sets.json")
+
+
+def dev_scenes():
+    """The DEV scenes = the 17 MUVOD scenes of the 5-fold split (geomem/folds.json), never the Data/ listing: external
+    scenes added to Data/ (e.g. the T06 ring, 2026-10-16) have no train_frames and one annotated camera."""
+    from geomem.folds import load_folds
+    return sorted(load_folds())
 
 
 def nonref_train_frames(data, scene):
@@ -37,9 +45,20 @@ def dev_frames(data, scene, split="A"):
     return a if split == "A" else [t for t in nonref if t not in a]
 
 
-def eval_cams(data, scene):
+def ref_cam(data, scene, rot=0):
+    """The input camera of reference rotation `rot` (protocol §4): 0 = meta ref_cam; 1 / 2 = the first / second
+    original eval camera (meta mask_cams order, ref_cam removed)."""
+    assert rot in ROTS, rot
     m = load_meta(data, scene)
-    return [c for c in m["mask_cams"] if c != m["ref_cam"]]
+    return m["ref_cam"] if rot == 0 else [c for c in m["mask_cams"] if c != m["ref_cam"]][rot - 1]
+
+
+def eval_cams(data, scene, rot=0):
+    """The 2 annotated cameras other than the input camera of rotation `rot` (meta mask_cams order; under a rotation
+    the original c_ini is one of them)."""
+    m = load_meta(data, scene)
+    r = ref_cam(data, scene, rot)
+    return [c for c in m["mask_cams"] if c != r]
 
 
 def basic_set(scene, objsets=OBJSETS):
@@ -47,12 +66,19 @@ def basic_set(scene, objsets=OBJSETS):
         return [int(o) for o in json.load(f)[scene]["seed_ids_c_ini"]]
 
 
-def index(data, scenes, split="A"):
-    """The DEV definition written next to every DEV output (index.json)."""
+def index(data, scenes, split="A", rot=0):
+    """The DEV definition written next to every DEV output (index.json).  Under a reference rotation (DEV-A' / DEV-B',
+    protocol §4) ref_cam / eval_cams are the rotated ones, orig_ref_cam the meta c_ini; objects = the basic set present
+    at the input camera of each frame (decode / score time)."""
     out = {}
     for s in scenes:
         m = load_meta(data, s)
-        out[s] = dict(ref_frame=int(m["ref_frame"]), ref_cam=m["ref_cam"], frames=dev_frames(data, s, split),
-                      eval_cams=eval_cams(data, s), basic=basic_set(s))
-    return dict(split=split, rule=("non-ref train frames [3::4]" if split == "A" else "non-ref train frames minus [3::4]"),
-                scenes=out)
+        out[s] = dict(ref_frame=int(m["ref_frame"]), ref_cam=ref_cam(data, s, rot), frames=dev_frames(data, s, split),
+                      eval_cams=eval_cams(data, s, rot), basic=basic_set(s))
+        if rot:
+            out[s]["orig_ref_cam"] = m["ref_cam"]
+    rule = "non-ref train frames [3::4]" if split == "A" else "non-ref train frames minus [3::4]"
+    idx = dict(split=split, rule=rule, scenes=out)
+    if rot:
+        idx.update(rot=int(rot), rot_rule="reference = original eval camera #rot (meta mask_cams order); eval = the other two")
+    return idx
