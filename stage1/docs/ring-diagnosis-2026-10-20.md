@@ -203,3 +203,28 @@ ITEMS
 - Overlap conflict: TCSVT revision: venues-2027.md plans to put the learned stage 1 into the TCSVT revision if reviewers ask; that would move the ICCV core into TCSVT. Needs a user decision before the 12-15 review. [/home/sjpark/Documents/SCSegmentation/docs/venues-2027.md] verified=True
 - Probe evidence deleted: The s1map4k/s1map probe outputs (5-fold 4K J 0.737-0.773, 24-29 swaps per fold at 1080p) were removed in the 10-20 cleanup; only the summary in croom/plan_result.json remains. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/croom/plan_result.json] verified=True
 - Recent baselines to run: MV-SAM https://arxiv.org/abs/2601.17866, 3AM https://arxiv.org/abs/2601.08831, G2TAM https://arxiv.org/abs/2607.03789, SegMASt3R https://arxiv.org/abs/2510.05051, O-MaMa https://arxiv.org/abs/2506.06026, V2-SAM https://arxiv.org/abs/2511.20886 (taken from the repo survey; code availability unverified). [/home/sjpark/Documents/SCSegmentation/docs/mvimage-seg-survey.md] verified=False
+## 9. D1–D5 results (2026-10-20, contaminated dev set — descriptive only)
+
+Run by a workflow agent and re-scored independently by a second agent (no GPU); scripts, per-arm metrics and both reports in `stage1/scripts/ring_diag/d1_d5/`. Code change: opt-in `--zero-bias` in `stage1/methods/geomem/run.py` (default path unchanged; tests `stage1/tests/test_zero_bias.py`, `stage1/tests_torch/test_zero_bias_torch.py`).
+
+| Arm | J | J d1–6 | J d7–16 | wrong d7–16 | empty d7–16 |
+|---|---|---|---|---|---|
+| TCSVT chain (NAS) | 0.941 | 0.956 | 0.932 | 1 | 1 |
+| preset `geoset_rep_xs` (own decode = NAS bytes, 186/186) | 0.742 | 0.956 | 0.608 | 28 | 4 |
+| D1 preset round 1 | 0.715 | 0.935 | 0.577 | 31 | 3 |
+| D2 untrained star, 1 round | 0.589 | 0.886 | 0.402 | 51 | 2 |
+| D2 untrained geoset_pred_ft, preset decode | 0.634 | 0.925 | 0.450 | 47 | 2 |
+| D3 bias zeroed at decode | 0.701 | 0.942 | 0.550 | 33 | 4 |
+| D4 `--xcl none` | 0.741 | 0.954 | 0.607 | 28 | 4 |
+| D5 | not run (no all-17-scene checkpoint) | | | | |
+| extra: folds 0/1/3/4, preset decode | 0.744 / 0.759 / 0.773 / 0.737 | | | 22 / 22 / 22 / 25 | |
+
+Readings after verification:
+- **77 % of the gap** to the chain (0.198 J) is far-half pairs with a wrong, spilling, fragmentary or empty mask; **23 %** is poorer masks where the right person was found (far correct pairs 0.842 vs 0.945 for the chain). "Wrong-person" ≠ clean swap: of the 28, about 9 are similar-size swaps, 11 are fragments, 8 are oversized spills.
+- **The errors are set in round 1** (c_ini memory only): 27 of the 28 final wrong masks are already wrong there. Round 2 barely changes it because the reproj gate passes only 29 % of correct far masks (61 % of far pairs get no neighbour memory for that person); error chaining through round-2 memory happens once, via a fragment.
+- **Fine-tuning helps and adds no new errors**: same decode, far J 0.608 vs 0.450 (untrained), wrong 28 vs 47; every preset error is also an untrained error. Mostly fewer oversized masks.
+- **The trained decoder depends on its 3D bias** (zeroing it: 0.742 → 0.701), but zeroing at decode is off-distribution; the bias's standalone value needs the no-geometry arm (S1-E16).
+- **Exclusivity plays no part** (round-1 masks byte-identical across `none`/`out`/`outs`; the small split is noise).
+- One scene, one frame, 184 correlated pairs, no CIs: read only differences well above 0.01 J. The fold numbers must not influence the fixed fold-2 / external-checkpoint rule (decision D6).
+
+Consequences for WP1 (docs/iccv2027-plan.md): Fix A must act on **round-1** outputs (and replace reproj as the round-2 trust signal); Fix B's relay is the only route for far views to get a verified neighbour memory, and may also address the 23 % quality part; the all-17-scene checkpoint (D6) has to be trained (~45 GPU-min) before any external test.

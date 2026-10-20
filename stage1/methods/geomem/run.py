@@ -85,11 +85,26 @@ def object_conf(presence, ious, tau=TAU_CONF):
     return (presence > 0) & (ious >= tau)
 
 
-def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none"):
-    """`--gate obj` / `--round2 proj_*` / `--zoom` / `--xcl` must not write under the arm's own name: that is the
-    view-gate, predicted-memory, full-view, non-exclusive result."""
-    if (gate != "view" or round2 != "pred" or zoom is not None or xcl != "none") and out == arm:
-        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} --xcl {xcl} with --out {out}: that name is the default result (pass another --out)")
+def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none", zero_bias=False):
+    """`--gate obj` / `--round2 proj_*` / `--zoom` / `--xcl` / `--zero-bias` must not write under the arm's own name:
+    that is the view-gate, predicted-memory, full-view, non-exclusive, trained-bias result."""
+    if (gate != "view" or round2 != "pred" or zoom is not None or xcl != "none" or zero_bias) and out == arm:
+        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} --xcl {xcl} --zero-bias {bool(zero_bias)} with --out {out}: "
+                         "that name is the default result (pass another --out)")
+
+
+def zero_geo_bias(wrapper):
+    """Ring diagnosis D3 (stage1/docs/ring-diagnosis-2026-10-20.md §2.6), diagnostic only: every GeoBias parameter (the RBF
+    weights and b_none) set to 0 after the checkpoint is loaded, so the 3D bias adds exactly 0 to every memory
+    cross-attention logit while the fine-tuned memory attention stays.  The attention mask is still passed (zeros +
+    the gate), so the attention kernel is the same as with the trained bias.  -> max |parameter| before zeroing."""
+    import torch
+    assert wrapper.use_bias and wrapper.geo_bias is not None, "--zero-bias needs an arm with the 3D bias (use_bias)"
+    with torch.no_grad():
+        before = max(float(p.detach().abs().max()) for p in wrapper.geo_bias.parameters())
+        for p in wrapper.geo_bias.parameters():
+            p.zero_()
+    return before
 
 
 # S1-E11 (docs/stage1-E11-prereg.md section 2): in-view object exclusivity by the decoder's own logits.
@@ -356,6 +371,8 @@ def decode_scene(scene, args, sink=None):
         ck = load_checkpoint_into(wrapper, geo, ckpt_path)
         config.update({"fold": ck_cfg["fold"], "ckpt_sha256": ck_cfg["ckpt_sha256"], "train_git": ck_cfg.get("git"),
                        "train_steps": ck_cfg.get("steps"), "epochs": ck_cfg.get("epochs"), "frame_stride": ck_cfg.get("frame_stride")})
+    if getattr(args, "zero_bias", False):                # ring diagnosis D3; off = the unchanged path (no config key)
+        config.update({"zero_bias": True, "zero_bias_max_abs_before": zero_geo_bias(wrapper)})
     wrapper.eval()
 
     cache = cache_dir(args.data, scene.name, "pi3")
@@ -667,6 +684,9 @@ def _extra(ap):
     ap.add_argument("--round2", choices=("pred", "proj_bin", "proj_soft"), default="pred",
                     help="GeoProj: second-round memory from round-1 predictions (pred) or from the reference GT masks projected "
                          "into the neighbour (binary mask / soft logits with unknown = 0); no prediction, 'absent'-style conf")
+    ap.add_argument("--zero-bias", action="store_true", dest="zero_bias",
+                    help="diagnostic (ring diagnosis D3, stage1/docs/ring-diagnosis-2026-10-20.md): the checkpoint's GeoBias parameters "
+                         "set to 0 at decode (fine-tuned memory attention kept); needs a bias arm and an --out other than the arm")
 
 
 def main():
@@ -674,7 +694,7 @@ def main():
     from methods import sam3_single
     decode_scene.model = sam3_single.load_model()
     decode_scene.init_state = snapshot_init(decode_scene.model)
-    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom, args.xcl)
+    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom, args.xcl, args.zero_bias)
     common.run_all(args, decode_scene, aux_outs=r1_aux_outs(args.out, args.r1_out) if args.arm in SET_ARMS else [])
 
 
