@@ -1,10 +1,16 @@
+> **Corrections (2026-10-20, from the S1-E15 pre-registration, `docs/stage1-E15-prereg.md`; user decision U4).**
+> - Every "≤ 58°" figure in this report is the MUVOD **c_ini → camera range**, not the training range. Training uses every ordered pair of the 3 annotated cameras (`stage1/geomem/data.py` `enumerate_samples`), so supervised pairs reach about 89.7° (Blocks), 75.7° (Fencing), 64.5° (MartialArts) and 55.5° (CBABasketball) (S1-E15 design probe). The collapse may therefore not be about angle alone (similar-looking people, back views).
+> - The MUVOD maximum is 58.12° (CBABasketball keyframe, `stage1/scripts/ring_diag/baselines.json`); "58.1°" below is that value rounded. S1-E15 re-measures DEV-A, DEV-B and the keyframes in its Step 0.
+> - Angles here use the scene anchor (median of all valid c_ini points). S1-E15 uses the object anchor (median inside the input masks). The two coincide on MUVOD, where the input masks cover every pixel, but not on T06 (cam_12 47.8° → 65.3°, cam_13 54.6° → 74.1°).
+> - Fix A "replaces `reproj` as the round-2 trust signal" only on far views (beyond θ_s) in the S1-E15 main scope R; star views keep `reproj`. Replacing it everywhere (scope G) is a measurement arm there (plan amendment, `docs/iccv2027-plan.md` WP1).
+
 ## 1. Bottom line
 
-1. **The collapse is not caused by bad π³ geometry. It is identity confusion in the learned star decoder once views leave the viewpoint range it was trained on.**
+1. **The collapse is not caused by bad π³ geometry. It is identity confusion in the learned star decoder once views go beyond the c_ini → camera viewpoint range seen on MUVOD.** (Corrected 2026-10-20: training pairs themselves reach about 89.7°; see the note above.)
    - Far-half failures on T06 frame 900 are mostly whole-person identity swaps. 28 of 113 far pairs cover the wrong person, against 1 of 113 for the TCSVT chain. The main pattern is p2→p4 (9 pairs) and p4→p2/p6/p5.
    - π³ places every person correctly in 3D on the far side, so the geometry is right.
    - On the T06 views, collapse starts between a 47.8° viewpoint change (J 0.961) and 54.6° (J 0.745).
-   - MUVOD never has a pair beyond about 58°. On T06, 58% of views are beyond 60° and 45% beyond 90°.
+   - On MUVOD no camera is more than about 58° from c_ini (58.12°; this is the c_ini → camera range, not the training range). On T06, 58% of views are beyond 60° and 45% beyond 90°.
 2. **The existing safeguards cannot catch it.**
    - The learned 3D-distance bias is weak, about a 1.1-nat swing, and the same across all 5 folds.
    - The `reproj` gate needs the predicted pixels to be visible from c_ini. Because of that it rejects 71–83% of *correct* far-view masks.
@@ -31,11 +37,11 @@ All analyses below are read-only. The scripts are in the scratchpad folder `ring
 - π³ does leave a 94° gap between cam_31 and cam_00 (other steps 4–18°). Whether that gap is physical is **unverified**, but it does not break correspondence at the object level.
 - π³ confidence is a weaker failure signal than viewpoint change. At view level the AUC is 0.88 for confidence vs 0.95 for viewpoint angle. The stored validity mask (confidence > 0.1) covers at least 0.957 of every view, so it carries no information.
 
-**2.3 Outside the training support (checked; angles estimated from π³).**
+**2.3 Outside the MUVOD c_ini → camera range (checked; angles estimated from π³; heading corrected 2026-10-20, formerly "training support").**
 - Angle between c_ini and the target camera, measured at the reference view's median 3D point. MUVOD maximum per scene: CBABasketball 58.1°, MartialArts 53.6°, Blocks 47.0°; most scenes are under 25°.
 - π³ angles on the fisheye scenes are unreliable.
 - On T06: views up to 47.8° have J of at least 0.885; every view from 54.6° up has J of at most 0.82. View-level AUC for angle is 0.95 (31 views).
-- Training pairs are only c_ini → the 2 annotated cameras, plus a randomly chosen predicted memory.
+- **Corrected 2026-10-20:** training pairs are every ordered pair of the 3 annotated cameras (`stage1/geomem/data.py` `enumerate_samples`), plus a randomly chosen predicted memory. Supervised pairs reach about 89.7° (Blocks); about 10 % exceed 45°. The earlier text ("only c_ini → the 2 annotated cameras") was wrong.
 
 **2.4 Why nothing catches it (checked).**
 - **The bias is weak.** Learned `geo_bias` read from the fold 0–4 checkpoints: about +0.53 to +0.60 at distance ≤ 0.1, about −0.5 at distance ≥ 0.6. That is too little to override appearance attention when the target shows the person's back.
@@ -62,19 +68,19 @@ All analyses below are read-only. The scripts are in the scratchpad folder `ring
 **Fix A — 3D identity check with per-object fallback (no training).**
 - How it works: lift each predicted mask with the target view's π³ depth; take its median 3D point; flag the mask if the nearest reference-object centroid (from the c_ini mask) is not its own id. Constants on MUVOD DEV-A: minimum valid points, a distance-ratio margin, and abstaining when π³ is unreliable.
 - What a flagged object gets: (a) its chain mask (simple, but the chain is TCSVT Stage 1, so present this as an ablation), or (b) a relay decode from Fix B (preferred).
-- It replaces the `reproj` test as the trust signal for round-2 memories.
+- It replaces the `reproj` test as the trust signal for round-2 memories. (S1-E15 amendment: in the main scope R only on far views; star views keep `reproj`.)
 - Evidence (T06 frame 900, descriptive): 27 of 28 swaps flagged, 2 of 152 false flags, J 0.742 → 0.893.
 - Risk: false flags on the fisheye MUVOD scenes, where π³ is poor. This is unmeasured and is the first thing to measure on DEV-A.
 
 **Fix B — Learned relay decoding over a π³ view graph (no retraining).**
 - Views within θ_s of c_ini are decoded exactly as now (star). Views beyond θ_s are decoded in order of increasing angle. Each one's memory is c_ini plus up to 3 already-decoded nearest views whose masks passed Fix A's check.
 - `MemorySet` already accepts several predicted memories, and the checkpoint was trained with a predicted extra memory (`extra_mem_pred`).
-- If θ_s is at or above the MUVOD support, MUVOD output is byte-identical. But collapse begins at 54.6°, so θ_s probably has to be below 58°. Pick it on DEV-A plus the T06 dev set and verify non-inferiority on DEV-B.
+- If θ_s is at or above the MUVOD c_ini → camera range, MUVOD output is byte-identical. But collapse begins at 54.6° (scene anchor), so θ_s probably has to be below 58°. (S1-E15 measures at the object anchor, where the first T06 round-1 collapse is at 65.3°.) Pick it on DEV-A plus the T06 dev set and verify non-inferiority on DEV-B.
 - Risk: errors accumulating along the relay, as in the chain; Fix A's check is the guard.
 - Cost: decode time roughly 2× round 1 (estimate).
 
 **Fix C — Wide-baseline training (the only fix that could beat the chain on rings).**
-- Add training pairs with 60–180° viewpoint change and relay-style memories.
+- Add training pairs with 60–180° viewpoint change and relay-style memories. (Premise to re-check before S1-E17: training already has pairs up to about 89.7°.)
 - Possible sources (licences and mask availability **unverified**):
   - CMU Panoptic Studio, a multi-person dome, with SAM 3 pseudo-masks prompted from projected 3D keypoints (`http://domedb.perception.cs.cmu.edu/`);
   - synthetic multi-person rings rendered from scans, or Kubric (arXiv 2203.03570);
@@ -187,14 +193,14 @@ The ICCV 2027 deadline is about early March 2027, roughly 19 weeks away (**unver
 ITEMS
 - Far-half collapse = identity swaps: T06 frame 900 far half (d7-16, 113 pairs): latest config mean J 0.608 with 28 wrong-person masks (p2->p4 x9, p4->p2 x7, p4->p6 x4, ...) and 4 empty; submitted chain 0.932 with 1 wrong-person mask. Not explained by an image-x or mirrored-x prior (5/28, 4/28). [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/swap_diag.py] verified=True
 - Pi3 geometry is correct at object level: GT person pixels lifted with each camera's own Pi3 depth land 0.01-0.24 normalised units from the same person's reference centroid (persons 0.256-0.678 apart). Nearest person correct in 180/182 evaluable pairs; the 2 exceptions are 2.6k and 4.0k px at 4K. The 94 deg ring gap (cam_31-cam_00) exists, but whether it is physical is unverified. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/ring_geo.py] verified=True
-- Out of training viewpoint support: Pi3-estimated viewpoint change at the content: MUVOD maximum 58.1 deg (CBABasketball), no pair above 60. T06: 58% of views above 60 deg, 45% above 90, maximum 155. Collapse starts between 47.8 deg (J 0.961) and 54.6 deg (J 0.745); view-level AUC 0.95. Angles on the fisheye scenes are unreliable. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/baselines.py] verified=True
+- Out of the MUVOD c_ini -> camera range (corrected 2026-10-20; formerly "training viewpoint support"): Pi3-estimated viewpoint change at the content: MUVOD maximum 58.1 deg (CBABasketball), no pair above 60. T06: 58% of views above 60 deg, 45% above 90, maximum 155. Collapse starts between 47.8 deg (J 0.961) and 54.6 deg (J 0.745); view-level AUC 0.95. Angles on the fisheye scenes are unreliable. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/baselines.py] verified=True
 - Learned 3D bias is weak: geo_bias read from geoset_pred_ft fold0-4 checkpoints without torch: about +0.53 to +0.60 at distance <= 0.1, about -0.5 at distance >= 0.6 (a ~1.1-nat swing); same across folds. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/read_bias.py] verified=True
 - reproj gate is blind on far views: With GT masks used as predictions, the gate rejects correct masks at 0.14 / 0.34 / 0.71 / 0.83 / 0.76 for d1-3 / 4-6 / 7-9 / 10-12 / 13-16; swapped masks pass at most 1%. Cause: the occlusion test (OCC_TOL 0.01) requires visibility from c_ini. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/gate_diag.py] verified=True
 - 3D identity check simulation (Fix A): Visibility-independent check (median 3D point of the predicted mask vs reference object centroids) flags 27/28 wrong-person masks with 2/152 false flags. Fallback to the chain mask for flagged objects: J 0.742 -> 0.893; plus object co-visibility < 0.25/0.5: 0.914/0.928; best-of-both per pair 0.944; chain alone 0.941. Descriptive only (T06 is contaminated). [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/hybrid.py] verified=True
 - Co-visibility router unsafe on MUVOD alone: Object co-visibility, computed from inputs only on MUVOD DEV-A (38,461 view-object pairs), is below 0.5 for 41% (AlexaMeade 0.68-0.75, Welder 0.73, Dog 0.70, MATF 0.49). On T06 it has AUC 0.80. It must be combined with the identity check and measured on DEV-A. [/tmp/claude-1000/-home-sjpark-Documents-SCSegmentation/8f2081e6-71f6-4db0-ab8a-894e91d89bb3/scratchpad/ring_diag/objcovis_muvod.py] verified=True
 - Pi3 confidence as a gate: Stored validity (confidence > 0.1) covers at least 0.957 of every T06 view, so it is uninformative. Median sigmoid confidence has view-level AUC 0.88 (Spearman 0.60), weaker than viewpoint angle (0.95). Not recommended as the primary signal. [/home/sjpark/Documents/SCSegmentation/stage1/Data/T06_flag_ganggang_F/Cache/pi3/MANIFEST.json] verified=True
 - Fix B: learned relay decoding: Beyond threshold theta_s, decode views in order of increasing angle using memory = c_ini + up to 3 already-decoded nearest views that pass the identity check; replaces the reproj gate there. Existing MemorySet and extra_mem_pred training support multiple memories. Effect size untested. [/home/sjpark/Documents/SCSegmentation/stage1/methods/geomem/run.py] verified=False
-- Fix C: wide-baseline training: MUVOD training pairs are c_ini -> 2 annotated cameras (at most 58 deg). Add 60-180 deg pairs: CMU Panoptic with SAM 3 pseudo-masks, synthetic rings, or the Ego-Exo4D correspondence split; optionally an angle-aware bias. Data licences unverified. 5-15 GPU-h per seed for training. [/home/sjpark/Documents/SCSegmentation/stage1/geomem/train.py] verified=False
+- Fix C: wide-baseline training: MUVOD training pairs are every ordered pair of the 3 annotated cameras (up to about 89.7 deg; corrected 2026-10-20 — "c_ini -> 2 annotated cameras, at most 58 deg" was the c_ini -> camera range). Add 60-180 deg pairs: CMU Panoptic with SAM 3 pseudo-masks, synthetic rings, or the Ego-Exo4D correspondence split; optionally an angle-aware bias. Data licences unverified. 5-15 GPU-h per seed for training. [/home/sjpark/Documents/SCSegmentation/stage1/geomem/train.py] verified=False
 - No-geometry fine-tune ablation: New arm nogeo_pred_ft = geoset_pred_ft recipe with use_bias=False and use_geometry=False (training geometry is only GeoBias; SSL is geomem_ssl-only; the memory camera is random). Decode with index or feature neighbours and --gate obj. 2x2 design with Pi3 at decode, plus G-bias0 and star; 3 seeds (retrain noise 0.0017). About 20-25 GPU-h. [/home/sjpark/Documents/SCSegmentation/stage1/geomem/arms.py] verified=False
 - DEV protocol extended for out-of-domain data: MUVOD DEV-A/DEV-B/TEST as in the protocol doc. T06 frame 900 becomes the out-of-domain dev set (contaminated). New blind ground truth on CROOM T03/T04/T05/T07 is out-of-domain test 1; ScanNet++ angle bins or Ego-Exo4D val is test 2. Non-inferiority margin 0.003 J&F on DEV-B; at most 2 DEV-B registrations; fold rule fixed in advance. [/home/sjpark/Documents/SCSegmentation/docs/stage1-dev-protocol.md] verified=False
 - Re-validate the architecture on DEV-B: The architecture was chosen on the 664 keyframe pairs before the DEV protocol existed. Re-decode existing checkpoints (star, geomem_ft, geobias_only_ft, geoset_pred_ft round 1/2) on DEV-B, about 1 GPU-h each, with no training. [/home/sjpark/Documents/SCSegmentation/stage1/docs/results-baseline-fix.md] verified=False
@@ -227,4 +233,4 @@ Readings after verification:
 - **Exclusivity plays no part** (round-1 masks byte-identical across `none`/`out`/`outs`; the small split is noise).
 - One scene, one frame, 184 correlated pairs, no CIs: read only differences well above 0.01 J. The fold numbers must not influence the fixed fold-2 / external-checkpoint rule (decision D6).
 
-Consequences for WP1 (docs/iccv2027-plan.md): Fix A must act on **round-1** outputs (and replace reproj as the round-2 trust signal); Fix B's relay is the only route for far views to get a verified neighbour memory, and may also address the 23 % quality part; the all-17-scene checkpoint (D6) has to be trained (~45 GPU-min) before any external test.
+Consequences for WP1 (docs/iccv2027-plan.md): Fix A must act on **round-1** outputs (and replace reproj as the round-2 trust signal — S1-E15 amendment: on far views only in the main scope R; star views keep reproj); Fix B's relay is the only route for far views to get a verified neighbour memory, and may also address the 23 % quality part; the all-17-scene checkpoint (D6) has to be trained (~45 GPU-min) before any external test.
