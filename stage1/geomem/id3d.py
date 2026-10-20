@@ -46,8 +46,8 @@ _CHUNK = 128                    # A-v query rows per distance block (speed / mem
 # A-c* candidate is feasible).  Until then the values are P1's PREDICTED pick and run.py refuses `--id3d cstar`.
 CSTAR_GRID = dict(beta=(1.0, 1.25, 1.5), kappa=(1.0, 1.25, 1.5), sigma=(0.03, 0.05), rho_env=(0.5, 1.0),
                   b_max=(0.01, 0.05, math.inf), gamma=(2.0, 3.0, math.inf), phi_rig=(0.12, math.inf))
-CSTAR = dict(beta=1.0, kappa=1.25, sigma=0.05, rho_env=0.5, b_max=0.01, gamma=math.inf, phi_rig=math.inf)
-CSTAR_SELECTED = False
+CSTAR = dict(beta=1.0, kappa=1.25, sigma=0.05, rho_env=1.0, b_max=0.01, gamma=math.inf, phi_rig=0.12)   # Step 1, 2026-10-20
+CSTAR_SELECTED = True
 
 
 # ------------------------------------------------------------------ angles, anchor, relay order (§3.1, §3.5)

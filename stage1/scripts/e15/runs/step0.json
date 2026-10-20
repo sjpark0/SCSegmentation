@@ -1,0 +1,449 @@
+{
+ "prereg": "docs/stage1-E15-prereg.md \u00a76.1",
+ "angles": {
+  "A_E": {
+   "a": 47.24241402038266,
+   "set": "B",
+   "scene": "Blocks",
+   "t": 9,
+   "cam": "cam9"
+  },
+  "A_all": {
+   "a": 58.18978451809464,
+   "set": "B",
+   "scene": "CBABasketball",
+   "t": 95,
+   "cam": "v00"
+  },
+  "anchors": {
+   "A": {
+    "kinds": {
+     "obj": 85
+    },
+    "max_anchor_dist": 0.009472111982670147,
+    "max_dangle": 0.003151814426652244
+   },
+   "B": {
+    "kinds": {
+     "obj": 255
+    },
+    "max_anchor_dist": 0.009353160815606552,
+    "max_dangle": 0.0033122790049837647
+   },
+   "K": {
+    "kinds": {
+     "obj": 17
+    },
+    "max_anchor_dist": 0.0,
+    "max_dangle": 0.0
+   },
+   "A'": {
+    "kinds": {
+     "obj": 170
+    },
+    "max_anchor_dist": 0.3681735651891154,
+    "max_dangle": 2.7007337570680505
+   },
+   "B'": {
+    "kinds": {
+     "obj": 510
+    },
+    "max_anchor_dist": 0.36804696898813327,
+    "max_dangle": 2.7121392686465526
+   }
+  }
+ },
+ "n2": {
+  "n": 1054,
+  "excluded_rotated_keyframe_pairs": 68,
+  "frac_over_45": 0.09582542694497154,
+  "quantiles": {
+   "50": 5.4534262487035985,
+   "90": 42.746234559304526,
+   "99": 83.56771473501078,
+   "100": 89.74965368187506
+  },
+  "per_scene": {
+   "AlexaMeadeExhibit": {
+    "n": 62,
+    "max": 0.4326175753128668,
+    "frac_over_45": 0.0
+   },
+   "AlexaMeadeFacePaint": {
+    "n": 62,
+    "max": 6.587732932209142,
+    "frac_over_45": 0.0
+   },
+   "Barn": {
+    "n": 62,
+    "max": 5.339532800511721,
+    "frac_over_45": 0.0
+   },
+   "Blocks": {
+    "n": 62,
+    "max": 89.74965368187506,
+    "frac_over_45": 0.6612903225806451
+   },
+   "Breakfast": {
+    "n": 62,
+    "max": 11.51959916221127,
+    "frac_over_45": 0.0
+   },
+   "CBABasketball": {
+    "n": 62,
+    "max": 55.4934271228132,
+    "frac_over_45": 0.3225806451612903
+   },
+   "Carpark": {
+    "n": 62,
+    "max": 4.716774630383048,
+    "frac_over_45": 0.0
+   },
+   "CoffeeMartini": {
+    "n": 62,
+    "max": 37.70179981147071,
+    "frac_over_45": 0.0
+   },
+   "Dog": {
+    "n": 62,
+    "max": 4.207609164043462,
+    "frac_over_45": 0.0
+   },
+   "Fencing": {
+    "n": 62,
+    "max": 75.66501655448172,
+    "frac_over_45": 0.3225806451612903
+   },
+   "FlameSteak": {
+    "n": 62,
+    "max": 39.347428034735174,
+    "frac_over_45": 0.0
+   },
+   "Frog": {
+    "n": 62,
+    "max": 12.403656995645482,
+    "frac_over_45": 0.0
+   },
+   "MATF": {
+    "n": 62,
+    "max": 35.01955074397983,
+    "frac_over_45": 0.0
+   },
+   "MartialArts": {
+    "n": 62,
+    "max": 64.54863086744214,
+    "frac_over_45": 0.3225806451612903
+   },
+   "Painter": {
+    "n": 62,
+    "max": 4.496216287924998,
+    "frac_over_45": 0.0
+   },
+   "PoznanStreet": {
+    "n": 62,
+    "max": 4.213379290163815,
+    "frac_over_45": 0.0
+   },
+   "Welder": {
+    "n": 62,
+    "max": 2.091029870091406,
+    "frac_over_45": 0.0
+   }
+  }
+ },
+ "reproduction": {
+  "c0": {
+   "devA_gt": {
+    "n": 3300,
+    "flag": 383,
+    "fisheye_flag": 81,
+    "fisheye_n": 606,
+    "worst": [
+     "Fencing",
+     0.3375
+    ]
+   },
+   "devA_r1_correct": {
+    "PASS": 2858,
+    "FLAG": 335,
+    "ABSTAIN": 48
+   },
+   "t06_r1": {
+    "near_correct": {
+     "PASS": 71
+    },
+    "near_wrong": {},
+    "near_empty": {},
+    "far_correct": {
+     "PASS": 78,
+     "FLAG": 1
+    },
+    "far_wrong": {
+     "FLAG": 29,
+     "PASS": 2
+    },
+    "far_empty": {
+     "EMPTY": 3
+    }
+   },
+   "t06_final": {
+    "far_correct": {
+     "PASS": 79,
+     "FLAG": 2
+    },
+    "far_wrong": {
+     "FLAG": 27,
+     "PASS": 1
+    }
+   }
+  },
+  "vote": {
+   "devA_gt": {
+    "n": 3300,
+    "flag": 196,
+    "fisheye_flag": 64,
+    "fisheye_n": 606,
+    "worst": [
+     "AlexaMeadeFacePaint",
+     0.16666666666666666
+    ]
+   },
+   "devA_r1_correct": {
+    "PASS": 2943,
+    "ABSTAIN": 129,
+    "FLAG": 169
+   },
+   "t06_r1": {
+    "near_correct": {
+     "PASS": 71
+    },
+    "near_wrong": {},
+    "near_empty": {},
+    "far_correct": {
+     "PASS": 77,
+     "FLAG": 2
+    },
+    "far_wrong": {
+     "FLAG": 29,
+     "PASS": 2
+    },
+    "far_empty": {
+     "EMPTY": 3
+    }
+   },
+   "t06_final": {
+    "far_correct": {
+     "PASS": 78,
+     "FLAG": 2,
+     "ABSTAIN": 1
+    },
+    "far_wrong": {
+     "FLAG": 26,
+     "PASS": 2
+    }
+   }
+  },
+  "vote_inf": {
+   "devA_gt": {
+    "n": 3300,
+    "flag": 216,
+    "fisheye_flag": 65,
+    "fisheye_n": 606,
+    "worst": [
+     "AlexaMeadeFacePaint",
+     0.16666666666666666
+    ]
+   },
+   "devA_r1_correct": {
+    "PASS": 2985,
+    "FLAG": 179,
+    "ABSTAIN": 77
+   },
+   "t06_r1": {
+    "near_correct": {
+     "PASS": 71
+    },
+    "near_wrong": {},
+    "near_empty": {},
+    "far_correct": {
+     "PASS": 77,
+     "FLAG": 2
+    },
+    "far_wrong": {
+     "FLAG": 29,
+     "PASS": 2
+    },
+    "far_empty": {
+     "EMPTY": 3
+    }
+   },
+   "t06_final": {
+    "far_correct": {
+     "PASS": 78,
+     "FLAG": 2,
+     "ABSTAIN": 1
+    },
+    "far_wrong": {
+     "FLAG": 26,
+     "PASS": 2
+    }
+   }
+  },
+  "hybrid": {
+   "devA_gt": {
+    "n": 3300,
+    "flag": 196,
+    "fisheye_flag": 64,
+    "fisheye_n": 606,
+    "worst": [
+     "AlexaMeadeFacePaint",
+     0.16666666666666666
+    ]
+   },
+   "devA_r1_correct": {
+    "PASS": 2799,
+    "ABSTAIN": 273,
+    "FLAG": 169
+   },
+   "t06_r1": {
+    "near_correct": {
+     "PASS": 66,
+     "ABSTAIN": 5
+    },
+    "near_wrong": {},
+    "near_empty": {},
+    "far_correct": {
+     "PASS": 74,
+     "ABSTAIN": 3,
+     "FLAG": 2
+    },
+    "far_wrong": {
+     "FLAG": 29,
+     "PASS": 2
+    },
+    "far_empty": {
+     "EMPTY": 3
+    }
+   },
+   "t06_final": null
+  },
+  "cstar": {
+   "devA_gt": {
+    "n": 3300,
+    "flag": 5,
+    "fisheye_flag": 0,
+    "fisheye_n": 606,
+    "worst": [
+     "Fencing",
+     0.0375
+    ]
+   },
+   "devA_r1_correct": {
+    "PASS": 2154,
+    "ABSTAIN": 1085,
+    "FLAG": 2
+   },
+   "t06_r1": {
+    "near_correct": {
+     "PASS": 70,
+     "ABSTAIN": 1
+    },
+    "near_wrong": {},
+    "near_empty": {},
+    "far_correct": {
+     "PASS": 78,
+     "FLAG": 1
+    },
+    "far_wrong": {
+     "FLAG": 24,
+     "PASS": 2,
+     "ABSTAIN": 5
+    },
+    "far_empty": {
+     "EMPTY": 3
+    }
+   },
+   "t06_final": {
+    "far_correct": {
+     "PASS": 78,
+     "ABSTAIN": 1,
+     "FLAG": 2
+    },
+    "far_wrong": {
+     "FLAG": 21,
+     "PASS": 2,
+     "ABSTAIN": 5
+    }
+   }
+  },
+  "N6_memory_candidates": {
+   "n_present": 9412,
+   "reproj_pass": 0.8627284317892052,
+   "vote": {
+    "trust": 0.929876753081173,
+    "flag": 0.05280492987675308,
+    "differs_from_reproj": 0.09626009349766255
+   },
+   "c0": {
+    "trust": 0.8846153846153846,
+    "flag": 0.1066723331916702,
+    "differs_from_reproj": 0.1736081597960051
+   },
+   "cstar": {
+    "trust": 0.9470888227794305,
+    "flag": 0.005418614534636634,
+    "differs_from_reproj": 0.08499787505312367
+   }
+  },
+  "n_rows": {
+   "A/gt": 3300,
+   "A/r1": 3300,
+   "A/mem": 9412,
+   "A'/gt": 6098,
+   "A'/swap": 350,
+   "T06/r1": 184,
+   "T06/final": 184
+  }
+ },
+ "P0": {
+  "cstar_gt_ff": {
+   "predicted": 5,
+   "tol": 3,
+   "got": 5,
+   "within": true
+  },
+  "t06_far_wrong_flag_cstar": {
+   "predicted": 24,
+   "tol": 2,
+   "got": 24,
+   "within": true
+  },
+  "t06_far_wrong_flag_vote": {
+   "predicted": 29,
+   "tol": 2,
+   "got": 29,
+   "within": true
+  },
+  "A_E": {
+   "predicted": 47.1,
+   "tol": 0.2,
+   "got": 47.24241402038266,
+   "within": true
+  },
+  "A_all": {
+   "predicted": 58.12,
+   "tol": 0.5,
+   "got": 58.18978451809464,
+   "within": true
+  }
+ },
+ "t06_c0": "/host/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e15/d1_ref",
+ "t06_c0_manifest": {
+  "path": "stage1/scripts/e15/design/d1_t06_c0.sha256",
+  "sha256": "7941d5950085559f6d5655575d55068dbeb83008e6d04dc2bd0cbb39bcd34f2a"
+ },
+ "rows": {
+  "path": "/host/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e15/rows.json.gz",
+  "sha256": "dcc8f6aed29cde9cfa0ed8a870ff1ea16d8fdd45734318497d70b6253eef28bb"
+ }
+}

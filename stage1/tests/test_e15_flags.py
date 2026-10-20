@@ -25,7 +25,7 @@ needs_data = pytest.mark.skipif(not os.path.isfile(os.path.join(DATA, "Blocks", 
 # scripts/e15/runs/{angles,step0,select}.json.  Its ONLY intended test update is this line (False -> True): the tests
 # below then check id3d.py against the committed select.json instead of the pre-selection state.  No other test pins
 # the A-c* values (the rule tests use e15_synth.P1_CSTAR).
-STEP1_COMMITTED = False
+STEP1_COMMITTED = True
 
 
 def _args(*extra):
