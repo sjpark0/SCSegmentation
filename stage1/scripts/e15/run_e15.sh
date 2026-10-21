@@ -22,7 +22,7 @@
 #   run_e15.sh zr <theta> <family>            Z-R (§6.3b): AB on DEV-A (restricted), decode only (no scoring): 60 with s*,
 #                                             and a theta in [A_E, A_all) when Step 2 asks (need_zcheck)
 #   run_e15.sh z4-fencing                     Z4 part 2 (§6.3b): the GPU torch test on the Fencing keyframe (bytes only) ->
-#                                             runs/z4_fencing.log (must show 1 passed before Step 2)
+#                                             runs/z4_fencing.log (relay None/60 -> must show 2 passed, 0 failed, before Step 2)
 #   run_e15.sh zcheck                         the Z stage comparisons Z4 / Z-R / Z-I2 / Z-sim / Z-T06 (e15_zcheck.py, host)
 #                                             -> runs/zcheck.json; the stress decode is `dev stress 20 <s*> 0`, G `dev G 60
 #                                             <s*> 0`
@@ -205,7 +205,9 @@ case "$cmd" in
     gpu_lock
     gpu_docker python -m pytest -q -p no:cacheprovider tests_torch/test_e15_torch.py -k test_z4_zr_fencing_keyframe_bytes \
       2>&1 | tee "$E15/runs/z4_fencing.log"
-    grep -qE "1 passed" "$E15/runs/z4_fencing.log" || { echo "z4-fencing: not passed" >&2; exit 2; } ;;
+    # parametrised over relay None / 60 -> "2 passed"; any failure/error line or no passed line = not passed
+    { grep -qE "[0-9]+ passed" "$E15/runs/z4_fencing.log" && ! grep -qE "[0-9]+ (failed|error)" "$E15/runs/z4_fencing.log"; } \
+      || { echo "z4-fencing: not passed" >&2; exit 2; } ;;
   zcheck)
     "$PY" "$E15/e15_zcheck.py" "$@" ;;
   judge-B)
