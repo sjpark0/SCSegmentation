@@ -59,9 +59,24 @@ NAS: `cart/sync_cart.sh`가 후처리 뒤 `PlenopticServer2/SegProject/Data/Cart
 - **한계**: 먼 뷰 일부에서 탁자 마스크가 빠진 곳(예: cam0009 3번 앞)은 새 배경이 비침(방법 출력 그대로). 끝 카메라(cam0011·0023 등)는 기둥·안내판에 가린 객체가 잘려 보임. 파노라마 가까운 물체는 바닥에 눌려 보일 수 있어 yaw로 피함.
 - **사고 (2026-10-21 13:24)**: 16K HDR 곡선 맞춤을 호스트에서 돌리다 systemd-oomd가 사용자 세션 전체(user@1000.service, 메모리 압박 65 % > 50 % 20초)를 종료 → 터미널·Claude·`run_cart.sh`·`post_cart.sh`가 함께 죽음(분할 컨테이너는 계속). 이후 무거운 작업과 대기 체인은 모두 컨테이너에서 실행.
 
+## 7. 전경 가우시안 스플래팅 (FreeTimeGS++, 2026-10-21)
+
+사용자 질문 "배경 치환 영상 전체에 FreeTimeGS vs 배경 3DGS-MCMC + 객체별 FreeTimeGS 뒤 합성" → 채택: **배경은 학습하지 않고(해석적 돔, §6), 전경 19개 객체를 한 FreeTimeGS++ 모델로 원본 영상에서 마스크 손실로 학습, 렌더링 때 합성**. 코드는 NAS `GSProject/FreetimeGSPlusPlusOld`를 `~/Documents/FreetimeGSPlusPlus`(브랜치 `scseg-fgmask`)로 복사해 수정, 이미지 `freetimegspp:latest`.
+
+- **마스크 학습** (`ftgspp/data/masks.py`, `train.mask_loss`): `labels.npy`를 학습 해상도로 줄인 라벨 배열(0 배경·1–254 객체·255 무시; 섞인 경계 화소는 무시). 손실은 전경만, 배경은 매 스텝 무작위 색 위에서(premultiplied 색 + (1−α)·bg), α를 전경 마스크에 L1로 감독(0.1). 초기 점은 전경에 떨어지는 것만(`init.mask_min_share` 0.8). 합성 장면 시험 `tests/test_fgmask.py`.
+- **데이터**: 원본 120–219번(100프레임), 24대, 960×540(`configs/cart/fg_f120_219*.toml`), 평가 카메라 cam17 제외 학습. 준비 `scripts/cart/prepare_cart.py`(JPEG 링크 + COLMAP 이름 맞춤), 라벨은 `export_cart.py --limit 100 --static`.
+- **기둥 가림 수정**: 끝 카메라 6대(0·2·11·12·22·23)에서 'Creative Lounge' 기둥·안내판이 객체를 가리는데 마스크는 배경이라 모델이 그 방향에서 투명해짐 → 6대 뺀 모델(`_lo6`)이 전경으로 렌더하고 SAM 3 가림막(`Data/Cart/bg/occluders/`)에 드는 화소를 무시로(`scripts/cart/occlusion_ignore.py`, 카메라·프레임당 최대 2.2만 화소) → 전체 재학습 `_occ`.
+- **결과(cam17 전경 PSNR)**: 전체 34.94 / 6대 제외 35.58 / 가림 보정 35.17 dB. 가우시안 40만, 학습 9.7분.
+- **객체 ID** (`scripts/cart/labels_cart.py`): 가우시안마다 렌더 기여도 가중 투표(모든 학습 뷰·프레임, 가림 반영) → `labels.pt`, 신뢰도 중앙값 0.975. 편집(빼기)은 ID로.
+- **합성 렌더** (`scripts/cart/composite_cart.py`): 전경 GS + §6 배경(임의 시점에 다시 투영) + 가우시안 위치 접지 그림자. 호 비행(cam0→11→0) 전체|편집, cam17 원본|합성.
+- **49뷰 퀼트** (`scripts/cart/quilt_cart.py`, NAS `FreetimeGSPlusPlus`의 `render_x_axis.py`·`grid_generation` 경로 재사용): 중심 카메라 cam6(평균 시선과 1.6°), 초점 = 화분 중심 깊이 3.30 m(24대 마스크 삼각측량, 오차 4 mm), 양 끝 간격 3.43 m, 7×7 그리드 PNG 100장 + 좌→우→좌 왕복 영상(`scripts/cart/sweep_from_quilts.py`). 다섯 판: 전체 / 카트만 뺌(6·13) / 카트+뒤 왼쪽 사람(3·8) / 카트+끄는 사람(1·6·13) / 거기에 뒤 왼쪽 사람까지.
+- **한계**: 뺀 객체가 가리던 자리(어느 카메라에서도 안 보임)는 비거나 얼룩. 배경은 3D가 아니라 큰 시점 이동에는 평면 그림처럼 보임.
+- **저장**: 결과·memmap·RoMa 점 → NAS `PlenopticServer2/SegProject/Data/Cart/ftgs/{_run,_memmap,_points}/cart`(`scripts/cart/sync_nas.sh`, 검증 뒤 로컬 삭제; 사용자 지시).
+
 ## 5. 이력
 
 | 일자 | 내용 |
 |---|---|
 | 2026-10-20 | 데이터 조사, 시작 프레임 120번, 17개 객체 프롬프트, 24대 한 프레임 확인, 사용자 확인 후 투고본 구성 실행 시작 |
 | 2026-10-21 | 배경 교체: 후보 비교 → C(lythwood_terrace, yaw 270), 18 빈 의자·19 화분 추가(투고본 구성 120번 전파, 내보내기 포함), oomd 세션 종료 사고 후 체인을 컨테이너로 이전 |
+| 2026-10-21 | 분할 14:08 종료(24대·2 580프레임·949 587 PNG), 라벨 19개 내보내기·오버레이·2D 배경 합성 완료, NAS 저장. FreeTimeGS++ 전경 학습(마스크 손실)·객체 ID·합성 렌더·49뷰 퀼트 5판(§7) |
