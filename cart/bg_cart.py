@@ -179,17 +179,19 @@ class Scene:
         self.Op = self.O + (H_CAP_M / self.s) * self.up
         self.Rd = R_DOME_M / self.s
 
-    def rays(self, ci, step=1):
-        K, R, t = self.cams[ci]
-        ys, xs = np.mgrid[0:H:step, 0:W:step].astype(np.float64)
+    def rays(self, ci, step=1, cam=None, hw=(H, W)):
+        """camera centre and unit ray per pixel of camera ci, or of cam = (K, R, t) at size hw (novel views)"""
+        K, R, t = self.cams[ci] if cam is None else cam
+        ys, xs = np.mgrid[0:hw[0]:step, 0:hw[1]:step].astype(np.float64)
         v = np.stack([(xs + 0.5 * step - K[0, 2]) / K[0, 0], (ys + 0.5 * step - K[1, 2]) / K[1, 1], np.ones_like(xs)], -1)
         v = v @ R                                             # R^T v for row vectors
         v /= np.linalg.norm(v, axis=-1, keepdims=True)
         return -R.T @ t, v
 
-    def background_maps(self, ci, pano_wh, yaw_deg, step=1):
-        """remap maps into the panorama + ground coordinates (metres along e1, e2 from the table centre; nan = sky/far)."""
-        c, v = self.rays(ci, step)
+    def background_maps(self, ci, pano_wh, yaw_deg, step=1, cam=None, hw=(H, W)):
+        """remap maps into the panorama + ground coordinates (metres along e1, e2 from the table centre; nan = sky/far).
+        cam = (K, R, t), hw: any camera in the COLMAP frame instead of camera ci."""
+        c, v = self.rays(ci, step, cam, hw)
         vn = v @ self.n
         with np.errstate(divide="ignore", invalid="ignore"):
             tg = (self.d - c @ self.n) / vn
@@ -217,6 +219,25 @@ def render_bg(pano, mx, my):
 
 
 # ----------------------------------------------------------------------------------------------------------- shadows
+def form_factor_kernels():
+    """per height layer: the sky fraction a horizontal grid cell at that height hides from a ground point"""
+    out = []
+    for h in HEIGHTS_M:
+        rad = max(2, int(math.ceil(3 * h / GRID_RES_M)))
+        yy, xx = np.mgrid[-rad:rad + 1, -rad:rad + 1] * GRID_RES_M
+        k = h * h / (math.pi * (xx * xx + yy * yy + h * h) ** 2) * GRID_RES_M ** 2
+        out.append(k.astype(np.float32))
+    return out
+
+
+def blocked_from_layers(occs, kern):
+    """occupancy per height layer (N, N) each -> blocked sky fraction on the grid, with the SHADOW_GAMMA boost"""
+    out = np.zeros_like(occs[0], dtype=np.float32)
+    for occ, k in zip(occs, kern):
+        out = np.maximum(out, cv2.filter2D(occ.astype(np.float32), -1, k, borderType=cv2.BORDER_CONSTANT))
+    return 1 - (1 - np.clip(out, 0, 1)) ** SHADOW_GAMMA
+
+
 class Hull:
     def __init__(self, sc):
         self.sc = sc
@@ -234,12 +255,7 @@ class Hull:
                 vv.append(ok)
             self.idx.append(np.stack(ii))
             self.valid.append(np.stack(vv))
-        self.kern = []
-        for h in HEIGHTS_M:
-            rad = max(2, int(math.ceil(3 * h / GRID_RES_M)))
-            yy, xx = np.mgrid[-rad:rad + 1, -rad:rad + 1] * GRID_RES_M
-            k = h * h / (math.pi * (xx * xx + yy * yy + h * h) ** 2) * GRID_RES_M ** 2
-            self.kern.append(k.astype(np.float32))
+        self.kern = form_factor_kernels()
 
     def blocked(self, fg):
         """fg: list of 24 boolean masks (H, W) -> blocked sky fraction on the grid (N, N)."""
