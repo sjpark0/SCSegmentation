@@ -1,25 +1,32 @@
 #!/usr/bin/env bash
-# Cart results -> NAS (docs/cart.md; user: "당연히 나스에 저장해줘").  Waits for Data/Cart/done/render_f120, copies the
+# Cart results -> NAS (docs/cart.md; user: "당연히 나스에 저장해줘").  Waits for Data/Cart/done/bg_f120 (the background
+# replacement, after the overlay render), copies the
 # results with parallel rsync, verifies (PNG trees by content digest, every other file by sha256), then removes the local
-# result copies (the source JPEGs in Data/Cart/src stay).  Writes Data/Cart/done/sync_f120.
+# result copies (the source JPEGs in Data/Cart/src and the setup in Data/Cart/bg stay).  Writes Data/Cart/done/sync_f120.
+# Host only: the NAS (CIFS) mounts are not visible inside the containers.
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 C="${ROOT}/Data/Cart"; KEY=cart_f120; M=SegMaskSam3XW1CGPS4MFsCs10kG2
 NAS="${NAS:-${ROOT}/PlenopticServer2/SegProject/Data/Cart}"
 ts() { date '+%F %T'; }
-until [[ -f "${C}/done/render_f120" ]]; do sleep 60; done
+until [[ -f "${C}/done/bg_f120" ]]; do sleep 60; done
 echo "$(ts) sync to ${NAS}"
 mkdir -p "${NAS}/${KEY}" "${NAS}/labels"
 cp "${C}/cart.json" "${NAS}/"
 rsync -rt "${C}/review" "${NAS}/"
+rsync -rt --exclude test "${C}/bg" "${NAS}/"                        # setup: COLMAP copies, geometry, panoramas, static masks
+rsync -rt "${C}/static_f120_probe" "${NAS}/"
 rsync -rt "${C}/${KEY}/Mask" "${C}/${KEY}/SOURCE.json" "${NAS}/${KEY}/"
-for tree in "${M}" export/labels export/fg viz/frames; do
+BG=bg/lythwood_terrace_y270
+for tree in "${M}" export/labels export/fg viz/frames "${BG}/frames"; do
   mkdir -p "${NAS}/${KEY}/${tree}"
   (cd "${C}/${KEY}/${tree}" && ls -d cam* | xargs -P 16 -I{} rsync -rt {} "${NAS}/${KEY}/${tree}/")
 done
 rsync -t "${C}/${KEY}/${M}"/MANIFEST*.json "${NAS}/${KEY}/${M}/"
 rsync -t "${C}/${KEY}/export/export.json" "${NAS}/${KEY}/export/"
 rsync -rt "${C}/${KEY}/viz/cams" "${C}/${KEY}/viz/mosaic.mp4" "${NAS}/${KEY}/viz/"
+rsync -rt "${C}/${KEY}/${BG}/cams" "${C}/${KEY}/${BG}/plates" "${C}/${KEY}/${BG}"/*.mp4 "${C}/${KEY}/${BG}/comp.json" \
+  "${NAS}/${KEY}/${BG}/"
 rsync -rt "${C}/labels/seg_labels_cart_f120_2699" "${NAS}/labels/"
 echo "$(ts) copied; verifying"
 EVAL_DIR="${ROOT}/eval" PYTHONDONTWRITEBYTECODE=1 python3 - "${C}" "${NAS}" "${KEY}" "${M}" <<'EOF'
@@ -38,7 +45,7 @@ def sha(p):
         for blk in iter(lambda: f.read(1 << 24), b""):
             h.update(blk)
     return h.hexdigest()
-for sub in (os.path.join(KEY, "export"), os.path.join(KEY, "viz"), "labels"):
+for sub in (os.path.join(KEY, "export"), os.path.join(KEY, "viz"), os.path.join(KEY, "bg"), "labels"):
     n = 0
     for dp, _, fs in os.walk(os.path.join(C, sub)):
         for f in fs:
@@ -54,5 +61,5 @@ EOF
 st=$?
 [[ ${st} -eq 0 ]] || { echo "$(ts) ABORT: NAS copy differs; local copy kept"; exit 1; }
 touch "${C}/done/sync_f120"
-rm -rf "${C}/${KEY}/${M}" "${C}/${KEY}/export" "${C}/${KEY}/viz" "${C}/labels"
+rm -rf "${C}/${KEY}/${M}" "${C}/${KEY}/export" "${C}/${KEY}/viz" "${C}/${KEY}/bg" "${C}/labels"
 echo "$(ts) verified; local result copies removed (source JPEGs kept in ${C}/src)"

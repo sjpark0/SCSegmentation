@@ -47,8 +47,21 @@ NAS: `cart/sync_cart.sh`가 후처리 뒤 `PlenopticServer2/SegProject/Data/Cart
 
 실행: 투고본 구성 `SegMaskSam3XW1CGPS4MFsCs10kG2` + 긴 실행 플래그(`--mem-prune --io-cache2 --async-png 8 --crop-stream`, MUVOD·T06 관문에서 끄고 켠 결과 바이트 동일), 결과 `Data/Cart/cart_f120/SegMaskSam3XW1CGPS4MFsCs10kG2/cam00NN/<i>/<id>.png` (i = 원본 프레임 − 120).
 
+## 6. 배경 교체 (야외 도서관)
+
+2026-10-21 사용자: "객체들만 따내서 새로운 배경에 집어넣어 객체 분리가 왜 필요한지 보여 주자" → 후보 넷 중 **C: Poly Haven `lythwood_terrace`(CC0, 흐린 날 정원 테라스와 초원), yaw 270**. 추가 지시 "제일 앞쪽에 사람이 앉지 않은 의자도 분할".
+
+- **기하** (`cart/bg_cart.py geom`, `Data/Cart/bg/geom.json`): COLMAP 카메라(NAS `GSData/library_261014/cart/png`)와 SCSegGaussians 점군(`points3D_multipleview.ply`)으로 바닥 평면(RANSAC), 탁자 상판 = 0.74 m로 축척(1단위 ≈ 0.626 m), 카메라 높이 1.63 m(cam0000–0011)·1.35 m(cam0012–0023), 탁자 중심까지 6.0–7.1 m.
+- **배경**: 지면 투영 돔(파노라마 카메라 높이 1.7 m, 반지름 40 m). 카메라가 고정이라 카메라마다 배경 한 장(`plates/`). 16K HDR을 Poly Haven 8K 톤매핑 JPG 모양으로 채널별 곡선 맞춤(`bg_cart.py tonemap`, 평균 오차 4–5/255).
+- **고정 객체** 18 빈 의자(앞), 19 국화 화분: 촬영 내내 움직이지 않음(의자 영역 시간 차이 확인, 1200–1800번 변화는 뒤의 5번이 자리를 비운 것). cam0005에서 SAM 3 문장 인스턴스('chair', 'potted plant')를 기준으로 **투고본 구성으로 120번 한 프레임 24대 전파**(`Data/Cart/static_f120_probe`) — SAM 3 단독은 먼 뷰(cam0008–0011, 0020–0023)에서 탁자 위 책을 잡거나 실패했음. 화분은 빼면 탁자 받침이 잘려 보여 포함(사용자 승인). 내보내기(`export_cart.py --static Data/Cart/bg/static/objects.json`)에서 매 프레임 같은 마스크를 칠하고 실행 객체를 이기되, 장면을 지나가는 1·5·6·13번만 그 앞으로 지나갈 수 있음 → 라벨 19개.
+- **합성** (`bg_cart.py comp`): alpha = 객체 합집합(5화소 닫힘 → 1화소 침식 → 흐림), 접지 그림자 = 지면 격자 위 시각 헐(카메라 85 % 이상 동의)에서 흐린 하늘 가림률(form factor) → 1 − (1 − b)^2.5, 세기 0.85.
+- **결과**: `cart_f120/bg/lythwood_terrace_y270/{frames/camNNNN/<원본 프레임>.jpg, cams/camNNNN.mp4, mosaic.mp4, compare_cam0005.mp4(원본|합성), plates/, comp.json}` → NAS 같은 경로. 체인: `after_run.sh`(컨테이너) → `post_cart.sh`(컨테이너) → `bg_post.sh`(컨테이너) → `sync_cart.sh`(호스트, NAS).
+- **한계**: 먼 뷰 일부에서 탁자 마스크가 빠진 곳(예: cam0009 3번 앞)은 새 배경이 비침(방법 출력 그대로). 끝 카메라(cam0011·0023 등)는 기둥·안내판에 가린 객체가 잘려 보임. 파노라마 가까운 물체는 바닥에 눌려 보일 수 있어 yaw로 피함.
+- **사고 (2026-10-21 13:24)**: 16K HDR 곡선 맞춤을 호스트에서 돌리다 systemd-oomd가 사용자 세션 전체(user@1000.service, 메모리 압박 65 % > 50 % 20초)를 종료 → 터미널·Claude·`run_cart.sh`·`post_cart.sh`가 함께 죽음(분할 컨테이너는 계속). 이후 무거운 작업과 대기 체인은 모두 컨테이너에서 실행.
+
 ## 5. 이력
 
 | 일자 | 내용 |
 |---|---|
 | 2026-10-20 | 데이터 조사, 시작 프레임 120번, 17개 객체 프롬프트, 24대 한 프레임 확인, 사용자 확인 후 투고본 구성 실행 시작 |
+| 2026-10-21 | 배경 교체: 후보 비교 → C(lythwood_terrace, yaw 270), 18 빈 의자·19 화분 추가(투고본 구성 120번 전파, 내보내기 포함), oomd 세션 종료 사고 후 체인을 컨테이너로 이전 |
