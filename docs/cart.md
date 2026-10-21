@@ -43,6 +43,8 @@ SAM 3 이미지 모델(동결)의 문장 프롬프트 인스턴스를 위치로 
 - 라벨 볼륨 `Data/Cart/labels/seg_labels_cart_f120_2699/labels.npy` uint8 (2 580, 24, 1080, 1920), 0 배경·1–17·경계 2화소 띠 255 무시 — SCSegGaussians `seg_labels_cart_f100_2699`와 같은 규칙(그쪽은 960×540, 6개 객체), `frames.npy`, `objects.json`
 - 오버레이 영상 `Data/Cart/cart_f120/viz/cams/cam00NN.mp4` (1920×1080, 30 fps, 범례), `viz/mosaic.mp4` (24대 6×4, 링 순서), 프레임별 오버레이 이미지 `viz/frames/cam00NN/<원본 프레임>.jpg` (사용자 요청)
 
+NAS: `cart/sync_cart.sh`가 후처리 뒤 `PlenopticServer2/SegProject/Data/Cart/`로 옮기고(마스크 PNG는 내용 다이제스트, 나머지는 크기·sha256 확인) 로컬 결과를 지웁니다(원본 JPEG `Data/Cart/src`는 남김).
+
 실행: 투고본 구성 `SegMaskSam3XW1CGPS4MFsCs10kG2` + 긴 실행 플래그(`--mem-prune --io-cache2 --async-png 8 --crop-stream`, MUVOD·T06 관문에서 끄고 켠 결과 바이트 동일), 결과 `Data/Cart/cart_f120/SegMaskSam3XW1CGPS4MFsCs10kG2/cam00NN/<i>/<id>.png` (i = 원본 프레임 − 120).
 
 ## 5. 이력
