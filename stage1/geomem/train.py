@@ -26,17 +26,17 @@ from geomem.data import (MAX_OBJECTS, SampleIterator, choose_objects, enumerate_
                          hub_views, load_sample, load_sample_pair, objects_for, objects_for_pair, pair_targets,
                          unannotated_views)
 from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, CUT_ARMS, CUT_PROB, DEC_ARMS, FUSE_ARMS,  # noqa: E402
-                         NO_EMBED_ARMS, PRED_MEM_ARMS, PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
+                         NO_EMBED_ARMS, NOGEO_ARMS, PRED_MEM_ARMS, PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
 from geomem.folds import load_folds, train_scenes  # noqa: E402
 from geomem.pointmap import CONF_MIN, local_points, to_reference, view_grid  # noqa: E402
 from methods import common  # noqa: E402
 from mvseg2d.io import load_meta  # noqa: E402
 
 ARMS = ("geomem", "geomem_ft", "geomem_ssl", "geobias_ft", "geobias_norope_ft", "geobias_only_ft", "geoset_ft") \
-    + QUERY_ARMS + CONTINUE_ARMS + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS
+    + QUERY_ARMS + CONTINUE_ARMS + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS + NOGEO_ARMS
 BIAS_ARMS = ("geobias_ft", "geobias_norope_ft", "geobias_only_ft", "geoset_ft") + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS
-SET_ARMS = ("geoset_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS   # arms trained with a second memory view
-FT_ARMS = ("geomem_ft",) + BIAS_ARMS
+SET_ARMS = ("geoset_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS + NOGEO_ARMS   # arms trained with a second memory view
+FT_ARMS = ("geomem_ft",) + BIAS_ARMS + NOGEO_ARMS   # memory attention fine-tuned (S1-E16 NG: without any geometry)
 PAIR_ARMS = QUERY_ARMS + CONTINUE_ARMS   # GeoQuery arms: (scene, t, ref) samples with both annotated targets
 EXTRA_MEM_PROB = 0.5     # geoset arms: probability of adding a second memory view
 PRED_MEM_TAU = 0.7       # geoset_pred_ft: object gate on the predicted memory (= methods/geomem/run.TAU_CONF, spec 2.1)

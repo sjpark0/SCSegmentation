@@ -151,8 +151,8 @@ def test_presets_and_tag_registries():
     assert S.PRESETS["geoset_rep"] == dict(arm="geoset_pred_ft", gate="reproj")
     assert S.PRESETS["geoset_rep_z2"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="grid")
     assert S.PRESETS["geoset_rep_z2r"] == dict(arm="geoset_pred_ft", gate="reproj", zoom=2, zoom_rope="remap")
-    assert list(S.PRESETS)[-6:] == ["geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm", "geoset_cutall_rep_x",
-                                    "geoset_rep_xs"]
+    assert list(S.PRESETS)[-7:] == ["geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm", "geoset_cutall_rep_x",
+                                    "geoset_rep_xs", "geoset_rep_xs_ab"]      # S1-E15 main preset appended last
     main = os.path.dirname(ROOT)
     spec = importlib.util.spec_from_file_location("stage1_supply", os.path.join(main, "SCSam3", "stage1_supply.py"))
     supply = importlib.util.module_from_spec(spec); spec.loader.exec_module(supply)

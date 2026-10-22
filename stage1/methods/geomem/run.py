@@ -11,6 +11,7 @@ training scenes include the scene is refused.  Runs inside `scsam3`.
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from collections import Counter
@@ -24,14 +25,16 @@ from geomem.pointmap import view_grid  # noqa: E402
 from methods import common  # noqa: E402
 from mvseg2d.io import cache_dir, labelmap_to_mask, result_dir  # noqa: E402
 
-from geomem.arms import ALIGN_ARMS, CONTINUE_ARMS, FUSE_ARMS, QUERY_ARMS, SET2_ARMS  # noqa: E402
+from geomem.arms import ALIGN_ARMS, CONTINUE_ARMS, FUSE_ARMS, NOGEO_ARMS, QUERY_ARMS, SET2_ARMS  # noqa: E402
 
 ARMS = ("geomem", "geomem_ft", "geomem_ssl", "geobias_ft", "geobias_norope_ft", "geobias_only_ft", "geoset_ft") \
-    + QUERY_ARMS + CONTINUE_ARMS + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS
-SET_ARMS = ("geoset_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS
+    + QUERY_ARMS + CONTINUE_ARMS + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS + NOGEO_ARMS
+SET_ARMS = ("geoset_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS + NOGEO_ARMS   # S1-E16 NG: two-round, predicted memory
 PAIR_ARMS = QUERY_ARMS + CONTINUE_ARMS   # GeoQuery: all views' features first, one hub pass, single-round decoding
 TAU_CONF = 0.7     # spec 2.2: a view is a confident memory when mean predicted IoU over present objects >= tau
 K_NEIGHBOURS = 3
+NBR_MODES = ("pi3", "index", "feat")   # S1-E16: how the k nearest neighbours are measured -- Pi3 camera centres (the
+                                       # unchanged path), the rig index (|number difference|), or pooled SAM 3 features
 OBJ_CHUNK = 8      # round-2 decoding with a per-object gate mask: at most this many objects per forward (OOM guard)
 THETA_REPROJ = 0.5 # §8 reproj gate: fraction of a predicted mask's reprojected pixels that must land on the reference GT
 MIN_VALID = 64     # §8: fewer validly reprojected mask pixels than this -> fall back to the IoU rule
@@ -63,6 +66,45 @@ def camera_centres(cache_dir, cams):
     return {c: np.load(os.path.join(cache_dir, f"{c}.npz"))["c2w"][:3, 3].astype(np.float64) for c in cams}
 
 
+def camera_index_coords(cams):
+    """S1-E16 NG-idx: one coordinate per camera = the number in its name (cam9 -> 9, camera_0012 -> 12); the k nearest
+    = the k closest rig numbers.  A name without a digit is refused."""
+    out = {}
+    for c in cams:
+        digits = re.sub(r"\D", "", c)
+        if not digits:
+            raise ValueError(f"--nbr index: no camera number in {c!r}")
+        out[c] = np.array([float(int(digits))], dtype=np.float64)
+    return out
+
+
+def camera_feat_coords(model, image_paths, cams):
+    """S1-E16 NG-feat: one unit vector per camera = the spatial mean of the SAM 3 backbone's coarsest map (level 2 of
+    backbone_fpn, 256 channels) of that camera's image, L2-normalised, so the k nearest by Euclidean distance are the k
+    most cosine-similar views.  Computed for every camera of the scene from the images alone (no geometry)."""
+    import torch
+    from geomem import sam3_io
+    out = {}
+    with torch.no_grad():
+        for c in cams:
+            img, _, _ = sam3_io.load_image(image_paths[c])
+            f = sam3_io.backbone_features(model, img)["backbone_fpn"][2][0].float().mean(dim=(1, 2))
+            out[c] = torch.nn.functional.normalize(f, dim=0).cpu().numpy().astype(np.float64)
+    return out
+
+
+def camera_coords(nbr, cache, scene, model=None):
+    """The coordinates the neighbour rules (select_neighbours / select_candidates) measure distances in: Pi3 centres
+    (`pi3`, the unchanged path) or the S1-E16 geometry-free alternatives."""
+    if nbr == "pi3":
+        return camera_centres(cache, scene.cams)
+    if nbr == "index":
+        return camera_index_coords(scene.cams)
+    if nbr == "feat":
+        return camera_feat_coords(model, scene.image_paths, scene.cams)
+    raise ValueError(f"--nbr {nbr!r}: not one of {NBR_MODES}")
+
+
 def select_neighbours(view, centres, confident, k=K_NEIGHBOURS):
     """The k nearest other cameras by centre distance, kept only if confident; nearest first."""
     others = sorted((np.linalg.norm(centres[c] - centres[view]), c) for c in centres if c != view)
@@ -87,11 +129,12 @@ def object_conf(presence, ious, tau=TAU_CONF):
     return (presence > 0) & (ious >= tau)
 
 
-def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none", zero_bias=False, relay=None):
-    """`--gate obj` / `--round2 proj_*` / `--zoom` / `--xcl` / `--zero-bias` / `--relay` must not write under the arm's own
+def check_gate_out(arm, gate, out, round2="pred", zoom=None, xcl="none", zero_bias=False, relay=None, nbr="pi3"):
+    """`--gate obj` / `--round2 proj_*` / `--zoom` / `--xcl` / `--zero-bias` / `--relay` / `--nbr` must not write under the arm's own
     name: that is the view-gate, predicted-memory, full-view, non-exclusive, trained-bias, no-relay result."""
-    if (gate != "view" or round2 != "pred" or zoom is not None or xcl != "none" or zero_bias or relay is not None) and out == arm:
-        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} --xcl {xcl} --zero-bias {bool(zero_bias)} "
+    if (gate != "view" or round2 != "pred" or zoom is not None or xcl != "none" or zero_bias or relay is not None
+            or (nbr or "pi3") != "pi3") and out == arm:
+        raise SystemExit(f"--gate {gate} --round2 {round2} --zoom {zoom} --xcl {xcl} --zero-bias {bool(zero_bias)} --nbr {nbr} "
                          f"--relay {relay} with --out {out}: that name is the default result (pass another --out)")
 
 
@@ -980,7 +1023,17 @@ def decode_scene(scene, args, sink=None):
         assert two_round and round2 == "pred" and gate == "reproj" and zoom is None and not pair_mode and xcl in E15_XCL \
             and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
             f"--relay is registered on the two-round reproj-gate decode (C0 = geoset_rep_xs) only, not {arm}/{gate}/{xcl}"
+    nbr = getattr(args, "nbr", "pi3") or "pi3"            # S1-E16; pi3 = the unchanged path (no config key)
+    assert nbr in NBR_MODES, nbr
+    if nbr != "pi3":
+        assert two_round and round2 == "pred" and gate in ("obj", "absent") and zoom is None and e15 is None \
+            and not pair_mode and arm not in FUSE_ARMS and arm not in ALIGN_ARMS, \
+            f"--nbr {nbr} is registered for the two-round predicted-memory decode with the obj / absent gate only (S1-E16), not {arm}/{gate}"
+        assert not flags["use_bias"] and not flags["use_geometry"], \
+            f"--nbr {nbr}: the geometry-free neighbour rules are registered for geometry-free arms only (S1-E16), not {arm}"
     config = {"arm": arm, "untrained": bool(args.untrained), **flags, "two_round": two_round}
+    if nbr != "pi3":
+        config["nbr"] = nbr
     wrapper = build_wrapper(model, arm)
     geo = wrapper.geo_embed
     ck = None
@@ -1141,7 +1194,7 @@ def decode_scene(scene, args, sink=None):
                                     "n_valid": int(r["n_valid"][i])}
                            for i, o in enumerate(scene.objects)} for c, r in round1.items()}
                 sink.json(args.out, "round1_conf.json", rec)
-                centres = camera_centres(cache, scene.cams)
+                centres = camera_coords(nbr, cache, scene, model)   # S1-E16: Pi3 centres unless --nbr index / feat
                 n_mem, written2, n_gated, n_pairs, dropped = [], 0, 0, 0, 0
                 proj_stats = []
                 zoom_recs, zoom_counts = {}, Counter()
@@ -1346,6 +1399,9 @@ def _extra(ap):
     ap.add_argument("--round2", choices=("pred", "proj_bin", "proj_soft"), default="pred",
                     help="GeoProj: second-round memory from round-1 predictions (pred) or from the reference GT masks projected "
                          "into the neighbour (binary mask / soft logits with unknown = 0); no prediction, 'absent'-style conf")
+    ap.add_argument("--nbr", choices=NBR_MODES, default="pi3",
+                    help="S1-E16 (docs/stage1-E16-prereg.md): the k-nearest-neighbour rule of the round-2 memory candidates -- "
+                         "Pi3 camera centres (default, unchanged), the rig index, or pooled SAM 3 features; geometry-free arms only")
     ap.add_argument("--zero-bias", action="store_true", dest="zero_bias",
                     help="diagnostic (ring diagnosis D3, stage1/docs/ring-diagnosis-2026-10-20.md): the checkpoint's GeoBias parameters "
                          "set to 0 at decode (fine-tuned memory attention kept); needs a bias arm and an --out other than the arm")
@@ -1384,7 +1440,7 @@ def add_e15_args(ap):
 
 def main():
     args = common.parse_args(__doc__, _extra)
-    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom, args.xcl, args.zero_bias, args.relay)
+    check_gate_out(args.arm, args.gate, args.out, args.round2, args.zoom, args.xcl, args.zero_bias, args.relay, args.nbr)
     try:                                                    # S1-E15 whitelist / theta / xcl / Step-1 commit, before the model
         e15 = e15_options(args)
         if e15 is not None and e15["theta"] == E15_STRESS_THETA:   # I7: theta 20 = the stress arm, DEV-A (dev_decode) only

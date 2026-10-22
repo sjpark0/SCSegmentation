@@ -27,7 +27,7 @@ CENSUS = json.load(open(os.path.join(REPO, "docs", "raw", "muvod_object_sets.jso
 SRC_DEFAULT = os.path.join(REPO, "stage1")             # was ../SCSegmentation2D; ported 2026-10-13 (docs/stage1-port.md)
 TAGS = ("geoset_rep", "geoset_abs", "geoalign_rep", "geoset_dec_rep", "geoset_decb_rep",
         "geoset_rep_z2", "geoset_rep_z2r", "geoset_rep_x", "geoset_rep_xm",
-        "geoset_cutall_rep_x", "geoset_rep_xs")   # E8 + E9 + E10 + E11 + E12 + E14 tags (== set(stage1_supply.TAGS))
+        "geoset_cutall_rep_x", "geoset_rep_xs", "geoset_rep_xs_ab")   # E8 + E9 + E10 + E11 + E12 + E14 + E15 tags (== set(stage1_supply.TAGS))
 
 
 def sha256_file(path):

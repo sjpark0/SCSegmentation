@@ -9,12 +9,16 @@ BAND_ARMS = ("geoset_decb_ft",)                        # S1-E9 D2: + boundary-ba
 CUT_ARMS = ("geoset_cut0_ft", "geoset_cutall_ft")
 CUT_PROB = {"geoset_cut0_ft": 0.0, "geoset_cutall_ft": 1.0}
 SET2_ARMS = ("geoset_only_ft", "geoset_pred_ft") + DEC_ARMS + CUT_ARMS   # GeoSet-2: memory set on the geobias_only base (GT / predicted memory)
-PRED_MEM_ARMS = ("geoset_pred_ft",) + DEC_ARMS + CUT_ARMS   # second memory = the model's own prediction of a random camera
+# S1-E16 (docs/stage1-E16-prereg.md): the geometry-free control -- the geoset_pred_ft recipe (predicted second memory, same
+# steps / lr / seeds) with neither the 3D attention bias nor the 3D embedding; at decode the neighbours come from the rig
+# index or SAM 3 features (run.py --nbr) and the gate is `obj`.  Not a bias arm, not a GeoSet-2 arm.
+NOGEO_ARMS = ("nogeo_pred_ft",)
+PRED_MEM_ARMS = ("geoset_pred_ft",) + DEC_ARMS + CUT_ARMS + NOGEO_ARMS   # second memory = the model's own prediction of a random camera
                                                        # (does NOT derive from SET2_ARMS: every predicted-memory arm is listed here)
 FUSE_ARMS = ("geofuse_ft", "geofuse2_ft")              # GeoFuse: geoset_pred_ft recipe + aligned multi-view fusion (B);
                                                        # geofuse2_ft = two-sided alignment validity + own view excluded (discriminating rerun)
 ALIGN_ARMS = ("geoalign_ft",)                          # GeoAlign: geoset_only_ft recipe, second memory = aligned view + GT masks
-NO_EMBED_ARMS = ("geobias_only_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS   # arms without the 3D embedding (bias only)
+NO_EMBED_ARMS = ("geobias_only_ft",) + SET2_ARMS + FUSE_ARMS + ALIGN_ARMS + NOGEO_ARMS   # arms without the 3D embedding (bias only; NG: nothing)
 
 
 def base_arm(arm):

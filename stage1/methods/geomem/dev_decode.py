@@ -193,6 +193,43 @@ def e15_override(arm, flags, split, rot=0):
     return preset, o
 
 
+# S1-E16 (docs/stage1-E16-prereg.md §3): the measurement arms as preset dicts over the committed presets; `_preset` /
+# `_e16` are record keys (dropped by decode_scene, which reads known fields only), never flags.
+E16_ARMS = {
+    "NG-idx": dict(arm="nogeo_pred_ft", gate="obj", xcl="outs", nbr="index"),
+    "NG-feat": dict(arm="nogeo_pred_ft", gate="obj", xcl="outs", nbr="feat"),
+    "NG-pi3": dict(arm="nogeo_pred_ft", gate="reproj", xcl="outs"),
+    "G": dict(PRESETS[E15_BASE]),
+    "G-bias0": dict(PRESETS[E15_BASE], zero_bias=True),
+    "AB": None,                                                    # PRESETS[E15_MAIN], present after the E15 second commit
+}
+
+
+def preset_runs(runs):
+    return os.path.abspath(runs) if runs else RUNS
+
+
+def seed_of_runs(runs, arm):
+    """The training seed recorded in <runs>/<arm>/fold0/config.json (every fold of one runs dir shares it)."""
+    try:
+        with open(os.path.join(runs, arm, "fold0", "config.json")) as f:
+            return int(json.load(f).get("seed", 0))
+    except OSError:
+        return 0
+
+
+def e16_preset(name, runs=None):
+    p = E16_ARMS[name]
+    if name == "AB":
+        if E15_MAIN not in PRESETS:
+            raise SystemExit(f"--e16-arm AB needs the main preset {E15_MAIN} (S1-E15 second registration commit)")
+        p = dict(PRESETS[E15_MAIN])
+    p = dict(p, _preset=f"e16:{name}", _e16=name)
+    if runs:
+        p["runs"] = preset_runs(runs)
+    return p
+
+
 def _theta_tag(theta):
     return "inf" if math.isinf(theta) else f"{theta:g}"
 
@@ -209,8 +246,9 @@ def e15_record(arm, o):
                                                             for k, v in o.items()})
 
 
-def restricted_cams(sc, cache, evals, k=R.K_NEIGHBOURS):
-    centres = R.camera_centres(cache, sc.cams)
+def restricted_cams(sc, cache, evals, k=R.K_NEIGHBOURS, coords=None):
+    """c_ini + the eval cams + each eval cam's k nearest candidates (Pi3 centres, or the S1-E16 coordinates when given)."""
+    centres = R.camera_centres(cache, sc.cams) if coords is None else coords
     neigh = {c: [n for n in R.select_candidates(c, centres, k) if n != sc.ref_cam] for c in evals}
     keep = {sc.ref_cam, *evals, *[n for v in neigh.values() for n in v]}
     return [c for c in sc.cams if c in keep], neigh
@@ -236,7 +274,10 @@ def decode_frame(sc, t, restrict, preset, rot=0):
     assert man["ref_cam"] == orig_ref and (rot or sc.ref_cam == orig_ref), (sc.name, t, man["ref_cam"], orig_ref, sc.ref_cam)
     evals = eval_cams(sc.name, rot)
     assert sc.ref_cam == devset.ref_cam(DATA, sc.name, rot) and sc.ref_cam not in evals, (sc.name, rot, sc.ref_cam, evals)
-    cams, neigh = restricted_cams(sc, cache, evals)
+    coords = None
+    if (p.get("nbr") or "pi3") != "pi3":                           # S1-E16: the same neighbour rule as the decode itself
+        coords = R.camera_coords(p["nbr"], cache, sc, R.decode_scene.model)
+    cams, neigh = restricted_cams(sc, cache, evals, coords=coords)
     if restrict and p.get("relay") is not None:
         restrict, _ = e15_may_restrict(p, sc, cache, evals)
     sc_run = replace(sc, cams=cams) if restrict else sc
@@ -245,13 +286,22 @@ def decode_frame(sc, t, restrict, preset, rot=0):
     base = dict(data=DATA, out=FINAL, r1_out=ROUND1, untrained=False, runs=RUNS, tau=R.TAU_CONF, k=R.K_NEIGHBOURS, round2="pred")
     args = SimpleNamespace(**{**base, **p})
     R.check_gate_out(args.arm, args.gate, args.out, args.round2, getattr(args, "zoom", None), getattr(args, "xcl", "none"),
-                     relay=getattr(args, "relay", None))
+                     zero_bias=getattr(args, "zero_bias", False), relay=getattr(args, "relay", None), nbr=getattr(args, "nbr", "pi3"))
     sink = MemorySink()
     t0 = time.time()
     config = R.decode_scene(sc_run, args, sink=sink)
     check_restricted(sink, sc.name, t, evals, restrict)
     config.update(dict(seconds=time.time() - t0, frame=t, decoded_cams=sc_run.cams, eval_cams=evals, k3=neigh,
-                       restricted=bool(restrict), preset=preset if isinstance(preset, str) else E15_BASE, objects=sc.objects))
+                       restricted=bool(restrict), preset=preset if isinstance(preset, str) else p.get("_preset", E15_BASE),
+                       objects=sc.objects))
+    if p.get("_e16"):                                              # S1-E16: the arm, the checkpoint dir and its training seed
+        config.update(e16_arm=p["_e16"], runs=p.get("runs", RUNS))
+        try:
+            with open(os.path.join(os.path.dirname(config["ckpt"]) if "ckpt" in config else
+                                   os.path.join(p.get("runs", RUNS), p["arm"], f"fold{config['fold']}"), "config.json")) as f:
+                config["train_seed"] = json.load(f).get("seed")
+        except (OSError, KeyError):
+            config["train_seed"] = None
     if rot:
         config.update(ref_rot=int(rot), ref_cam=sc.ref_cam, orig_ref_cam=orig_ref)
     return sink, config
@@ -318,6 +368,12 @@ def _parser():
     ap.add_argument("--xcl", default=None, choices=R.XCL_MODES,
                     help="with --e15-arm only: must equal the base preset's (outs)")
     R.add_e15_args(ap)
+    ap.add_argument("--e16-arm", default=None, dest="e16_arm", choices=sorted(E16_ARMS),
+                    help="S1-E16 (docs/stage1-E16-prereg.md): a measurement arm -- NG-idx / NG-feat / NG-pi3 (nogeo_pred_ft), "
+                         "G (= geoset_rep_xs), G-bias0 (geoset_rep_xs with the GeoBias zeroed), AB (= geoset_rep_xs_ab); "
+                         "with --runs the checkpoints of one training seed; DEV-A / DEV-A' only; root Data/_dev/e16/...")
+    ap.add_argument("--runs", default=None, help="S1-E16: the checkpoint dir of one seed (default geomem/runs)")
+    ap.add_argument("--seed-tag", default=None, dest="seed_tag", help="S1-E16: the seed label in the root name (default s<seed of --runs>)")
     ap.add_argument("--scenes", default="all", help="'all' = the 17 DEV scenes (devset.dev_scenes), or a subset of them")
     ap.add_argument("--root", default=None, help="default Data/_dev/<preset>_<split>[_rot<r>] (override: Data/_dev/e15/...)")
     ap.add_argument("--validate", action="store_true", help="also decode the FULL camera set on each scene's first dev frame "
@@ -333,7 +389,16 @@ def prepare(argv=None):
     ap = _parser()
     a = ap.parse_args(argv)
     flags = {k: getattr(a, k) for k in R.E15_KEYS}
-    if a.e15_arm is None:
+    if a.e16_arm is not None:                                       # S1-E16 measurement arms (no selection, DEV-A / DEV-A')
+        if a.e15_arm is not None or any(v not in (None, "off") for v in flags.values()) or a.xcl is not None:
+            ap.error("--e16-arm takes no E15 flags / --xcl / --e15-arm (its presets are fixed in E16_ARMS)")
+        if a.split != "A":
+            ap.error("--e16-arm is a measurement on DEV-A / DEV-A' only (prereg: DEV-B is kept for registrations' confirmations)")
+        preset, rec = e16_preset(a.e16_arm, a.runs), dict(e16_arm=a.e16_arm, runs=preset_runs(a.runs))
+        tag = a.seed_tag or f"s{seed_of_runs(preset_runs(a.runs), preset['arm'])}"
+        p = preset
+        a.root = a.root or os.path.join(DATA, "_dev", "e16", f"{a.e16_arm}_{tag}_{a.split}" + (f"_rot{a.ref_rot}" if a.ref_rot else ""))
+    elif a.e15_arm is None:
         if any(v not in (None, "off") for v in flags.values()) or a.xcl is not None:
             ap.error("E15 flags / --xcl need --e15-arm (the recorded override); presets carry their own")
         preset, rec, p = a.preset, None, PRESETS[a.preset]

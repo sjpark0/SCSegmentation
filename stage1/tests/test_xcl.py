@@ -23,8 +23,8 @@ def test_presets_exact():
     assert all("out_nocap" != p.get("xcl") for p in S.PRESETS.values())      # D has no preset: never in-process, never swept
     # S1-E14: exactly one preset uses `outs`, the adopted one with the shifted threshold; the adopted preset untouched
     assert S.PRESETS["geoset_rep_xs"] == dict(arm="geoset_pred_ft", gate="reproj", xcl="outs")
-    assert [t for t, p in S.PRESETS.items() if p.get("xcl") == "outs"] == ["geoset_rep_xs"]
-    assert list(S.PRESETS)[-1] == "geoset_rep_xs"
+    assert [t for t, p in S.PRESETS.items() if p.get("xcl") == "outs"] == ["geoset_rep_xs", "geoset_rep_xs_ab"]   # + S1-E15 main
+    assert list(S.PRESETS)[-2:] == ["geoset_rep_xs", "geoset_rep_xs_ab"]
 
 
 def test_check_gate_out_refuses_the_arms_own_folder_with_xcl():
