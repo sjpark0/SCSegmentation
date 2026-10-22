@@ -1,0 +1,168 @@
+{
+ "prereg": "docs/stage1-E15-prereg.md \u00a76.4",
+ "family": "cstar",
+ "A_E": 47.24241402038266,
+ "A_all": 58.18978451809464,
+ "t06": {
+  "35": {
+   "J_all": 0.938983473351118,
+   "wrong_all": 1
+  },
+  "40": {
+   "J_all": 0.9389543406481506,
+   "wrong_all": 1
+  },
+  "45": {
+   "J_all": 0.9397982321987356,
+   "wrong_all": 1
+  },
+  "50": {
+   "J_all": 0.941870152328206,
+   "wrong_all": 1
+  },
+  "55": {
+   "J_all": 0.9416979629615845,
+   "wrong_all": 1
+  },
+  "60": {
+   "J_all": 0.9416979629615845,
+   "wrong_all": 1
+  },
+  "inf": {
+   "J_all": 0.742425885107218,
+   "wrong_all": 28
+  }
+ },
+ "devA2": {
+  "35": {
+   "run": "AB_35_cstar_A",
+   "safe": {
+    "ci_lo": -0.00015564877356966754,
+    "worst_scene": -0.004355962766166233,
+    "ok": true
+   },
+   "wide_dJ": 0.023250219832519625,
+   "filled_from_c0": [],
+   "ok": true
+  },
+  "40": {
+   "run": "AB_40_cstar_A",
+   "safe": {
+    "ci_lo": 0.00022413335786588943,
+    "worst_scene": 0.0,
+    "ok": true
+   },
+   "wide_dJ": 0.038908662055859466,
+   "filled_from_c0": [],
+   "ok": true
+  },
+  "45": {
+   "run": "AB_45_cstar_A",
+   "safe": {
+    "ci_lo": 0.0002794648273408238,
+    "worst_scene": 0.0,
+    "ok": true
+   },
+   "wide_dJ": 0.038378652181602496,
+   "filled_from_c0": [],
+   "ok": true
+  },
+  "50": {
+   "run": "AB_50_cstar_A",
+   "safe": {
+    "ci_lo": 0.0002794648273408238,
+    "worst_scene": 0.0,
+    "ok": true
+   },
+   "wide_dJ": 0.03276689261308169,
+   "filled_from_c0": [],
+   "ok": true
+  },
+  "55": {
+   "run": "AB_55_cstar_A",
+   "safe": {
+    "ci_lo": 0.0002794648273408238,
+    "worst_scene": 0.0,
+    "ok": true
+   },
+   "wide_dJ": 0.03689531931613663,
+   "filled_from_c0": [],
+   "ok": true
+  },
+  "60": {
+   "run": "AB_60_cstar_A",
+   "safe": {
+    "ci_lo": 0.0,
+    "worst_scene": 0.0,
+    "ok": true
+   },
+   "wide_dJ": 0.02370726435879607,
+   "filled_from_c0": [],
+   "ok": true
+  }
+ },
+ "devA": {
+  "35": {
+   "ci_lo": 0.0,
+   "worst_scene": 0.0,
+   "ok": true,
+   "filled_from_c0": []
+  },
+  "40": {
+   "ci_lo": -9.17024500877684e-05,
+   "worst_scene": -0.000519647217164021,
+   "ok": true,
+   "filled_from_c0": []
+  },
+  "45": {
+   "ci_lo": -9.17024500877684e-05,
+   "worst_scene": -0.000519647217164021,
+   "ok": true,
+   "filled_from_c0": []
+  }
+ },
+ "rule": {
+  "allowed": [
+   "35",
+   "40",
+   "45",
+   "50",
+   "55",
+   "60",
+   "inf"
+  ],
+  "J_star": 0.941870152328206,
+  "C": [
+   "60",
+   "55",
+   "50",
+   "45",
+   "40",
+   "35"
+  ],
+  "checked": [
+   {
+    "theta": "60",
+    "safe": "theta >= A_E: no DEV-A eval view in F (angles.json) and the Z stage passed (runs/zcheck.json)",
+    "zcheck": [
+     "Z4",
+     "ZR 60",
+     "ZI2",
+     "Zsim T06",
+     "Zsim DEV-A G",
+     "ZT06"
+    ]
+   }
+  ],
+  "theta_s": "60",
+  "theta_s_value": 60.0
+ },
+ "t06_scores": {
+  "path": "/home/sjpark/Documents/SCSegmentation/stage1/geomem/runs/_e15/t06_scores.json",
+  "sha256": "d502cfb83e605ea26b7a0ce8ea7bd2cb2c503e0865ae6c63d28604ba8acacb0d"
+ },
+ "zcheck": {
+  "path": "scripts/e15/runs/zcheck.json",
+  "sha256": "5d88f23509c7f304ded5f60679179c70530829a88fea9d64cc7b6439753ec391"
+ }
+}

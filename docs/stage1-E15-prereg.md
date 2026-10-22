@@ -507,18 +507,18 @@ F 디코딩 방식:
 
 | 항목 | 값 | 근거(DEV-A / DEV-A′ / T06) |
 |---|---|---|
-| Step 0 재현(N1–N6), A_E, A_all | — | — |
-| D1 사본 sha256 목록 대조 | — | — |
-| Step 1 커밋(해시) | — | — |
-| s\* (가족, 상수), c_best, 남은 동률(`residual_tie`) | — | — |
-| DEV-A C0 재채점의 E14 회귀 | — | — |
-| Z 단계(`runs/zcheck.json`) | — | — |
+| Step 0 재현(N1–N6), A_E, A_all | P0 다섯 개 모두 허용 오차 안(c\* 정답 거짓 표시 5, T06 먼 오답 표시 c\* 24·vote 29, A_E, …); A_E = 47.24°(DEV-B Blocks t 9 cam9), A_all = 58.19°(DEV-B CBABasketball t 95 v00); N2 1 054쌍 중 45° 초과 9.6 % | `runs/step0.json`, `runs/angles.json`(입력만), 행 `rows.json.gz` sha256 dcc8f6ae… (10-20) |
+| D1 사본 sha256 목록 대조 | `design/d1_t06_c0.sha256`(sha256 7941d595…) 와 T06 C0 재디코딩 `e15_C0{,_r1}`·`round1_conf.json`·`xcl_conf.json` 바이트 동일(10-20 19:48, `t06-c0` 통과) | `runs/step0.json` `t06_c0_manifest`; `_e15/t06_grid.log` |
+| Step 1 커밋(해시) | `cc1cf48`(10-20) | `runs/select.json`, `id3d.CSTAR_SELECTED` |
+| s\* (가족, 상수), c_best, 남은 동률(`residual_tie`) | s\* = c_best = A-c\*(β 1, κ 1.25, σ 0.05, ρ_env 1, b_max 0.01, γ ∞, φ_rig 0.12); 후보 652 중 156 실행 가능 → 목적 6 → 동률 깨기 1(교체)에서 1개, `residual_tie` 없음. 다른 가족(A-v, A-h, A-c0)은 실행 가능 후보 없음 | `runs/select.json`(`tie_log`, `best_per_family`) |
+| DEV-A C0 재채점의 E14 회귀 | 3 300쌍 모두 J·F·J&F 차이 0, 새 열(`covers`, `other_obj_mask`) 결측 0 | `runs/c0_rescore.json`(10-21) |
+| Z 단계(`runs/zcheck.json`) | Z4(Dog 5프레임, 278파일 차이 0) · Z-R 60(85프레임 18 348파일 차이 0) · Z-I2(스트레스 20, 23 798파일 차이 0) · Z-sim(T06 c\* 31카메라, DEV-A G 차이 0) · Z-T06(AB·A 격자 전부) 모두 PASS(10-22 13:11); Fencing 키프레임 torch 시험 2 passed(relay None·60) | `runs/zcheck.json`(Step 2 시점 sha256 5d88f235…, `step2.json`에 기록; Step 3 뒤 Z-T06를 24개 실행 전부로 넓혀 다시 씀 — 모두 PASS, 최종 sha256 09f3a6a4…), `runs/z4_fencing.log` |
 | 범위 | R(U2로 고정) | — |
-| θ_s\*, 허용 θ, C, C0로 채운 장면 | — | — |
-| Step 2b 교체(s′의 DEV-A′·DEV-A 재검사 포함) | — | — |
-| 주 프리셋 `geoset_rep_xs_ab` 내용 | — | — |
-| θ_s\*에서 DEV-B·키프레임 경우 Z 여부(`angles.json`) | — | — |
-| G1 대체 상태: θ 60 허용 여부((a) 조건), (b) 대리 검사 A(s_main, 60)·AB(s_main, 60)의 DEV-A′ 결과 | — | — |
+| θ_s\*, 허용 θ, C, C0로 채운 장면 | **θ_s\* = 60**. 허용 θ = {35, 40, 45, 50, 55, 60, ∞}(T06 wrong_all 1·1·1·1·1·1·28 ≤ 28; DEV-A′ 세 조건 모두 통과: CI 하한 ≥ −0.0002, 최악 장면 ≥ −0.0044, 넓은 쌍 ΔJ +0.016 ~ +0.039). J\* = 0.9419(θ 50), C = {60, 55, 50, 45, 40, 35}(J_all 0.9390 ~ 0.9419). 큰 θ부터: 60 ≥ A_E이고 DEV-A 평가 뷰가 F에 없음 + Z 단계 통과 → 채택. DEV-A θ < A_E(35·40·45)도 전체 디코딩해 안전(CI 하한 ≥ −0.0001, 최악 −0.0005). C0로 채운 장면 없음(모든 격자 실행 전 장면 디코딩) | `runs/step2.json`(10-22 13:12), `_e15/t06_scores.json` sha256 d502cfb8…, `_e15/scores/AB_*_cstar_A{,_rot1,_rot2}.json` |
+| Step 2b 교체(s′의 DEV-A′·DEV-A 재검사 포함) | **교체 없음**: 다른 가족에 실행 가능 후보가 없어 AB(s′) 자격 후보 0. s_main = s\* = c\*. 주 팔 T06 AB(c\*, 60): J_all 0.9417, wrong_all 1 | `runs/step2b.json`(10-22 13:13) |
+| 주 프리셋 `geoset_rep_xs_ab` 내용 | `dict(arm="geoset_pred_ft", gate="reproj", xcl="outs", relay=60.0, id3d="cstar")` = `geoset_rep_xs` + AB 행(scope relay, seq, hop, pool, trust id3d, flagged keep은 `run.e15_options` 기본값), PRESETS 맨 뒤 | `stage1/methods/geomem/stage1.py`(이 커밋); 호스트 시험 `test_e15_flags`·`test_e15_judge` 120 통과 |
+| θ_s\*에서 DEV-B·키프레임 경우 Z 여부(`angles.json`) | **경우 Z**: θ 60에서 DEV-A·DEV-B·키프레임 모두 평가 카메라는 물론 어떤 카메라도 F에 없음(`in_F.60`: n_eval_in_F = n_all_in_F = 0; A_all 58.19° < 60). DEV-B B1·B2는 공허, 키프레임은 바이트 예외(§7.2) 가능. MUVOD 개발 집합에서 주 팔 출력은 구성상 C0와 같음(Z-R·Z-I2로 확인) | `runs/angles.json` `summary.in_F`; `runs/zcheck.json` |
+| G1 대체 상태: θ 60 허용 여부((a) 조건), (b) 대리 검사 A(s_main, 60)·AB(s_main, 60)의 DEV-A′ 결과 | θ 60 **허용**(위 행; θ_s\* = 60이므로 (a)의 AB(60) = 주 팔). (b) 대리: **A(c\*, 60) DEV-A′ 통과**(CI 하한 0.0, 최악 장면 0.0, 60° 넘는 쌍 ΔJ +0.016), **AB(c\*, 60) DEV-A′ 통과**(0.0, 0.0, +0.024) — 둘 다 (b) 후보 자격. T06 Ac(60)·ABc(60)은 Step 3에서 디코딩(채점은 `t06_scores.json`) | `_e15/scores/A_60_cstar_A_rot{1,2}.json`, `AB_60_cstar_A_rot{1,2}.json`; `e15_select.devA2_conditions`(10-22) |
 
 **최종 확인 반영(2026-10-20).**
 - 2차 커밋에는 `runs/c0_rescore.json`(§6.6 행)도 넣습니다.
@@ -854,3 +854,4 @@ F 디코딩 방식:
 | 2026-10-20 | 작성(커밋 전). 독립 설계 2개를 합침(§2.3). 탐침은 DEV-A와 T06만(DEV-B·키프레임은 π³ 자세와 입력만). 학습 쌍 범위 정정(N2)은 `geomem/data.py` `enumerate_samples`에서 확인. DEV-A 각도(N1)와 T06 기준점 표는 탐침 출력에서 다시 확인 |
 | 2026-10-20 | 사용자 결정 U1–U5 반영(§13): U1 승인(DEV-A′/B′, B3·B4 무조건), U2 주 범위 R 고정(G·GN 측정), U3 T06 격자 카트와 병행, U4 문구 정정, U5 철회. 검토 2개 반영(§13.1): 경우 Z 비교 범위, G1 실패 유형별 경로와 (b) 후보(Ac·ABc θ 60), fold 2·D6 선언, 각도 경계 A_E·A_all(58.0 → 58.12), 입력 객체 집합 등록, 기록된 덮어쓰기, Step 1 커밋, 허용 목록, c_ini 끄기 뺌, 오라클은 T06만, H2·H3 규칙과 예측 P15–P18, 보고 규칙. 탐침을 `stage1/scripts/e15/design/`에 보관(검토 1 기준점 확인 2개 포함; DEV-B·키프레임 자세 탐침은 파일 없음). 코드가 1차 커밋보다 먼저 쓰였음을 기록 |
 | 2026-10-20 | 2차 검토 반영(§13.2, 문서만; 1차 커밋 전이므로 규칙 개정이 아니라 등록 내용의 보완): G1 대체의 도메인 내 조건((a)는 θ 60 허용일 때만, (b)는 DEV-A′ 대리 검사), Step 2b의 s′ DEV-A′ 재검사, Z 단계(§6.3b)를 Step 2 전 필수로, Fix A 디코딩 전 `select.json` 확인(I10), DEV 덮어쓰기 팔·집합·θ 묶음(I11), D1 사본과 sha256 목록, C0 재채점과 E14 회귀 검사, C0 채움 규칙, 코드가 정한 것 등록, 보고 항목의 산출, 감사 중 버그 규칙, 판정 전 확인(I12), 예산 약 10–20 GPU-h, §11 상태·순서와 L9 목록 갱신 |
+| 2026-10-22 | **2차 등록 커밋**(§6.6 채움, 주 프리셋 `geoset_rep_xs_ab`, `runs/{step2,step2b,zcheck,c0_rescore}.json`). 실행 기록: T06 격자(AB·A θ 7개)는 10-20 밤 카트와 병행(U3); DEV-A C0 재채점·DEV-A′ C0·Z 단계·DEV-A′ 격자는 10-21 밤~10-22 13:10(카트 작업 뒤, D7). 사고 둘, 규칙·상수 무관: (1) `run_e15.sh z4-fencing`의 통과 판정이 "1 passed" 문자열이라 매개변수 2개(relay None·60)의 "2 passed"를 실패로 읽어 큐가 10-21 20:20에 멈춤 → 판정을 "passed 있고 failed/error 없음"으로 고침(`dc1dced`, 시험 자체는 통과였음). (2) 사용자 요청으로 10-22 09:57 큐를 DEV-A′ AB(40, 회전 1) 도중 멈췄다가 재개 — `dev_decode`가 끝난 프레임을 건너뛰어 나머지만 디코딩(결과 파일은 같은 규칙). 시험 `test_e15_judge.py`의 주 프리셋 검사가 가족 vote를 가정하고 있어 커밋된 프리셋의 θ·가족을 읽도록 고침(판정 코드 `e15_judge.py`는 그대로). Step 3(§6.7): T06 B-rep·B-obj·ABc·Ac·ABe·ABnh·ABml·G·GN·오라클(θ 60), DEV-A′ A·B-rep·B-obj(θ 60, 회전 1·2) 디코딩, `t06-score`, 남은 Z-T06 통과 뒤 커밋. 예측(§5.2)은 그대로. |

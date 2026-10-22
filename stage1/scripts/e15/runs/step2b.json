@@ -1,0 +1,16 @@
+{
+ "prereg": "docs/stage1-E15-prereg.md \u00a76.5",
+ "theta_s": "60",
+ "s_star": "cstar",
+ "main": {
+  "J_all": 0.9416979629615845,
+  "wrong_all": 1
+ },
+ "alternatives": {},
+ "rule": {
+  "swap": false,
+  "to": null,
+  "qualifying": []
+ },
+ "main_family": "cstar"
+}

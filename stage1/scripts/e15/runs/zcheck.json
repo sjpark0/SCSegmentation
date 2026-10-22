@@ -1,0 +1,447 @@
+{
+ "prereg": "docs/stage1-E15-prereg.md \u00a76.3b, \u00a78",
+ "family": "cstar",
+ "A_E": 47.24241402038266,
+ "A_all": 58.18978451809464,
+ "Z4": {
+  "run": "Data/_dev/e15/_z4_geoset_rep_xs_A",
+  "root": "Data/_dev/e15/_z4_geoset_rep_xs_A",
+  "c0_root": "Data/_dev/geoset_rep_xs_A",
+  "n_frames": 5,
+  "n_expected": 5,
+  "n_files": 278,
+  "files_sha256": "9ae6f182dd04d37ff1ed22102c60be9a203238a6eed70f547f9362c1beb047e1",
+  "n_frames_differing": 0,
+  "n_differences": 0,
+  "diffs": {},
+  "scene": "Dog",
+  "validate": [
+   "Dog/4"
+  ],
+  "pass": true
+ },
+ "ZR": {
+  "60": {
+   "run": "AB_60_cstar_A",
+   "root": "Data/_dev/e15/AB_60_cstar_A",
+   "c0_root": "Data/_dev/geoset_rep_xs_A",
+   "n_frames": 85,
+   "n_expected": 85,
+   "n_files": 18348,
+   "files_sha256": "b7bfa61ff2c9460071f8c755fca32cbc81ff7288d2d05854221ea7f4413419d6",
+   "n_frames_differing": 0,
+   "n_differences": 0,
+   "diffs": {},
+   "theta": "60",
+   "family": "cstar",
+   "mode": "full",
+   "pass": true
+  }
+ },
+ "ZI2": {
+  "run": "stress_20_cstar_A",
+  "root": "Data/_dev/e15/stress_20_cstar_A",
+  "c0_root": "Data/_dev/geoset_rep_xs_A",
+  "n_frames": 85,
+  "n_expected": 85,
+  "n_files": 23798,
+  "files_sha256": "792829cbbc262c966966fd22141615316971cab788df209a3841b75b21a88458",
+  "n_frames_differing": 0,
+  "n_differences": 0,
+  "diffs": {},
+  "family": "cstar",
+  "n_star_eval_views": 125,
+  "n_far_eval_views": 45,
+  "n_frames_with_F": 35,
+  "pass": true
+ },
+ "Zsim": {
+  "T06": {
+   "runs": {
+    "e15_AB_35_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "e0e540a61edfc89cde43976b0f034a167c38ead8707f2c65897645d41b02aeb8",
+     "n_r1_files": 188,
+     "r1_sha256": "2fc1eeb1cad295c0c2d779e67d9622e5dc5c1014a5875f18bb905786f5b6cc4c",
+     "pass": true
+    },
+    "e15_AB_40_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "d5cb8612797e5b0fa14b4cb6a0f31610ebf2015245bf4b4737ae0f4d06103a59",
+     "n_r1_files": 188,
+     "r1_sha256": "e5707d432648bd76032bd035c1d58111f741fe34c85cd01de5dd256e82ff3213",
+     "pass": true
+    },
+    "e15_AB_45_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "de4301b85baba280dc76365b83b8ba1327f43944932c2a5979791d0f59f97c64",
+     "n_r1_files": 188,
+     "r1_sha256": "2d86ba55933dc9b875a0398e7769d338d0e9763bc31d51d4bdad91c7b825b199",
+     "pass": true
+    },
+    "e15_AB_50_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "c3bb64fa5940d021661b0bf3b81ce6493170d8d276b82f068aacf8708f3db0a6",
+     "n_r1_files": 188,
+     "r1_sha256": "89407ad7bbb272cb9f862950032072a1a6ef8980fa2cc745159f66df67ce7b20",
+     "pass": true
+    },
+    "e15_AB_55_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "9f960ee174aa78fbc93688bb21a62ad9e7bd7988ed3695a2f99437f34c3759cd",
+     "n_r1_files": 188,
+     "r1_sha256": "a9467535986c20a83d66565be5c4e9dd7b9e2f31031ab269b440b74360ae3c5a",
+     "pass": true
+    },
+    "e15_AB_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "9f960ee174aa78fbc93688bb21a62ad9e7bd7988ed3695a2f99437f34c3759cd",
+     "n_r1_files": 188,
+     "r1_sha256": "65d1c3d1d8131cd0561044676823ef9c38d66c4a809e1e1bc6aa4bc36c8cdd4d",
+     "pass": true
+    },
+    "e15_ABc_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "c498fbbbd6e6e2e9b9446469fb9002b4143cfcc0c7ca53ca85a07bbbee3d63ba",
+     "n_r1_files": 188,
+     "r1_sha256": "b5f0a398f2edd0820b6bd6233e52d26cffce4c7c697fe62e30806a2c6455d3ae",
+     "pass": true
+    },
+    "e15_ABe_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "2696995f64190591363608b1685e01f7f2af52b7bdea470e0f99354c692a973d",
+     "n_r1_files": 188,
+     "r1_sha256": "075c6463be512c097e75b297d8fdbec935d141e4cb9a1251d6ffef8370c4ac0e",
+     "pass": true
+    },
+    "e15_ABml_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "a45581cdc0d5b93131baa3c1e8479a44d3a19b20aac9c0f610d740558cf8dff4",
+     "n_r1_files": 188,
+     "r1_sha256": "6b69f3fbc5e620aa47407e7a3bff6d95bbaf6341f19b878a1e049591e5a38fe8",
+     "pass": true
+    },
+    "e15_ABnh_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "9f960ee174aa78fbc93688bb21a62ad9e7bd7988ed3695a2f99437f34c3759cd",
+     "n_r1_files": 188,
+     "r1_sha256": "17f35da846991f5dfb9600b32b46c66a460a70da71fd32aca8a06c4a682315a8",
+     "pass": true
+    },
+    "e15_A_35_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "9332f04325813f01427abbccab844f1594d3ecca74c7c5368c6fe85351676e7f",
+     "n_r1_files": 188,
+     "r1_sha256": "cf27f2a6f8ad713a634f9445124501aa056816854ece1cc495530937a7f80be9",
+     "pass": true
+    },
+    "e15_A_40_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "27f50db3d24bbd45086318c83678a9ce9d85e94aca44f8c32ae519b7e75155a7",
+     "n_r1_files": 188,
+     "r1_sha256": "1ffa3d25094399b74b7099d13e4fbf866bf1897d9845e593384c266255b0e792",
+     "pass": true
+    },
+    "e15_A_45_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "27f50db3d24bbd45086318c83678a9ce9d85e94aca44f8c32ae519b7e75155a7",
+     "n_r1_files": 188,
+     "r1_sha256": "7576d4abdcfacf1c3e65e8f5052ae684fae202e954b971fdfb992a4ca6412135",
+     "pass": true
+    },
+    "e15_A_50_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "70c2cba4545220709a86b57dc78fb2d6600c04bc46d4cdd5e52259198b2a7341",
+     "n_r1_files": 188,
+     "r1_sha256": "c51029f6c80475acb5370ce8ef96f1dbe4c05e09ad2e3e41053c50a54e48fd28",
+     "pass": true
+    },
+    "e15_A_55_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "bb5b81ffd640fdb3558146d59af6f42ff8d5ef4feafaf62451191f9d55360ca7",
+     "n_r1_files": 188,
+     "r1_sha256": "f6b7fbd1de891a6d84d206a1c016c840249556cb2c7bdb901e5df5b929acce08",
+     "pass": true
+    },
+    "e15_A_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "bb5b81ffd640fdb3558146d59af6f42ff8d5ef4feafaf62451191f9d55360ca7",
+     "n_r1_files": 188,
+     "r1_sha256": "77de9b53a3fbaa03ca1d4afbca7023aa7b579dfcf663e2b856a5a807e357573e",
+     "pass": true
+    },
+    "e15_Ac_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "766d9192972d2aae6ad089dace179b138511d59b246c924dac714d044cf75b94",
+     "n_r1_files": 188,
+     "r1_sha256": "c9e40220c277da4d83a8ac1949df119413f23a5591d7c3ff65042f5cd821f41b",
+     "pass": true
+    },
+    "e15_GN_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "e4309be4ac90c4acc3005d2a7009231e05295fc2c9713503ec6b30f33e70a3b1",
+     "n_r1_files": 188,
+     "r1_sha256": "cc06f21b95de58200e0742fa39afc46a6eb4b87f0a9197fdb0446aea32e9fc34",
+     "pass": true
+    },
+    "e15_G_60_cstar": {
+     "family": "cstar",
+     "n_cams": 31,
+     "n_diff": 0,
+     "diffs": [],
+     "id3d_conf_sha256": "e4309be4ac90c4acc3005d2a7009231e05295fc2c9713503ec6b30f33e70a3b1",
+     "n_r1_files": 188,
+     "r1_sha256": "298bc6a54db33d924684f58cd37ed5889b67e6b0e01965e58f894c307a198324",
+     "pass": true
+    }
+   },
+   "pass": true
+  },
+  "DEV_A_G": {
+   "run": "G_60_cstar_A",
+   "root": "Data/_dev/e15/G_60_cstar_A",
+   "c0_root": null,
+   "n_frames": 5,
+   "n_expected": 5,
+   "n_files": 288,
+   "files_sha256": "b36875ae95635de9e68e6f86dd8fd8f8b212c23f7592df6e113132939500f4dc",
+   "n_frames_differing": 0,
+   "n_differences": 0,
+   "diffs": {},
+   "family": "cstar",
+   "scene": "Dog",
+   "pass": true
+  }
+ },
+ "ZT06": {
+  "runs": {
+   "AB_35_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "013de1770fb57f78fca723c42cfbfeff2d4269afeb50bb0186db903afd47ae00",
+    "pass": true
+   },
+   "AB_40_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "cb24ef18cd3c6b9553181025b7aa163ee278f520a2640de4bd1ee1215cb39377",
+    "pass": true
+   },
+   "AB_45_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "31b166f5c572ea44825f27d0f03cba15d4a038228284899b286258ac088e51d8",
+    "pass": true
+   },
+   "AB_50_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "5d1d72950d0ea05b8adbb3da259aeebd80f2d06ec609ff9c6ccb28002fbfa2e1",
+    "pass": true
+   },
+   "AB_55_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "f3c7d9f5f31ed83d3bd130186a66db3c4b3b722eb2ca3222a6a2c43d840f2cd9",
+    "pass": true
+   },
+   "AB_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "e7a7b14167b2aa12d73e92d2d7f2c007ac30999ca06e4031c10849f53caa6193",
+    "pass": true
+   },
+   "AB_inf_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 378,
+    "files_sha256": "5128c5bc3e05c031724c2298c692ceccd70fd7eda186b8eebf843cf1da1aaf82",
+    "pass": true
+   },
+   "ABc_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "9d9684baf0ea8086cbc2b7fe2a793a5c3d3cdf66f9d2bc0104e3039482aeab7b",
+    "pass": true
+   },
+   "ABe_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "f0da61278c4433b0fbf38f7af9afed3dbfab6cf485768b22463950eab20ed4b8",
+    "pass": true
+   },
+   "ABml_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 381,
+    "files_sha256": "8237d419f386be18a0ba5be505cd4eaa676c8c240fe20d5b0cd826f4bce03784",
+    "pass": true
+   },
+   "ABnh_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "5fb96ad97b29a1e2e896e44c1a574450f71f57d72181c85359aa2a13dcf688ff",
+    "pass": true
+   },
+   "A_35_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "dda732a9014a37e4cecdac1107541e894fb80d284bee6113a204929b8989fe44",
+    "pass": true
+   },
+   "A_40_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "52eeecfad60c406fbcd32a2cab715f45beada1ebb4e6bd2be7c6f7e906945168",
+    "pass": true
+   },
+   "A_45_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "63e891fd9c2019de03e0a174e3030108a1c8dfb1af151f144a736f3a902b9d1a",
+    "pass": true
+   },
+   "A_50_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "69e44ec9b2e2c60d593c68e7db4da61f385df1439b31b9a26b703d8d952ea87a",
+    "pass": true
+   },
+   "A_55_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "6c9b7d5f2aaa9a356ac0af06e21c2f1176d223994066f74d6fde11c5bdc44d14",
+    "pass": true
+   },
+   "A_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 379,
+    "files_sha256": "87c861350ff0227b22416cf6e789bd253793722c1bd652f5e71f5a5ee884662e",
+    "pass": true
+   },
+   "A_inf_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 378,
+    "files_sha256": "f3f52d103fb360097d0e1e18a9ac5d5b72be871bc7dce12ababa9906e430831e",
+    "pass": true
+   },
+   "Ac_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "48660a91f84628326f9c4c2563ef736ca9b3db99fc5c621e202c12dcd03640fb",
+    "pass": true
+   },
+   "B-obj_60_off": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 381,
+    "files_sha256": "4cf8f9a549344bd2af8b98e8f8bd6da4affb0baad585b1c88b264c11fc02affc",
+    "pass": true
+   },
+   "B-rep_60_off": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 380,
+    "files_sha256": "8f006ade1b871ba74038de94fc4414f616f45b84635b51afb8f94a90c161ff31",
+    "pass": true
+   },
+   "GN_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "5ff8038870cced3f1fe4549d206d2a10a827b096a5211aea8375fc0d638a4e17",
+    "pass": true
+   },
+   "G_60_cstar": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "a25e66cf3a2f2380f1992b8dcf61936e352e068ad2cdf522c81e7d83dcaaeed1",
+    "pass": true
+   },
+   "oracle_60_off": {
+    "n_diff": 0,
+    "diffs": [],
+    "n_files": 382,
+    "files_sha256": "e98d7eef239f90e83edb52932a8d8f2b9e06f92f56e4ea17104b56aab98271e7",
+    "pass": true
+   }
+  },
+  "c0_root": "Data/T06_flag_ganggang_F/Result/e15_C0",
+  "pass": true
+ },
+ "missing": [],
+ "pass_present": true,
+ "stage_pass": true
+}

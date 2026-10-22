@@ -223,8 +223,14 @@ def test_config_check_and_main_preset(monkeypatch, tmp_path):
     assert J.config_check({}, 60.0, "vote") == [("relay_theta", None)]
     from methods.geomem import stage1 as S
     monkeypatch.setattr(J, "DATA", str(tmp_path))
-    assert J.check_main_preset(60.0, "vote", rots=()) == ({"PRESETS": [("missing", "geoset_rep_xs_ab")]}
-                                                           if "geoset_rep_xs_ab" not in S.PRESETS else {})
+    if "geoset_rep_xs_ab" not in S.PRESETS:
+        assert J.check_main_preset(60.0, "vote", rots=()) == {"PRESETS": [("missing", "geoset_rep_xs_ab")]}
+    else:                                   # the committed main preset (second registration commit): consistent with itself
+        from types import SimpleNamespace
+        from methods.geomem import run as R
+        o = R.e15_options(SimpleNamespace(**S.PRESETS["geoset_rep_xs_ab"]))
+        assert J.check_main_preset(o["theta"], o["family"], rots=()) == {}
+        assert J.check_main_preset(o["theta"], "no_such_family", rots=())["PRESETS"] == [("family", o["family"])]
     monkeypatch.setitem(S.PRESETS, "geoset_rep_xs_ab", dict(S.PRESETS["geoset_rep_xs"], relay=60.0, id3d="vote"))
     assert J.check_main_preset(60.0, "vote", rots=()) == {}
     assert J.check_main_preset(45.0, "vote", rots=())["PRESETS"] == [("theta", 60.0)]

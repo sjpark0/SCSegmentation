@@ -39,6 +39,10 @@ PRESETS = {
     "geoset_cutall_rep_x": dict(arm="geoset_cutall_ft", gate="reproj", xcl="out"),
     # S1-E14 (docs/stage1-E14-prereg.md): S = the adopted preset with the output threshold L > -0.5 (coverage calibration); last
     "geoset_rep_xs": dict(arm="geoset_pred_ft", gate="reproj", xcl="outs"),
+    # S1-E15 main preset (docs/stage1-E15-prereg.md §4 AB row, §6.6 second registration commit, 2026-10-22): geoset_rep_xs
+    # + Fix A (A-c*, Step 1 commit cc1cf48) + Fix B relay at theta_s* = 60 (runs/step2.json; Step 2b: no swap).  The other
+    # E15 options take the AB-row defaults of run.e15_options (scope relay, seq, hop, pool, trust id3d, flagged keep).
+    "geoset_rep_xs_ab": dict(arm="geoset_pred_ft", gate="reproj", xcl="outs", relay=60.0, id3d="cstar"),
 }
 DEFAULT_DATA = os.path.join(common.REPO, "Data")
 DEFAULT_RUNS = os.path.join(common.REPO, "geomem", "runs")
