@@ -69,7 +69,10 @@ NAS: `cart/sync_cart.sh`가 후처리 뒤 `PlenopticServer2/SegProject/Data/Cart
 - **결과(cam17 전경 PSNR)**: 전체 34.94 / 6대 제외 35.58 / 가림 보정 35.17 dB. 가우시안 40만, 학습 9.7분.
 - **객체 ID** (`scripts/cart/labels_cart.py`): 가우시안마다 렌더 기여도 가중 투표(모든 학습 뷰·프레임, 가림 반영) → `labels.pt`, 신뢰도 중앙값 0.975. 편집(빼기)은 ID로.
 - **합성 렌더** (`scripts/cart/composite_cart.py`): 전경 GS + §6 배경(임의 시점에 다시 투영) + 가우시안 위치 접지 그림자. 호 비행(cam0→11→0) 전체|편집, cam17 원본|합성.
-- **49뷰 퀼트** (`scripts/cart/quilt_cart.py`, NAS `FreetimeGSPlusPlus`의 `render_x_axis.py`·`grid_generation` 경로 재사용): 중심 카메라 cam6(평균 시선과 1.6°), 초점 = 화분 중심 깊이 3.30 m(24대 마스크 삼각측량, 오차 4 mm), 양 끝 간격 3.43 m, 7×7 그리드 PNG 100장 + 좌→우→좌 왕복 영상(`scripts/cart/sweep_from_quilts.py`). 다섯 판: 전체 / 카트만 뺌(6·13) / 카트+뒤 왼쪽 사람(3·8) / 카트+끄는 사람(1·6·13) / 거기에 뒤 왼쪽 사람까지.
+- **49뷰 퀼트** (`scripts/cart/quilt_cart.py`, NAS `FreetimeGSPlusPlus`의 `render_x_axis.py`·`grid_generation` 경로 재사용): 중심 카메라 cam6(평균 시선과 1.6°), 7×7 그리드 PNG + 좌→우→좌 왕복 영상(`scripts/cart/sweep_from_quilts.py`). 다섯 판: 전체 / 카트만 뺌(6·13) / 카트+뒤 왼쪽 사람(3·8) / 카트+끄는 사람(1·6·13) / 거기에 뒤 왼쪽 사람까지.
+  - 처음(10-21): 초점 = 화분 중심 깊이 3.30 m(24대 마스크 삼각측량, 오차 4 mm), 뷰 범위 0.6(양 끝 간격 3.43 m) → NAS `_run/cart/fg_f120_219_occ/quilt*`.
+  - **확정(10-22, 사용자: "뒤가 안 맞는다")**: 초점 = **테이블 상판 중심**(`Data/Cart/bg/static/table_centre.json`, 바닥 기하의 테이블 중심을 상판 높이로 올림, cam6 깊이 6.13 m), **뷰 범위 0.3**(양 끝 간격 1.71 m). 한 장 미리보기로 비교해 사용자가 고른 값. 100프레임 재렌더 → NAS `quilt_t03_*`.
+- **300프레임 판 (2026-10-22, 사용자: "300프레임 아니었나")**: 원본 120–419번(10초), `configs/cart/fg_f120_419*.toml`(키프레임 간격 4 → RoMa 76장, 가우시안 60만, 나머지 동일). 라벨은 NAS의 내보내기 PNG에서 `cart/labels_from_png.py`로 경계 띠를 붙여 다시 묶음(15 GB). 체인 `scripts/cart/run_f120_419.sh`(E15 GPU 잠금 공유, 단계마다 건너뛰기 가능): 점 14분 → lo6 PSNR 34.06 → 가림 무시(카메라·프레임당 최대 2.3만 화소) → 최종 PSNR 34.00(100프레임 35.17) → 객체 ID → 호 영상(600프레임) → 퀼트 5판(그리드 300장씩, 확정 설정; 스레드 PNG 저장으로 13분). NAS `_run/cart/fg_f120_419_occ/{composite,quilt_all,quilt_nocart,quilt_nocart_noP3,quilt_nocart_nopuller,quilt_nocart_nopuller_noP3}`.
 - **한계**: 뺀 객체가 가리던 자리(어느 카메라에서도 안 보임)는 비거나 얼룩. 배경은 3D가 아니라 큰 시점 이동에는 평면 그림처럼 보임.
 - **저장**: 결과·memmap·RoMa 점 → NAS `PlenopticServer2/SegProject/Data/Cart/ftgs/{_run,_memmap,_points}/cart`(`scripts/cart/sync_nas.sh`, 검증 뒤 로컬 삭제; 사용자 지시).
 
@@ -80,3 +83,4 @@ NAS: `cart/sync_cart.sh`가 후처리 뒤 `PlenopticServer2/SegProject/Data/Cart
 | 2026-10-20 | 데이터 조사, 시작 프레임 120번, 17개 객체 프롬프트, 24대 한 프레임 확인, 사용자 확인 후 투고본 구성 실행 시작 |
 | 2026-10-21 | 배경 교체: 후보 비교 → C(lythwood_terrace, yaw 270), 18 빈 의자·19 화분 추가(투고본 구성 120번 전파, 내보내기 포함), oomd 세션 종료 사고 후 체인을 컨테이너로 이전 |
 | 2026-10-21 | 분할 14:08 종료(24대·2 580프레임·949 587 PNG), 라벨 19개 내보내기·오버레이·2D 배경 합성 완료, NAS 저장. FreeTimeGS++ 전경 학습(마스크 손실)·객체 ID·합성 렌더·49뷰 퀼트 5판(§7) |
+| 2026-10-22 | 퀼트 초점·뷰 범위 확정(테이블 중심, 0.3; 100프레임 5판 재렌더), 300프레임(120–419) FreeTimeGS++ 전체 체인·퀼트 5판, NAS 동기화(11 780 파일 검증) 뒤 로컬 삭제 |
