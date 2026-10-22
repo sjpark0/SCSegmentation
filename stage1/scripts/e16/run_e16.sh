@@ -7,7 +7,8 @@
 #                                             checkpoints, then dev_score -> geomem/runs/_e16/scores/<arm>_s<seed>_A[_rot<r>].json
 #   run_e16.sh t06 <arm> <seed>               T06 (fold 2) decode of one arm with run.py -> Result/e16_<arm>_s<seed>
 #   run_e16.sh decode-queue                   every (arm, seed, rot) of prereg §4 that is not scored yet, then every T06 arm
-#   run_e16.sh score                          t06 scores + the DEV comparisons vs C0 -> geomem/runs/_e16/summary.json (host)
+#   run_e16.sh t06-score | score             T06 scores (ring_diag score.py) / the DEV comparisons vs C0 -> geomem/runs/_e16/summary.json (host)
+#   run_e16.sh after-train                    detached chain: wait for the training queue -> decode-queue -> t06-score -> score
 # <arm>: NG-idx NG-feat NG-pi3 G G-bias0 AB star.  Seeds: 0 1 2 (star: 0 only; G / AB seed 0 reuse the E14 / E15 decodes).
 set -euo pipefail
 E16=$(cd "$(dirname "$0")" && pwd)
@@ -89,8 +90,19 @@ case "$cmd" in
       done
     done
     echo "$(ts) decode queue done" ;;
+  t06-score)
+    T06_RES=$REPO/Data/T06_flag_ganggang_F/Result
+    args=("C0=$T06_RES/e15_C0" "C0_r1=$T06_RES/e15_C0_r1" "AB_60_cstar=$T06_RES/e15_AB_60_cstar")
+    for d in "$T06_RES"/e16_*; do b=$(basename "$d"); case "$b" in *_r1) continue ;; esac; args+=("$b=$d"); done
+    "$PY" "$REPO/scripts/ring_diag/d1_d5/score.py" "$WORK/t06_scores.json" "${args[@]}" ;;
   score)
     "$PY" "$E16/e16_score.py" "$@" ;;
+  after-train)   # wait for the training queue, then decode everything, score T06 and write the summary (host, detached)
+    until grep -q 'train queue done' "$WORK/logs/train_queue.log" 2>/dev/null; do
+      grep -q '^.*FAILED' "$WORK/logs/train_queue.log" 2>/dev/null && { echo "$(ts) training failed; stop"; exit 1; }; sleep 120; done
+    echo "$(ts) training done -> decode queue"
+    "$0" decode-queue || exit 1
+    "$0" t06-score && "$0" score && echo "$(ts) E16 chain done" ;;
   *)
     sed -n '2,/^set -euo pipefail/{/^set -euo/!p}' "$0"; exit 2 ;;
 esac
