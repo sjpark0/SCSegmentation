@@ -13,5 +13,20 @@
   "empty_gt_equal": true,
   "duplicates": false,
   "ok": true
+ },
+ "B": {
+  "split": "B",
+  "new": "geomem/runs/_e15/scores/geoset_rep_xs_B.json",
+  "e14": "Data/_dev/geoset_rep_xs_B/dev_pairs.json",
+  "n_pairs": 9921,
+  "n_pairs_e14": 9921,
+  "only_new": 0,
+  "only_e14": 0,
+  "n_diff": 0,
+  "diffs": [],
+  "missing_fields": 0,
+  "empty_gt_equal": true,
+  "duplicates": false,
+  "ok": true
  }
 }

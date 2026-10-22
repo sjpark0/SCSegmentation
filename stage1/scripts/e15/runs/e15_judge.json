@@ -1,0 +1,5404 @@
+{
+ "prereg": "docs/stage1-E15-prereg.md",
+ "stageB": {
+  "theta_s": "60",
+  "family": "cstar",
+  "case_z": true,
+  "pairs": {
+   "B": {
+    "ok": true,
+    "n_base": 9921,
+    "n_cand": 9921,
+    "only_base": 0,
+    "only_cand": 0
+   },
+   "B2": {
+    "ok": true,
+    "n_base": 18315,
+    "n_cand": 18315,
+    "only_base": 0,
+    "only_cand": 0
+   }
+  },
+  "invariants": {
+   "rot0": {},
+   "rot1": {},
+   "rot2": {}
+  },
+  "rule": {
+   "B1": true,
+   "B2": true,
+   "B3": true,
+   "ci_lo_B": 0.0,
+   "worst_scene_B": 0.0,
+   "ci_lo_B2": 0.0,
+   "worst_scene_B2": 0.0,
+   "B4": true,
+   "labels": {
+    "B1": "vacuous (case Z)",
+    "B2": "vacuous (case Z)"
+   },
+   "pass": true,
+   "fail_type": null,
+   "case_z": true
+  },
+  "b4": {
+   "n_pairs": 832,
+   "dJ": 0.03222132624051066,
+   "other_c0": 51,
+   "other_arm": 38
+  },
+  "audited": false,
+  "reports": {
+   "dJ_B": 0.0,
+   "dF_B": 0.0,
+   "dJ_B2": 0.001953825298256286,
+   "dF_B2": 0.002164156463869086,
+   "per_scene_B": {
+    "AlexaMeadeExhibit": 0.0,
+    "AlexaMeadeFacePaint": 0.0,
+    "Barn": 0.0,
+    "Blocks": 0.0,
+    "Breakfast": 0.0,
+    "CBABasketball": 0.0,
+    "Carpark": 0.0,
+    "CoffeeMartini": 0.0,
+    "Dog": 0.0,
+    "Fencing": 0.0,
+    "FlameSteak": 0.0,
+    "Frog": 0.0,
+    "MATF": 0.0,
+    "MartialArts": 0.0,
+    "Painter": 0.0,
+    "PoznanStreet": 0.0,
+    "Welder": 0.0
+   },
+   "per_scene_B2": {
+    "AlexaMeadeExhibit": 0.0,
+    "AlexaMeadeFacePaint": 0.0,
+    "Barn": 0.0,
+    "Blocks": 0.016040124952910406,
+    "Breakfast": 0.0,
+    "CBABasketball": 0.0,
+    "Carpark": 0.0,
+    "CoffeeMartini": 0.0,
+    "Dog": 0.0,
+    "Fencing": 0.004272751475510428,
+    "FlameSteak": 0.0,
+    "Frog": 0.0,
+    "MATF": 0.0,
+    "MartialArts": 0.014689968549644772,
+    "Painter": 0.0,
+    "PoznanStreet": 0.0,
+    "Welder": 0.0
+   },
+   "dJ_B2_wide": 0.024165994680382996,
+   "n_wide_B2": 1049,
+   "choices": {
+    "by_choice": {
+     "X": 3043,
+     "keep": 423,
+     "S1": 5
+    },
+    "by_choice_x_state": {
+     "S1/EMPTY": 2,
+     "S1/FLAG": 3,
+     "X/ABSTAIN": 1215,
+     "X/PASS": 1828,
+     "keep/EMPTY": 310,
+     "keep/FLAG": 113
+    },
+    "keep_absent": 310,
+    "keep_flagged": 113,
+    "chain": null,
+    "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+   },
+   "state_ratios": {
+    "B": {
+     "all": {},
+     "per_scene": {},
+     "n_frames_with_fix_a": 0
+    },
+    "B2": {
+     "all": {
+      "round1": {
+       "n": 10724,
+       "counts": {
+        "PASS": 6005,
+        "FLAG": 562,
+        "ABSTAIN": 3521,
+        "EMPTY": 636
+       },
+       "ratios": {
+        "PASS": 0.5599589705333831,
+        "FLAG": 0.05240581872435658,
+        "ABSTAIN": 0.3283289817232376,
+        "EMPTY": 0.05930622901902275
+       }
+      },
+      "round2_S": {
+       "n": 7253,
+       "counts": {
+        "PASS": 4525,
+        "FLAG": 172,
+        "ABSTAIN": 2342,
+        "EMPTY": 214
+       },
+       "ratios": {
+        "PASS": 0.6238797738866676,
+        "FLAG": 0.023714325106852337,
+        "ABSTAIN": 0.322900868606094,
+        "EMPTY": 0.029505032400386048
+       }
+      },
+      "relay": {
+       "n": 3471,
+       "counts": {
+        "PASS": 1828,
+        "FLAG": 116,
+        "ABSTAIN": 1215,
+        "EMPTY": 312
+       },
+       "ratios": {
+        "PASS": 0.5266493805819649,
+        "FLAG": 0.033419763756842406,
+        "ABSTAIN": 0.3500432152117545,
+        "EMPTY": 0.0898876404494382
+       }
+      },
+      "final": {
+       "n": 3471,
+       "counts": {
+        "PASS": 1833,
+        "FLAG": 113,
+        "ABSTAIN": 1215,
+        "EMPTY": 310
+       },
+       "ratios": {
+        "PASS": 0.5280898876404494,
+        "FLAG": 0.03255545952175166,
+        "ABSTAIN": 0.3500432152117545,
+        "EMPTY": 0.08931143762604436
+       }
+      }
+     },
+     "per_scene": {
+      "CBABasketball": {
+       "round1": {
+        "n": 952,
+        "counts": {
+         "PASS": 583,
+         "FLAG": 150,
+         "ABSTAIN": 143,
+         "EMPTY": 76
+        },
+        "ratios": {
+         "PASS": 0.6123949579831933,
+         "FLAG": 0.15756302521008403,
+         "ABSTAIN": 0.15021008403361344,
+         "EMPTY": 0.07983193277310924
+        }
+       },
+       "round2_S": {
+        "n": 833,
+        "counts": {
+         "PASS": 541,
+         "FLAG": 116,
+         "ABSTAIN": 126,
+         "EMPTY": 50
+        },
+        "ratios": {
+         "PASS": 0.6494597839135654,
+         "FLAG": 0.13925570228091236,
+         "ABSTAIN": 0.15126050420168066,
+         "EMPTY": 0.060024009603841535
+        }
+       },
+       "relay": {
+        "n": 119,
+        "counts": {
+         "PASS": 66,
+         "FLAG": 24,
+         "ABSTAIN": 20,
+         "EMPTY": 9
+        },
+        "ratios": {
+         "PASS": 0.5546218487394958,
+         "FLAG": 0.20168067226890757,
+         "ABSTAIN": 0.16806722689075632,
+         "EMPTY": 0.07563025210084033
+        }
+       },
+       "final": {
+        "n": 119,
+        "counts": {
+         "PASS": 66,
+         "FLAG": 24,
+         "ABSTAIN": 20,
+         "EMPTY": 9
+        },
+        "ratios": {
+         "PASS": 0.5546218487394958,
+         "FLAG": 0.20168067226890757,
+         "ABSTAIN": 0.16806722689075632,
+         "EMPTY": 0.07563025210084033
+        }
+       }
+      },
+      "Blocks": {
+       "round1": {
+        "n": 4014,
+        "counts": {
+         "PASS": 2504,
+         "FLAG": 89,
+         "ABSTAIN": 1221,
+         "EMPTY": 200
+        },
+        "ratios": {
+         "PASS": 0.6238166417538615,
+         "FLAG": 0.022172396611858495,
+         "ABSTAIN": 0.3041853512705531,
+         "EMPTY": 0.04982561036372696
+        }
+       },
+       "round2_S": {
+        "n": 2676,
+        "counts": {
+         "PASS": 1777,
+         "FLAG": 17,
+         "ABSTAIN": 837,
+         "EMPTY": 45
+        },
+        "ratios": {
+         "PASS": 0.664050822122571,
+         "FLAG": 0.006352765321375187,
+         "ABSTAIN": 0.312780269058296,
+         "EMPTY": 0.016816143497757848
+        }
+       },
+       "relay": {
+        "n": 1338,
+        "counts": {
+         "PASS": 812,
+         "FLAG": 37,
+         "ABSTAIN": 395,
+         "EMPTY": 94
+        },
+        "ratios": {
+         "PASS": 0.6068759342301944,
+         "FLAG": 0.02765321375186846,
+         "ABSTAIN": 0.2952167414050822,
+         "EMPTY": 0.07025411061285501
+        }
+       },
+       "final": {
+        "n": 1338,
+        "counts": {
+         "PASS": 814,
+         "FLAG": 37,
+         "ABSTAIN": 395,
+         "EMPTY": 92
+        },
+        "ratios": {
+         "PASS": 0.6083707025411061,
+         "FLAG": 0.02765321375186846,
+         "ABSTAIN": 0.2952167414050822,
+         "EMPTY": 0.0687593423019432
+        }
+       }
+      },
+      "Fencing": {
+       "round1": {
+        "n": 2160,
+        "counts": {
+         "PASS": 1429,
+         "FLAG": 68,
+         "ABSTAIN": 663,
+         "EMPTY": 0
+        },
+        "ratios": {
+         "PASS": 0.6615740740740741,
+         "FLAG": 0.03148148148148148,
+         "ABSTAIN": 0.30694444444444446,
+         "EMPTY": 0.0
+        }
+       },
+       "round2_S": {
+        "n": 1560,
+        "counts": {
+         "PASS": 1071,
+         "FLAG": 25,
+         "ABSTAIN": 464,
+         "EMPTY": 0
+        },
+        "ratios": {
+         "PASS": 0.6865384615384615,
+         "FLAG": 0.016025641025641024,
+         "ABSTAIN": 0.29743589743589743,
+         "EMPTY": 0.0
+        }
+       },
+       "relay": {
+        "n": 600,
+        "counts": {
+         "PASS": 365,
+         "FLAG": 42,
+         "ABSTAIN": 193,
+         "EMPTY": 0
+        },
+        "ratios": {
+         "PASS": 0.6083333333333333,
+         "FLAG": 0.07,
+         "ABSTAIN": 0.32166666666666666,
+         "EMPTY": 0.0
+        }
+       },
+       "final": {
+        "n": 600,
+        "counts": {
+         "PASS": 368,
+         "FLAG": 39,
+         "ABSTAIN": 193,
+         "EMPTY": 0
+        },
+        "ratios": {
+         "PASS": 0.6133333333333333,
+         "FLAG": 0.065,
+         "ABSTAIN": 0.32166666666666666,
+         "EMPTY": 0.0
+        }
+       }
+      },
+      "MartialArts": {
+       "round1": {
+        "n": 3598,
+        "counts": {
+         "PASS": 1489,
+         "FLAG": 255,
+         "ABSTAIN": 1494,
+         "EMPTY": 360
+        },
+        "ratios": {
+         "PASS": 0.4138410227904391,
+         "FLAG": 0.07087270705947749,
+         "ABSTAIN": 0.415230683713174,
+         "EMPTY": 0.1000555864369094
+        }
+       },
+       "round2_S": {
+        "n": 2184,
+        "counts": {
+         "PASS": 1136,
+         "FLAG": 14,
+         "ABSTAIN": 915,
+         "EMPTY": 119
+        },
+        "ratios": {
+         "PASS": 0.5201465201465202,
+         "FLAG": 0.00641025641025641,
+         "ABSTAIN": 0.41895604395604397,
+         "EMPTY": 0.05448717948717949
+        }
+       },
+       "relay": {
+        "n": 1414,
+        "counts": {
+         "PASS": 585,
+         "FLAG": 13,
+         "ABSTAIN": 607,
+         "EMPTY": 209
+        },
+        "ratios": {
+         "PASS": 0.41371994342291374,
+         "FLAG": 0.009193776520509194,
+         "ABSTAIN": 0.4292786421499293,
+         "EMPTY": 0.1478076379066478
+        }
+       },
+       "final": {
+        "n": 1414,
+        "counts": {
+         "PASS": 585,
+         "FLAG": 13,
+         "ABSTAIN": 607,
+         "EMPTY": 209
+        },
+        "ratios": {
+         "PASS": 0.41371994342291374,
+         "FLAG": 0.009193776520509194,
+         "ABSTAIN": 0.4292786421499293,
+         "EMPTY": 0.1478076379066478
+        }
+       }
+      }
+     },
+     "n_frames_with_fix_a": 86
+    }
+   },
+   "hallucinations": {
+    "B": {
+     "n_keys": 11886,
+     "n_absent": 1965,
+     "arm": 189,
+     "arm_px": 917642,
+     "c0": 189,
+     "c0_px": 917642,
+     "newly_nonempty": 0,
+     "newly_nonempty_absent": 0
+    },
+    "B2": {
+     "n_keys": 19862,
+     "n_absent": 1547,
+     "arm": 198,
+     "arm_px": 2866365,
+     "c0": 188,
+     "c0_px": 2828359,
+     "newly_nonempty": 32,
+     "newly_nonempty_absent": 12
+    }
+   },
+   "seconds": {
+    "rot0": {
+     "arm": 1873.0294134616852,
+     "c0": 1944.4035065174103
+    },
+    "rot1": {
+     "arm": 1771.6992213726044,
+     "c0": 1609.8486697673798
+    },
+    "rot2": {
+     "arm": 1608.2927815914154,
+     "c0": 1508.1161494255066
+    }
+   }
+  }
+ },
+ "stageT06": {
+  "theta_s": "60",
+  "family": "cstar",
+  "h23": {
+   "AB": {
+    "P_good": 118,
+    "w1": 31,
+    "wX": 1,
+    "verdict": "H2 supported"
+   },
+   "A": {
+    "P_good": 99,
+    "w1": 13,
+    "wX": 2,
+    "verdict": "H2 supported"
+   }
+  },
+  "reports": {
+   "AB_35_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9442481709165229,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 137,
+      "keep": 7
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 135,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 4
+     },
+     "keep_absent": 3,
+     "keep_flagged": 4,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 24,
+      "n_candidates": 95,
+      "n_untrusted": 0,
+      "n_neighbours": 68
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 24,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 42,
+      "counts": {
+       "PASS": 42,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 144,
+      "counts": {
+       "PASS": 135,
+       "FLAG": 4,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9375,
+       "FLAG": 0.027777777777777776,
+       "ABSTAIN": 0.013888888888888888,
+       "EMPTY": 0.020833333333333332
+      }
+     },
+     "final": {
+      "n": 144,
+      "counts": {
+       "PASS": 135,
+       "FLAG": 4,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9375,
+       "FLAG": 0.027777777777777776,
+       "ABSTAIN": 0.013888888888888888,
+       "EMPTY": 0.020833333333333332
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_40_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9442756548329102,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 131,
+      "keep": 7
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 129,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 4
+     },
+     "keep_absent": 3,
+     "keep_flagged": 4,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 23,
+      "n_candidates": 101,
+      "n_untrusted": 0,
+      "n_neighbours": 66
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 23,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 48,
+      "counts": {
+       "PASS": 48,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 138,
+      "counts": {
+       "PASS": 129,
+       "FLAG": 4,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9347826086956522,
+       "FLAG": 0.028985507246376812,
+       "ABSTAIN": 0.014492753623188406,
+       "EMPTY": 0.021739130434782608
+      }
+     },
+     "final": {
+      "n": 138,
+      "counts": {
+       "PASS": 129,
+       "FLAG": 4,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9347826086956522,
+       "FLAG": 0.028985507246376812,
+       "ABSTAIN": 0.014492753623188406,
+       "EMPTY": 0.021739130434782608
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_45_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9456745381239701,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 132,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 130,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 23,
+      "n_candidates": 112,
+      "n_untrusted": 0,
+      "n_neighbours": 68
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 23,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 48,
+      "counts": {
+       "PASS": 48,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 138,
+      "counts": {
+       "PASS": 130,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9420289855072463,
+       "FLAG": 0.021739130434782608,
+       "ABSTAIN": 0.014492753623188406,
+       "EMPTY": 0.021739130434782608
+      }
+     },
+     "final": {
+      "n": 138,
+      "counts": {
+       "PASS": 130,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9420289855072463,
+       "FLAG": 0.021739130434782608,
+       "ABSTAIN": 0.014492753623188406,
+       "EMPTY": 0.021739130434782608
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_50_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9489564416192557,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 126,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 3,
+      "X/PASS": 123,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 22,
+      "n_candidates": 116,
+      "n_untrusted": 0,
+      "n_neighbours": 66
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 22,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 54,
+      "counts": {
+       "PASS": 54,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 132,
+      "counts": {
+       "PASS": 123,
+       "FLAG": 3,
+       "ABSTAIN": 3,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9318181818181818,
+       "FLAG": 0.022727272727272728,
+       "ABSTAIN": 0.022727272727272728,
+       "EMPTY": 0.022727272727272728
+      }
+     },
+     "final": {
+      "n": 132,
+      "counts": {
+       "PASS": 123,
+       "FLAG": 3,
+       "ABSTAIN": 3,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9318181818181818,
+       "FLAG": 0.022727272727272728,
+       "ABSTAIN": 0.022727272727272728,
+       "EMPTY": 0.022727272727272728
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_55_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9487084972832751,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 114,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 112,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 110,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9487084972832751,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 114,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 112,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "AB_inf_cstar": {
+    "far_correct_J": {
+     "n": 81,
+     "J": 0.8417933559709093,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": null,
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 0,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "ABc_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9491105872331589,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 114,
+      "chain": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 112,
+      "chain/EMPTY": 3,
+      "chain/FLAG": 3
+     },
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": {
+      "n_chosen": 6,
+      "n_missing": 3,
+      "runs_without_any": 0
+     },
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 0,
+       "ABSTAIN": 2,
+       "EMPTY": 0,
+       "None": 6
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.0
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "ABe_60_cstar": {
+    "far_correct_J": {
+     "n": 109,
+     "J": 0.9541498154452225,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 114,
+      "empty": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 112,
+      "empty/EMPTY": 3,
+      "empty/FLAG": 3
+     },
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 0,
+       "ABSTAIN": 2,
+       "EMPTY": 0,
+       "None": 6
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.0
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 2,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "ABml_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9320050106033493,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 112,
+      "keep": 8
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 1,
+      "X/PASS": 111,
+      "keep/EMPTY": 4,
+      "keep/FLAG": 4
+     },
+     "keep_absent": 4,
+     "keep_flagged": 4,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 120,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 111,
+       "FLAG": 4,
+       "ABSTAIN": 1,
+       "EMPTY": 4
+      },
+      "ratios": {
+       "PASS": 0.925,
+       "FLAG": 0.03333333333333333,
+       "ABSTAIN": 0.008333333333333333,
+       "EMPTY": 0.03333333333333333
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 111,
+       "FLAG": 4,
+       "ABSTAIN": 1,
+       "EMPTY": 4
+      },
+      "ratios": {
+       "PASS": 0.925,
+       "FLAG": 0.03333333333333333,
+       "ABSTAIN": 0.008333333333333333,
+       "EMPTY": 0.03333333333333333
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 3,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "ABnh_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9487084972832751,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 114,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 112,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 120,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_35_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 119,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 113,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 24,
+      "n_candidates": 72,
+      "n_untrusted": 0,
+      "n_neighbours": 72
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 144,
+      "counts": {
+       "PASS": 113,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7847222222222222,
+       "FLAG": 0.13194444444444445,
+       "ABSTAIN": 0.041666666666666664,
+       "EMPTY": 0.041666666666666664
+      }
+     },
+     "final": {
+      "n": 144,
+      "counts": {
+       "PASS": 115,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7986111111111112,
+       "FLAG": 0.11805555555555555,
+       "ABSTAIN": 0.041666666666666664,
+       "EMPTY": 0.041666666666666664
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_40_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 113,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 107,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 23,
+      "n_candidates": 69,
+      "n_untrusted": 0,
+      "n_neighbours": 69
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 138,
+      "counts": {
+       "PASS": 107,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7753623188405797,
+       "FLAG": 0.13768115942028986,
+       "ABSTAIN": 0.043478260869565216,
+       "EMPTY": 0.043478260869565216
+      }
+     },
+     "final": {
+      "n": 138,
+      "counts": {
+       "PASS": 109,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7898550724637681,
+       "FLAG": 0.12318840579710146,
+       "ABSTAIN": 0.043478260869565216,
+       "EMPTY": 0.043478260869565216
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_45_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 113,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 107,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 23,
+      "n_candidates": 69,
+      "n_untrusted": 0,
+      "n_neighbours": 69
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 138,
+      "counts": {
+       "PASS": 107,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7753623188405797,
+       "FLAG": 0.13768115942028986,
+       "ABSTAIN": 0.043478260869565216,
+       "EMPTY": 0.043478260869565216
+      }
+     },
+     "final": {
+      "n": 138,
+      "counts": {
+       "PASS": 109,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7898550724637681,
+       "FLAG": 0.12318840579710146,
+       "ABSTAIN": 0.043478260869565216,
+       "EMPTY": 0.043478260869565216
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_50_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 107,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 101,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 22,
+      "n_candidates": 66,
+      "n_untrusted": 0,
+      "n_neighbours": 66
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 132,
+      "counts": {
+       "PASS": 101,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7651515151515151,
+       "FLAG": 0.14393939393939395,
+       "ABSTAIN": 0.045454545454545456,
+       "EMPTY": 0.045454545454545456
+      }
+     },
+     "final": {
+      "n": 132,
+      "counts": {
+       "PASS": 103,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7803030303030303,
+       "FLAG": 0.12878787878787878,
+       "ABSTAIN": 0.045454545454545456,
+       "EMPTY": 0.045454545454545456
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_55_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 95,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 89,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 20,
+      "n_candidates": 60,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 120,
+      "counts": {
+       "PASS": 89,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7416666666666667,
+       "FLAG": 0.15833333333333333,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.05
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 91,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7583333333333333,
+       "FLAG": 0.14166666666666666,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.05
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_60_cstar": {
+    "far_correct_J": {
+     "n": 89,
+     "J": 0.8979672546836249,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 95,
+      "S1": 2,
+      "keep": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 89,
+      "keep/EMPTY": 6,
+      "keep/FLAG": 17
+     },
+     "keep_absent": 6,
+     "keep_flagged": 17,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 20,
+      "n_candidates": 60,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 120,
+      "counts": {
+       "PASS": 89,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7416666666666667,
+       "FLAG": 0.15833333333333333,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.05
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 91,
+       "FLAG": 17,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7583333333333333,
+       "FLAG": 0.14166666666666666,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.05
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 1,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "A_inf_cstar": {
+    "far_correct_J": {
+     "n": 81,
+     "J": 0.8417933559709093,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": null,
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 0,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "Ac_60_cstar": {
+    "far_correct_J": {
+     "n": 104,
+     "J": 0.9208088410100251,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 95,
+      "S1": 2,
+      "chain": 23
+     },
+     "by_choice_x_state": {
+      "S1/FLAG": 2,
+      "X/ABSTAIN": 6,
+      "X/PASS": 89,
+      "chain/EMPTY": 6,
+      "chain/FLAG": 17
+     },
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": {
+      "n_chosen": 23,
+      "n_missing": 3,
+      "runs_without_any": 0
+     },
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "jacobi": {
+      "n_views": 20,
+      "n_candidates": 60,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 0,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_F": {
+      "n": 120,
+      "counts": {
+       "PASS": 89,
+       "FLAG": 19,
+       "ABSTAIN": 6,
+       "EMPTY": 6
+      },
+      "ratios": {
+       "PASS": 0.7416666666666667,
+       "FLAG": 0.15833333333333333,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.05
+      }
+     },
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 91,
+       "FLAG": 0,
+       "ABSTAIN": 6,
+       "EMPTY": 0,
+       "None": 23
+      },
+      "ratios": {
+       "PASS": 0.7583333333333333,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.05,
+       "EMPTY": 0.0
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "B-obj_60_off": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9496589764690082,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": null,
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "B-rep_60_off": {
+    "far_correct_J": {
+     "n": 85,
+     "J": 0.8479041019283675,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 14,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": null,
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 3,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "C0": {
+    "far_correct_J": {
+     "n": 81,
+     "J": 0.8417933559709093,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": null,
+    "n_relay": null,
+    "unreachable": null,
+    "orphan_views": null,
+    "state_ratios": null
+   },
+   "C0_r1": {
+    "far_correct_J": {
+     "n": 79,
+     "J": 0.8192327001475435,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {},
+     "by_choice_x_state": {},
+     "keep_absent": 0,
+     "keep_flagged": 0,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": null,
+    "n_relay": null,
+    "unreachable": null,
+    "orphan_views": null,
+    "state_ratios": null
+   },
+   "GN_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.948644514602511,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 180,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 178,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 186,
+      "counts": {
+       "PASS": 178,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.956989247311828,
+       "FLAG": 0.016129032258064516,
+       "ABSTAIN": 0.010752688172043012,
+       "EMPTY": 0.016129032258064516
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "G_60_cstar": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.948644514602511,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 180,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 2,
+      "X/PASS": 178,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 3
+     },
+     "keep_absent": 3,
+     "keep_flagged": 3,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "round1": {
+      "n": 186,
+      "counts": {
+       "PASS": 150,
+       "FLAG": 25,
+       "ABSTAIN": 6,
+       "EMPTY": 5
+      },
+      "ratios": {
+       "PASS": 0.8064516129032258,
+       "FLAG": 0.13440860215053763,
+       "ABSTAIN": 0.03225806451612903,
+       "EMPTY": 0.026881720430107527
+      }
+     },
+     "round2_S": {
+      "n": 66,
+      "counts": {
+       "PASS": 66,
+       "FLAG": 0,
+       "ABSTAIN": 0,
+       "EMPTY": 0
+      },
+      "ratios": {
+       "PASS": 1.0,
+       "FLAG": 0.0,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.0
+      }
+     },
+     "relay": {
+      "n": 120,
+      "counts": {
+       "PASS": 112,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9333333333333333,
+       "FLAG": 0.025,
+       "ABSTAIN": 0.016666666666666666,
+       "EMPTY": 0.025
+      }
+     },
+     "final": {
+      "n": 186,
+      "counts": {
+       "PASS": 178,
+       "FLAG": 3,
+       "ABSTAIN": 2,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.956989247311828,
+       "FLAG": 0.016129032258064516,
+       "ABSTAIN": 0.010752688172043012,
+       "EMPTY": 0.016129032258064516
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   },
+   "oracle_60_off": {
+    "far_correct_J": {
+     "n": 111,
+     "J": 0.9496993334646034,
+     "c0_diagnosis": 0.842
+    },
+    "choices": {
+     "by_choice": {
+      "X": 116,
+      "keep": 4
+     },
+     "by_choice_x_state": {
+      "X/PASS": 116,
+      "keep/EMPTY": 3,
+      "keep/FLAG": 1
+     },
+     "keep_absent": 3,
+     "keep_flagged": 1,
+     "chain": null,
+     "note": "config n_fallback counts 'keep' and absent objects: not reported as fallbacks; gated_pairs_frac / views_dropped are not compared with C0 (E15 counts chosen neighbours only); see relay counts"
+    },
+    "relay_counts": {
+     "relay": {
+      "n_views": 20,
+      "n_candidates": 113,
+      "n_untrusted": 0,
+      "n_neighbours": 60
+     },
+     "jacobi": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     },
+     "gn": {
+      "n_views": 0,
+      "n_candidates": 0,
+      "n_untrusted": 0,
+      "n_neighbours": 0
+     }
+    },
+    "n_relay": 20,
+    "unreachable": [],
+    "orphan_views": 0,
+    "state_ratios": {
+     "final": {
+      "n": 120,
+      "counts": {
+       "PASS": 116,
+       "FLAG": 1,
+       "ABSTAIN": 0,
+       "EMPTY": 3
+      },
+      "ratios": {
+       "PASS": 0.9666666666666667,
+       "FLAG": 0.008333333333333333,
+       "ABSTAIN": 0.0,
+       "EMPTY": 0.025
+      }
+     }
+    },
+    "hallucinations": {
+     "n_keys": 186,
+     "n_absent": 2,
+     "arm": 0,
+     "arm_px": 0,
+     "c0": 0,
+     "c0_px": 0,
+     "newly_nonempty": 4,
+     "newly_nonempty_absent": 0
+    }
+   }
+  },
+  "devA2_state_ratios": {
+   "AB_35_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 18538,
+      "counts": {
+       "PASS": 11046,
+       "FLAG": 553,
+       "ABSTAIN": 5442,
+       "EMPTY": 1497
+      },
+      "ratios": {
+       "PASS": 0.5958571582695005,
+       "FLAG": 0.02983061818966447,
+       "ABSTAIN": 0.29355917574711404,
+       "EMPTY": 0.080753047793721
+      }
+     },
+     "round2_S": {
+      "n": 12134,
+      "counts": {
+       "PASS": 7834,
+       "FLAG": 93,
+       "ABSTAIN": 3636,
+       "EMPTY": 571
+      },
+      "ratios": {
+       "PASS": 0.6456238668205043,
+       "FLAG": 0.00766441404318444,
+       "ABSTAIN": 0.2996538651722433,
+       "EMPTY": 0.047057853964067906
+      }
+     },
+     "relay": {
+      "n": 6404,
+      "counts": {
+       "PASS": 3583,
+       "FLAG": 176,
+       "ABSTAIN": 1882,
+       "EMPTY": 763
+      },
+      "ratios": {
+       "PASS": 0.5594940662086196,
+       "FLAG": 0.027482823235477825,
+       "ABSTAIN": 0.2938788257339163,
+       "EMPTY": 0.11914428482198626
+      }
+     },
+     "final": {
+      "n": 6404,
+      "counts": {
+       "PASS": 3586,
+       "FLAG": 175,
+       "ABSTAIN": 1882,
+       "EMPTY": 761
+      },
+      "ratios": {
+       "PASS": 0.5599625234228607,
+       "FLAG": 0.027326670830730794,
+       "ABSTAIN": 0.2938788257339163,
+       "EMPTY": 0.11883198001249219
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 5017,
+       "counts": {
+        "PASS": 3165,
+        "FLAG": 413,
+        "ABSTAIN": 1170,
+        "EMPTY": 269
+       },
+       "ratios": {
+        "PASS": 0.6308550926848714,
+        "FLAG": 0.08232011162049033,
+        "ABSTAIN": 0.2332070958740283,
+        "EMPTY": 0.053617699820609925
+       }
+      },
+      "round2_S": {
+       "n": 2853,
+       "counts": {
+        "PASS": 2002,
+        "FLAG": 56,
+        "ABSTAIN": 733,
+        "EMPTY": 62
+       },
+       "ratios": {
+        "PASS": 0.7017174903610235,
+        "FLAG": 0.01962846126883982,
+        "ABSTAIN": 0.25692253767963547,
+        "EMPTY": 0.021731510690501228
+       }
+      },
+      "relay": {
+       "n": 2164,
+       "counts": {
+        "PASS": 1373,
+        "FLAG": 158,
+        "ABSTAIN": 462,
+        "EMPTY": 171
+       },
+       "ratios": {
+        "PASS": 0.6344731977818854,
+        "FLAG": 0.07301293900184842,
+        "ABSTAIN": 0.2134935304990758,
+        "EMPTY": 0.07902033271719039
+       }
+      },
+      "final": {
+       "n": 2164,
+       "counts": {
+        "PASS": 1373,
+        "FLAG": 158,
+        "ABSTAIN": 462,
+        "EMPTY": 171
+       },
+       "ratios": {
+        "PASS": 0.6344731977818854,
+        "FLAG": 0.07301293900184842,
+        "ABSTAIN": 0.2134935304990758,
+        "EMPTY": 0.07902033271719039
+       }
+      }
+     },
+     "FlameSteak": {
+      "round1": {
+       "n": 6400,
+       "counts": {
+        "PASS": 3648,
+        "FLAG": 14,
+        "ABSTAIN": 1929,
+        "EMPTY": 809
+       },
+       "ratios": {
+        "PASS": 0.57,
+        "FLAG": 0.0021875,
+        "ABSTAIN": 0.30140625,
+        "EMPTY": 0.12640625
+       }
+      },
+      "round2_S": {
+       "n": 5220,
+       "counts": {
+        "PASS": 3164,
+        "FLAG": 20,
+        "ABSTAIN": 1599,
+        "EMPTY": 437
+       },
+       "ratios": {
+        "PASS": 0.6061302681992338,
+        "FLAG": 0.0038314176245210726,
+        "ABSTAIN": 0.3063218390804598,
+        "EMPTY": 0.08371647509578545
+       }
+      },
+      "relay": {
+       "n": 1180,
+       "counts": {
+        "PASS": 509,
+        "FLAG": 0,
+        "ABSTAIN": 362,
+        "EMPTY": 309
+       },
+       "ratios": {
+        "PASS": 0.43135593220338986,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.30677966101694915,
+        "EMPTY": 0.261864406779661
+       }
+      },
+      "final": {
+       "n": 1180,
+       "counts": {
+        "PASS": 509,
+        "FLAG": 0,
+        "ABSTAIN": 362,
+        "EMPTY": 309
+       },
+       "ratios": {
+        "PASS": 0.43135593220338986,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.30677966101694915,
+        "EMPTY": 0.261864406779661
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 447,
+       "counts": {
+        "PASS": 297,
+        "FLAG": 0,
+        "ABSTAIN": 141,
+        "EMPTY": 9
+       },
+       "ratios": {
+        "PASS": 0.6644295302013423,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.31543624161073824,
+        "EMPTY": 0.020134228187919462
+       }
+      },
+      "relay": {
+       "n": 894,
+       "counts": {
+        "PASS": 564,
+        "FLAG": 6,
+        "ABSTAIN": 278,
+        "EMPTY": 46
+       },
+       "ratios": {
+        "PASS": 0.6308724832214765,
+        "FLAG": 0.006711409395973154,
+        "ABSTAIN": 0.31096196868008946,
+        "EMPTY": 0.05145413870246085
+       }
+      },
+      "final": {
+       "n": 894,
+       "counts": {
+        "PASS": 565,
+        "FLAG": 6,
+        "ABSTAIN": 278,
+        "EMPTY": 45
+       },
+       "ratios": {
+        "PASS": 0.6319910514541387,
+        "FLAG": 0.006711409395973154,
+        "ABSTAIN": 0.31096196868008946,
+        "EMPTY": 0.050335570469798654
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 240,
+       "counts": {
+        "PASS": 173,
+        "FLAG": 0,
+        "ABSTAIN": 67,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.7208333333333333,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.2791666666666667,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 480,
+       "counts": {
+        "PASS": 310,
+        "FLAG": 5,
+        "ABSTAIN": 165,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6458333333333334,
+        "FLAG": 0.010416666666666666,
+        "ABSTAIN": 0.34375,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 480,
+       "counts": {
+        "PASS": 311,
+        "FLAG": 4,
+        "ABSTAIN": 165,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6479166666666667,
+        "FLAG": 0.008333333333333333,
+        "ABSTAIN": 0.34375,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 2170,
+       "counts": {
+        "PASS": 1007,
+        "FLAG": 87,
+        "ABSTAIN": 860,
+        "EMPTY": 216
+       },
+       "ratios": {
+        "PASS": 0.4640552995391705,
+        "FLAG": 0.04009216589861751,
+        "ABSTAIN": 0.39631336405529954,
+        "EMPTY": 0.09953917050691244
+       }
+      },
+      "round2_S": {
+       "n": 1164,
+       "counts": {
+        "PASS": 661,
+        "FLAG": 7,
+        "ABSTAIN": 449,
+        "EMPTY": 47
+       },
+       "ratios": {
+        "PASS": 0.5678694158075601,
+        "FLAG": 0.006013745704467354,
+        "ABSTAIN": 0.3857388316151203,
+        "EMPTY": 0.040378006872852236
+       }
+      },
+      "relay": {
+       "n": 1006,
+       "counts": {
+        "PASS": 432,
+        "FLAG": 2,
+        "ABSTAIN": 420,
+        "EMPTY": 152
+       },
+       "ratios": {
+        "PASS": 0.4294234592445328,
+        "FLAG": 0.0019880715705765406,
+        "ABSTAIN": 0.41749502982107356,
+        "EMPTY": 0.15109343936381708
+       }
+      },
+      "final": {
+       "n": 1006,
+       "counts": {
+        "PASS": 433,
+        "FLAG": 2,
+        "ABSTAIN": 420,
+        "EMPTY": 151
+       },
+       "ratios": {
+        "PASS": 0.4304174950298211,
+        "FLAG": 0.0019880715705765406,
+        "ABSTAIN": 0.41749502982107356,
+        "EMPTY": 0.15009940357852883
+       }
+      }
+     },
+     "CoffeeMartini": {
+      "round1": {
+       "n": 2890,
+       "counts": {
+        "PASS": 1918,
+        "FLAG": 7,
+        "ABSTAIN": 832,
+        "EMPTY": 133
+       },
+       "ratios": {
+        "PASS": 0.6636678200692041,
+        "FLAG": 0.002422145328719723,
+        "ABSTAIN": 0.2878892733564014,
+        "EMPTY": 0.04602076124567474
+       }
+      },
+      "round2_S": {
+       "n": 2210,
+       "counts": {
+        "PASS": 1537,
+        "FLAG": 10,
+        "ABSTAIN": 647,
+        "EMPTY": 16
+       },
+       "ratios": {
+        "PASS": 0.6954751131221719,
+        "FLAG": 0.004524886877828055,
+        "ABSTAIN": 0.2927601809954751,
+        "EMPTY": 0.007239819004524887
+       }
+      },
+      "relay": {
+       "n": 680,
+       "counts": {
+        "PASS": 395,
+        "FLAG": 5,
+        "ABSTAIN": 195,
+        "EMPTY": 85
+       },
+       "ratios": {
+        "PASS": 0.5808823529411765,
+        "FLAG": 0.007352941176470588,
+        "ABSTAIN": 0.2867647058823529,
+        "EMPTY": 0.125
+       }
+      },
+      "final": {
+       "n": 680,
+       "counts": {
+        "PASS": 395,
+        "FLAG": 5,
+        "ABSTAIN": 195,
+        "EMPTY": 85
+       },
+       "ratios": {
+        "PASS": 0.5808823529411765,
+        "FLAG": 0.007352941176470588,
+        "ABSTAIN": 0.2867647058823529,
+        "EMPTY": 0.125
+       }
+      }
+     }
+    }
+   },
+   "AB_40_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 10768,
+      "counts": {
+       "PASS": 6429,
+       "FLAG": 539,
+       "ABSTAIN": 3120,
+       "EMPTY": 680
+      },
+      "ratios": {
+       "PASS": 0.5970468053491828,
+       "FLAG": 0.05005572065378901,
+       "ABSTAIN": 0.2897473997028232,
+       "EMPTY": 0.06315007429420505
+      }
+     },
+     "round2_S": {
+      "n": 6530,
+      "counts": {
+       "PASS": 4329,
+       "FLAG": 97,
+       "ABSTAIN": 1927,
+       "EMPTY": 177
+      },
+      "ratios": {
+       "PASS": 0.6629402756508422,
+       "FLAG": 0.014854517611026033,
+       "ABSTAIN": 0.29509954058192955,
+       "EMPTY": 0.027105666156202145
+      }
+     },
+     "relay": {
+      "n": 4238,
+      "counts": {
+       "PASS": 2425,
+       "FLAG": 167,
+       "ABSTAIN": 1242,
+       "EMPTY": 404
+      },
+      "ratios": {
+       "PASS": 0.572203869749882,
+       "FLAG": 0.03940537989617744,
+       "ABSTAIN": 0.2930627654554035,
+       "EMPTY": 0.09532798489853704
+      }
+     },
+     "final": {
+      "n": 4238,
+      "counts": {
+       "PASS": 2430,
+       "FLAG": 164,
+       "ABSTAIN": 1242,
+       "EMPTY": 402
+      },
+      "ratios": {
+       "PASS": 0.5733836715431807,
+       "FLAG": 0.038697498820198205,
+       "ABSTAIN": 0.2930627654554035,
+       "EMPTY": 0.09485606418121756
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 5017,
+       "counts": {
+        "PASS": 3165,
+        "FLAG": 413,
+        "ABSTAIN": 1170,
+        "EMPTY": 269
+       },
+       "ratios": {
+        "PASS": 0.6308550926848714,
+        "FLAG": 0.08232011162049033,
+        "ABSTAIN": 0.2332070958740283,
+        "EMPTY": 0.053617699820609925
+       }
+      },
+      "round2_S": {
+       "n": 3199,
+       "counts": {
+        "PASS": 2223,
+        "FLAG": 88,
+        "ABSTAIN": 812,
+        "EMPTY": 76
+       },
+       "ratios": {
+        "PASS": 0.694904657705533,
+        "FLAG": 0.02750859643638637,
+        "ABSTAIN": 0.2538293216630197,
+        "EMPTY": 0.023757424195060956
+       }
+      },
+      "relay": {
+       "n": 1818,
+       "counts": {
+        "PASS": 1136,
+        "FLAG": 149,
+        "ABSTAIN": 380,
+        "EMPTY": 153
+       },
+       "ratios": {
+        "PASS": 0.6248624862486248,
+        "FLAG": 0.08195819581958196,
+        "ABSTAIN": 0.20902090209020902,
+        "EMPTY": 0.08415841584158416
+       }
+      },
+      "final": {
+       "n": 1818,
+       "counts": {
+        "PASS": 1138,
+        "FLAG": 147,
+        "ABSTAIN": 380,
+        "EMPTY": 153
+       },
+       "ratios": {
+        "PASS": 0.6259625962596259,
+        "FLAG": 0.08085808580858085,
+        "ABSTAIN": 0.20902090209020902,
+        "EMPTY": 0.08415841584158416
+       }
+      }
+     },
+     "FlameSteak": {
+      "round1": {
+       "n": 160,
+       "counts": {
+        "PASS": 85,
+        "FLAG": 1,
+        "ABSTAIN": 55,
+        "EMPTY": 19
+       },
+       "ratios": {
+        "PASS": 0.53125,
+        "FLAG": 0.00625,
+        "ABSTAIN": 0.34375,
+        "EMPTY": 0.11875
+       }
+      },
+      "round2_S": {
+       "n": 140,
+       "counts": {
+        "PASS": 76,
+        "FLAG": 1,
+        "ABSTAIN": 51,
+        "EMPTY": 12
+       },
+       "ratios": {
+        "PASS": 0.5428571428571428,
+        "FLAG": 0.007142857142857143,
+        "ABSTAIN": 0.36428571428571427,
+        "EMPTY": 0.08571428571428572
+       }
+      },
+      "relay": {
+       "n": 20,
+       "counts": {
+        "PASS": 11,
+        "FLAG": 0,
+        "ABSTAIN": 7,
+        "EMPTY": 2
+       },
+       "ratios": {
+        "PASS": 0.55,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.35,
+        "EMPTY": 0.1
+       }
+      },
+      "final": {
+       "n": 20,
+       "counts": {
+        "PASS": 11,
+        "FLAG": 0,
+        "ABSTAIN": 7,
+        "EMPTY": 2
+       },
+       "ratios": {
+        "PASS": 0.55,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.35,
+        "EMPTY": 0.1
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 596,
+       "counts": {
+        "PASS": 398,
+        "FLAG": 1,
+        "ABSTAIN": 188,
+        "EMPTY": 9
+       },
+       "ratios": {
+        "PASS": 0.6677852348993288,
+        "FLAG": 0.0016778523489932886,
+        "ABSTAIN": 0.31543624161073824,
+        "EMPTY": 0.015100671140939598
+       }
+      },
+      "relay": {
+       "n": 745,
+       "counts": {
+        "PASS": 462,
+        "FLAG": 6,
+        "ABSTAIN": 233,
+        "EMPTY": 44
+       },
+       "ratios": {
+        "PASS": 0.6201342281879194,
+        "FLAG": 0.008053691275167786,
+        "ABSTAIN": 0.312751677852349,
+        "EMPTY": 0.05906040268456376
+       }
+      },
+      "final": {
+       "n": 745,
+       "counts": {
+        "PASS": 463,
+        "FLAG": 6,
+        "ABSTAIN": 233,
+        "EMPTY": 43
+       },
+       "ratios": {
+        "PASS": 0.6214765100671141,
+        "FLAG": 0.008053691275167786,
+        "ABSTAIN": 0.312751677852349,
+        "EMPTY": 0.05771812080536913
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 320,
+       "counts": {
+        "PASS": 228,
+        "FLAG": 0,
+        "ABSTAIN": 92,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.7125,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.2875,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 400,
+       "counts": {
+        "PASS": 253,
+        "FLAG": 5,
+        "ABSTAIN": 142,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6325,
+        "FLAG": 0.0125,
+        "ABSTAIN": 0.355,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 400,
+       "counts": {
+        "PASS": 254,
+        "FLAG": 4,
+        "ABSTAIN": 142,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.635,
+        "FLAG": 0.01,
+        "ABSTAIN": 0.355,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 2170,
+       "counts": {
+        "PASS": 1007,
+        "FLAG": 87,
+        "ABSTAIN": 860,
+        "EMPTY": 216
+       },
+       "ratios": {
+        "PASS": 0.4640552995391705,
+        "FLAG": 0.04009216589861751,
+        "ABSTAIN": 0.39631336405529954,
+        "EMPTY": 0.09953917050691244
+       }
+      },
+      "round2_S": {
+       "n": 1255,
+       "counts": {
+        "PASS": 713,
+        "FLAG": 7,
+        "ABSTAIN": 485,
+        "EMPTY": 50
+       },
+       "ratios": {
+        "PASS": 0.5681274900398406,
+        "FLAG": 0.005577689243027889,
+        "ABSTAIN": 0.38645418326693226,
+        "EMPTY": 0.0398406374501992
+       }
+      },
+      "relay": {
+       "n": 915,
+       "counts": {
+        "PASS": 378,
+        "FLAG": 2,
+        "ABSTAIN": 385,
+        "EMPTY": 150
+       },
+       "ratios": {
+        "PASS": 0.4131147540983607,
+        "FLAG": 0.002185792349726776,
+        "ABSTAIN": 0.4207650273224044,
+        "EMPTY": 0.16393442622950818
+       }
+      },
+      "final": {
+       "n": 915,
+       "counts": {
+        "PASS": 379,
+        "FLAG": 2,
+        "ABSTAIN": 385,
+        "EMPTY": 149
+       },
+       "ratios": {
+        "PASS": 0.41420765027322404,
+        "FLAG": 0.002185792349726776,
+        "ABSTAIN": 0.4207650273224044,
+        "EMPTY": 0.1628415300546448
+       }
+      }
+     },
+     "CoffeeMartini": {
+      "round1": {
+       "n": 1360,
+       "counts": {
+        "PASS": 864,
+        "FLAG": 6,
+        "ABSTAIN": 384,
+        "EMPTY": 106
+       },
+       "ratios": {
+        "PASS": 0.6352941176470588,
+        "FLAG": 0.004411764705882353,
+        "ABSTAIN": 0.2823529411764706,
+        "EMPTY": 0.07794117647058824
+       }
+      },
+      "round2_S": {
+       "n": 1020,
+       "counts": {
+        "PASS": 691,
+        "FLAG": 0,
+        "ABSTAIN": 299,
+        "EMPTY": 30
+       },
+       "ratios": {
+        "PASS": 0.6774509803921569,
+        "FLAG": 0.0,
+        "ABSTAIN": 0.2931372549019608,
+        "EMPTY": 0.029411764705882353
+       }
+      },
+      "relay": {
+       "n": 340,
+       "counts": {
+        "PASS": 185,
+        "FLAG": 5,
+        "ABSTAIN": 95,
+        "EMPTY": 55
+       },
+       "ratios": {
+        "PASS": 0.5441176470588235,
+        "FLAG": 0.014705882352941176,
+        "ABSTAIN": 0.27941176470588236,
+        "EMPTY": 0.16176470588235295
+       }
+      },
+      "final": {
+       "n": 340,
+       "counts": {
+        "PASS": 185,
+        "FLAG": 5,
+        "ABSTAIN": 95,
+        "EMPTY": 55
+       },
+       "ratios": {
+        "PASS": 0.5441176470588235,
+        "FLAG": 0.014705882352941176,
+        "ABSTAIN": 0.27941176470588236,
+        "EMPTY": 0.16176470588235295
+       }
+      }
+     }
+    }
+   },
+   "AB_45_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 9248,
+      "counts": {
+       "PASS": 5480,
+       "FLAG": 532,
+       "ABSTAIN": 2681,
+       "EMPTY": 555
+      },
+      "ratios": {
+       "PASS": 0.592560553633218,
+       "FLAG": 0.057525951557093426,
+       "ABSTAIN": 0.2899005190311419,
+       "EMPTY": 0.06001297577854671
+      }
+     },
+     "round2_S": {
+      "n": 5698,
+      "counts": {
+       "PASS": 3759,
+       "FLAG": 117,
+       "ABSTAIN": 1670,
+       "EMPTY": 152
+      },
+      "ratios": {
+       "PASS": 0.6597051597051597,
+       "FLAG": 0.020533520533520533,
+       "ABSTAIN": 0.2930852930852931,
+       "EMPTY": 0.026676026676026678
+      }
+     },
+     "relay": {
+      "n": 3550,
+      "counts": {
+       "PASS": 1995,
+       "FLAG": 181,
+       "ABSTAIN": 1044,
+       "EMPTY": 330
+      },
+      "ratios": {
+       "PASS": 0.5619718309859155,
+       "FLAG": 0.050985915492957744,
+       "ABSTAIN": 0.29408450704225353,
+       "EMPTY": 0.09295774647887324
+      }
+     },
+     "final": {
+      "n": 3550,
+      "counts": {
+       "PASS": 2000,
+       "FLAG": 178,
+       "ABSTAIN": 1044,
+       "EMPTY": 328
+      },
+      "ratios": {
+       "PASS": 0.5633802816901409,
+       "FLAG": 0.05014084507042253,
+       "ABSTAIN": 0.29408450704225353,
+       "EMPTY": 0.0923943661971831
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 5017,
+       "counts": {
+        "PASS": 3165,
+        "FLAG": 413,
+        "ABSTAIN": 1170,
+        "EMPTY": 269
+       },
+       "ratios": {
+        "PASS": 0.6308550926848714,
+        "FLAG": 0.08232011162049033,
+        "ABSTAIN": 0.2332070958740283,
+        "EMPTY": 0.053617699820609925
+       }
+      },
+      "round2_S": {
+       "n": 3372,
+       "counts": {
+        "PASS": 2331,
+        "FLAG": 108,
+        "ABSTAIN": 850,
+        "EMPTY": 83
+       },
+       "ratios": {
+        "PASS": 0.6912811387900356,
+        "FLAG": 0.03202846975088968,
+        "ABSTAIN": 0.25207591933570583,
+        "EMPTY": 0.02461447212336892
+       }
+      },
+      "relay": {
+       "n": 1645,
+       "counts": {
+        "PASS": 985,
+        "FLAG": 168,
+        "ABSTAIN": 344,
+        "EMPTY": 148
+       },
+       "ratios": {
+        "PASS": 0.5987841945288754,
+        "FLAG": 0.10212765957446808,
+        "ABSTAIN": 0.20911854103343466,
+        "EMPTY": 0.08996960486322189
+       }
+      },
+      "final": {
+       "n": 1645,
+       "counts": {
+        "PASS": 986,
+        "FLAG": 167,
+        "ABSTAIN": 344,
+        "EMPTY": 148
+       },
+       "ratios": {
+        "PASS": 0.5993920972644377,
+        "FLAG": 0.10151975683890578,
+        "ABSTAIN": 0.20911854103343466,
+        "EMPTY": 0.08996960486322189
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 596,
+       "counts": {
+        "PASS": 398,
+        "FLAG": 1,
+        "ABSTAIN": 188,
+        "EMPTY": 9
+       },
+       "ratios": {
+        "PASS": 0.6677852348993288,
+        "FLAG": 0.0016778523489932886,
+        "ABSTAIN": 0.31543624161073824,
+        "EMPTY": 0.015100671140939598
+       }
+      },
+      "relay": {
+       "n": 745,
+       "counts": {
+        "PASS": 462,
+        "FLAG": 6,
+        "ABSTAIN": 233,
+        "EMPTY": 44
+       },
+       "ratios": {
+        "PASS": 0.6201342281879194,
+        "FLAG": 0.008053691275167786,
+        "ABSTAIN": 0.312751677852349,
+        "EMPTY": 0.05906040268456376
+       }
+      },
+      "final": {
+       "n": 745,
+       "counts": {
+        "PASS": 463,
+        "FLAG": 6,
+        "ABSTAIN": 233,
+        "EMPTY": 43
+       },
+       "ratios": {
+        "PASS": 0.6214765100671141,
+        "FLAG": 0.008053691275167786,
+        "ABSTAIN": 0.312751677852349,
+        "EMPTY": 0.05771812080536913
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 400,
+       "counts": {
+        "PASS": 283,
+        "FLAG": 1,
+        "ABSTAIN": 116,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.7075,
+        "FLAG": 0.0025,
+        "ABSTAIN": 0.29,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 320,
+       "counts": {
+        "PASS": 201,
+        "FLAG": 5,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.628125,
+        "FLAG": 0.015625,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 320,
+       "counts": {
+        "PASS": 203,
+        "FLAG": 3,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.634375,
+        "FLAG": 0.009375,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 2170,
+       "counts": {
+        "PASS": 1007,
+        "FLAG": 87,
+        "ABSTAIN": 860,
+        "EMPTY": 216
+       },
+       "ratios": {
+        "PASS": 0.4640552995391705,
+        "FLAG": 0.04009216589861751,
+        "ABSTAIN": 0.39631336405529954,
+        "EMPTY": 0.09953917050691244
+       }
+      },
+      "round2_S": {
+       "n": 1330,
+       "counts": {
+        "PASS": 747,
+        "FLAG": 7,
+        "ABSTAIN": 516,
+        "EMPTY": 60
+       },
+       "ratios": {
+        "PASS": 0.5616541353383459,
+        "FLAG": 0.005263157894736842,
+        "ABSTAIN": 0.3879699248120301,
+        "EMPTY": 0.045112781954887216
+       }
+      },
+      "relay": {
+       "n": 840,
+       "counts": {
+        "PASS": 347,
+        "FLAG": 2,
+        "ABSTAIN": 353,
+        "EMPTY": 138
+       },
+       "ratios": {
+        "PASS": 0.41309523809523807,
+        "FLAG": 0.002380952380952381,
+        "ABSTAIN": 0.42023809523809524,
+        "EMPTY": 0.16428571428571428
+       }
+      },
+      "final": {
+       "n": 840,
+       "counts": {
+        "PASS": 348,
+        "FLAG": 2,
+        "ABSTAIN": 353,
+        "EMPTY": 137
+       },
+       "ratios": {
+        "PASS": 0.4142857142857143,
+        "FLAG": 0.002380952380952381,
+        "ABSTAIN": 0.42023809523809524,
+        "EMPTY": 0.1630952380952381
+       }
+      }
+     }
+    }
+   },
+   "AB_50_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 9248,
+      "counts": {
+       "PASS": 5480,
+       "FLAG": 532,
+       "ABSTAIN": 2681,
+       "EMPTY": 555
+      },
+      "ratios": {
+       "PASS": 0.592560553633218,
+       "FLAG": 0.057525951557093426,
+       "ABSTAIN": 0.2899005190311419,
+       "EMPTY": 0.06001297577854671
+      }
+     },
+     "round2_S": {
+      "n": 6241,
+      "counts": {
+       "PASS": 4079,
+       "FLAG": 164,
+       "ABSTAIN": 1810,
+       "EMPTY": 188
+      },
+      "ratios": {
+       "PASS": 0.6535811568658869,
+       "FLAG": 0.02627784008972921,
+       "ABSTAIN": 0.290017625380548,
+       "EMPTY": 0.030123377663835924
+      }
+     },
+     "relay": {
+      "n": 3007,
+      "counts": {
+       "PASS": 1643,
+       "FLAG": 170,
+       "ABSTAIN": 900,
+       "EMPTY": 294
+      },
+      "ratios": {
+       "PASS": 0.5463917525773195,
+       "FLAG": 0.05653475224476222,
+       "ABSTAIN": 0.2993016295310941,
+       "EMPTY": 0.09777186564682408
+      }
+     },
+     "final": {
+      "n": 3007,
+      "counts": {
+       "PASS": 1648,
+       "FLAG": 167,
+       "ABSTAIN": 900,
+       "EMPTY": 292
+      },
+      "ratios": {
+       "PASS": 0.5480545394080479,
+       "FLAG": 0.05553708014632524,
+       "ABSTAIN": 0.2993016295310941,
+       "EMPTY": 0.09710675091453276
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 5017,
+       "counts": {
+        "PASS": 3165,
+        "FLAG": 413,
+        "ABSTAIN": 1170,
+        "EMPTY": 269
+       },
+       "ratios": {
+        "PASS": 0.6308550926848714,
+        "FLAG": 0.08232011162049033,
+        "ABSTAIN": 0.2332070958740283,
+        "EMPTY": 0.053617699820609925
+       }
+      },
+      "round2_S": {
+       "n": 3718,
+       "counts": {
+        "PASS": 2538,
+        "FLAG": 153,
+        "ABSTAIN": 920,
+        "EMPTY": 107
+       },
+       "ratios": {
+        "PASS": 0.6826250672404519,
+        "FLAG": 0.04115115653577192,
+        "ABSTAIN": 0.24744486282947822,
+        "EMPTY": 0.02877891339429801
+       }
+      },
+      "relay": {
+       "n": 1299,
+       "counts": {
+        "PASS": 749,
+        "FLAG": 157,
+        "ABSTAIN": 269,
+        "EMPTY": 124
+       },
+       "ratios": {
+        "PASS": 0.5765973826020016,
+        "FLAG": 0.12086220169361046,
+        "ABSTAIN": 0.20708237105465743,
+        "EMPTY": 0.09545804464973057
+       }
+      },
+      "final": {
+       "n": 1299,
+       "counts": {
+        "PASS": 750,
+        "FLAG": 156,
+        "ABSTAIN": 269,
+        "EMPTY": 124
+       },
+       "ratios": {
+        "PASS": 0.5773672055427251,
+        "FLAG": 0.12009237875288684,
+        "ABSTAIN": 0.20708237105465743,
+        "EMPTY": 0.09545804464973057
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 745,
+       "counts": {
+        "PASS": 491,
+        "FLAG": 3,
+        "ABSTAIN": 241,
+        "EMPTY": 10
+       },
+       "ratios": {
+        "PASS": 0.6590604026845638,
+        "FLAG": 0.004026845637583893,
+        "ABSTAIN": 0.32348993288590605,
+        "EMPTY": 0.013422818791946308
+       }
+      },
+      "relay": {
+       "n": 596,
+       "counts": {
+        "PASS": 366,
+        "FLAG": 6,
+        "ABSTAIN": 181,
+        "EMPTY": 43
+       },
+       "ratios": {
+        "PASS": 0.6140939597315436,
+        "FLAG": 0.010067114093959731,
+        "ABSTAIN": 0.3036912751677852,
+        "EMPTY": 0.07214765100671142
+       }
+      },
+      "final": {
+       "n": 596,
+       "counts": {
+        "PASS": 367,
+        "FLAG": 6,
+        "ABSTAIN": 181,
+        "EMPTY": 42
+       },
+       "ratios": {
+        "PASS": 0.6157718120805369,
+        "FLAG": 0.010067114093959731,
+        "ABSTAIN": 0.3036912751677852,
+        "EMPTY": 0.07046979865771812
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 400,
+       "counts": {
+        "PASS": 283,
+        "FLAG": 1,
+        "ABSTAIN": 116,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.7075,
+        "FLAG": 0.0025,
+        "ABSTAIN": 0.29,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 320,
+       "counts": {
+        "PASS": 201,
+        "FLAG": 5,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.628125,
+        "FLAG": 0.015625,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 320,
+       "counts": {
+        "PASS": 203,
+        "FLAG": 3,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.634375,
+        "FLAG": 0.009375,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 2170,
+       "counts": {
+        "PASS": 1007,
+        "FLAG": 87,
+        "ABSTAIN": 860,
+        "EMPTY": 216
+       },
+       "ratios": {
+        "PASS": 0.4640552995391705,
+        "FLAG": 0.04009216589861751,
+        "ABSTAIN": 0.39631336405529954,
+        "EMPTY": 0.09953917050691244
+       }
+      },
+      "round2_S": {
+       "n": 1378,
+       "counts": {
+        "PASS": 767,
+        "FLAG": 7,
+        "ABSTAIN": 533,
+        "EMPTY": 71
+       },
+       "ratios": {
+        "PASS": 0.5566037735849056,
+        "FLAG": 0.0050798258345428155,
+        "ABSTAIN": 0.3867924528301887,
+        "EMPTY": 0.05152394775036284
+       }
+      },
+      "relay": {
+       "n": 792,
+       "counts": {
+        "PASS": 327,
+        "FLAG": 2,
+        "ABSTAIN": 336,
+        "EMPTY": 127
+       },
+       "ratios": {
+        "PASS": 0.4128787878787879,
+        "FLAG": 0.0025252525252525255,
+        "ABSTAIN": 0.42424242424242425,
+        "EMPTY": 0.16035353535353536
+       }
+      },
+      "final": {
+       "n": 792,
+       "counts": {
+        "PASS": 328,
+        "FLAG": 2,
+        "ABSTAIN": 336,
+        "EMPTY": 126
+       },
+       "ratios": {
+        "PASS": 0.41414141414141414,
+        "FLAG": 0.0025252525252525255,
+        "ABSTAIN": 0.42424242424242425,
+        "EMPTY": 0.1590909090909091
+       }
+      }
+     }
+    }
+   },
+   "AB_55_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 6840,
+      "counts": {
+       "PASS": 4154,
+       "FLAG": 346,
+       "ABSTAIN": 1938,
+       "EMPTY": 402
+      },
+      "ratios": {
+       "PASS": 0.6073099415204678,
+       "FLAG": 0.05058479532163743,
+       "ABSTAIN": 0.2833333333333333,
+       "EMPTY": 0.058771929824561406
+      }
+     },
+     "round2_S": {
+      "n": 4721,
+      "counts": {
+       "PASS": 3156,
+       "FLAG": 103,
+       "ABSTAIN": 1294,
+       "EMPTY": 168
+      },
+      "ratios": {
+       "PASS": 0.6685024359245922,
+       "FLAG": 0.021817411565346324,
+       "ABSTAIN": 0.2740944715102733,
+       "EMPTY": 0.03558568099978818
+      }
+     },
+     "relay": {
+      "n": 2119,
+      "counts": {
+       "PASS": 1184,
+       "FLAG": 77,
+       "ABSTAIN": 654,
+       "EMPTY": 204
+      },
+      "ratios": {
+       "PASS": 0.5587541293062765,
+       "FLAG": 0.03633789523360075,
+       "ABSTAIN": 0.30863614912694665,
+       "EMPTY": 0.09627182633317603
+      }
+     },
+     "final": {
+      "n": 2119,
+      "counts": {
+       "PASS": 1188,
+       "FLAG": 74,
+       "ABSTAIN": 654,
+       "EMPTY": 203
+      },
+      "ratios": {
+       "PASS": 0.5606418121755545,
+       "FLAG": 0.034922133081642284,
+       "ABSTAIN": 0.30863614912694665,
+       "EMPTY": 0.09579990561585654
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 3169,
+       "counts": {
+        "PASS": 2150,
+        "FLAG": 231,
+        "ABSTAIN": 642,
+        "EMPTY": 146
+       },
+       "ratios": {
+        "PASS": 0.6784474597664879,
+        "FLAG": 0.07289365730514358,
+        "ABSTAIN": 0.20258756705585357,
+        "EMPTY": 0.04607131587251499
+       }
+      },
+      "round2_S": {
+       "n": 2571,
+       "counts": {
+        "PASS": 1842,
+        "FLAG": 96,
+        "ABSTAIN": 545,
+        "EMPTY": 88
+       },
+       "ratios": {
+        "PASS": 0.7164527421236873,
+        "FLAG": 0.03733955659276546,
+        "ABSTAIN": 0.2119797744068456,
+        "EMPTY": 0.034227926876701675
+       }
+      },
+      "relay": {
+       "n": 598,
+       "counts": {
+        "PASS": 372,
+        "FLAG": 64,
+        "ABSTAIN": 100,
+        "EMPTY": 62
+       },
+       "ratios": {
+        "PASS": 0.6220735785953178,
+        "FLAG": 0.10702341137123746,
+        "ABSTAIN": 0.16722408026755853,
+        "EMPTY": 0.10367892976588629
+       }
+      },
+      "final": {
+       "n": 598,
+       "counts": {
+        "PASS": 373,
+        "FLAG": 63,
+        "ABSTAIN": 100,
+        "EMPTY": 62
+       },
+       "ratios": {
+        "PASS": 0.6237458193979933,
+        "FLAG": 0.10535117056856187,
+        "ABSTAIN": 0.16722408026755853,
+        "EMPTY": 0.10367892976588629
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 745,
+       "counts": {
+        "PASS": 491,
+        "FLAG": 3,
+        "ABSTAIN": 241,
+        "EMPTY": 10
+       },
+       "ratios": {
+        "PASS": 0.6590604026845638,
+        "FLAG": 0.004026845637583893,
+        "ABSTAIN": 0.32348993288590605,
+        "EMPTY": 0.013422818791946308
+       }
+      },
+      "relay": {
+       "n": 596,
+       "counts": {
+        "PASS": 366,
+        "FLAG": 6,
+        "ABSTAIN": 181,
+        "EMPTY": 43
+       },
+       "ratios": {
+        "PASS": 0.6140939597315436,
+        "FLAG": 0.010067114093959731,
+        "ABSTAIN": 0.3036912751677852,
+        "EMPTY": 0.07214765100671142
+       }
+      },
+      "final": {
+       "n": 596,
+       "counts": {
+        "PASS": 367,
+        "FLAG": 6,
+        "ABSTAIN": 181,
+        "EMPTY": 42
+       },
+       "ratios": {
+        "PASS": 0.6157718120805369,
+        "FLAG": 0.010067114093959731,
+        "ABSTAIN": 0.3036912751677852,
+        "EMPTY": 0.07046979865771812
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 400,
+       "counts": {
+        "PASS": 283,
+        "FLAG": 1,
+        "ABSTAIN": 116,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.7075,
+        "FLAG": 0.0025,
+        "ABSTAIN": 0.29,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 320,
+       "counts": {
+        "PASS": 201,
+        "FLAG": 5,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.628125,
+        "FLAG": 0.015625,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 320,
+       "counts": {
+        "PASS": 203,
+        "FLAG": 3,
+        "ABSTAIN": 114,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.634375,
+        "FLAG": 0.009375,
+        "ABSTAIN": 0.35625,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 1610,
+       "counts": {
+        "PASS": 696,
+        "FLAG": 83,
+        "ABSTAIN": 645,
+        "EMPTY": 186
+       },
+       "ratios": {
+        "PASS": 0.4322981366459627,
+        "FLAG": 0.0515527950310559,
+        "ABSTAIN": 0.40062111801242234,
+        "EMPTY": 0.115527950310559
+       }
+      },
+      "round2_S": {
+       "n": 1005,
+       "counts": {
+        "PASS": 540,
+        "FLAG": 3,
+        "ABSTAIN": 392,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.5373134328358209,
+        "FLAG": 0.0029850746268656717,
+        "ABSTAIN": 0.3900497512437811,
+        "EMPTY": 0.06965174129353234
+       }
+      },
+      "relay": {
+       "n": 605,
+       "counts": {
+        "PASS": 245,
+        "FLAG": 2,
+        "ABSTAIN": 259,
+        "EMPTY": 99
+       },
+       "ratios": {
+        "PASS": 0.4049586776859504,
+        "FLAG": 0.003305785123966942,
+        "ABSTAIN": 0.428099173553719,
+        "EMPTY": 0.16363636363636364
+       }
+      },
+      "final": {
+       "n": 605,
+       "counts": {
+        "PASS": 245,
+        "FLAG": 2,
+        "ABSTAIN": 259,
+        "EMPTY": 99
+       },
+       "ratios": {
+        "PASS": 0.4049586776859504,
+        "FLAG": 0.003305785123966942,
+        "ABSTAIN": 0.428099173553719,
+        "EMPTY": 0.16363636363636364
+       }
+      }
+     }
+    }
+   },
+   "AB_60_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 3607,
+      "counts": {
+       "PASS": 2006,
+       "FLAG": 151,
+       "ABSTAIN": 1221,
+       "EMPTY": 229
+      },
+      "ratios": {
+       "PASS": 0.5561408372608816,
+       "FLAG": 0.041863044080953704,
+       "ABSTAIN": 0.33850845578042693,
+       "EMPTY": 0.06348766287773773
+      }
+     },
+     "round2_S": {
+      "n": 2444,
+      "counts": {
+       "PASS": 1509,
+       "FLAG": 47,
+       "ABSTAIN": 806,
+       "EMPTY": 82
+      },
+      "ratios": {
+       "PASS": 0.617430441898527,
+       "FLAG": 0.019230769230769232,
+       "ABSTAIN": 0.32978723404255317,
+       "EMPTY": 0.03355155482815057
+      }
+     },
+     "relay": {
+      "n": 1163,
+      "counts": {
+       "PASS": 614,
+       "FLAG": 19,
+       "ABSTAIN": 417,
+       "EMPTY": 113
+      },
+      "ratios": {
+       "PASS": 0.5279449699054171,
+       "FLAG": 0.01633705932932072,
+       "ABSTAIN": 0.3585554600171969,
+       "EMPTY": 0.09716251074806535
+      }
+     },
+     "final": {
+      "n": 1163,
+      "counts": {
+       "PASS": 616,
+       "FLAG": 18,
+       "ABSTAIN": 417,
+       "EMPTY": 112
+      },
+      "ratios": {
+       "PASS": 0.529664660361135,
+       "FLAG": 0.015477214101461736,
+       "ABSTAIN": 0.3585554600171969,
+       "EMPTY": 0.09630266552020636
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 272,
+       "counts": {
+        "PASS": 158,
+        "FLAG": 42,
+        "ABSTAIN": 48,
+        "EMPTY": 24
+       },
+       "ratios": {
+        "PASS": 0.5808823529411765,
+        "FLAG": 0.15441176470588236,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      },
+      "round2_S": {
+       "n": 238,
+       "counts": {
+        "PASS": 143,
+        "FLAG": 36,
+        "ABSTAIN": 42,
+        "EMPTY": 17
+       },
+       "ratios": {
+        "PASS": 0.6008403361344538,
+        "FLAG": 0.15126050420168066,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.07142857142857142
+       }
+      },
+      "relay": {
+       "n": 34,
+       "counts": {
+        "PASS": 18,
+        "FLAG": 7,
+        "ABSTAIN": 6,
+        "EMPTY": 3
+       },
+       "ratios": {
+        "PASS": 0.5294117647058824,
+        "FLAG": 0.20588235294117646,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      },
+      "final": {
+       "n": 34,
+       "counts": {
+        "PASS": 18,
+        "FLAG": 7,
+        "ABSTAIN": 6,
+        "EMPTY": 3
+       },
+       "ratios": {
+        "PASS": 0.5294117647058824,
+        "FLAG": 0.20588235294117646,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_S": {
+       "n": 894,
+       "counts": {
+        "PASS": 586,
+        "FLAG": 3,
+        "ABSTAIN": 289,
+        "EMPTY": 16
+       },
+       "ratios": {
+        "PASS": 0.6554809843400448,
+        "FLAG": 0.003355704697986577,
+        "ABSTAIN": 0.3232662192393736,
+        "EMPTY": 0.017897091722595078
+       }
+      },
+      "relay": {
+       "n": 447,
+       "counts": {
+        "PASS": 270,
+        "FLAG": 6,
+        "ABSTAIN": 134,
+        "EMPTY": 37
+       },
+       "ratios": {
+        "PASS": 0.6040268456375839,
+        "FLAG": 0.013422818791946308,
+        "ABSTAIN": 0.29977628635346754,
+        "EMPTY": 0.08277404921700224
+       }
+      },
+      "final": {
+       "n": 447,
+       "counts": {
+        "PASS": 271,
+        "FLAG": 6,
+        "ABSTAIN": 134,
+        "EMPTY": 36
+       },
+       "ratios": {
+        "PASS": 0.6062639821029083,
+        "FLAG": 0.013422818791946308,
+        "ABSTAIN": 0.29977628635346754,
+        "EMPTY": 0.08053691275167785
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_S": {
+       "n": 520,
+       "counts": {
+        "PASS": 362,
+        "FLAG": 2,
+        "ABSTAIN": 156,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6961538461538461,
+        "FLAG": 0.0038461538461538464,
+        "ABSTAIN": 0.3,
+        "EMPTY": 0.0
+       }
+      },
+      "relay": {
+       "n": 200,
+       "counts": {
+        "PASS": 126,
+        "FLAG": 4,
+        "ABSTAIN": 70,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.63,
+        "FLAG": 0.02,
+        "ABSTAIN": 0.35,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 200,
+       "counts": {
+        "PASS": 127,
+        "FLAG": 3,
+        "ABSTAIN": 70,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.635,
+        "FLAG": 0.015,
+        "ABSTAIN": 0.35,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 1274,
+       "counts": {
+        "PASS": 540,
+        "FLAG": 77,
+        "ABSTAIN": 522,
+        "EMPTY": 135
+       },
+       "ratios": {
+        "PASS": 0.423861852433281,
+        "FLAG": 0.06043956043956044,
+        "ABSTAIN": 0.4097331240188383,
+        "EMPTY": 0.10596546310832025
+       }
+      },
+      "round2_S": {
+       "n": 792,
+       "counts": {
+        "PASS": 418,
+        "FLAG": 6,
+        "ABSTAIN": 319,
+        "EMPTY": 49
+       },
+       "ratios": {
+        "PASS": 0.5277777777777778,
+        "FLAG": 0.007575757575757576,
+        "ABSTAIN": 0.4027777777777778,
+        "EMPTY": 0.06186868686868687
+       }
+      },
+      "relay": {
+       "n": 482,
+       "counts": {
+        "PASS": 200,
+        "FLAG": 2,
+        "ABSTAIN": 207,
+        "EMPTY": 73
+       },
+       "ratios": {
+        "PASS": 0.4149377593360996,
+        "FLAG": 0.004149377593360996,
+        "ABSTAIN": 0.42946058091286304,
+        "EMPTY": 0.15145228215767634
+       }
+      },
+      "final": {
+       "n": 482,
+       "counts": {
+        "PASS": 200,
+        "FLAG": 2,
+        "ABSTAIN": 207,
+        "EMPTY": 73
+       },
+       "ratios": {
+        "PASS": 0.4149377593360996,
+        "FLAG": 0.004149377593360996,
+        "ABSTAIN": 0.42946058091286304,
+        "EMPTY": 0.15145228215767634
+       }
+      }
+     }
+    }
+   },
+   "A_60_cstar_A": {
+    "all": {
+     "round1": {
+      "n": 3607,
+      "counts": {
+       "PASS": 2006,
+       "FLAG": 151,
+       "ABSTAIN": 1221,
+       "EMPTY": 229
+      },
+      "ratios": {
+       "PASS": 0.5561408372608816,
+       "FLAG": 0.041863044080953704,
+       "ABSTAIN": 0.33850845578042693,
+       "EMPTY": 0.06348766287773773
+      }
+     },
+     "round2_F": {
+      "n": 1163,
+      "counts": {
+       "PASS": 574,
+       "FLAG": 58,
+       "ABSTAIN": 409,
+       "EMPTY": 122
+      },
+      "ratios": {
+       "PASS": 0.4935511607910576,
+       "FLAG": 0.04987102321582115,
+       "ABSTAIN": 0.351676698194325,
+       "EMPTY": 0.10490111779879621
+      }
+     },
+     "final": {
+      "n": 1163,
+      "counts": {
+       "PASS": 577,
+       "FLAG": 57,
+       "ABSTAIN": 409,
+       "EMPTY": 120
+      },
+      "ratios": {
+       "PASS": 0.4961306964746346,
+       "FLAG": 0.049011177987962166,
+       "ABSTAIN": 0.351676698194325,
+       "EMPTY": 0.10318142734307825
+      }
+     }
+    },
+    "per_scene": {
+     "CBABasketball": {
+      "round1": {
+       "n": 272,
+       "counts": {
+        "PASS": 158,
+        "FLAG": 42,
+        "ABSTAIN": 48,
+        "EMPTY": 24
+       },
+       "ratios": {
+        "PASS": 0.5808823529411765,
+        "FLAG": 0.15441176470588236,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      },
+      "round2_F": {
+       "n": 34,
+       "counts": {
+        "PASS": 18,
+        "FLAG": 7,
+        "ABSTAIN": 6,
+        "EMPTY": 3
+       },
+       "ratios": {
+        "PASS": 0.5294117647058824,
+        "FLAG": 0.20588235294117646,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      },
+      "final": {
+       "n": 34,
+       "counts": {
+        "PASS": 18,
+        "FLAG": 7,
+        "ABSTAIN": 6,
+        "EMPTY": 3
+       },
+       "ratios": {
+        "PASS": 0.5294117647058824,
+        "FLAG": 0.20588235294117646,
+        "ABSTAIN": 0.17647058823529413,
+        "EMPTY": 0.08823529411764706
+       }
+      }
+     },
+     "Blocks": {
+      "round1": {
+       "n": 1341,
+       "counts": {
+        "PASS": 820,
+        "FLAG": 27,
+        "ABSTAIN": 424,
+        "EMPTY": 70
+       },
+       "ratios": {
+        "PASS": 0.6114839671886652,
+        "FLAG": 0.020134228187919462,
+        "ABSTAIN": 0.3161819537658464,
+        "EMPTY": 0.05219985085756898
+       }
+      },
+      "round2_F": {
+       "n": 447,
+       "counts": {
+        "PASS": 270,
+        "FLAG": 6,
+        "ABSTAIN": 131,
+        "EMPTY": 40
+       },
+       "ratios": {
+        "PASS": 0.6040268456375839,
+        "FLAG": 0.013422818791946308,
+        "ABSTAIN": 0.2930648769574944,
+        "EMPTY": 0.0894854586129754
+       }
+      },
+      "final": {
+       "n": 447,
+       "counts": {
+        "PASS": 270,
+        "FLAG": 6,
+        "ABSTAIN": 131,
+        "EMPTY": 40
+       },
+       "ratios": {
+        "PASS": 0.6040268456375839,
+        "FLAG": 0.013422818791946308,
+        "ABSTAIN": 0.2930648769574944,
+        "EMPTY": 0.0894854586129754
+       }
+      }
+     },
+     "Fencing": {
+      "round1": {
+       "n": 720,
+       "counts": {
+        "PASS": 488,
+        "FLAG": 5,
+        "ABSTAIN": 227,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.6777777777777778,
+        "FLAG": 0.006944444444444444,
+        "ABSTAIN": 0.31527777777777777,
+        "EMPTY": 0.0
+       }
+      },
+      "round2_F": {
+       "n": 200,
+       "counts": {
+        "PASS": 125,
+        "FLAG": 4,
+        "ABSTAIN": 71,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.625,
+        "FLAG": 0.02,
+        "ABSTAIN": 0.355,
+        "EMPTY": 0.0
+       }
+      },
+      "final": {
+       "n": 200,
+       "counts": {
+        "PASS": 126,
+        "FLAG": 3,
+        "ABSTAIN": 71,
+        "EMPTY": 0
+       },
+       "ratios": {
+        "PASS": 0.63,
+        "FLAG": 0.015,
+        "ABSTAIN": 0.355,
+        "EMPTY": 0.0
+       }
+      }
+     },
+     "MartialArts": {
+      "round1": {
+       "n": 1274,
+       "counts": {
+        "PASS": 540,
+        "FLAG": 77,
+        "ABSTAIN": 522,
+        "EMPTY": 135
+       },
+       "ratios": {
+        "PASS": 0.423861852433281,
+        "FLAG": 0.06043956043956044,
+        "ABSTAIN": 0.4097331240188383,
+        "EMPTY": 0.10596546310832025
+       }
+      },
+      "round2_F": {
+       "n": 482,
+       "counts": {
+        "PASS": 161,
+        "FLAG": 41,
+        "ABSTAIN": 201,
+        "EMPTY": 79
+       },
+       "ratios": {
+        "PASS": 0.33402489626556015,
+        "FLAG": 0.08506224066390042,
+        "ABSTAIN": 0.4170124481327801,
+        "EMPTY": 0.16390041493775934
+       }
+      },
+      "final": {
+       "n": 482,
+       "counts": {
+        "PASS": 163,
+        "FLAG": 41,
+        "ABSTAIN": 201,
+        "EMPTY": 77
+       },
+       "ratios": {
+        "PASS": 0.3381742738589212,
+        "FLAG": 0.08506224066390042,
+        "ABSTAIN": 0.4170124481327801,
+        "EMPTY": 0.15975103734439833
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "G1": {
+  "conditions": {
+   "1": true,
+   "2": true,
+   "3": true
+  },
+  "labels": {
+   "1": "DEV-B vacuous (case Z); content = DEV-B' (B3, B4)"
+  },
+  "g1_pass": true,
+  "route": "main",
+  "C2": "safe on the ring (main arm)",
+  "theta_s": "60",
+  "family": "cstar",
+  "t06_main": {
+   "J_all": 0.9416979629615845,
+   "wrong_all": 1
+  },
+  "allowed60": true,
+  "proxy_b_all": {
+   "ABc": {
+    "ok": true,
+    "label": "AB(cstar, 60) on DEV-A'",
+    "record": {
+     "run": "AB_60_cstar_A",
+     "safe": {
+      "ci_lo": 0.0,
+      "worst_scene": 0.0,
+      "ok": true
+     },
+     "wide_dJ": 0.02370726435879607,
+     "filled_from_c0": [],
+     "ok": true
+    }
+   },
+   "Ac": {
+    "ok": true,
+    "label": "A(cstar, 60) on DEV-A'",
+    "record": {
+     "run": "A_60_cstar_A",
+     "safe": {
+      "ci_lo": 0.0,
+      "worst_scene": 0.0,
+      "ok": true
+     },
+     "wide_dJ": 0.015931351338316913,
+     "filled_from_c0": [],
+     "ok": true
+    }
+   }
+  },
+  "reported": {
+   "Jfull_all": 0.941221280284956,
+   "J_far": 0.9319171964464031,
+   "empty_all": 1,
+   "empty_far": 1,
+   "wrong_far": 1,
+   "far_correct_J": {
+    "n": 111,
+    "J": 0.9487084972832751,
+    "c0_diagnosis": 0.842
+   }
+  },
+  "definitions": "J_all / wrong_all = ring_diag/d1_d5/score.py (1/4 resolution, 184 pairs); development targets, not test evidence (\u00a77.3)"
+ }
+}
