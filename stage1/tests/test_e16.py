@@ -19,6 +19,8 @@ def test_nogeo_arm_sets_and_flags():
     assert a not in arms.SET2_ARMS and a not in R.PAIR_ARMS and a not in arms.DEC_ARMS and a not in arms.FUSE_ARMS
     T = pytest.importorskip("geomem.train")                  # torch: the training module (scsam3 / torch test runs)
     assert a in T.ARMS and a in T.FT_ARMS and a in T.SET_ARMS and a not in T.BIAS_ARMS and a not in T.PAIR_ARMS
+    from geomem import wrapper as W
+    assert a in W.FT_ARMS and a not in W.BIAS_ARMS                # wrapper.freeze: attention trainable, no GeoBias
     f = T.arm_flags(a)
     assert f["use_bias"] is False and f["use_geometry"] is False and f["no_rope"] is False
     assert f["extra_mem_prob"] == T.EXTRA_MEM_PROB and f["extra_mem_pred"] is True and f["train_decoder"] is False
