@@ -208,3 +208,6 @@ stage1/scores/
 # stage-1 external baselines (iccv2027-plan WP2): cloned code and downloaded weights, never committed
 stage1/baselines/third_party/
 stage1/baselines/weights/
+
+# CROOM annotation working data (images copied from the NAS, label maps, logs): committed only as the sha256 manifest
+stage1/Data/_annot/

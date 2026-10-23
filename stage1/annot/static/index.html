@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>CROOM 주석</title>
+<style>
+  :root { --bg:#1e1e1e; --fg:#ddd; --panel:#2a2a2a; --acc:#4da3ff; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:13px/1.4 system-ui, sans-serif; display:flex; height:100vh; overflow:hidden; }
+  #side { width:290px; background:var(--panel); padding:10px; overflow-y:auto; box-sizing:border-box; }
+  #main { flex:1; position:relative; overflow:hidden; }
+  canvas { position:absolute; left:0; top:0; }
+  h3 { margin:8px 0 4px; font-size:13px; color:#aaa; text-transform:uppercase; }
+  button { background:#3a3a3a; color:var(--fg); border:1px solid #555; border-radius:4px; padding:4px 8px; margin:2px; cursor:pointer; }
+  button:hover { background:#4a4a4a; } button.on { background:var(--acc); color:#000; border-color:var(--acc); }
+  select, input[type=text] { background:#333; color:var(--fg); border:1px solid #555; border-radius:4px; padding:3px; }
+  .obj { display:flex; align-items:center; gap:6px; padding:2px 4px; border-radius:4px; cursor:pointer; }
+  .obj.sel { background:#444; } .obj .sw { width:14px; height:14px; border-radius:3px; }
+  .obj .st { margin-left:auto; color:#9c9; } .obj .st.no { color:#777; }
+  #cams { display:grid; grid-template-columns:repeat(8, 1fr); gap:2px; }
+  #cams div { text-align:center; padding:3px 0; border-radius:3px; background:#333; cursor:pointer; font-size:12px; }
+  #cams div.done { background:#2d5a2d; } #cams div.cur { outline:2px solid var(--acc); }
+  #msg { position:absolute; left:10px; bottom:10px; background:rgba(0,0,0,.6); padding:4px 8px; border-radius:4px; pointer-events:none; }
+  #help { font-size:12px; color:#999; }
+  kbd { background:#444; border-radius:3px; padding:0 4px; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h3>순간</h3>
+  <select id="instant"></select>
+  <h3>카메라 <span id="camlabel"></span></h3>
+  <div id="cams"></div>
+  <div><button id="prevcam">◀ 이전</button><button id="nextcam">다음 ▶</button><button id="notvis">이 카메라에 없음</button></div>
+  <h3>객체</h3>
+  <div id="objs"></div>
+  <div><input type="text" id="newname" placeholder="새 객체 이름 (예: person A)" size="18"><button id="addobj">추가</button></div>
+  <h3>도구</h3>
+  <div>
+    <button id="t_point" class="on">점 (+좌클릭 / −Shift)</button>
+    <button id="t_box">박스 (드래그)</button>
+  </div>
+  <div>
+    <button id="t_brush">붓 +</button><button id="t_erase">붓 −</button>
+    크기 <input type="range" id="bsize" min="2" max="120" value="24" style="width:90px">
+  </div>
+  <div>
+    <button id="sam">SAM 다시</button><button id="clearp">프롬프트 지움</button><button id="undo">되돌리기</button>
+  </div>
+  <div>
+    <button id="save" style="font-weight:bold">저장 (S)</button><label><input type="checkbox" id="overwrite"> 다른 객체 위에 덮어쓰기</label>
+    <button id="clearobj">이 객체 지움</button>
+  </div>
+  <div>
+    <label><input type="checkbox" id="showall" checked> 저장된 라벨 표시</label>
+    <label>불투명 <input type="range" id="alpha" min="10" max="90" value="45" style="width:70px"></label>
+  </div>
+  <h3>도움말</h3>
+  <div id="help">
+    휠: 확대 · 가운데/우클릭 드래그 또는 Space+드래그: 이동 · <kbd>F</kbd> 맞춤<br>
+    객체 고르고 점/박스로 SAM → 붓으로 수정 → <kbd>S</kbd> 저장<br>
+    <kbd>1</kbd>~<kbd>9</kbd> 객체 선택 · <kbd>[</kbd> <kbd>]</kbd> 카메라 · <kbd>B</kbd>/<kbd>E</kbd> 붓/지우개 · <kbd>P</kbd> 점<br>
+    저장은 카메라별 라벨 PNG(원본 해상도)에 바로 씁니다. 모든 동작이 기록됩니다.
+  </div>
+</div>
+<div id="main">
+  <canvas id="cimg"></canvas>
+  <canvas id="cmask"></canvas>
+  <canvas id="cui"></canvas>
+  <div id="msg">준비</div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const st = { take:null, frame:null, cams:[], cam:null, W:0, H:0, pw:0, objects:{}, status:{}, obj:null,
+  tool:'point', points:[], box:null, dragging:null, scale:1, ox:0, oy:0, pan:false, space:false,
+  img:new Image(), label:null,                     // label: Uint8Array W*H of saved ids (full res)
+  mask:null, undo:[], strokes:0, bsize:24 };
+const cimg=$('#cimg'), cmask=$('#cmask'), cui=$('#cui');
+const main=$('#main');
+function msg(t){ $('#msg').textContent=t; }
+function resize(){ for(const c of [cimg,cmask,cui]){ c.width=main.clientWidth; c.height=main.clientHeight; } draw(); }
+window.addEventListener('resize', resize);
+// ----------------------------------------------------------------------------------------------- data
+async function api(path, body){ const r = body ? await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}) : await fetch(path); return r.json(); }
+async function loadInstants(){
+  const L = await api('/api/instants'); const sel=$('#instant'); sel.innerHTML='';
+  for(const i of L){ const o=document.createElement('option'); o.value=i.take+'|'+i.frame; o.textContent=`${i.take} #${i.frame}  (${i.n_done}/${i.n_cams} 카메라, 객체 ${i.n_objects})`; sel.appendChild(o); }
+  if(L.length) await loadInstant(L[0].take, L[0].frame);
+}
+$('#instant').onchange = e => { const [t,f]=e.target.value.split('|'); loadInstant(t, +f); };
+async function loadInstant(take, frame){
+  const d = await api(`/api/instant?take=${take}&frame=${frame}`);
+  Object.assign(st, {take, frame, cams:d.cams, W:d.size[0], H:d.size[1], pw:d.preview_w, objects:d.objects, status:d.status});
+  renderObjs(); renderCams(); await loadCam(st.cams[0]);
+}
+function renderCams(){
+  const el=$('#cams'); el.innerHTML='';
+  for(const c of st.cams){ const d=document.createElement('div'); d.textContent=c; if(st.status[c]) d.classList.add('done'); if(c===st.cam) d.classList.add('cur'); d.onclick=()=>loadCam(c); el.appendChild(d); }
+  $('#camlabel').textContent = st.cam ? `${st.cam}  (${st.cams.indexOf(st.cam)+1}/${st.cams.length})` : '';
+}
+function renderObjs(){
+  const el=$('#objs'); el.innerHTML='';
+  const present = (st.status[st.cam]||[]);
+  for(const [id,o] of Object.entries(st.objects)){ const d=document.createElement('div'); d.className='obj'+(st.obj===+id?' sel':'');
+    d.innerHTML=`<span class="sw" style="background:rgb(${o.color.join(',')})"></span><span>${id}. ${o.name}</span><span class="st ${present.includes(+id)?'':'no'}">${present.includes(+id)?'저장됨':'-'}</span>`;
+    d.onclick=()=>{ selectObj(+id); }; el.appendChild(d); }
+}
+function selectObj(id){ st.obj=id; st.points=[]; st.box=null; st.mask=null; st.undo=[]; st.strokes=0; renderObjs(); draw(); msg(`객체 ${id} ${st.objects[id].name}`); }
+$('#addobj').onclick = async ()=>{ const n=$('#newname').value.trim(); if(!n) return; st.objects = await api('/api/objects',{take:st.take,frame:st.frame,add:n}); $('#newname').value=''; const ids=Object.keys(st.objects).map(Number); selectObj(Math.max(...ids)); };
+async function loadCam(cam){
+  st.cam=cam; st.points=[]; st.box=null; st.mask=null; st.undo=[]; st.strokes=0;
+  const l = await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${cam}`);
+  st.label = await pngToArray(l.png, st.W, st.H);
+  st.img = new Image(); st.img.onload=()=>{ fit(); draw(); }; st.img.src=`/img/${st.take}/${st.frame}/${cam}?t=${Date.now()}`;
+  renderCams(); renderObjs(); msg(`카메라 ${cam}`);
+}
+function pngToArray(b64, W, H){ return new Promise(res=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); g.drawImage(im,0,0); const d=g.getImageData(0,0,W,H).data; const a=new Uint8Array(W*H); for(let i=0;i<W*H;i++) a[i]=d[i*4]; res(a); }; im.src='data:image/png;base64,'+b64; }); }
+function arrayToPngB64(a, W, H){ const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'); const id=g.createImageData(W,H); const d=id.data; for(let i=0;i<W*H;i++){ const v=a[i]?255:0; d[i*4]=v; d[i*4+1]=v; d[i*4+2]=v; d[i*4+3]=255; } g.putImageData(id,0,0); return c.toDataURL('image/png').split(',')[1]; }
+// ----------------------------------------------------------------------------------------------- view
+function fit(){ const s=Math.min(cui.width/st.W, cui.height/st.H); st.scale=s; st.ox=(cui.width-st.W*s)/2; st.oy=(cui.height-st.H*s)/2; }
+function toImg(x,y){ return [(x-st.ox)/st.scale, (y-st.oy)/st.scale]; }
+const maskCanvas=document.createElement('canvas');
+function draw(){
+  const g=cimg.getContext('2d'); g.clearRect(0,0,cimg.width,cimg.height);
+  if(st.img.complete && st.img.naturalWidth){ g.imageSmoothingEnabled = st.scale*st.W/st.img.naturalWidth < 1; g.drawImage(st.img, st.ox, st.oy, st.W*st.scale, st.H*st.scale); }
+  // masks: saved labels (all objects) + the working mask of the current object
+  maskCanvas.width=st.W; maskCanvas.height=st.H; const mg=maskCanvas.getContext('2d'); const id=mg.createImageData(st.W,st.H); const d=id.data;
+  const alpha=+$('#alpha').value/100*255; const showall=$('#showall').checked;
+  if(st.label && showall){ for(let i=0;i<st.W*st.H;i++){ const v=st.label[i]; if(v && v!==st.obj){ const c=(st.objects[v]||{color:[200,200,200]}).color; d[i*4]=c[0]; d[i*4+1]=c[1]; d[i*4+2]=c[2]; d[i*4+3]=alpha*0.6; } } }
+  const cur = st.mask || (st.label && st.obj ? null : null);
+  if(st.obj){ const c=st.objects[st.obj].color; const src = st.mask ? st.mask : (showall && st.label ? st.label : null);
+    if(src){ for(let i=0;i<st.W*st.H;i++){ const on = st.mask ? src[i] : src[i]===st.obj; if(on){ d[i*4]=c[0]; d[i*4+1]=c[1]; d[i*4+2]=c[2]; d[i*4+3]=alpha; } } } }
+  mg.putImageData(id,0,0);
+  const g2=cmask.getContext('2d'); g2.clearRect(0,0,cmask.width,cmask.height); g2.imageSmoothingEnabled=false; g2.drawImage(maskCanvas, st.ox, st.oy, st.W*st.scale, st.H*st.scale);
+  const u=cui.getContext('2d'); u.clearRect(0,0,cui.width,cui.height);
+  for(const [x,y,l] of st.points){ u.beginPath(); u.arc(st.ox+x*st.scale, st.oy+y*st.scale, 6, 0, 7); u.fillStyle = l? '#2f2':'#f33'; u.fill(); u.strokeStyle='#000'; u.stroke(); }
+  if(st.box){ const [x0,y0,x1,y1]=st.box; u.strokeStyle='#ff0'; u.lineWidth=2; u.strokeRect(st.ox+x0*st.scale, st.oy+y0*st.scale, (x1-x0)*st.scale, (y1-y0)*st.scale); }
+  if(st.cursor && (st.tool==='brush'||st.tool==='erase')){ u.beginPath(); u.arc(st.cursor[0], st.cursor[1], st.bsize*st.scale/2, 0, 7); u.strokeStyle = st.tool==='brush'?'#fff':'#f88'; u.stroke(); }
+}
+$('#alpha').oninput=draw; $('#showall').onchange=draw;
+// ----------------------------------------------------------------------------------------------- SAM / editing
+async function runSam(){
+  if(!st.obj){ msg('객체를 먼저 고르세요'); return; }
+  if(!st.points.length && !st.box){ return; }
+  msg('SAM ...'); const r = await api('/api/sam',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,points:st.points,box:st.box});
+  pushUndo(); st.mask = await pngToArray(r.png, st.W, st.H); draw(); msg(`SAM 점수 ${r.score.toFixed(2)}, 면적 ${r.area}`);
+}
+function pushUndo(){ if(st.mask) st.undo.push(st.mask.slice()); if(st.undo.length>12) st.undo.shift(); }
+$('#undo').onclick=()=>{ if(st.undo.length){ st.mask=st.undo.pop(); draw(); } };
+$('#sam').onclick=runSam; $('#clearp').onclick=()=>{ st.points=[]; st.box=null; draw(); };
+function setTool(t){ st.tool=t; for(const b of ['point','box','brush','erase']) $('#t_'+b).classList.toggle('on', b===t); }
+$('#t_point').onclick=()=>setTool('point'); $('#t_box').onclick=()=>setTool('box'); $('#t_brush').onclick=()=>setTool('brush'); $('#t_erase').onclick=()=>setTool('erase');
+$('#bsize').oninput=e=>{ st.bsize=+e.target.value; };
+function paint(x,y,on){ if(!st.mask){ st.mask=new Uint8Array(st.W*st.H); if(st.label) for(let i=0;i<st.W*st.H;i++) st.mask[i]= st.label[i]===st.obj?1:0; }
+  const r=st.bsize/2, r2=r*r; const x0=Math.max(0,Math.floor(x-r)), x1=Math.min(st.W-1,Math.ceil(x+r)), y0=Math.max(0,Math.floor(y-r)), y1=Math.min(st.H-1,Math.ceil(y+r));
+  for(let yy=y0; yy<=y1; yy++){ const dy=yy-y; for(let xx=x0; xx<=x1; xx++){ const dx=xx-x; if(dx*dx+dy*dy<=r2) st.mask[yy*st.W+xx]=on?1:0; } } }
+async function save(){
+  if(!st.obj || !st.mask){ msg('저장할 마스크가 없습니다'); return; }
+  msg('저장 ...'); const r = await api('/api/save',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,png:arrayToPngB64(st.mask,st.W,st.H),overwrite:$('#overwrite').checked,strokes:st.strokes});
+  for(let i=0;i<st.W*st.H;i++){ if(st.label[i]===st.obj) st.label[i]=0; } for(let i=0;i<st.W*st.H;i++){ if(st.mask[i] && ($('#overwrite').checked || !st.label[i])) st.label[i]=st.obj; }
+  st.status[st.cam]=r.present; st.mask=null; st.points=[]; st.box=null; st.strokes=0; renderCams(); renderObjs(); draw();
+  msg(`저장: 객체 ${st.obj} 면적 ${r.area}` + (r.overlapped? ` (다른 객체와 겹친 ${r.overlapped}px${$('#overwrite').checked?' 덮어씀':' 제외'})`:''));
+}
+$('#save').onclick=save;
+$('#clearobj').onclick=async()=>{ if(!st.obj) return; await api('/api/clear',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); for(let i=0;i<st.W*st.H;i++) if(st.label[i]===st.obj) st.label[i]=0; st.mask=null; const l=await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${st.cam}`); st.status[st.cam]=[...new Set(st.label)].filter(v=>v).sort((a,b)=>a-b); renderObjs(); draw(); msg('지움'); };
+$('#notvis').onclick=async()=>{ if(!st.obj) return; await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(`객체 ${st.obj}: 이 카메라에 없음으로 기록`); };
+$('#prevcam').onclick=()=>stepCam(-1); $('#nextcam').onclick=()=>stepCam(1);
+function stepCam(d){ const i=st.cams.indexOf(st.cam); const j=(i+d+st.cams.length)%st.cams.length; loadCam(st.cams[j]); }
+// ----------------------------------------------------------------------------------------------- mouse / keys
+cui.addEventListener('contextmenu', e=>e.preventDefault());
+cui.addEventListener('wheel', e=>{ e.preventDefault(); const k=e.deltaY<0?1.15:1/1.15; const [ix,iy]=toImg(e.offsetX,e.offsetY); st.scale*=k; st.ox=e.offsetX-ix*st.scale; st.oy=e.offsetY-iy*st.scale; draw(); }, {passive:false});
+cui.addEventListener('mousedown', e=>{
+  if(e.button===1 || e.button===2 || st.space){ st.pan=[e.offsetX,e.offsetY,st.ox,st.oy]; return; }
+  const [x,y]=toImg(e.offsetX,e.offsetY); if(x<0||y<0||x>=st.W||y>=st.H) return;
+  if(st.tool==='point'){ st.points.push([Math.round(x),Math.round(y), e.shiftKey?0:1]); draw(); runSam(); }
+  else if(st.tool==='box'){ st.dragging=[x,y]; }
+  else { pushUndo(); st.painting=true; st.strokes++; paint(x,y, st.tool==='brush'); draw(); }
+});
+cui.addEventListener('mousemove', e=>{
+  st.cursor=[e.offsetX,e.offsetY];
+  if(st.pan){ st.ox=st.pan[2]+(e.offsetX-st.pan[0]); st.oy=st.pan[3]+(e.offsetY-st.pan[1]); draw(); return; }
+  const [x,y]=toImg(e.offsetX,e.offsetY);
+  if(st.dragging){ st.box=[Math.min(st.dragging[0],x),Math.min(st.dragging[1],y),Math.max(st.dragging[0],x),Math.max(st.dragging[1],y)].map(Math.round); draw(); return; }
+  if(st.painting){ paint(x,y, st.tool==='brush'); draw(); return; }
+  if(st.tool==='brush'||st.tool==='erase') draw();
+});
+window.addEventListener('mouseup', e=>{ if(st.pan){ st.pan=null; return; } if(st.dragging){ st.dragging=null; if(st.box && st.box[2]-st.box[0]>3 && st.box[3]-st.box[1]>3) runSam(); } st.painting=false; });
+window.addEventListener('keydown', e=>{
+  if(e.target.tagName==='INPUT' && e.target.type==='text') return;
+  if(e.code==='Space'){ st.space=true; e.preventDefault(); }
+  else if(e.key==='f'||e.key==='F'){ fit(); draw(); }
+  else if(e.key==='s'||e.key==='S'){ e.preventDefault(); save(); }
+  else if(e.key==='b'||e.key==='B') setTool('brush'); else if(e.key==='e'||e.key==='E') setTool('erase'); else if(e.key==='p'||e.key==='P') setTool('point'); else if(e.key==='x'||e.key==='X') setTool('box');
+  else if(e.key==='[') stepCam(-1); else if(e.key===']') stepCam(1);
+  else if(e.key==='z' && (e.ctrlKey||e.metaKey)){ $('#undo').click(); }
+  else if(/^[1-9]$/.test(e.key)){ if(st.objects[e.key]) selectObj(+e.key); }
+});
+window.addEventListener('keyup', e=>{ if(e.code==='Space') st.space=false; });
+resize(); loadInstants();
+</script>
+</body>
+</html>
