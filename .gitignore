@@ -204,3 +204,7 @@ stage1/geomem/runs/
 stage1/geomem/runs_*/
 stage1/scores/
 *.pt
+
+# stage-1 external baselines (iccv2027-plan WP2): cloned code and downloaded weights, never committed
+stage1/baselines/third_party/
+stage1/baselines/weights/
