@@ -29,3 +29,13 @@ def test_cutie_harness_pieces():
     assert C.MAX_INTERNAL_SIZE == 480 and C.WEIGHTS.endswith("cutie-base-mega.pth")
     assert C.view_order is B.view_order and C.frame_scene is B.frame_scene      # shared orders / loading
     assert C.cutie_commit() is None or len(C.cutie_commit()) >= 7
+
+
+def test_samv_frame_set():
+    from baselines import samv_dev as V
+    cams = [f"c{i}" for i in range(20)]
+    centres = {c: np.array([float(i), 0, 0]) for i, c in enumerate(cams)}
+    used = V.frame_set(cams, "c10", ["c0", "c19"], centres, max_frames=6)
+    assert used[:3] == ["c10", "c0", "c19"] and len(used) == 6 and used[3:] == ["c9", "c11", "c8"]   # nearest to the reference
+    assert V.frame_set(cams[:5], "c2", ["c0", "c4"], centres, max_frames=16) == ["c2", "c0", "c4", "c1", "c3"]
+    assert V.NUM_POINTS == 10 and V.MAX_FRAMES == 16 and V.TARGET == 1024

@@ -1,0 +1,10 @@
+# scsamv: SAM-V (gong208/SAM-V, Apache-2.0) runtime -- the repo's pins (torch 2.3.1 cu121, Python 3.10).  Code and weights
+# are NOT baked in: baselines/third_party/SAM-V (+ submodules vggt, sam-hq) and baselines/weights/samv are read through the
+# /host mount; PYTHONPATH must list the repo root, submodules/sam-hq and submodules/vggt (README step 5).
+#   docker build -f stage1/baselines/Dockerfile.samv -t scsamv:latest stage1/baselines/third_party/SAM-V
+FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-devel
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && pip install --no-cache-dir opencv-python-headless
+WORKDIR /opt
