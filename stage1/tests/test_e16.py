@@ -61,7 +61,8 @@ def test_check_gate_out_refuses_nbr_under_the_arm():
 
 
 def test_e16_presets(tmp_path):
-    assert set(D.E16_ARMS) == {"NG-idx", "NG-feat", "NG-pi3", "G", "G-bias0", "AB"}
+    assert set(D.E16_ARMS) == {"NG-idx", "NG-feat", "NG-pi3", "G", "G-bias0", "AB", "star"}
+    assert D.e16_preset("star")["untrained"] is True and D.e16_preset("star")["arm"] == "geoset_pred_ft"
     ng = D.e16_preset("NG-idx")
     assert ng["arm"] == "nogeo_pred_ft" and ng["gate"] == "obj" and ng["xcl"] == "outs" and ng["nbr"] == "index"
     assert D.e16_preset("NG-feat")["nbr"] == "feat" and D.e16_preset("NG-pi3")["gate"] == "reproj" and "nbr" not in D.e16_preset("NG-pi3")

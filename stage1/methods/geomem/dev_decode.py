@@ -202,6 +202,7 @@ E16_ARMS = {
     "G": dict(PRESETS[E15_BASE]),
     "G-bias0": dict(PRESETS[E15_BASE], zero_bias=True),
     "AB": None,                                                    # PRESETS[E15_MAIN], present after the E15 second commit
+    "star": dict(PRESETS[E15_BASE], untrained=True),               # no training (zero-initialised heads), the E13 star control
 }
 
 
@@ -370,7 +371,7 @@ def _parser():
     R.add_e15_args(ap)
     ap.add_argument("--e16-arm", default=None, dest="e16_arm", choices=sorted(E16_ARMS),
                     help="S1-E16 (docs/stage1-E16-prereg.md): a measurement arm -- NG-idx / NG-feat / NG-pi3 (nogeo_pred_ft), "
-                         "G (= geoset_rep_xs), G-bias0 (geoset_rep_xs with the GeoBias zeroed), AB (= geoset_rep_xs_ab); "
+                         "G (= geoset_rep_xs), G-bias0 (geoset_rep_xs with the GeoBias zeroed), AB (= geoset_rep_xs_ab), star (untrained); "
                          "with --runs the checkpoints of one training seed; DEV-A / DEV-A' only; root Data/_dev/e16/...")
     ap.add_argument("--runs", default=None, help="S1-E16: the checkpoint dir of one seed (default geomem/runs)")
     ap.add_argument("--seed-tag", default=None, dest="seed_tag", help="S1-E16: the seed label in the root name (default s<seed of --runs>)")
