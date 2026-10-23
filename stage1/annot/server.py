@@ -259,8 +259,14 @@ def api_mark_empty():
     but the log shows the annotator looked)."""
     d = request.json
     take, frame = d["take"], int(d["frame"])
-    log(take, frame, ev="not_visible", cam=d["cam"], obj=int(d["obj"]))
     p = label_path(take, frame, d["cam"])
+    if d.get("undo"):                                # the mark was a slip: log it; drop an all-zero label file so the camera
+        log(take, frame, ev="not_visible_undo", cam=d["cam"], obj=int(d["obj"]))   # no longer counts as visited
+        with LOCK:
+            if os.path.isfile(p) and not np.array(Image.open(p)).any():
+                os.remove(p)
+        return jsonify(dict(ok=True, removed_empty_label=not os.path.isfile(p)))
+    log(take, frame, ev="not_visible", cam=d["cam"], obj=int(d["obj"]))
     if not os.path.isfile(p):                       # make the camera count as visited
         img = Image.open(os.path.join(inst_dir(take, frame), "images", f"{d['cam']}.jpg"))
         W, H = img.size

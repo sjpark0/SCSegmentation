@@ -30,7 +30,7 @@
   <select id="instant"></select>
   <h3>카메라 <span id="camlabel"></span></h3>
   <div id="cams"></div>
-  <div><button id="prevcam">◀ 이전</button><button id="nextcam">다음 ▶</button><button id="notvis">이 카메라에 없음</button></div>
+  <div><button id="prevcam">◀ 이전</button><button id="nextcam">다음 ▶</button><button id="notvis">이 카메라에 없음</button><button id="notvisundo">없음 취소</button></div>
   <h3>객체</h3>
   <div id="objs"></div>
   <div><input type="text" id="newname" placeholder="새 객체 이름 (예: person A)" size="18"><button id="addobj">추가</button></div>
@@ -107,6 +107,7 @@ function renderObjs(){
 function selectObj(id){ st.obj=id; st.points=[]; st.box=null; st.mask=null; st.undo=[]; st.strokes=0; renderObjs(); draw(); msg(`객체 ${id} ${st.objects[id].name}`); }
 $('#addobj').onclick = async ()=>{ const n=$('#newname').value.trim(); if(!n) return; st.objects = await api('/api/objects',{take:st.take,frame:st.frame,add:n}); $('#newname').value=''; const ids=Object.keys(st.objects).map(Number); selectObj(Math.max(...ids)); };
 async function loadCam(cam){
+  if(!st.take || !cam){ msg('순간을 먼저 고르세요'); return; }
   st.cam=cam; st.points=[]; st.box=null; st.mask=null; st.undo=[]; st.strokes=0;
   const l = await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${cam}`);
   st.label = await pngToArray(l.png, st.W, st.H);
@@ -121,6 +122,7 @@ function toImg(x,y){ return [(x-st.ox)/st.scale, (y-st.oy)/st.scale]; }
 const maskCanvas=document.createElement('canvas');
 function draw(){
   const g=cimg.getContext('2d'); g.clearRect(0,0,cimg.width,cimg.height);
+  if(!st.W || !st.H) return;                                   // nothing loaded yet (createImageData(0,0) would throw)
   if(st.img.complete && st.img.naturalWidth){ g.imageSmoothingEnabled = st.scale*st.W/st.img.naturalWidth < 1; g.drawImage(st.img, st.ox, st.oy, st.W*st.scale, st.H*st.scale); }
   // masks: saved labels (all objects) + the working mask of the current object
   maskCanvas.width=st.W; maskCanvas.height=st.H; const mg=maskCanvas.getContext('2d'); const id=mg.createImageData(st.W,st.H); const d=id.data;
@@ -163,6 +165,7 @@ async function save(){
 $('#save').onclick=save;
 $('#clearobj').onclick=async()=>{ if(!st.obj) return; await api('/api/clear',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); for(let i=0;i<st.W*st.H;i++) if(st.label[i]===st.obj) st.label[i]=0; st.mask=null; const l=await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${st.cam}`); st.status[st.cam]=[...new Set(st.label)].filter(v=>v).sort((a,b)=>a-b); renderObjs(); draw(); msg('지움'); };
 $('#notvis').onclick=async()=>{ if(!st.obj) return; await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(`객체 ${st.obj}: 이 카메라에 없음으로 기록`); };
+$('#notvisundo').onclick=async()=>{ if(!st.obj) return; const r=await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,undo:true}); if(r.removed_empty_label) delete st.status[st.cam]; renderCams(); msg(`객체 ${st.obj}: "없음" 표시 취소`); };
 $('#prevcam').onclick=()=>stepCam(-1); $('#nextcam').onclick=()=>stepCam(1);
 function stepCam(d){ const i=st.cams.indexOf(st.cam); const j=(i+d+st.cams.length)%st.cams.length; loadCam(st.cams[j]); }
 // ----------------------------------------------------------------------------------------------- mouse / keys
@@ -195,7 +198,8 @@ window.addEventListener('keydown', e=>{
   else if(/^[1-9]$/.test(e.key)){ if(st.objects[e.key]) selectObj(+e.key); }
 });
 window.addEventListener('keyup', e=>{ if(e.code==='Space') st.space=false; });
-resize(); loadInstants();
+resize(); loadInstants().catch(e=>{ msg('오류: '+e); console.error(e); });
+window.addEventListener('error', e=>{ msg('JS 오류: '+e.message); });
 </script>
 </body>
 </html>
