@@ -22,3 +22,10 @@ def test_frame_scene_restricts_to_basic():
     name, cams, ref, paths, lab, objects = B.frame_scene("Dog", 4, [1, 2], 0)
     assert name == "Dog" and ref == "camera_0002" and set(objects) <= {1, 2} and lab.dtype == np.uint8
     assert all(p.endswith(".jpg") for p in paths.values()) and len(paths) == len(cams)
+
+
+def test_cutie_harness_pieces():
+    from baselines import cutie_dev as C
+    assert C.MAX_INTERNAL_SIZE == 480 and C.WEIGHTS.endswith("cutie-base-mega.pth")
+    assert C.view_order is B.view_order and C.frame_scene is B.frame_scene      # shared orders / loading
+    assert C.cutie_commit() is None or len(C.cutie_commit()) >= 7
