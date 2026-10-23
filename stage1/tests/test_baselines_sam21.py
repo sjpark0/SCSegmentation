@@ -39,3 +39,13 @@ def test_samv_frame_set():
     assert used[:3] == ["c10", "c0", "c19"] and len(used) == 6 and used[3:] == ["c9", "c11", "c8"]   # nearest to the reference
     assert V.frame_set(cams[:5], "c2", ["c0", "c4"], centres, max_frames=16) == ["c2", "c0", "c4", "c1", "c3"]
     assert V.NUM_POINTS == 10 and V.MAX_FRAMES == 16 and V.TARGET == 1024
+
+
+def test_vggts_wrapper_pieces():
+    import cv2
+    from baselines import vggts_dev as G
+    assert (G.IMG, G.SA_TOKENS, G.SAMPLE_NUM, G.REFINE_TIME, G.TAR_SQUARE) == (518, 37, 5, 1, 704)   # hybrid.yaml / val_epoch
+    name, cams, ref, paths, lab, objects = G.frame_scene("Dog", 4, [1, 2], 0)
+    img = G.prep(paths[ref], cv2)
+    assert img.shape == (518, 518, 3) and img.dtype == np.uint8
+    assert G.vs_commit() is None or len(G.vs_commit()) >= 7
