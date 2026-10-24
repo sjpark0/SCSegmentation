@@ -1,0 +1,19 @@
+{
+ "prereg": "docs/stage1-E17-prereg.md \u00a73",
+ "rule": "max DEV-A' wide-pair dJ vs AB; tie (<= 0.001) -> DEV-A dJ&F CI lower bound vs C0",
+ "wide_deg": 55.0,
+ "table": {
+  "C-ov2": {
+   "wide_dJ_vs_AB": 0.002444344303955015,
+   "ci_lo_A_vs_C0": -0.002158033111706452,
+   "dJF_A2_vs_AB": 0.0006556950028326641
+  },
+  "C-ov4": {
+   "wide_dJ_vs_AB": 0.008337670115818291,
+   "ci_lo_A_vs_C0": -0.0017514255714938698,
+   "dJF_A2_vs_AB": 0.0016153733911182342
+  }
+ },
+ "chosen": "C-ov4",
+ "lam": 4.0
+}
