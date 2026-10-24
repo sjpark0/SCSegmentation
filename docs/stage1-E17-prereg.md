@@ -1,6 +1,6 @@
 # S1-E17 사전 등록 — Fix C 넓은 시점차 학습 (G4). 1부: C-ov (MUVOD만)
 
-> **1부 등록 2026-10-24**(이 커밋이 등록 커밋; 해시는 §10 이력에 적음). 계획 [iccv2027-plan.md](iccv2027-plan.md) §1 3번·§4 G4, 링 진단 [stage1/docs/ring-diagnosis-2026-10-20.md](../stage1/docs/ring-diagnosis-2026-10-20.md) Fix C, 전제 재검토는 S1-E16 결과([stage1-E16.md](stage1-E16.md))로 마침. **C-ext(외부 데이터 혼합)·C-ang(시점차 인식 편향)은 2부**로, 사용자 결정 D5(Fix C 데이터, 11-20)·D1/D2(ScanNet++ 승인) 뒤 따로 등록합니다. 1부는 데이터를 더하지 않고 MUVOD 학습 표본의 **추출 분포**와 **두 번째 기억의 선택**만 바꿉니다.
+> **1부 등록 2026-10-24**(등록 커밋 `1568917`). 계획 [iccv2027-plan.md](iccv2027-plan.md) §1 3번·§4 G4, 링 진단 [stage1/docs/ring-diagnosis-2026-10-20.md](../stage1/docs/ring-diagnosis-2026-10-20.md) Fix C, 전제 재검토는 S1-E16 결과([stage1-E16.md](stage1-E16.md))로 마침. **C-ext(외부 데이터 혼합)·C-ang(시점차 인식 편향)은 2부**로, 사용자 결정 D5(Fix C 데이터, 11-20)·D1/D2(ScanNet++ 승인) 뒤 따로 등록합니다. 1부는 데이터를 더하지 않고 MUVOD 학습 표본의 **추출 분포**와 **두 번째 기억의 선택**만 바꿉니다.
 >
 > 코드: `stage1/geomem/arms.py`(COV_ARMS), `geomem/data.py`(가중 추출·릴레이식 기억), `geomem/train.py`(--angles), `methods/geomem/dev_decode.py`(--e17-arm), `scripts/e17/{train_angles.py, run_e17.sh, e17_score.py}`, 각도 캐시 `scripts/e17/runs/train_angles.json`(sha256 `0cb80c2a…2b35b7`, 입력만), 시험 `tests/test_e17.py`. 연기 시험(3스텝, 10-24 00:37) 통과 뒤 등록.
 
@@ -67,4 +67,4 @@
 | 일자 | 내용 |
 |---|---|
 | 2026-10-23 | 초안(`stage1-E17-prereg-draft.md`): 전제 재검토, 팔 후보 C-ov·C-ext·C-ang. |
-| 2026-10-24 | **1부 등록**: C-ov2·C-ov4, 가중 추출·릴레이식 기억 정의, λ 규칙, 예측 P1–P5, DEV-B 보류, D6 기록. 각도 캐시·코드·시험 같은 커밋. |
+| 2026-10-24 | **1부 등록** `1568917`: C-ov2·C-ov4, 가중 추출·릴레이식 기억 정의, λ 규칙, 예측 P1–P5, DEV-B 보류, D6 기록. 각도 캐시·코드·시험 같은 커밋. |
