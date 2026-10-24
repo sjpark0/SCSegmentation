@@ -25,8 +25,9 @@ from geomem.cache import pi3_frame_cache  # noqa: E402
 from geomem.data import (MAX_OBJECTS, SampleIterator, choose_objects, enumerate_pairs, enumerate_samples,  # noqa: E402
                          hub_views, load_sample, load_sample_pair, objects_for, objects_for_pair, pair_targets,
                          unannotated_views)
-from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, CUT_ARMS, CUT_PROB, DEC_ARMS, FUSE_ARMS,  # noqa: E402
-                         NO_EMBED_ARMS, NOGEO_ARMS, PRED_MEM_ARMS, PTR_ARMS, QUERY_ARMS, SET2_ARMS, base_arm)
+from geomem.arms import (ALIGN_ARMS, BAND_ARMS, CONTINUE_ARMS, COV_ARMS, COV_LAMBDA, COV_RELAY_PROB, COV_THETA,  # noqa: E402
+                         CUT_ARMS, CUT_PROB, DEC_ARMS, FUSE_ARMS, NO_EMBED_ARMS, NOGEO_ARMS, PRED_MEM_ARMS, PTR_ARMS,
+                         QUERY_ARMS, SET2_ARMS, base_arm)
 from geomem.folds import load_folds, train_scenes  # noqa: E402
 from geomem.pointmap import CONF_MIN, local_points, to_reference, view_grid  # noqa: E402
 from methods import common  # noqa: E402
@@ -45,7 +46,9 @@ LR_EMBED, LR_ATTN, WEIGHT_DECAY = 1e-3, 1e-5, 0.01
 LR_DECODER = 1e-5        # S1-E9 (docs/stage1-E9-prereg.md section 2): the mask decoder at the memory-attention rate
 LOG_COLUMNS = ["step", "epoch", "loss", "focal", "dice", "iou", "presence", "ssl", "lr", "seconds", "n_mem", "n_views", "n_targets",
                "gated_frac", "g", "self_mass", "align_valid", "band",
-               "objs", "mem_coin", "mem_cam", "cut", "n_cut", "cut_frac"]   # S1-E12: rng-stream identity + cut statistics
+               "objs", "mem_coin", "mem_cam", "cut", "n_cut", "cut_frac",   # S1-E12: rng-stream identity + cut statistics
+               "a_tv", "mem_rule"]                                          # S1-E17: a(r->v) of the sample, the memory-camera rule
+TRAIN_ANGLES = os.path.join(common.REPO, "scripts", "e17", "runs", "train_angles.json")   # S1-E17: input-only angle cache
 CUT_KEEP = (0.3, 0.7)    # S1-E12 (docs/stage1-E12-prereg.md section 2): kept fraction of an object's reference cells ~ U(0.3, 0.7)
 CUT_MIN_CELLS = 20       # objects with fewer reference cells (72x72 grid) are never cut and draw nothing
 CUT_MIN_KEPT = 6         # implied by 0.3 x 20; asserted per cut object
@@ -69,7 +72,8 @@ def arm_flags(arm):
             "init_from_arm": b if arm in PAIR_ARMS else None,
             "inject": "ptr" if arm in PTR_ARMS else "prompt", "g_cross_init": 0.1 if arm in PTR_ARMS else 0.0,
             "objbias_from_geobias": arm in PTR_ARMS,
-            **({"cut_prob": CUT_PROB[b], "cut_keep": list(CUT_KEEP), "cut_min_cells": CUT_MIN_CELLS} if b in CUT_ARMS else {})}
+            **({"cut_prob": CUT_PROB[b], "cut_keep": list(CUT_KEEP), "cut_min_cells": CUT_MIN_CELLS} if b in CUT_ARMS else {}),
+            **({"cov_lambda": COV_LAMBDA[b], "cov_theta": COV_THETA, "cov_relay_prob": COV_RELAY_PROB} if b in COV_ARMS else {})}
 
 
 def build_wrapper(model, arm, device="cuda"):
@@ -281,10 +285,12 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--init-from-runs", default=None,
                     help="runs dir holding the warm-start checkpoints of GeoQuery arms (default: --out)")
+    ap.add_argument("--angles", default=TRAIN_ANGLES, help="S1-E17 C-ov arms: the input-only training angle cache")
     a = ap.parse_args(argv)
 
     import torch
-    from geomem.data import cut_rng, fov_cut, memory_rng, random_memory_camera, third_camera
+    from geomem.data import (cut_rng, fov_cut, load_train_angles, memory_rng, random_memory_camera, relay_memory_camera,
+                             sample_weights, third_camera)
     from geomem.sam3_io import object_cells
     from methods import sam3_single
     torch.manual_seed(a.seed)
@@ -297,6 +303,11 @@ def main(argv=None):
     held_out = sorted(s for s, f in folds.items() if f == a.fold)
     pair_mode = a.arm in PAIR_ARMS
     samples = enumerate_pairs(a.data, scenes, a.frame_stride) if pair_mode else enumerate_samples(a.data, scenes, a.frame_stride)
+    angles, weights, angles_sha256 = None, None, None
+    if "cov_lambda" in flags:                      # S1-E17 C-ov: weights from the committed angle cache, every sample covered
+        angles = load_train_angles(a.angles)
+        weights = sample_weights(samples, angles, flags["cov_lambda"], flags["cov_theta"])
+        angles_sha256 = _sha256(a.angles)
     total_steps = a.epochs * len(samples) if a.max_steps is None else min(a.max_steps, a.epochs * len(samples))
 
     model = sam3_single.load_model()
@@ -316,7 +327,7 @@ def main(argv=None):
     print(f"arm {a.arm} fold {a.fold}: {len(scenes)} scenes, {len(samples)} samples, {total_steps} steps, "
           f"{n_trainable} trainable params; held out {held_out}", flush=True)
 
-    it = SampleIterator(samples, seed=a.seed)
+    it = SampleIterator(samples, seed=a.seed, weights=weights)
     step, t0 = 0, time.time()
     with open(log_path, "w", newline="") as f:
         wr = csv.DictWriter(f, fieldnames=LOG_COLUMNS)
@@ -335,10 +346,17 @@ def main(argv=None):
                                      HUB_RANDOM_VIEWS, rng)
                     batch = load_sample_pair(a.data, sample, objects, cams, device)
                 else:
-                    extra = None
+                    extra, mem_rule, a_tv = None, "", ""
+                    if angles is not None:
+                        a_tv = f"{angles[(sample.scene, sample.t, sample.ref_cam)][sample.tgt_cam]:.2f}"
                     if flags["extra_mem_prob"] > 0 and rng.random() < flags["extra_mem_prob"]:
-                        extra = random_memory_camera(a.data, sample, memory_rng(a.seed, step)) \
-                            if (flags["extra_mem_pred"] or flags["extra_mem_aligned"]) else third_camera(a.data, sample)
+                        if angles is not None:     # S1-E17 C-ov: coin + draw on the step's memory generator
+                            pool = [c for c in load_meta(a.data, sample.scene)["cams"] if c not in (sample.ref_cam, sample.tgt_cam)]
+                            extra, mem_rule = relay_memory_camera(pool, angles[(sample.scene, sample.t, sample.ref_cam)], sample.tgt_cam,
+                                                                  memory_rng(a.seed, step), flags["cov_relay_prob"])
+                        else:
+                            extra = random_memory_camera(a.data, sample, memory_rng(a.seed, step)) \
+                                if (flags["extra_mem_pred"] or flags["extra_mem_aligned"]) else third_camera(a.data, sample)
                     batch = load_sample(a.data, sample, objects, device, extra_mem_cam=extra,
                                         extra_mem_gt=not (flags["extra_mem_pred"] or flags["extra_mem_aligned"]),
                                         aligned=flags["use_fusion"], aligned_mem=flags["extra_mem_aligned"])
@@ -378,7 +396,7 @@ def main(argv=None):
                              "band": f"{terms.get('band', 0.0):.5f}",
                              "objs": " ".join(str(int(o)) for o in objects),
                              "mem_coin": "" if pair_mode else int(extra is not None), "mem_cam": "" if pair_mode or extra is None else extra,
-                             **cut_log})
+                             **cut_log, "a_tv": "" if pair_mode else a_tv, "mem_rule": "" if pair_mode else mem_rule})
                 if step % 50 == 0 or step == total_steps:
                     f.flush()
                     print(f"step {step}/{total_steps} epoch {epoch} loss {terms['loss']:.4f} "
@@ -410,7 +428,9 @@ def main(argv=None):
               "lr": {g["name"]: lr0 for g, lr0 in zip(opt.param_groups, base_lrs)},
               "init_from": init_from, "init_from_sha256": init_from_sha256,
               "weight_decay": WEIGHT_DECAY, "seconds": time.time() - t0, "git": git, "ckpt_sha256": _sha256(ckpt_path),
-              **flags}
+              **flags, **({"angles": a.angles, "angles_sha256": angles_sha256,
+                           "n_wide_samples": int((weights > 1).sum()), "wide_mass": float(weights[weights > 1].sum() / weights.sum())}
+                          if weights is not None else {})}
     with open(os.path.join(out_dir, "config.json"), "w") as f:
         json.dump(config, f, indent=1)
     print(f"done: {step} steps in {time.time() - t0:.0f}s -> {out_dir}", flush=True)

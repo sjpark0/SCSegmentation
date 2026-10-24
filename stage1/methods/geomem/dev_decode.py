@@ -206,6 +206,20 @@ E16_ARMS = {
 }
 
 
+# S1-E17 (docs/stage1-E17-prereg.md §2): the C-ov arms decoded with the main preset (Fix A+B) over their own checkpoints
+# (--runs <_e17/seed<s>>); `_preset` / `_e17` are record keys as in E16.
+E17_ARMS = {"C-ov2": "geoset_cov2_ft", "C-ov4": "geoset_cov4_ft"}
+
+
+def e17_preset(name, runs=None):
+    if E15_MAIN not in PRESETS:
+        raise SystemExit(f"--e17-arm needs the main preset {E15_MAIN}")
+    p = dict(PRESETS[E15_MAIN], arm=E17_ARMS[name], _preset=f"e17:{name}", _e17=name)
+    if runs:
+        p["runs"] = preset_runs(runs)
+    return p
+
+
 def preset_runs(runs):
     return os.path.abspath(runs) if runs else RUNS
 
@@ -295,8 +309,8 @@ def decode_frame(sc, t, restrict, preset, rot=0):
     config.update(dict(seconds=time.time() - t0, frame=t, decoded_cams=sc_run.cams, eval_cams=evals, k3=neigh,
                        restricted=bool(restrict), preset=preset if isinstance(preset, str) else p.get("_preset", E15_BASE),
                        objects=sc.objects))
-    if p.get("_e16"):                                              # S1-E16: the arm, the checkpoint dir and its training seed
-        config.update(e16_arm=p["_e16"], runs=p.get("runs", RUNS))
+    if p.get("_e16") or p.get("_e17"):                             # S1-E16 / E17: the arm, the checkpoint dir and its training seed
+        config.update(**({"e16_arm": p["_e16"]} if p.get("_e16") else {"e17_arm": p["_e17"]}), runs=p.get("runs", RUNS))
         try:
             with open(os.path.join(os.path.dirname(config["ckpt"]) if "ckpt" in config else
                                    os.path.join(p.get("runs", RUNS), p["arm"], f"fold{config['fold']}"), "config.json")) as f:
@@ -373,7 +387,11 @@ def _parser():
                     help="S1-E16 (docs/stage1-E16-prereg.md): a measurement arm -- NG-idx / NG-feat / NG-pi3 (nogeo_pred_ft), "
                          "G (= geoset_rep_xs), G-bias0 (geoset_rep_xs with the GeoBias zeroed), AB (= geoset_rep_xs_ab), star (untrained); "
                          "with --runs the checkpoints of one training seed; DEV-A / DEV-A' only; root Data/_dev/e16/...")
-    ap.add_argument("--runs", default=None, help="S1-E16: the checkpoint dir of one seed (default geomem/runs)")
+    ap.add_argument("--e17-arm", default=None, dest="e17_arm", choices=sorted(E17_ARMS),
+                    help="S1-E17 (docs/stage1-E17-prereg.md): a C-ov arm (geoset_cov<lambda>_ft) decoded with the main preset over "
+                         "--runs (one training seed); DEV-A / DEV-A' only (DEV-B is reserved for the Fix C confirmation); "
+                         "root Data/_dev/e17/...")
+    ap.add_argument("--runs", default=None, help="S1-E16 / E17: the checkpoint dir of one seed (default geomem/runs)")
     ap.add_argument("--seed-tag", default=None, dest="seed_tag", help="S1-E16: the seed label in the root name (default s<seed of --runs>)")
     ap.add_argument("--scenes", default="all", help="'all' = the 17 DEV scenes (devset.dev_scenes), or a subset of them")
     ap.add_argument("--root", default=None, help="default Data/_dev/<preset>_<split>[_rot<r>] (override: Data/_dev/e15/...)")
@@ -390,15 +408,19 @@ def prepare(argv=None):
     ap = _parser()
     a = ap.parse_args(argv)
     flags = {k: getattr(a, k) for k in R.E15_KEYS}
-    if a.e16_arm is not None:                                       # S1-E16 measurement arms (no selection, DEV-A / DEV-A')
+    if a.e16_arm is not None or a.e17_arm is not None:              # S1-E16 / E17 measurement arms (DEV-A / DEV-A' only)
+        exp, name = ("e16", a.e16_arm) if a.e16_arm is not None else ("e17", a.e17_arm)
+        if a.e16_arm is not None and a.e17_arm is not None:
+            ap.error("--e16-arm and --e17-arm exclude each other")
         if a.e15_arm is not None or any(v not in (None, "off") for v in flags.values()) or a.xcl is not None:
-            ap.error("--e16-arm takes no E15 flags / --xcl / --e15-arm (its presets are fixed in E16_ARMS)")
+            ap.error(f"--{exp}-arm takes no E15 flags / --xcl / --e15-arm (its presets are fixed in {exp.upper()}_ARMS)")
         if a.split != "A":
-            ap.error("--e16-arm is a measurement on DEV-A / DEV-A' only (prereg: DEV-B is kept for registrations' confirmations)")
-        preset, rec = e16_preset(a.e16_arm, a.runs), dict(e16_arm=a.e16_arm, runs=preset_runs(a.runs))
+            ap.error(f"--{exp}-arm is a measurement on DEV-A / DEV-A' only (prereg: DEV-B is kept for registrations' confirmations)")
+        preset = e16_preset(name, a.runs) if exp == "e16" else e17_preset(name, a.runs)
+        rec = {f"{exp}_arm": name, "runs": preset_runs(a.runs)}
         tag = a.seed_tag or f"s{seed_of_runs(preset_runs(a.runs), preset['arm'])}"
         p = preset
-        a.root = a.root or os.path.join(DATA, "_dev", "e16", f"{a.e16_arm}_{tag}_{a.split}" + (f"_rot{a.ref_rot}" if a.ref_rot else ""))
+        a.root = a.root or os.path.join(DATA, "_dev", exp, f"{name}_{tag}_{a.split}" + (f"_rot{a.ref_rot}" if a.ref_rot else ""))
     elif a.e15_arm is None:
         if any(v not in (None, "off") for v in flags.values()) or a.xcl is not None:
             ap.error("E15 flags / --xcl need --e15-arm (the recorded override); presets carry their own")

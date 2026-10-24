@@ -124,6 +124,37 @@ def fov_cut(cells, g, keep=(0.3, 0.7), min_cells=20, min_kept=6):
     return drop, recs
 
 
+def load_train_angles(path):
+    """S1-E17: the input-only training angle cache (scripts/e17/train_angles.py) -> {(scene, t, ref): {cam: a(ref->cam) deg}}."""
+    import json
+    with open(path) as f:
+        d = json.load(f)
+    return {(e["scene"], int(e["t"]), e["ref"]): e["all"] for e in d["entries"]}
+
+
+def sample_weights(samples, angles, lam, theta):
+    """S1-E17 C-ov: weight 1 + lam [a(r->v) > theta] per sample; every sample needs an angle entry (the cache is complete)."""
+    w = np.ones(len(samples), np.float64)
+    for i, s in enumerate(samples):
+        a = angles[(s.scene, s.t, s.ref_cam)][s.tgt_cam]
+        if a > theta:
+            w[i] += lam
+    return w
+
+
+def relay_memory_camera(pool, angles, tgt_cam, rng, prob):
+    """S1-E17 C-ov second memory: coin (prob) from `rng`, then -- heads -- uniform over the cameras of `pool` with
+    a(r->m) < a(r->v), falling back to the whole pool when none is nearer; tails -- uniform over `pool` (geoset_pred_ft).
+    -> (camera, rule) with rule in {"relay", "relay_none", "uniform"}."""
+    assert pool
+    if rng.random() < prob:
+        near = [c for c in pool if angles[c] < angles[tgt_cam]]
+        if near:
+            return near[int(rng.integers(len(near)))], "relay"
+        return pool[int(rng.integers(len(pool)))], "relay_none"
+    return pool[int(rng.integers(len(pool)))], "uniform"
+
+
 def random_memory_camera(data, sample, rng):
     """A memory-source camera for predicted-memory training (GeoSet-2 spec 4.2): uniform over the scene's cameras
     other than the reference and the target, annotated or not."""
@@ -279,12 +310,19 @@ def load_sample_pair(data, sample, objects, hub_cams, device="cuda"):
 
 
 class SampleIterator:
-    """Seeded reshuffle of the samples every epoch."""
+    """Seeded reshuffle of the samples every epoch; with `weights` (S1-E17 C-ov) every epoch is instead len(samples) draws
+    with replacement, probability proportional to the weights (the epoch size is unchanged)."""
 
-    def __init__(self, samples, seed=0):
+    def __init__(self, samples, seed=0, weights=None):
         self.samples = list(samples)
         self.rng = np.random.default_rng(seed)
+        self.p = None
+        if weights is not None:
+            w = np.asarray(weights, np.float64)
+            assert w.shape == (len(self.samples),) and (w > 0).all(), w.shape
+            self.p = w / w.sum()
 
     def epoch(self):
-        order = self.rng.permutation(len(self.samples))
+        n = len(self.samples)
+        order = self.rng.permutation(n) if self.p is None else self.rng.choice(n, size=n, replace=True, p=self.p)
         return [self.samples[i] for i in order]
