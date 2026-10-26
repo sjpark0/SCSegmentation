@@ -163,9 +163,9 @@ async function save(){
   msg(`저장: 객체 ${st.obj} 면적 ${r.area}` + (r.overlapped? ` (다른 객체와 겹친 ${r.overlapped}px${$('#overwrite').checked?' 덮어씀':' 제외'})`:''));
 }
 $('#save').onclick=save;
-$('#clearobj').onclick=async()=>{ if(!st.obj) return; await api('/api/clear',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); for(let i=0;i<st.W*st.H;i++) if(st.label[i]===st.obj) st.label[i]=0; st.mask=null; const l=await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${st.cam}`); st.status[st.cam]=[...new Set(st.label)].filter(v=>v).sort((a,b)=>a-b); renderObjs(); draw(); msg('지움'); };
-$('#notvis').onclick=async()=>{ if(!st.obj) return; await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(`객체 ${st.obj}: 이 카메라에 없음으로 기록`); };
-$('#notvisundo').onclick=async()=>{ if(!st.obj) return; const r=await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,undo:true}); if(r.removed_empty_label) delete st.status[st.cam]; renderCams(); msg(`객체 ${st.obj}: "없음" 표시 취소`); };
+$('#clearobj').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } await api('/api/clear',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); for(let i=0;i<st.W*st.H;i++) if(st.label[i]===st.obj) st.label[i]=0; st.mask=null; const l=await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${st.cam}`); st.status[st.cam]=[...new Set(st.label)].filter(v=>v).sort((a,b)=>a-b); renderObjs(); draw(); msg('지움'); };
+$('#notvis').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(`객체 ${st.obj}: 이 카메라에 없음으로 기록`); };
+$('#notvisundo').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } const r=await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,undo:true}); if(r.removed_empty_label) delete st.status[st.cam]; renderCams(); msg(`객체 ${st.obj}: "없음" 표시 취소`); };
 $('#prevcam').onclick=()=>stepCam(-1); $('#nextcam').onclick=()=>stepCam(1);
 function stepCam(d){ const i=st.cams.indexOf(st.cam); const j=(i+d+st.cams.length)%st.cams.length; loadCam(st.cams[j]); }
 // ----------------------------------------------------------------------------------------------- mouse / keys
