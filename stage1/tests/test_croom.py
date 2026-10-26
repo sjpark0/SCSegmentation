@@ -104,3 +104,36 @@ def test_build_scene_and_score(tmp_path):
     s = S.summarise(rows, 8)
     assert s["n_pairs"] == 10 and s["wrong_all"] == 1 and s["empty_all"] == 1 and s["swap_pattern"] == ["2->1 x1"]
     assert s["J_by_obj"]["1"] == 1.0 and s["J_by_d"]["4"] == 1.0
+
+
+def test_choose_refs_nearest_visible(tmp_path):
+    """Reference rule (2026-10-27): nearest camera with a visible object to each quadrant of the ring order."""
+    B, S = _load("build_scene"), _load("score")
+    order = B.RING_ORDER
+    assert [order[q] for q in B.QUADRANTS] == ["cam_00", "cam_16", "cam_24", "cam_08"]
+    for i, r in [(3, 0), (30, 1), (17, 9), (0, 31)]:
+        assert B.ring_distance(i, r, 32) == S.ring_distance(i, r, 32)
+    # T04 #1000: every camera sees an object -> the quadrant cameras themselves
+    vis = {c: [1, 2] for c in order}
+    assert B.choose_refs(vis, order) == [(0, "cam_00"), (8, "cam_16"), (16, "cam_24"), (24, "cam_08")]
+    # T03 #4181 pattern: objects only in cams 8-11 and 17-31 (ring positions 24-27 and 9-23)
+    vis = {c: ([1] if 8 <= int(c[4:]) <= 11 or 17 <= int(c[4:]) <= 31 else []) for c in order}
+    assert B.choose_refs(vis, order) == [(0, "cam_11"), (8, "cam_17"), (16, "cam_24"), (24, "cam_08")]
+    # ties: equal distance -> more objects; equal again -> the earlier ring position; a taken camera is skipped
+    small = [f"c{i}" for i in range(8)]
+    assert B.choose_refs({"c1": [1], "c7": [1, 2]}, small, quadrants=[0]) == [(0, "c7")]
+    assert B.choose_refs({"c1": [1], "c7": [1]}, small, quadrants=[0]) == [(0, "c1")]
+    assert B.choose_refs({"c1": [1], "c7": [1]}, small, quadrants=[0, 7]) == [(0, "c1"), (7, "c7")]
+    with pytest.raises(ValueError):
+        B.choose_refs({"c3": [1]}, small, quadrants=[0, 4])
+    # the fixture: object 1 everywhere -> visible_objects lists it in all 8 cameras; build() records the quadrant
+    root = _instant(tmp_path)
+    inst = str(root / "T09_fake_out" / "000100")
+    vis = B.visible_objects(inst, [str(k) for k in range(8)])
+    assert vis["cam_03"] == [1, 2] and vis["cam_05"] == [1]
+    data = tmp_path / "Data"
+    data.mkdir()
+    out, meta = B.build("T09_fake_out", 100, 5, 2, str(root), str(data), quadrant=4)
+    assert meta["ref_rule"] == "nearest_visible" and meta["ref_quadrant"] == 4
+    out0, meta0 = B.build("T09_fake_out", 100, 0, 2, str(root), str(data))
+    assert meta0["ref_rule"] == "explicit" and meta0["ref_quadrant"] is None
