@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 
 import numpy as np
 from PIL import Image
@@ -18,6 +19,8 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 S1 = os.path.dirname(HERE)
 ROOT = os.path.join(S1, "Data", "_annot", "CROOM")
+sys.path.insert(0, S1)
+from annot.labels import is_2d_png, read_label  # noqa: E402
 
 
 def sha256(path):
@@ -38,7 +41,9 @@ def check_instant(d):
         if not os.path.isfile(p):
             missing.append(c)
             continue
-        lab = np.array(Image.open(p))
+        if not is_2d_png(p):
+            raise SystemExit(f"{p}: not a 2-D label PNG (run annot/fix_rgba.py)")
+        lab = read_label(p)
         ids = {int(i): int((lab == i).sum()) for i in np.unique(lab) if i}
         per_cam[c] = ids
         if not ids:

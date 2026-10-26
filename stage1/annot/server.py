@@ -28,12 +28,14 @@ import time
 
 import numpy as np
 from flask import Flask, jsonify, request, send_file, send_from_directory
+
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 S1 = os.path.dirname(HERE)
 sys.path.insert(0, S1)
 sys.path.insert(0, os.path.join(os.path.dirname(S1), "cart"))
+from annot.labels import as_label, read_label  # noqa: E402
 
 app = Flask(__name__, static_folder=os.path.join(HERE, "static"), static_url_path="/static")
 ROOT = None
@@ -109,7 +111,7 @@ def label_path(take, frame, cam):
 def load_label(take, frame, cam, hw):
     p = label_path(take, frame, cam)
     if os.path.isfile(p):
-        return np.array(Image.open(p))
+        return read_label(p)
     return np.zeros(hw, np.uint8)
 
 
@@ -120,7 +122,7 @@ def png_b64(arr):
 
 
 def b64_png(s):
-    return np.array(Image.open(io.BytesIO(base64.b64decode(s))))
+    return as_label(np.array(Image.open(io.BytesIO(base64.b64decode(s)))))
 
 
 @app.route("/")
@@ -153,7 +155,7 @@ def api_instant():
     for c in cams:
         p = label_path(take, frame, c)
         if os.path.isfile(p):
-            lab = np.array(Image.open(p))
+            lab = read_label(p)
             status[c] = sorted(int(x) for x in np.unique(lab) if x)
     return jsonify(dict(take=take, frame=frame, cams=cams, size=[W, H], objects=objects_of(take, frame), status=status,
                         preview_w=min(PREVIEW_W, W)))
@@ -246,7 +248,7 @@ def api_clear():
     with LOCK:
         p = label_path(take, frame, cam)
         if os.path.isfile(p):
-            lab = np.array(Image.open(p))
+            lab = read_label(p)
             lab[lab == oid] = 0
             Image.fromarray(lab).save(p, compress_level=3)
     log(take, frame, ev="clear", cam=cam, obj=oid)
@@ -263,7 +265,7 @@ def api_mark_empty():
     if d.get("undo"):                                # the mark was a slip: log it; drop an all-zero label file so the camera
         log(take, frame, ev="not_visible_undo", cam=d["cam"], obj=int(d["obj"]))   # no longer counts as visited
         with LOCK:
-            if os.path.isfile(p) and not np.array(Image.open(p)).any():
+            if os.path.isfile(p) and not read_label(p).any():
                 os.remove(p)
         return jsonify(dict(ok=True, removed_empty_label=not os.path.isfile(p)))
     log(take, frame, ev="not_visible", cam=d["cam"], obj=int(d["obj"]))
