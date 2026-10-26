@@ -1,0 +1,316 @@
+{
+ "instant": "T04_sidestep_out #1000 (dev instant)",
+ "date": "2026-10-26",
+ "checkpoint": "geoset_pred_ft fold2 seed0 (as T06)",
+ "refs": {
+  "cam_00": {
+   "objects": [
+    1,
+    2
+   ],
+   "rig_phi_median": 0.134768768553954,
+   "rig_ok": false,
+   "n_F": 23,
+   "n_relay": 0,
+   "n_flag_final": 0,
+   "pi3_ring_breaks_after": [
+    7,
+    15,
+    31
+   ],
+   "arms": {
+    "AB": {
+     "n_pairs": 61,
+     "J_all": 0.7823108358071965,
+     "J_near": 0.7535334386368921,
+     "J_far": 0.8009772555933399,
+     "wrong_all": 9,
+     "empty_all": 2,
+     "fail_all": 11,
+     "swap_pattern": [
+      "1->2 x9"
+     ]
+    },
+    "AB_r1": {
+     "n_pairs": 61,
+     "J_all": 0.7924203402705212,
+     "J_near": 0.7711872467143418,
+     "J_far": 0.806193157712367,
+     "wrong_all": 9,
+     "empty_all": 2,
+     "fail_all": 11,
+     "swap_pattern": [
+      "1->2 x9"
+     ]
+    },
+    "C0": {
+     "n_pairs": 61,
+     "J_all": 0.7823108358071965,
+     "J_near": 0.7535334386368921,
+     "J_far": 0.8009772555933399,
+     "wrong_all": 9,
+     "empty_all": 2,
+     "fail_all": 11,
+     "swap_pattern": [
+      "1->2 x9"
+     ]
+    },
+    "C0_r1": {
+     "n_pairs": 61,
+     "J_all": 0.7924203402705212,
+     "J_near": 0.7711872467143418,
+     "J_far": 0.806193157712367,
+     "wrong_all": 9,
+     "empty_all": 2,
+     "fail_all": 11,
+     "swap_pattern": [
+      "1->2 x9"
+     ]
+    },
+    "G0": {
+     "n_pairs": 61,
+     "J_all": 0.7363267584115207,
+     "J_near": 0.9808675382323037,
+     "J_far": 0.5777057120412832,
+     "wrong_all": 14,
+     "empty_all": 0,
+     "fail_all": 15,
+     "swap_pattern": [
+      "1->2 x7",
+      "2->1 x7"
+     ]
+    }
+   }
+  },
+  "cam_08": {
+   "objects": [
+    1
+   ],
+   "rig_phi_median": 0.2118319176125686,
+   "rig_ok": false,
+   "n_F": 21,
+   "n_relay": 0,
+   "n_flag_final": 0,
+   "pi3_ring_breaks_after": [
+    7,
+    15,
+    31
+   ],
+   "arms": {
+    "AB": {
+     "n_pairs": 31,
+     "J_all": 0.6702847209612692,
+     "J_near": 0.5664433960915577,
+     "J_far": 0.735868715615824,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 8,
+     "swap_pattern": []
+    },
+    "AB_r1": {
+     "n_pairs": 31,
+     "J_all": 0.5466144680595095,
+     "J_near": 0.5529191063244603,
+     "J_far": 0.5426325912605933,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 13,
+     "swap_pattern": []
+    },
+    "C0": {
+     "n_pairs": 31,
+     "J_all": 0.6702847209612692,
+     "J_near": 0.5664433960915577,
+     "J_far": 0.735868715615824,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 8,
+     "swap_pattern": []
+    },
+    "C0_r1": {
+     "n_pairs": 31,
+     "J_all": 0.5466144680595095,
+     "J_near": 0.5529191063244603,
+     "J_far": 0.5426325912605933,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 13,
+     "swap_pattern": []
+    },
+    "G0": {
+     "n_pairs": 31,
+     "J_all": 0.222469276660871,
+     "J_near": 0.49363534292597705,
+     "J_far": 0.05120649796711977,
+     "wrong_all": 0,
+     "empty_all": 17,
+     "fail_all": 24,
+     "swap_pattern": []
+    }
+   }
+  },
+  "cam_16": {
+   "objects": [
+    1,
+    2
+   ],
+   "rig_phi_median": 0.0712994149973409,
+   "rig_ok": true,
+   "n_F": 20,
+   "n_relay": 20,
+   "n_flag_final": 0,
+   "pi3_ring_breaks_after": [
+    7,
+    15,
+    31
+   ],
+   "arms": {
+    "AB": {
+     "n_pairs": 61,
+     "J_all": 0.9737999841168723,
+     "J_near": 0.9765111731336834,
+     "J_far": 0.9720413750248869,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 0,
+     "swap_pattern": []
+    },
+    "AB_r1": {
+     "n_pairs": 61,
+     "J_all": 0.5495861399319839,
+     "J_near": 0.5230968775994717,
+     "J_far": 0.5667683641476675,
+     "wrong_all": 26,
+     "empty_all": 1,
+     "fail_all": 27,
+     "swap_pattern": [
+      "1->2 x13",
+      "2->1 x13"
+     ]
+    },
+    "C0": {
+     "n_pairs": 61,
+     "J_all": 0.5642792779797198,
+     "J_near": 0.5287269850548769,
+     "J_far": 0.5873402247417803,
+     "wrong_all": 24,
+     "empty_all": 1,
+     "fail_all": 25,
+     "swap_pattern": [
+      "1->2 x12",
+      "2->1 x12"
+     ]
+    },
+    "C0_r1": {
+     "n_pairs": 61,
+     "J_all": 0.5495861399319839,
+     "J_near": 0.5230968775994717,
+     "J_far": 0.5667683641476675,
+     "wrong_all": 26,
+     "empty_all": 1,
+     "fail_all": 27,
+     "swap_pattern": [
+      "1->2 x13",
+      "2->1 x13"
+     ]
+    },
+    "G0": {
+     "n_pairs": 61,
+     "J_all": 0.7404190353529526,
+     "J_near": 0.4921061019317399,
+     "J_far": 0.901486884058604,
+     "wrong_all": 14,
+     "empty_all": 1,
+     "fail_all": 15,
+     "swap_pattern": [
+      "1->2 x7",
+      "2->1 x7"
+     ]
+    }
+   }
+  },
+  "cam_24": {
+   "objects": [
+    1,
+    2
+   ],
+   "rig_phi_median": 0.17301530793876824,
+   "rig_ok": false,
+   "n_F": 20,
+   "n_relay": 0,
+   "n_flag_final": 0,
+   "pi3_ring_breaks_after": [
+    7,
+    15,
+    31
+   ],
+   "arms": {
+    "AB": {
+     "n_pairs": 61,
+     "J_all": 0.7002204851440809,
+     "J_near": 0.8953560436550235,
+     "J_far": 0.5736460688126588,
+     "wrong_all": 7,
+     "empty_all": 9,
+     "fail_all": 16,
+     "swap_pattern": [
+      "2->1 x5",
+      "1->2 x2"
+     ]
+    },
+    "AB_r1": {
+     "n_pairs": 61,
+     "J_all": 0.6901715536780731,
+     "J_near": 0.856937993800647,
+     "J_far": 0.5819987276526198,
+     "wrong_all": 7,
+     "empty_all": 10,
+     "fail_all": 17,
+     "swap_pattern": [
+      "2->1 x5",
+      "1->2 x2"
+     ]
+    },
+    "C0": {
+     "n_pairs": 61,
+     "J_all": 0.7002204851440809,
+     "J_near": 0.8953560436550235,
+     "J_far": 0.5736460688126588,
+     "wrong_all": 7,
+     "empty_all": 9,
+     "fail_all": 16,
+     "swap_pattern": [
+      "2->1 x5",
+      "1->2 x2"
+     ]
+    },
+    "C0_r1": {
+     "n_pairs": 61,
+     "J_all": 0.6901715536780731,
+     "J_near": 0.856937993800647,
+     "J_far": 0.5819987276526198,
+     "wrong_all": 7,
+     "empty_all": 10,
+     "fail_all": 17,
+     "swap_pattern": [
+      "2->1 x5",
+      "1->2 x2"
+     ]
+    },
+    "G0": {
+     "n_pairs": 61,
+     "J_all": 0.6107425886236167,
+     "J_near": 0.9812772835808614,
+     "J_far": 0.3703957594621607,
+     "wrong_all": 17,
+     "empty_all": 1,
+     "fail_all": 23,
+     "swap_pattern": [
+      "2->1 x10",
+      "1->2 x7"
+     ]
+    }
+   }
+  }
+ }
+}
