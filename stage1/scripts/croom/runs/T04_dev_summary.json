@@ -1,32 +1,81 @@
 {
- "instant": "T04_sidestep_out #1000 (dev instant)",
+ "instant": "T04 #1000",
  "date": "2026-10-26",
- "checkpoint": "geoset_pred_ft fold2 seed0 (as T06)",
+ "note": "2026-10-26 v2: ring order (cams 0-7,16-31,8-15) for ring distance and G0 pseudo-video; G0idx = index-order G0 (v1); variant _t06 = Pi3 run jointly with T06 #900 (same rig), input only",
+ "checkpoint": "geoset_pred_ft fold 2 seed 0 (as T06)",
  "refs": {
-  "cam_00": {
+  "CROOM_T04_001000_r00": {
+   "scene": "CROOM_T04_001000_r00",
+   "ref_cam": "cam_00",
    "objects": [
     1,
     2
    ],
-   "rig_phi_median": 0.134768768553954,
+   "ring_order_used": true,
    "rig_ok": false,
+   "rig_phi_median": 0.1348,
+   "id3d_summary": {
+    "n": 0,
+    "by_choice": {},
+    "by_choice_x_state": {},
+    "keep_absent": 0,
+    "keep_flagged": 0
+   },
+   "n_S": 8,
    "n_F": 23,
+   "relay_active": true,
    "n_relay": 0,
-   "n_flag_final": 0,
-   "pi3_ring_breaks_after": [
-    7,
-    15,
-    31
-   ],
+   "n_unreachable": 0,
+   "ring": {
+    "order": [
+     "cam_00",
+     "cam_01",
+     "cam_02",
+     "cam_03",
+     "cam_04",
+     "cam_05",
+     "cam_06",
+     "cam_07",
+     "cam_16",
+     "cam_17",
+     "cam_18",
+     "cam_19",
+     "cam_20",
+     "cam_21",
+     "cam_22",
+     "cam_23",
+     "cam_24",
+     "cam_25",
+     "cam_26",
+     "cam_27",
+     "cam_28",
+     "cam_29",
+     "cam_30",
+     "cam_31",
+     "cam_08",
+     "cam_09",
+     "cam_10",
+     "cam_11",
+     "cam_12",
+     "cam_13",
+     "cam_14",
+     "cam_15"
+    ],
+    "breaks_after": [],
+    "az_jumps_after": [],
+    "ring_ok": true
+   },
    "arms": {
     "AB": {
      "n_pairs": 61,
      "J_all": 0.7823108358071965,
-     "J_near": 0.7535334386368921,
-     "J_far": 0.8009772555933399,
      "wrong_all": 9,
      "empty_all": 2,
      "fail_all": 11,
+     "J_near": 0.9057095941982886,
+     "wrong_near": 1,
+     "J_far": 0.7022683979318934,
+     "wrong_far": 8,
      "swap_pattern": [
       "1->2 x9"
      ]
@@ -34,11 +83,13 @@
     "AB_r1": {
      "n_pairs": 61,
      "J_all": 0.7924203402705212,
-     "J_near": 0.7711872467143418,
-     "J_far": 0.806193157712367,
      "wrong_all": 9,
      "empty_all": 2,
      "fail_all": 11,
+     "J_near": 0.9091997456981912,
+     "wrong_near": 1,
+     "J_far": 0.71667153674987,
+     "wrong_far": 8,
      "swap_pattern": [
       "1->2 x9"
      ]
@@ -46,11 +97,13 @@
     "C0": {
      "n_pairs": 61,
      "J_all": 0.7823108358071965,
-     "J_near": 0.7535334386368921,
-     "J_far": 0.8009772555933399,
      "wrong_all": 9,
      "empty_all": 2,
      "fail_all": 11,
+     "J_near": 0.9057095941982886,
+     "wrong_near": 1,
+     "J_far": 0.7022683979318934,
+     "wrong_far": 8,
      "swap_pattern": [
       "1->2 x9"
      ]
@@ -58,131 +111,514 @@
     "C0_r1": {
      "n_pairs": 61,
      "J_all": 0.7924203402705212,
-     "J_near": 0.7711872467143418,
-     "J_far": 0.806193157712367,
      "wrong_all": 9,
      "empty_all": 2,
      "fail_all": 11,
+     "J_near": 0.9091997456981912,
+     "wrong_near": 1,
+     "J_far": 0.71667153674987,
+     "wrong_far": 8,
      "swap_pattern": [
       "1->2 x9"
      ]
     },
     "G0": {
      "n_pairs": 61,
+     "J_all": 0.981128028662109,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 0,
+     "J_near": 0.9821991158074214,
+     "wrong_near": 0,
+     "J_far": 0.9804332694327171,
+     "wrong_far": 0,
+     "swap_pattern": []
+    },
+    "G0idx": {
+     "n_pairs": 61,
      "J_all": 0.7363267584115207,
-     "J_near": 0.9808675382323037,
-     "J_far": 0.5777057120412832,
      "wrong_all": 14,
      "empty_all": 0,
      "fail_all": 15,
+     "J_near": 0.49178741410569615,
+     "wrong_near": 12,
+     "J_far": 0.8949468736369207,
+     "wrong_far": 2,
      "swap_pattern": [
       "1->2 x7",
       "2->1 x7"
      ]
     }
+   },
+   "variant_t06": {
+    "scene": "CROOM_T04_001000_r00_t06",
+    "ref_cam": "cam_00",
+    "objects": [
+     1,
+     2
+    ],
+    "ring_order_used": true,
+    "rig_ok": true,
+    "rig_phi_median": 0.0323,
+    "id3d_summary": {
+     "n": 46,
+     "by_choice": {
+      "X": 44,
+      "keep": 2
+     },
+     "by_choice_x_state": {
+      "X/PASS": 44,
+      "keep/EMPTY": 1,
+      "keep/FLAG": 1
+     },
+     "keep_absent": 1,
+     "keep_flagged": 1
+    },
+    "n_S": 8,
+    "n_F": 23,
+    "relay_active": true,
+    "n_relay": 23,
+    "n_unreachable": 0,
+    "ring": {
+     "order": [
+      "cam_00",
+      "cam_01",
+      "cam_02",
+      "cam_03",
+      "cam_04",
+      "cam_05",
+      "cam_06",
+      "cam_07",
+      "cam_16",
+      "cam_17",
+      "cam_18",
+      "cam_19",
+      "cam_20",
+      "cam_21",
+      "cam_22",
+      "cam_23",
+      "cam_24",
+      "cam_25",
+      "cam_26",
+      "cam_27",
+      "cam_28",
+      "cam_29",
+      "cam_30",
+      "cam_31",
+      "cam_08",
+      "cam_09",
+      "cam_10",
+      "cam_11",
+      "cam_12",
+      "cam_13",
+      "cam_14",
+      "cam_15"
+     ],
+     "breaks_after": [],
+     "az_jumps_after": [],
+     "ring_ok": true
+    },
+    "arms": {
+     "AB": {
+      "n_pairs": 61,
+      "J_all": 0.9563015166301202,
+      "wrong_all": 1,
+      "empty_all": 0,
+      "fail_all": 1,
+      "J_near": 0.9745487046384124,
+      "wrong_near": 0,
+      "J_far": 0.9444655027869036,
+      "wrong_far": 1,
+      "swap_pattern": [
+       "1->2 x1"
+      ]
+     },
+     "AB_r1": {
+      "n_pairs": 61,
+      "J_all": 0.793327782234847,
+      "wrong_all": 9,
+      "empty_all": 2,
+      "fail_all": 11,
+      "J_near": 0.9119092455287935,
+      "wrong_near": 1,
+      "J_far": 0.7164100763144493,
+      "wrong_far": 8,
+      "swap_pattern": [
+       "1->2 x9"
+      ]
+     },
+     "C0": {
+      "n_pairs": 61,
+      "J_all": 0.8869877566624464,
+      "wrong_all": 5,
+      "empty_all": 0,
+      "fail_all": 5,
+      "J_near": 0.9209340873170708,
+      "wrong_near": 1,
+      "J_far": 0.8649685151567443,
+      "wrong_far": 4,
+      "swap_pattern": [
+       "1->2 x5"
+      ]
+     },
+     "C0_r1": {
+      "n_pairs": 61,
+      "J_all": 0.793327782234847,
+      "wrong_all": 9,
+      "empty_all": 2,
+      "fail_all": 11,
+      "J_near": 0.9119092455287935,
+      "wrong_near": 1,
+      "J_far": 0.7164100763144493,
+      "wrong_far": 8,
+      "swap_pattern": [
+       "1->2 x9"
+      ]
+     }
+    }
    }
   },
-  "cam_08": {
+  "CROOM_T04_001000_r08": {
+   "scene": "CROOM_T04_001000_r08",
+   "ref_cam": "cam_08",
    "objects": [
     1
    ],
-   "rig_phi_median": 0.2118319176125686,
+   "ring_order_used": true,
    "rig_ok": false,
+   "rig_phi_median": 0.2118,
+   "id3d_summary": {
+    "n": 0,
+    "by_choice": {},
+    "by_choice_x_state": {},
+    "keep_absent": 0,
+    "keep_flagged": 0
+   },
+   "n_S": 10,
    "n_F": 21,
+   "relay_active": true,
    "n_relay": 0,
-   "n_flag_final": 0,
-   "pi3_ring_breaks_after": [
-    7,
-    15,
-    31
-   ],
+   "n_unreachable": 0,
+   "ring": {
+    "order": [
+     "cam_00",
+     "cam_01",
+     "cam_02",
+     "cam_03",
+     "cam_04",
+     "cam_05",
+     "cam_06",
+     "cam_07",
+     "cam_16",
+     "cam_17",
+     "cam_18",
+     "cam_19",
+     "cam_20",
+     "cam_21",
+     "cam_22",
+     "cam_23",
+     "cam_24",
+     "cam_25",
+     "cam_26",
+     "cam_27",
+     "cam_28",
+     "cam_29",
+     "cam_30",
+     "cam_31",
+     "cam_08",
+     "cam_09",
+     "cam_10",
+     "cam_11",
+     "cam_12",
+     "cam_13",
+     "cam_14",
+     "cam_15"
+    ],
+    "breaks_after": [],
+    "az_jumps_after": [],
+    "ring_ok": true
+   },
    "arms": {
     "AB": {
      "n_pairs": 31,
      "J_all": 0.6702847209612692,
-     "J_near": 0.5664433960915577,
-     "J_far": 0.735868715615824,
      "wrong_all": 0,
      "empty_all": 0,
      "fail_all": 8,
+     "J_near": 0.8856813198821364,
+     "wrong_near": 0,
+     "J_far": 0.5342447637480902,
+     "wrong_far": 0,
      "swap_pattern": []
     },
     "AB_r1": {
      "n_pairs": 31,
      "J_all": 0.5466144680595095,
-     "J_near": 0.5529191063244603,
-     "J_far": 0.5426325912605933,
      "wrong_all": 0,
      "empty_all": 0,
      "fail_all": 13,
+     "J_near": 0.8909610964688911,
+     "wrong_near": 0,
+     "J_far": 0.32913238695884756,
+     "wrong_far": 0,
      "swap_pattern": []
     },
     "C0": {
      "n_pairs": 31,
      "J_all": 0.6702847209612692,
-     "J_near": 0.5664433960915577,
-     "J_far": 0.735868715615824,
      "wrong_all": 0,
      "empty_all": 0,
      "fail_all": 8,
+     "J_near": 0.8856813198821364,
+     "wrong_near": 0,
+     "J_far": 0.5342447637480902,
+     "wrong_far": 0,
      "swap_pattern": []
     },
     "C0_r1": {
      "n_pairs": 31,
      "J_all": 0.5466144680595095,
-     "J_near": 0.5529191063244603,
-     "J_far": 0.5426325912605933,
      "wrong_all": 0,
      "empty_all": 0,
      "fail_all": 13,
+     "J_near": 0.8909610964688911,
+     "wrong_near": 0,
+     "J_far": 0.32913238695884756,
+     "wrong_far": 0,
      "swap_pattern": []
     },
     "G0": {
      "n_pairs": 31,
+     "J_all": 0.9823993943878299,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 0,
+     "J_near": 0.9883424019843848,
+     "wrong_near": 0,
+     "J_far": 0.9786459159057954,
+     "wrong_far": 0,
+     "swap_pattern": []
+    },
+    "G0idx": {
+     "n_pairs": 31,
      "J_all": 0.222469276660871,
-     "J_near": 0.49363534292597705,
-     "J_far": 0.05120649796711977,
      "wrong_all": 0,
      "empty_all": 17,
      "fail_all": 24,
+     "J_near": 0.4935445223395676,
+     "wrong_near": 0,
+     "J_far": 0.05126385833748361,
+     "wrong_far": 0,
      "swap_pattern": []
+    }
+   },
+   "variant_t06": {
+    "scene": "CROOM_T04_001000_r08_t06",
+    "ref_cam": "cam_08",
+    "objects": [
+     1
+    ],
+    "ring_order_used": true,
+    "rig_ok": true,
+    "rig_phi_median": 0.0268,
+    "id3d_summary": {
+     "n": 20,
+     "by_choice": {
+      "X": 20
+     },
+     "by_choice_x_state": {
+      "X/PASS": 20
+     },
+     "keep_absent": 0,
+     "keep_flagged": 0
+    },
+    "n_S": 11,
+    "n_F": 20,
+    "relay_active": true,
+    "n_relay": 20,
+    "n_unreachable": 0,
+    "ring": {
+     "order": [
+      "cam_00",
+      "cam_01",
+      "cam_02",
+      "cam_03",
+      "cam_04",
+      "cam_05",
+      "cam_06",
+      "cam_07",
+      "cam_16",
+      "cam_17",
+      "cam_18",
+      "cam_19",
+      "cam_20",
+      "cam_21",
+      "cam_22",
+      "cam_23",
+      "cam_24",
+      "cam_25",
+      "cam_26",
+      "cam_27",
+      "cam_28",
+      "cam_29",
+      "cam_30",
+      "cam_31",
+      "cam_08",
+      "cam_09",
+      "cam_10",
+      "cam_11",
+      "cam_12",
+      "cam_13",
+      "cam_14",
+      "cam_15"
+     ],
+     "breaks_after": [],
+     "az_jumps_after": [],
+     "ring_ok": true
+    },
+    "arms": {
+     "AB": {
+      "n_pairs": 31,
+      "J_all": 0.9546136630541844,
+      "wrong_all": 0,
+      "empty_all": 0,
+      "fail_all": 0,
+      "J_near": 0.9552416257512588,
+      "wrong_near": 0,
+      "J_far": 0.9542170550349796,
+      "wrong_far": 0,
+      "swap_pattern": []
+     },
+     "AB_r1": {
+      "n_pairs": 31,
+      "J_all": 0.5309454388655814,
+      "wrong_all": 0,
+      "empty_all": 0,
+      "fail_all": 13,
+      "J_near": 0.8912690107384525,
+      "wrong_near": 0,
+      "J_far": 0.3033726566300837,
+      "wrong_far": 0,
+      "swap_pattern": []
+     },
+     "C0": {
+      "n_pairs": 31,
+      "J_all": 0.5929466509763271,
+      "wrong_all": 0,
+      "empty_all": 0,
+      "fail_all": 12,
+      "J_near": 0.9552524910510712,
+      "wrong_near": 0,
+      "J_far": 0.3641219098764887,
+      "wrong_far": 0,
+      "swap_pattern": []
+     },
+     "C0_r1": {
+      "n_pairs": 31,
+      "J_all": 0.5309454388655814,
+      "wrong_all": 0,
+      "empty_all": 0,
+      "fail_all": 13,
+      "J_near": 0.8912690107384525,
+      "wrong_near": 0,
+      "J_far": 0.3033726566300837,
+      "wrong_far": 0,
+      "swap_pattern": []
+     }
     }
    }
   },
-  "cam_16": {
+  "CROOM_T04_001000_r16": {
+   "scene": "CROOM_T04_001000_r16",
+   "ref_cam": "cam_16",
    "objects": [
     1,
     2
    ],
-   "rig_phi_median": 0.0712994149973409,
+   "ring_order_used": true,
    "rig_ok": true,
+   "rig_phi_median": 0.0713,
+   "id3d_summary": {
+    "n": 40,
+    "by_choice": {
+     "X": 39,
+     "keep": 1
+    },
+    "by_choice_x_state": {
+     "X/ABSTAIN": 3,
+     "X/PASS": 36,
+     "keep/EMPTY": 1
+    },
+    "keep_absent": 1,
+    "keep_flagged": 0
+   },
+   "n_S": 11,
    "n_F": 20,
+   "relay_active": true,
    "n_relay": 20,
-   "n_flag_final": 0,
-   "pi3_ring_breaks_after": [
-    7,
-    15,
-    31
-   ],
+   "n_unreachable": 0,
+   "ring": {
+    "order": [
+     "cam_00",
+     "cam_01",
+     "cam_02",
+     "cam_03",
+     "cam_04",
+     "cam_05",
+     "cam_06",
+     "cam_07",
+     "cam_16",
+     "cam_17",
+     "cam_18",
+     "cam_19",
+     "cam_20",
+     "cam_21",
+     "cam_22",
+     "cam_23",
+     "cam_24",
+     "cam_25",
+     "cam_26",
+     "cam_27",
+     "cam_28",
+     "cam_29",
+     "cam_30",
+     "cam_31",
+     "cam_08",
+     "cam_09",
+     "cam_10",
+     "cam_11",
+     "cam_12",
+     "cam_13",
+     "cam_14",
+     "cam_15"
+    ],
+    "breaks_after": [],
+    "az_jumps_after": [],
+    "ring_ok": true
+   },
    "arms": {
     "AB": {
      "n_pairs": 61,
      "J_all": 0.9737999841168723,
-     "J_near": 0.9765111731336834,
-     "J_far": 0.9720413750248869,
      "wrong_all": 0,
      "empty_all": 0,
      "fail_all": 0,
+     "J_near": 0.9775863281342069,
+     "wrong_near": 0,
+     "J_far": 0.9713439771867095,
+     "wrong_far": 0,
      "swap_pattern": []
     },
     "AB_r1": {
      "n_pairs": 61,
      "J_all": 0.5495861399319839,
-     "J_near": 0.5230968775994717,
-     "J_far": 0.5667683641476675,
      "wrong_all": 26,
      "empty_all": 1,
      "fail_all": 27,
+     "J_near": 0.8828756731691456,
+     "wrong_near": 2,
+     "J_far": 0.3333983345889601,
+     "wrong_far": 24,
      "swap_pattern": [
       "1->2 x13",
       "2->1 x13"
@@ -191,11 +627,13 @@
     "C0": {
      "n_pairs": 61,
      "J_all": 0.5642792779797198,
-     "J_near": 0.5287269850548769,
-     "J_far": 0.5873402247417803,
      "wrong_all": 24,
      "empty_all": 1,
      "fail_all": 25,
+     "J_near": 0.8989757246827651,
+     "wrong_near": 2,
+     "J_far": 0.3471788801182852,
+     "wrong_far": 22,
      "swap_pattern": [
       "1->2 x12",
       "2->1 x12"
@@ -204,11 +642,13 @@
     "C0_r1": {
      "n_pairs": 61,
      "J_all": 0.5495861399319839,
-     "J_near": 0.5230968775994717,
-     "J_far": 0.5667683641476675,
      "wrong_all": 26,
      "empty_all": 1,
      "fail_all": 27,
+     "J_near": 0.8828756731691456,
+     "wrong_near": 2,
+     "J_far": 0.3333983345889601,
+     "wrong_far": 24,
      "swap_pattern": [
       "1->2 x13",
       "2->1 x13"
@@ -216,43 +656,232 @@
     },
     "G0": {
      "n_pairs": 61,
+     "J_all": 0.9817760854363989,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 0,
+     "J_near": 0.9826737568820141,
+     "wrong_near": 0,
+     "J_far": 0.9811938120662704,
+     "wrong_far": 0,
+     "swap_pattern": []
+    },
+    "G0idx": {
+     "n_pairs": 61,
      "J_all": 0.7404190353529526,
-     "J_near": 0.4921061019317399,
-     "J_far": 0.901486884058604,
      "wrong_all": 14,
      "empty_all": 1,
      "fail_all": 15,
+     "J_near": 0.9821780374278681,
+     "wrong_near": 0,
+     "J_far": 0.5836023853584127,
+     "wrong_far": 14,
      "swap_pattern": [
       "1->2 x7",
       "2->1 x7"
      ]
     }
+   },
+   "variant_t06": {
+    "scene": "CROOM_T04_001000_r16_t06",
+    "ref_cam": "cam_16",
+    "objects": [
+     1,
+     2
+    ],
+    "ring_order_used": true,
+    "rig_ok": true,
+    "rig_phi_median": 0.0321,
+    "id3d_summary": {
+     "n": 40,
+     "by_choice": {
+      "X": 39,
+      "keep": 1
+     },
+     "by_choice_x_state": {
+      "X/PASS": 39,
+      "keep/EMPTY": 1
+     },
+     "keep_absent": 1,
+     "keep_flagged": 0
+    },
+    "n_S": 11,
+    "n_F": 20,
+    "relay_active": true,
+    "n_relay": 20,
+    "n_unreachable": 0,
+    "ring": {
+     "order": [
+      "cam_00",
+      "cam_01",
+      "cam_02",
+      "cam_03",
+      "cam_04",
+      "cam_05",
+      "cam_06",
+      "cam_07",
+      "cam_16",
+      "cam_17",
+      "cam_18",
+      "cam_19",
+      "cam_20",
+      "cam_21",
+      "cam_22",
+      "cam_23",
+      "cam_24",
+      "cam_25",
+      "cam_26",
+      "cam_27",
+      "cam_28",
+      "cam_29",
+      "cam_30",
+      "cam_31",
+      "cam_08",
+      "cam_09",
+      "cam_10",
+      "cam_11",
+      "cam_12",
+      "cam_13",
+      "cam_14",
+      "cam_15"
+     ],
+     "breaks_after": [],
+     "az_jumps_after": [],
+     "ring_ok": true
+    },
+    "arms": {
+     "AB": {
+      "n_pairs": 61,
+      "J_all": 0.9753059257037077,
+      "wrong_all": 0,
+      "empty_all": 0,
+      "fail_all": 0,
+      "J_near": 0.9784000390400213,
+      "wrong_near": 0,
+      "J_far": 0.973298933269342,
+      "wrong_far": 0,
+      "swap_pattern": []
+     },
+     "AB_r1": {
+      "n_pairs": 61,
+      "J_all": 0.5468022215815836,
+      "wrong_all": 26,
+      "empty_all": 1,
+      "fail_all": 27,
+      "J_near": 0.8833414334608546,
+      "wrong_near": 2,
+      "J_far": 0.32850651657881325,
+      "wrong_far": 24,
+      "swap_pattern": [
+       "2->1 x15",
+       "1->2 x11"
+      ]
+     },
+     "C0": {
+      "n_pairs": 61,
+      "J_all": 0.5658120216948173,
+      "wrong_all": 24,
+      "empty_all": 1,
+      "fail_all": 25,
+      "J_near": 0.9375863838217947,
+      "wrong_near": 1,
+      "J_far": 0.32466108409894,
+      "wrong_far": 23,
+      "swap_pattern": [
+       "2->1 x13",
+       "1->2 x11"
+      ]
+     },
+     "C0_r1": {
+      "n_pairs": 61,
+      "J_all": 0.5468022215815836,
+      "wrong_all": 26,
+      "empty_all": 1,
+      "fail_all": 27,
+      "J_near": 0.8833414334608546,
+      "wrong_near": 2,
+      "J_far": 0.32850651657881325,
+      "wrong_far": 24,
+      "swap_pattern": [
+       "2->1 x15",
+       "1->2 x11"
+      ]
+     }
+    }
    }
   },
-  "cam_24": {
+  "CROOM_T04_001000_r24": {
+   "scene": "CROOM_T04_001000_r24",
+   "ref_cam": "cam_24",
    "objects": [
     1,
     2
    ],
-   "rig_phi_median": 0.17301530793876824,
+   "ring_order_used": true,
    "rig_ok": false,
+   "rig_phi_median": 0.173,
+   "id3d_summary": {
+    "n": 0,
+    "by_choice": {},
+    "by_choice_x_state": {},
+    "keep_absent": 0,
+    "keep_flagged": 0
+   },
+   "n_S": 11,
    "n_F": 20,
+   "relay_active": true,
    "n_relay": 0,
-   "n_flag_final": 0,
-   "pi3_ring_breaks_after": [
-    7,
-    15,
-    31
-   ],
+   "n_unreachable": 0,
+   "ring": {
+    "order": [
+     "cam_00",
+     "cam_01",
+     "cam_02",
+     "cam_03",
+     "cam_04",
+     "cam_05",
+     "cam_06",
+     "cam_07",
+     "cam_16",
+     "cam_17",
+     "cam_18",
+     "cam_19",
+     "cam_20",
+     "cam_21",
+     "cam_22",
+     "cam_23",
+     "cam_24",
+     "cam_25",
+     "cam_26",
+     "cam_27",
+     "cam_28",
+     "cam_29",
+     "cam_30",
+     "cam_31",
+     "cam_08",
+     "cam_09",
+     "cam_10",
+     "cam_11",
+     "cam_12",
+     "cam_13",
+     "cam_14",
+     "cam_15"
+    ],
+    "breaks_after": [],
+    "az_jumps_after": [],
+    "ring_ok": true
+   },
    "arms": {
     "AB": {
      "n_pairs": 61,
      "J_all": 0.7002204851440809,
-     "J_near": 0.8953560436550235,
-     "J_far": 0.5736460688126588,
      "wrong_all": 7,
      "empty_all": 9,
      "fail_all": 16,
+     "J_near": 0.8953560436550235,
+     "wrong_near": 0,
+     "J_far": 0.5736460688126588,
+     "wrong_far": 7,
      "swap_pattern": [
       "2->1 x5",
       "1->2 x2"
@@ -261,11 +890,13 @@
     "AB_r1": {
      "n_pairs": 61,
      "J_all": 0.6901715536780731,
-     "J_near": 0.856937993800647,
-     "J_far": 0.5819987276526198,
      "wrong_all": 7,
      "empty_all": 10,
      "fail_all": 17,
+     "J_near": 0.856937993800647,
+     "wrong_near": 0,
+     "J_far": 0.5819987276526198,
+     "wrong_far": 7,
      "swap_pattern": [
       "2->1 x5",
       "1->2 x2"
@@ -274,11 +905,13 @@
     "C0": {
      "n_pairs": 61,
      "J_all": 0.7002204851440809,
-     "J_near": 0.8953560436550235,
-     "J_far": 0.5736460688126588,
      "wrong_all": 7,
      "empty_all": 9,
      "fail_all": 16,
+     "J_near": 0.8953560436550235,
+     "wrong_near": 0,
+     "J_far": 0.5736460688126588,
+     "wrong_far": 7,
      "swap_pattern": [
       "2->1 x5",
       "1->2 x2"
@@ -287,11 +920,13 @@
     "C0_r1": {
      "n_pairs": 61,
      "J_all": 0.6901715536780731,
-     "J_near": 0.856937993800647,
-     "J_far": 0.5819987276526198,
      "wrong_all": 7,
      "empty_all": 10,
      "fail_all": 17,
+     "J_near": 0.856937993800647,
+     "wrong_near": 0,
+     "J_far": 0.5819987276526198,
+     "wrong_far": 7,
      "swap_pattern": [
       "2->1 x5",
       "1->2 x2"
@@ -299,16 +934,159 @@
     },
     "G0": {
      "n_pairs": 61,
+     "J_all": 0.9797735565185265,
+     "wrong_all": 0,
+     "empty_all": 0,
+     "fail_all": 0,
+     "J_near": 0.9812560728874944,
+     "wrong_near": 0,
+     "J_far": 0.9788119242791962,
+     "wrong_far": 0,
+     "swap_pattern": []
+    },
+    "G0idx": {
+     "n_pairs": 61,
      "J_all": 0.6107425886236167,
-     "J_near": 0.9812772835808614,
-     "J_far": 0.3703957594621607,
      "wrong_all": 17,
      "empty_all": 1,
      "fail_all": 23,
+     "J_near": 0.9812772835808614,
+     "wrong_near": 0,
+     "J_far": 0.3703957594621607,
+     "wrong_far": 17,
      "swap_pattern": [
       "2->1 x10",
       "1->2 x7"
      ]
+    }
+   },
+   "variant_t06": {
+    "scene": "CROOM_T04_001000_r24_t06",
+    "ref_cam": "cam_24",
+    "objects": [
+     1,
+     2
+    ],
+    "ring_order_used": true,
+    "rig_ok": true,
+    "rig_phi_median": 0.0445,
+    "id3d_summary": {
+     "n": 40,
+     "by_choice": {
+      "X": 34,
+      "keep": 6
+     },
+     "by_choice_x_state": {
+      "X/ABSTAIN": 15,
+      "X/PASS": 19,
+      "keep/EMPTY": 6
+     },
+     "keep_absent": 6,
+     "keep_flagged": 0
+    },
+    "n_S": 11,
+    "n_F": 20,
+    "relay_active": true,
+    "n_relay": 20,
+    "n_unreachable": 0,
+    "ring": {
+     "order": [
+      "cam_00",
+      "cam_01",
+      "cam_02",
+      "cam_03",
+      "cam_04",
+      "cam_05",
+      "cam_06",
+      "cam_07",
+      "cam_16",
+      "cam_17",
+      "cam_18",
+      "cam_19",
+      "cam_20",
+      "cam_21",
+      "cam_22",
+      "cam_23",
+      "cam_24",
+      "cam_25",
+      "cam_26",
+      "cam_27",
+      "cam_28",
+      "cam_29",
+      "cam_30",
+      "cam_31",
+      "cam_08",
+      "cam_09",
+      "cam_10",
+      "cam_11",
+      "cam_12",
+      "cam_13",
+      "cam_14",
+      "cam_15"
+     ],
+     "breaks_after": [],
+     "az_jumps_after": [],
+     "ring_ok": true
+    },
+    "arms": {
+     "AB": {
+      "n_pairs": 61,
+      "J_all": 0.8287999839123872,
+      "wrong_all": 1,
+      "empty_all": 8,
+      "fail_all": 9,
+      "J_near": 0.8948929353959255,
+      "wrong_near": 0,
+      "J_far": 0.785928880247389,
+      "wrong_far": 1,
+      "swap_pattern": [
+       "1->2 x1"
+      ]
+     },
+     "AB_r1": {
+      "n_pairs": 61,
+      "J_all": 0.7247606856220845,
+      "wrong_all": 4,
+      "empty_all": 11,
+      "fail_all": 15,
+      "J_near": 0.8569921897512089,
+      "wrong_near": 0,
+      "J_far": 0.6389888991599497,
+      "wrong_far": 4,
+      "swap_pattern": [
+       "2->1 x3",
+       "1->2 x1"
+      ]
+     },
+     "C0": {
+      "n_pairs": 61,
+      "J_all": 0.792710430732626,
+      "wrong_all": 1,
+      "empty_all": 10,
+      "fail_all": 11,
+      "J_near": 0.8949912562380206,
+      "wrong_near": 0,
+      "J_far": 0.7263661114858837,
+      "wrong_far": 1,
+      "swap_pattern": [
+       "1->2 x1"
+      ]
+     },
+     "C0_r1": {
+      "n_pairs": 61,
+      "J_all": 0.7247606856220845,
+      "wrong_all": 4,
+      "empty_all": 11,
+      "fail_all": 15,
+      "J_near": 0.8569921897512089,
+      "wrong_near": 0,
+      "J_far": 0.6389888991599497,
+      "wrong_far": 4,
+      "swap_pattern": [
+       "2->1 x3",
+       "1->2 x1"
+      ]
+     }
     }
    }
   }

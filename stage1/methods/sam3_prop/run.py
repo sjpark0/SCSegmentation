@@ -36,13 +36,14 @@ def view_order(order, n, ref_idx):
     raise ValueError(order)
 
 
-def build_pseudo_video(scene, order_seq, folder):
-    """Symlink images/<cam>.jpg as <folder>/%06d.jpg in `order_seq`, replacing whatever was there."""
+def build_pseudo_video(scene, cams, order_seq, folder):
+    """Symlink images/<cam>.jpg as <folder>/%06d.jpg in `order_seq` (indices into `cams`, the rig order), replacing
+    whatever was there."""
     os.makedirs(folder, exist_ok=True)
     for f in os.listdir(folder):
         os.remove(os.path.join(folder, f))
     for pos, view_idx in enumerate(order_seq):
-        target = os.path.realpath(scene.image_paths[camera_order(scene.cams)[view_idx]])
+        target = os.path.realpath(scene.image_paths[cams[view_idx]])
         # relative so the link also resolves when the tree is mounted under /host inside a container
         os.symlink(os.path.relpath(target, os.path.realpath(folder)),
                    os.path.join(folder, f"{pos:06d}.jpg"))
@@ -55,13 +56,13 @@ def propagate(scene, args):
     from build_scsam3 import build_scsam3_video_predictor
     from io_utils import AsyncVideoFrameCPUToGPU, load_video_frames
 
-    cams = camera_order(scene.cams)        # the rig's order, not meta.json's lexicographic one
+    cams = scene.ring_order or camera_order(scene.cams)   # the rig's order (meta ring_order, else natural index order)
     n = len(cams)
     ref_idx = cams.index(scene.ref_cam)
     seq = view_order(args.order, n, ref_idx)
     pos_of_view = {v: p for p, v in enumerate(seq)}
     folder = os.path.join(cache_dir(args.data, scene.name, "pseudo_video"), args.order)
-    build_pseudo_video(scene, seq, folder)
+    build_pseudo_video(scene, cams, seq, folder)
 
     predictor = propagate.predictor
     if predictor is None:

@@ -49,13 +49,16 @@ def load_pred(d, c, p, scale):
     return np.array(m) > 127, np.array(m.resize((m.width // scale, m.height // scale), Image.NEAREST)) > 127
 
 
-def score_dir(d, cams, ref, objects, GTF, GTQ, scale):
-    n, r = len(cams), cams.index(ref)
+def score_dir(d, cams, ref, objects, GTF, GTQ, scale, ring_order=None):
+    """ring_order: the cameras in physical rig order (meta.json "ring_order"); ring distance is measured on positions in
+    that list (default: the index order)."""
+    order = list(ring_order) if ring_order else list(cams)
+    n, r = len(order), order.index(ref)
     rows = []
-    for i, c in enumerate(cams):
+    for c in cams:
         if c == ref:
             continue
-        dist = ring_distance(i, r, n)
+        dist = ring_distance(order.index(c), r, n)
         for p in objects:
             gtq = GTQ[c] == p
             if gtq.sum() == 0:
@@ -112,11 +115,11 @@ def main():
     cams, ref, objects = list(meta["cams"]), meta["ref_cam"], [int(o) for o in meta["basic_objects"]]
     GTF, GTQ = load_gt(annot_dir, cams, a.scale)
     res = json.load(open(a.out)) if os.path.isfile(a.out) else {"arms": {}, "rows": {}}
-    res.update(scene=a.scene, ref_cam=ref, objects=objects, scale=a.scale, annot_dir=annot_dir)
+    res.update(scene=a.scene, ref_cam=ref, objects=objects, scale=a.scale, annot_dir=annot_dir, ring_order=meta.get("ring_order"))
     for spec in a.arms:
         name, d = spec.split("=", 1)
         assert os.path.isdir(d), d
-        rows = score_dir(d, cams, ref, objects, GTF, GTQ, a.scale)
+        rows = score_dir(d, cams, ref, objects, GTF, GTQ, a.scale, meta.get("ring_order"))
         res["arms"][name] = dict(summarise(rows, len(cams)), mask_dir=d)
         res["rows"][name] = rows
         s = res["arms"][name]

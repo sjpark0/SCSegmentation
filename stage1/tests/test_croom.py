@@ -89,6 +89,13 @@ def test_build_scene_and_score(tmp_path):
     rows = S.score_dir(str(res), cams, "cam_00", [1, 2], GTF, GTQ, 2)
     assert len(rows) == 7 + 3                        # object 1 in 7 non-ref cams, object 2 in cams 1..3
     assert S.ring_distance(7, 0, 8) == 1 and S.ring_distance(4, 0, 8) == 4
+    assert meta.get("ring_order") is None                 # 8 synthetic cameras: not the 32-camera CROOM rig
+    assert len(B.RING_ORDER) == 32 and B.RING_ORDER[8] == "cam_16" and B.RING_ORDER[24] == "cam_08"
+    # ring order: with cam_04 placed next to the reference, its pairs get distance 1 instead of 4
+    order = ["cam_00", "cam_04", "cam_01", "cam_02", "cam_03", "cam_05", "cam_06", "cam_07"]
+    rows_o = S.score_dir(str(res), cams, "cam_00", [1, 2], GTF, GTQ, 2, ring_order=order)
+    d4 = {r["cam"]: r["d"] for r in rows_o}
+    assert d4["cam_04"] == 1 and d4["cam_01"] == 2 and d4["cam_07"] == 1
     assert {r["d"] for r in rows if r["cam"] == "cam_07"} == {1}
     by = {(r["cam"], r["p"]): r for r in rows}
     assert by[("cam_01", 1)]["J"] == 1.0 and by[("cam_01", 2)]["J"] == 1.0

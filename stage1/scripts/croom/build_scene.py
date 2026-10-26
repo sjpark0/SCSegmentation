@@ -30,6 +30,13 @@ from annot.labels import read_label, sha256  # noqa: E402
 ANNOT_ROOT = os.path.join(S1, "Data", "_annot", "CROOM")
 
 
+# Physical ring order of the T03/T04/T05/T07 camera numbering (input only, 2026-10-26): ORB + RANSAC homography inliers
+# between every T06 camera (whose numbering follows the ring, S3-P) and every T03 #4181 / T04 #1000 camera give a one-to-one
+# map: cams 0-7 -> T06 0-7, cams 16-31 -> T06 8-23, cams 8-15 -> T06 24-31.  So in these takes the index order is NOT the
+# ring order; ring distance, pseudo-video order and the ring-shape diagnostics use this list (docs/croom-annotation.md 5).
+RING_ORDER = [f"cam_{k:02d}" for k in list(range(0, 8)) + list(range(16, 32)) + list(range(8, 16))]
+
+
 def scene_name(take, frame, ref):
     return f"CROOM_{take.split('_')[0]}_{int(frame):06d}_r{int(ref):02d}"
 
@@ -64,6 +71,7 @@ def build(take, frame, ref, fold, root=ANNOT_ROOT, data=os.path.join(S1, "Data")
     assert all(str(i) in objects for i in present), (present, list(objects))
     meta = dict(dataset=name, ref_frame=int(frame), ref_cam=cam_name(ref), cams=[cam_name(k) for k in cams],
                 mask_cams=[cam_name(ref)], image_size=[W, H], basic_objects=present, external_fold=fold,
+                ring_order=list(RING_ORDER) if set(RING_ORDER) == {cam_name(k) for k in cams} else None,
                 source="croom_annot",
                 annot=dict(take=take, frame=int(frame), ref=str(ref), objects=objects,
                            objects_absent_in_ref=sorted(int(i) for i in objects if int(i) not in present),

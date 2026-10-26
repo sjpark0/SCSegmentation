@@ -3,6 +3,7 @@
 # folder Data/CROOM_<T>_<frame>_r<ref>/ (scripts/croom/build_scene.py).
 #   run_croom.sh build <take> <frame> <ref> [fold]    scene folder (fold = external_fold, default 2 as T06)
 #   run_croom.sh pi3 <scene>                          Pi3 geometry cache (scgeo:pi3) + pi3_reproj masks
+#   run_croom.sh pi3skip <scene>                      pi3_reproj masks from an existing Cache/pi3 (geometry variants)
 #   run_croom.sh decode <scene> AB|C0|G0              AB = E15 main preset (Fix A c* + relay 60), C0 = geoset_rep_xs, G0 = sam3_prop
 #   run_croom.sh score <scene>                        -> geomem/runs/_croom/scores/<scene>.json (every decoded arm)
 #   run_croom.sh dev <take> <frame> <ref>             build -> pi3 -> AB, C0, G0 -> score   (the DEV instant T04 #1000)
@@ -19,6 +20,9 @@ case "$cmd" in
   build)
     take=$1; frame=$2; ref=$3; fold=${4:-2}
     "$PY" "$REPO/scripts/croom/build_scene.py" --take "$take" --frame "$frame" --ref "$ref" --fold "$fold" ;;
+  pi3skip)
+    scene=$1; gpu_lock
+    "$REPO/scripts/run_pi3_reproj.sh" "$scene" --skip-geometry --overwrite ;;
   pi3)
     scene=$1; gpu_lock
     "$REPO/scripts/run_pi3_reproj.sh" "$scene" --overwrite ;;
