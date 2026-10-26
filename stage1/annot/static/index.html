@@ -164,8 +164,8 @@ async function save(){
 }
 $('#save').onclick=save;
 $('#clearobj').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } await api('/api/clear',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); for(let i=0;i<st.W*st.H;i++) if(st.label[i]===st.obj) st.label[i]=0; st.mask=null; const l=await api(`/api/label?take=${st.take}&frame=${st.frame}&cam=${st.cam}`); st.status[st.cam]=[...new Set(st.label)].filter(v=>v).sort((a,b)=>a-b); renderObjs(); draw(); msg('지움'); };
-$('#notvis').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(`객체 ${st.obj}: 이 카메라에 없음으로 기록`); };
-$('#notvisundo').onclick=async()=>{ if(!st.obj){ msg('객체를 먼저 추가하고 고르세요'); return; } const r=await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj,undo:true}); if(r.removed_empty_label) delete st.status[st.cam]; renderCams(); msg(`객체 ${st.obj}: "없음" 표시 취소`); };
+$('#notvis').onclick=async()=>{ await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj||0}); if(!st.status[st.cam]) st.status[st.cam]=[]; renderCams(); msg(st.obj ? `객체 ${st.obj}: 이 카메라에 없음으로 기록` : '이 카메라에 객체 없음으로 기록 (카메라 완료 표시)'); };
+$('#notvisundo').onclick=async()=>{ const r=await api('/api/mark_empty',{take:st.take,frame:st.frame,cam:st.cam,obj:st.obj||0,undo:true}); if(r.removed_empty_label) delete st.status[st.cam]; renderCams(); msg(st.obj ? `객체 ${st.obj}: "없음" 표시 취소` : '"없음" 표시 취소'); };
 $('#prevcam').onclick=()=>stepCam(-1); $('#nextcam').onclick=()=>stepCam(1);
 function stepCam(d){ const i=st.cams.indexOf(st.cam); const j=(i+d+st.cams.length)%st.cams.length; loadCam(st.cams[j]); }
 // ----------------------------------------------------------------------------------------------- mouse / keys

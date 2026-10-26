@@ -258,17 +258,19 @@ def api_clear():
 @app.route("/api/mark_empty", methods=["POST"])
 def api_mark_empty():
     """The object is not visible in this camera: record the decision (an empty mask is the same as no mask for scoring,
-    but the log shows the annotator looked)."""
+    but the log shows the annotator looked). obj 0 / missing = no object at all in this camera (e.g. the first camera
+    of a new instant, before any object has been added)."""
     d = request.json
     take, frame = d["take"], int(d["frame"])
     p = label_path(take, frame, d["cam"])
+    oid = int(d.get("obj") or 0)
     if d.get("undo"):                                # the mark was a slip: log it; drop an all-zero label file so the camera
-        log(take, frame, ev="not_visible_undo", cam=d["cam"], obj=int(d["obj"]))   # no longer counts as visited
+        log(take, frame, ev="not_visible_undo", cam=d["cam"], obj=oid)   # no longer counts as visited
         with LOCK:
             if os.path.isfile(p) and not read_label(p).any():
                 os.remove(p)
         return jsonify(dict(ok=True, removed_empty_label=not os.path.isfile(p)))
-    log(take, frame, ev="not_visible", cam=d["cam"], obj=int(d["obj"]))
+    log(take, frame, ev="not_visible", cam=d["cam"], obj=oid)
     if not os.path.isfile(p):                       # make the camera count as visited
         img = Image.open(os.path.join(inst_dir(take, frame), "images", f"{d['cam']}.jpg"))
         W, H = img.size
