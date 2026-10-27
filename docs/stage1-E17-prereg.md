@@ -57,11 +57,11 @@
 - λ = 4 선택(`2330c5c`). C-ov4 시드 3개: DEV-A +0.0015 (σ 0.0005), DEV-A′ 넓은 쌍 ΔJ vs AB +0.0064 ± 0.0021(AB 재학습 잡음 +0.002~+0.0085 안), T06 라운드 1 먼 절반 J 0.592(C0 0.5775), 최종 0.941 / 1. **P1·P3 틀림**, P2·P4·P5 맞음. C-ov는 주 팔로 채택하지 않음. 기록 `stage1/scripts/e17/runs/{select,summary,t06_scores}.json`.
 
 ## 8. 열린 결정
-- D5(2부 데이터: ScanNet++ + MOVi-MC-AC 권고), D1/D2(ScanNet++ 신청은 사용자).
+- D5(2부 데이터: ~~ScanNet++ + MOVi-MC-AC 권고~~ → **10-27 사용자 결정: Hypersim 학습 분할 + MOVi-MC-AC**; ScanNet++ 접근 반려), D1/D2(~~ScanNet++ 신청은 사용자~~ → 10-27 Hypersim + Replica).
 - **D6(외부 시험 체크포인트) = "MUVOD 17장면 전체 학습 하나"**: 10-24 권고를 사용자가 "그대로 진행"으로 승인. 외부 시험(CROOM·ScanNet++) 전에 최종 Fix C 팔로 한 번 학습하며, 외부 점수를 보고 고르지 않습니다. 그 학습은 아직 돌리지 않음.
 
 ## 9. 2부 후보 (등록 아님)
-- C-ext: C-ov + 외부 넓은 시점차 데이터(ScanNet++ 학습 분할 SPP-MV 표본, D5에 따라 MOVi-MC-AC) 혼합 1:1(표본 수). C-ang: GeoBias에 a(r→v) 구간 임베딩 4개. 집합·규칙은 1부와 같고 ScanNet++ DEV를 더합니다.
+- C-ext: C-ov + 외부 넓은 시점차 데이터(~~ScanNet++ 학습 분할~~ 10-27부터 Hypersim 학습 분할 SPP-MV 표본, D5에 따라 MOVi-MC-AC) 혼합 1:1(표본 수). C-ang: GeoBias에 a(r→v) 구간 임베딩 4개. 집합·규칙은 1부와 같고 ScanNet++ DEV를 더합니다.
 
 ## 10. 이력
 | 일자 | 내용 |
